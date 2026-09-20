@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const clientDirectory = new URL('../build/client/', import.meta.url);
+const clientDirectory = fileURLToPath(new URL('../build/client/', import.meta.url));
 const forbiddenTokens = [
   'DATABASE_URL',
   'postgres://',
@@ -10,7 +11,7 @@ const forbiddenTokens = [
 ];
 
 /**
- * @param {URL | string} directory
+ * @param {string} directory
  * @returns {Promise<string[]>}
  */
 async function filesRecursively(directory) {
@@ -19,7 +20,7 @@ async function filesRecursively(directory) {
   const files = [];
 
   for (const entry of entries) {
-    const entryPath = path.join(directory.toString(), entry.name);
+    const entryPath = path.join(directory, entry.name);
 
     if (entry.isDirectory()) {
       files.push(...(await filesRecursively(entryPath)));
