@@ -2,7 +2,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FileMigrationProvider, Migrator, type Kysely } from 'kysely';
+import type { Kysely } from 'kysely';
+import { FileMigrationProvider, Migrator } from 'kysely/migration';
 
 import type { Database } from '../schema.js';
 
