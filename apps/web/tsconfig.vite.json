@@ -9,6 +9,7 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "exactOptionalPropertyTypes": false,
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "module": "ES2022",
