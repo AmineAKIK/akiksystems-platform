@@ -1,15 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
+import { parseWorkerEnv } from '@akiksystems/config/env';
+
 import { startWorker } from '../src/runtime.js';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (connectionString === undefined || connectionString.trim() === '') {
-  throw new Error('DATABASE_URL is required for the worker smoke test.');
-}
-
+const env = parseWorkerEnv(process.env);
 const probeId = randomUUID();
-const runner = await startWorker({ connectionString });
+const runner = await startWorker({ connectionString: env.DATABASE_URL });
 
 const completed = new Promise<void>((resolve, reject) => {
   const timeout = setTimeout(() => {

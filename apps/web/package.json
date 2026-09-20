@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
+    "check:client-secrets": "node scripts/check-client-secrets.mjs",
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
     "start": "node server.js",
     "typecheck": "react-router typegen && tsc -b"
   },
   "dependencies": {
+    "@akiksystems/config": "workspace:*",
     "@react-router/express": "8.4.0",
     "@react-router/node": "8.4.0",
     "express": "^5.2.1",

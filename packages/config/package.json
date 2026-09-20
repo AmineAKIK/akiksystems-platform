@@ -4,8 +4,15 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./env": {
+      "types": "./env/index.d.ts",
+      "default": "./env/index.mjs"
+    },
     "./eslint": "./eslint/base.mjs",
     "./prettier": "./prettier/base.mjs",
     "./tsconfig": "./tsconfig.base.json"
+  },
+  "dependencies": {
+    "zod": "4.1.11"
   }
 }

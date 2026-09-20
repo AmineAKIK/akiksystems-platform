@@ -1,18 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
+import { parseWorkerEnv } from '@akiksystems/config/env';
 import { addJobAdhoc } from 'graphile-worker';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (connectionString === undefined || connectionString.trim() === '') {
-  throw new Error('DATABASE_URL is required to enqueue a worker job.');
-}
-
+const env = parseWorkerEnv(process.env);
 const probeId = randomUUID();
 const queuedAt = new Date().toISOString();
 
 const job = await addJobAdhoc(
-  { connectionString },
+  { connectionString: env.DATABASE_URL },
   'foundation:test',
   { probeId, queuedAt },
   { maxAttempts: 1 },

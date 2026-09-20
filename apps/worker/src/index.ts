@@ -1,12 +1,9 @@
+import { parseWorkerEnv } from '@akiksystems/config/env';
+
 import { startWorker } from './runtime.js';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (connectionString === undefined || connectionString.trim() === '') {
-  throw new Error('DATABASE_URL is required to start @akiksystems/worker.');
-}
-
-const runner = await startWorker({ connectionString });
+const env = parseWorkerEnv(process.env);
+const runner = await startWorker({ connectionString: env.DATABASE_URL });
 
 let shuttingDown = false;
 

@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@akiksystems/config": "workspace:*",
     "graphile-worker": "0.18.0"
   },
   "devDependencies": {

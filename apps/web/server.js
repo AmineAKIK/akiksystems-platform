@@ -1,10 +1,12 @@
 import process from 'node:process';
 
+import { parseWebServerEnv } from '@akiksystems/config/env';
 import express from 'express';
 
 const BUILD_PATH = './build/server/index.js';
-const DEVELOPMENT = process.env.NODE_ENV === 'development';
-const PORT = Number.parseInt(process.env.PORT ?? '3000', 10);
+const env = parseWebServerEnv(process.env);
+const DEVELOPMENT = env.NODE_ENV === 'development';
+const PORT = env.PORT;
 
 const app = express();
 
