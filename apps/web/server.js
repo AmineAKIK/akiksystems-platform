@@ -30,6 +30,10 @@ const app = express();
 
 app.disable('x-powered-by');
 
+/**
+ * @param {unknown} value
+ * @returns {string | undefined}
+ */
 function normalizeRequestId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value)
     ? value
@@ -140,7 +144,7 @@ if (DEVELOPMENT) {
 }
 
 /** @type {import('express').ErrorRequestHandler} */
-const serverErrorHandler = (error, request, response, _next) => {
+const serverErrorHandler = (error, request, response, next) => {
   const requestId = response.getHeader('x-request-id');
   const correlationId = response.getHeader('x-correlation-id');
 
@@ -153,6 +157,7 @@ const serverErrorHandler = (error, request, response, _next) => {
   });
 
   if (response.headersSent) {
+    next(error);
     return;
   }
 
@@ -173,6 +178,9 @@ const server = app.listen(PORT, () => {
 
 let stopping = false;
 
+/**
+ * @param {NodeJS.Signals} signal
+ */
 async function shutdown(signal) {
   if (stopping) {
     return;
