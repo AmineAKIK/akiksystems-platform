@@ -11,6 +11,10 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "clean": "tsc -b --clean && rimraf \"apps/*/dist\" \"apps/*/build\" \"packages/*/dist\" coverage",
+    "db:check": "pnpm --filter @akiksystems/db db:check",
+    "db:migrate": "pnpm --filter @akiksystems/db migrate:latest",
+    "db:migrate:down": "pnpm --filter @akiksystems/db migrate:down",
+    "db:verify": "pnpm --filter @akiksystems/db db:verify",
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

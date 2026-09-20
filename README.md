@@ -9,14 +9,15 @@ This repository is a pnpm monorepo with two applications and four shared package
 - `apps/web` — React Router Framework Mode web runtime served by Express.
 - `apps/worker` — asynchronous worker surface.
 - `packages/core` — platform/domain primitives shared across applications.
-- `packages/db` — database boundary.
+- `packages/db` — typed PostgreSQL boundary using Kysely.
 - `packages/ui` — shared UI boundary.
 - `packages/config` — shared TypeScript, ESLint, and Prettier conventions.
 
 ## Requirements
 
-- Node.js 22.12 or newer.
+- Node.js 22.22 or newer.
 - pnpm 10 or newer.
+- PostgreSQL for database commands.
 
 ## Commands
 
@@ -35,6 +36,29 @@ The web runtime uses React Router Framework Mode with Vite and a custom Express 
 build output is served from `apps/web/build`. The smoke check starts the production server and
 verifies an SSR route, a second navigation route, hydration markup, and an HTTP 404 response.
 
+## Database
+
+Database commands read `DATABASE_URL` directly. Runtime-wide environment validation belongs to a
+separate foundation capability; the database package intentionally owns only the connection string
+needed for its commands.
+
+```bash
+export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/akiksystems
+
+pnpm db:check
+pnpm db:migrate
+pnpm db:migrate:down
+pnpm db:verify
+```
+
+- `db:check` opens PostgreSQL through the typed Kysely boundary and executes a connectivity probe.
+- `db:migrate` applies all pending versioned migrations.
+- `db:migrate:down` rolls back the most recently applied migration.
+- `db:verify` checks connectivity, applies pending migrations, and executes a typed query against
+  the foundation table.
+
+Migration files live under `packages/db/src/migrations` and are ordered by their version prefix.
+
 Internal workspace packages use the `@akiksystems/*` namespace. When one workspace starts depending
 on another, declare it with the pnpm `workspace:*` protocol rather than a registry version.
 
@@ -47,4 +71,5 @@ enabled from the start.
 ## Backlog traceability
 
 The repository foundation tracks the L0 AkikSystems backlog. AKS-001 and AKS-002 establish the
-workspace and code-quality conventions; AKS-003 introduces the SSR web runtime.
+workspace and code-quality conventions; AKS-003 introduces the SSR web runtime; AKS-004 establishes
+the PostgreSQL and Kysely persistence boundary.

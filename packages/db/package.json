@@ -9,6 +9,18 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
+    "db:check": "tsx src/cli/check.ts",
+    "db:verify": "tsx src/cli/verify.ts",
+    "migrate:down": "tsx src/cli/migrate.ts down",
+    "migrate:latest": "tsx src/cli/migrate.ts latest",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "kysely": "0.29.6",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.13"
   }
 }
