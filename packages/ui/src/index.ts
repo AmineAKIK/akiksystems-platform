@@ -1,1 +1,10 @@
-export type UiPrimitive = 'text' | 'heading' | 'link' | 'button' | 'container';
+export { Button } from './primitives/button.js';
+export type { ButtonProps } from './primitives/button.js';
+export { Container } from './primitives/container.js';
+export type { ContainerProps } from './primitives/container.js';
+export { Heading } from './primitives/heading.js';
+export type { HeadingProps } from './primitives/heading.js';
+export { Link } from './primitives/link.js';
+export type { LinkProps } from './primitives/link.js';
+export { Text } from './primitives/text.js';
+export type { TextProps } from './primitives/text.js';

@@ -15,6 +15,7 @@
   "dependencies": {
     "@akiksystems/config": "workspace:*",
     "@akiksystems/db": "workspace:*",
+    "@akiksystems/ui": "workspace:*",
     "@react-router/express": "8.4.0",
     "@react-router/node": "8.4.0",
     "express": "^5.2.1",

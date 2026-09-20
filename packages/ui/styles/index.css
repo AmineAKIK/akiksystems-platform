@@ -1,0 +1,219 @@
+@layer tokens, base, primitives;
+
+@layer tokens {
+  :root {
+    --aks-font-sans:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    --aks-font-mono:
+      "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+    --aks-font-size-xs: 0.75rem;
+    --aks-font-size-sm: 0.875rem;
+    --aks-font-size-md: 1rem;
+    --aks-font-size-lg: clamp(1.125rem, 1rem + 0.35vw, 1.35rem);
+    --aks-font-size-heading-sm: clamp(1.4rem, 1.15rem + 0.8vw, 1.9rem);
+    --aks-font-size-heading-md: clamp(2rem, 1.4rem + 2vw, 3.25rem);
+    --aks-font-size-heading-lg: clamp(2.75rem, 1.7rem + 4vw, 5rem);
+
+    --aks-leading-tight: 1.08;
+    --aks-leading-body: 1.65;
+    --aks-tracking-tight: -0.035em;
+    --aks-tracking-label: 0.08em;
+
+    --aks-space-1: 0.25rem;
+    --aks-space-2: 0.5rem;
+    --aks-space-3: 0.75rem;
+    --aks-space-4: 1rem;
+    --aks-space-5: 1.5rem;
+    --aks-space-6: 2rem;
+    --aks-space-7: 3rem;
+    --aks-space-8: 4rem;
+    --aks-space-9: 6rem;
+
+    --aks-surface-canvas: #f7f7f4;
+    --aks-surface-raised: #ffffff;
+    --aks-surface-subtle: #eeeeea;
+    --aks-text-primary: #171714;
+    --aks-text-muted: #65655f;
+    --aks-text-inverse: #f8f8f5;
+    --aks-border-subtle: #d8d8d1;
+    --aks-action-primary: #1d1d1a;
+    --aks-action-primary-hover: #32322e;
+
+    --aks-focus-color: #3155d5;
+    --aks-focus-width: 3px;
+    --aks-focus-offset: 3px;
+
+    --aks-radius-sm: 0.4rem;
+    --aks-radius-md: 0.75rem;
+
+    --aks-motion-fast: 120ms;
+    --aks-motion-standard: 220ms;
+    --aks-ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+    --aks-content-width: 44rem;
+    --aks-wide-width: 72rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --aks-surface-canvas: #11110f;
+      --aks-surface-raised: #1a1a17;
+      --aks-surface-subtle: #242420;
+      --aks-text-primary: #f3f3ee;
+      --aks-text-muted: #aaa99f;
+      --aks-text-inverse: #11110f;
+      --aks-border-subtle: #383832;
+      --aks-action-primary: #efefe9;
+      --aks-action-primary-hover: #ffffff;
+      --aks-focus-color: #8aa1ff;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --aks-motion-fast: 1ms;
+      --aks-motion-standard: 1ms;
+    }
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--aks-surface-canvas);
+    color: var(--aks-text-primary);
+    font-family: var(--aks-font-sans);
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    min-width: 20rem;
+    background: var(--aks-surface-canvas);
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: var(--aks-focus-width) solid var(--aks-focus-color);
+    outline-offset: var(--aks-focus-offset);
+  }
+}
+
+@layer primitives {
+  .aks-container {
+    width: min(calc(100% - 2 * var(--aks-space-5)), var(--aks-content-width));
+    margin-inline: auto;
+  }
+
+  .aks-container[data-width="wide"] {
+    max-width: var(--aks-wide-width);
+  }
+
+  .aks-text {
+    margin: 0;
+    color: var(--aks-text-primary);
+    font-size: var(--aks-font-size-md);
+    line-height: var(--aks-leading-body);
+  }
+
+  .aks-text[data-size="sm"] {
+    font-size: var(--aks-font-size-sm);
+  }
+
+  .aks-text[data-size="lg"] {
+    font-size: var(--aks-font-size-lg);
+  }
+
+  .aks-text[data-tone="muted"] {
+    color: var(--aks-text-muted);
+  }
+
+  .aks-text[data-tone="strong"] {
+    font-weight: 650;
+  }
+
+  .aks-heading {
+    margin: 0;
+    max-width: 16ch;
+    color: var(--aks-text-primary);
+    font-weight: 680;
+    line-height: var(--aks-leading-tight);
+    letter-spacing: var(--aks-tracking-tight);
+  }
+
+  .aks-heading[data-size="sm"] {
+    font-size: var(--aks-font-size-heading-sm);
+  }
+
+  .aks-heading[data-size="md"] {
+    font-size: var(--aks-font-size-heading-md);
+  }
+
+  .aks-heading[data-size="lg"] {
+    font-size: var(--aks-font-size-heading-lg);
+  }
+
+  .aks-link {
+    color: inherit;
+    text-decoration-color: var(--aks-text-muted);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition:
+      text-decoration-color var(--aks-motion-fast) var(--aks-ease-standard),
+      opacity var(--aks-motion-fast) var(--aks-ease-standard);
+  }
+
+  .aks-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .aks-button {
+    min-height: 2.75rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--aks-radius-sm);
+    font-weight: 620;
+    cursor: pointer;
+    transition:
+      background-color var(--aks-motion-fast) var(--aks-ease-standard),
+      border-color var(--aks-motion-fast) var(--aks-ease-standard),
+      transform var(--aks-motion-fast) var(--aks-ease-standard);
+  }
+
+  .aks-button[data-emphasis="primary"] {
+    background: var(--aks-action-primary);
+    color: var(--aks-text-inverse);
+  }
+
+  .aks-button[data-emphasis="primary"]:hover {
+    background: var(--aks-action-primary-hover);
+  }
+
+  .aks-button[data-emphasis="quiet"] {
+    border-color: var(--aks-border-subtle);
+    background: transparent;
+    color: var(--aks-text-primary);
+  }
+
+  .aks-button:active {
+    transform: translateY(1px);
+  }
+
+  .aks-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
