@@ -5,6 +5,16 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
+    "dev": "tsx watch src/index.ts",
+    "enqueue:foundation": "tsx scripts/enqueue-foundation.ts",
+    "smoke": "tsx scripts/smoke.ts",
+    "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "graphile-worker": "0.18.0"
+  },
+  "devDependencies": {
+    "tsx": "4.23.13"
   }
 }

@@ -16,10 +16,13 @@
     "db:migrate:down": "pnpm --filter @akiksystems/db migrate:down",
     "db:verify": "pnpm --filter @akiksystems/db db:verify",
     "dev:web": "pnpm --filter @akiksystems/web dev",
+    "dev:worker": "pnpm --filter @akiksystems/worker dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "smoke:web": "pnpm --filter @akiksystems/web smoke:ssr",
+    "smoke:worker": "pnpm --filter @akiksystems/worker smoke",
+    "start:worker": "pnpm --filter @akiksystems/worker start",
     "test": "vitest run --passWithNoTests",
     "typecheck": "pnpm -r --if-present typecheck"
   },

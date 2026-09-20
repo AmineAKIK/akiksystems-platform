@@ -7,7 +7,7 @@ The production platform behind AkikSystems.
 This repository is a pnpm monorepo with two applications and four shared packages:
 
 - `apps/web` — React Router Framework Mode web runtime served by Express.
-- `apps/worker` — asynchronous worker surface.
+- `apps/worker` — Graphile Worker asynchronous job runtime.
 - `packages/core` — platform/domain primitives shared across applications.
 - `packages/db` — typed PostgreSQL boundary using Kysely.
 - `packages/ui` — shared UI boundary.
@@ -17,24 +17,45 @@ This repository is a pnpm monorepo with two applications and four shared package
 
 - Node.js 22.22 or newer.
 - pnpm 10 or newer.
-- PostgreSQL for database commands.
+- PostgreSQL for database and worker commands.
 
 ## Commands
 
 ```bash
 pnpm install
 pnpm dev:web
+pnpm dev:worker
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm smoke:web
+pnpm smoke:worker
 pnpm format:check
 ```
 
 The web runtime uses React Router Framework Mode with Vite and a custom Express server. Production
 build output is served from `apps/web/build`. The smoke check starts the production server and
 verifies an SSR route, a second navigation route, hydration markup, and an HTTP 404 response.
+
+## Worker
+
+The asynchronous runtime uses Graphile Worker backed by the same PostgreSQL database.
+
+```bash
+export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/akiksystems
+
+pnpm dev:worker
+pnpm --filter @akiksystems/worker enqueue:foundation
+pnpm smoke:worker
+```
+
+The `foundation:test` task is the walking-skeleton proof job. It logs its probe ID when executed.
+The smoke command starts a worker, queues that task, waits for Graphile Worker's `job:success`
+event, and then performs a graceful shutdown.
+
+The production worker process handles SIGINT and SIGTERM itself and calls `runner.stop()` before
+exiting.
 
 ## Database
 
@@ -72,4 +93,4 @@ enabled from the start.
 
 The repository foundation tracks the L0 AkikSystems backlog. AKS-001 and AKS-002 establish the
 workspace and code-quality conventions; AKS-003 introduces the SSR web runtime; AKS-004 establishes
-the PostgreSQL and Kysely persistence boundary.
+the PostgreSQL and Kysely persistence boundary; AKS-005 establishes the asynchronous worker.
