@@ -1,16 +1,18 @@
-import { Link } from 'react-router';
+import { Link, useParams } from 'react-router';
 
-export function meta() {
-  return [{ title: 'Runtime proof — AkikSystems' }];
-}
+import { dictionaryFor, requireLocale } from '../i18n/locales';
 
 export default function About() {
+  const params = useParams();
+  const locale = requireLocale(params.locale);
+  const dictionary = dictionaryFor(locale);
+
   return (
     <main>
-      <p>Runtime proof</p>
-      <h1>Client navigation is enabled</h1>
-      <p>This second route is reachable through React Router without a full-page navigation.</p>
-      <Link to="/">Return to the server-rendered home route</Link>
+      <p>{dictionary.about.eyebrow}</p>
+      <h1>{dictionary.about.title}</h1>
+      <p>{dictionary.about.description}</p>
+      <Link to={`/${locale}`}>{dictionary.about.homeLink}</Link>
     </main>
   );
 }

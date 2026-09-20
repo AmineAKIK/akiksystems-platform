@@ -19,7 +19,7 @@ const server = spawn(process.execPath, ['server.js'], {
 async function waitForServer() {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
-      const response = await globalThis.fetch(origin);
+      const response = await globalThis.fetch(`${origin}/en`);
       if (response.ok) return;
     } catch {
       // Server is still starting.
@@ -34,24 +34,47 @@ async function waitForServer() {
 try {
   await waitForServer();
 
-  const home = await globalThis.fetch(origin);
-  const homeHtml = await home.text();
-  assert.equal(home.status, 200);
-  assert.match(homeHtml, /Platform walking skeleton/);
-  assert.match(homeHtml, /href="\/about"/);
-  assert.match(homeHtml, /<script/);
+  const root = await globalThis.fetch(origin, { redirect: 'manual' });
+  assert.equal(root.status, 302);
+  assert.equal(root.headers.get('location'), '/en');
 
-  const about = await globalThis.fetch(`${origin}/about`);
-  const aboutHtml = await about.text();
-  assert.equal(about.status, 200);
-  assert.match(aboutHtml, /Client navigation is enabled/);
+  const english = await globalThis.fetch(`${origin}/en`);
+  const englishHtml = await english.text();
+  assert.equal(english.status, 200);
+  assert.match(englishHtml, /<html lang="en"/);
+  assert.match(englishHtml, /Platform walking skeleton/);
+  assert.match(englishHtml, /href="\/en\/about"/);
+  assert.match(englishHtml, /<script/);
 
-  const missing = await globalThis.fetch(`${origin}/this-route-does-not-exist`);
-  const missingHtml = await missing.text();
-  assert.equal(missing.status, 404);
-  assert.match(missingHtml, /Page not found/);
+  const french = await globalThis.fetch(`${origin}/fr`);
+  const frenchHtml = await french.text();
+  assert.equal(french.status, 200);
+  assert.match(frenchHtml, /<html lang="fr"/);
+  assert.match(frenchHtml, /Squelette fonctionnel de la plateforme/);
+  assert.match(frenchHtml, /href="\/fr\/about"/);
 
-  process.stdout.write('SSR smoke test passed: home=200, about=200, missing=404.\n');
+  const frenchAbout = await globalThis.fetch(`${origin}/fr/about`);
+  const frenchAboutHtml = await frenchAbout.text();
+  assert.equal(frenchAbout.status, 200);
+  assert.match(frenchAboutHtml, /La navigation côté client est active/);
+
+  const unlocalized = await globalThis.fetch(`${origin}/about`);
+  assert.equal(unlocalized.status, 404);
+
+  const unsupportedLocale = await globalThis.fetch(`${origin}/de`);
+  const unsupportedLocaleHtml = await unsupportedLocale.text();
+  assert.equal(unsupportedLocale.status, 404);
+  assert.match(unsupportedLocaleHtml, /<html lang="und"/);
+  assert.match(unsupportedLocaleHtml, /Page not found/);
+
+  const missingFrench = await globalThis.fetch(`${origin}/fr/route-inconnue`);
+  const missingFrenchHtml = await missingFrench.text();
+  assert.equal(missingFrench.status, 404);
+  assert.match(missingFrenchHtml, /Page introuvable/);
+
+  process.stdout.write(
+    'SSR locale smoke passed: /->/en, en/fr=200, unsupported/unlocalized routes=404.\n',
+  );
 } finally {
   server.kill('SIGTERM');
 }

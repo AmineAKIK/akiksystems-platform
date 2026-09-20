@@ -1,22 +1,18 @@
-import { Link } from 'react-router';
+import { Link, useParams } from 'react-router';
 
-export function meta() {
-  return [
-    { title: 'AkikSystems' },
-    {
-      name: 'description',
-      content: 'AkikSystems platform walking skeleton.',
-    },
-  ];
-}
+import { dictionaryFor, requireLocale } from '../i18n/locales';
 
 export default function Home() {
+  const params = useParams();
+  const locale = requireLocale(params.locale);
+  const dictionary = dictionaryFor(locale);
+
   return (
     <main>
-      <p>AkikSystems</p>
-      <h1>Platform walking skeleton</h1>
-      <p>This page is rendered on the server and hydrated for client navigation.</p>
-      <Link to="/about">Open the client-navigation proof route</Link>
+      <p>{dictionary.home.eyebrow}</p>
+      <h1>{dictionary.home.title}</h1>
+      <p>{dictionary.home.description}</p>
+      <Link to={`/${locale}/about`}>{dictionary.home.aboutLink}</Link>
     </main>
   );
 }

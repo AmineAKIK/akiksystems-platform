@@ -27,6 +27,17 @@ The `CI / quality` job is deliberately sequential and fail-fast:
 
 A failing step fails the job and prevents later validation steps from reporting a successful pipeline.
 
+## Bilingual routing
+
+The public web runtime uses explicit locale-prefixed routes:
+
+- `/en/...` for English;
+- `/fr/...` for French;
+- `/` redirects explicitly to `/en`;
+- unsupported or unlocalized paths return 404 instead of silently falling back to another language.
+
+Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` attribute follows the resolved URL locale.
+
 ## Containers
 
 Web and Worker are built as separate Docker images from the same locked pnpm workspace.
@@ -103,6 +114,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-009 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-010 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, and permanent PR/push continuous integration.
+Web/Worker containers, permanent PR/push continuous integration, and explicit bilingual routing.
