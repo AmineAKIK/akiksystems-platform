@@ -143,8 +143,12 @@ if (DEVELOPMENT) {
   app.use(await import(BUILD_PATH).then((module) => module.app));
 }
 
-/** @type {import('express').ErrorRequestHandler} */
-const serverErrorHandler = (error, request, response, next) => {
+const serverErrorHandler = (
+  /** @type {unknown} */ error,
+  /** @type {import('express').Request} */ request,
+  /** @type {import('express').Response} */ response,
+  /** @type {import('express').NextFunction} */ next,
+) => {
   const requestId = response.getHeader('x-request-id');
   const correlationId = response.getHeader('x-correlation-id');
 
