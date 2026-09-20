@@ -1,0 +1,57 @@
+name: AKS-008 validation
+
+on:
+  push:
+    branches:
+      - aks-008-validation
+
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: akiksystems
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t akiksystems-web:aks-008 .
+      - name: Build worker image
+        run: docker build -f apps/worker/Dockerfile -t akiksystems-worker:aks-008 .
+      - name: Verify non-root runtime
+        run: |
+          test "$(docker run --rm --entrypoint id akiksystems-web:aks-008 -u)" != "0"
+          test "$(docker run --rm --entrypoint id akiksystems-worker:aks-008 -u)" != "0"
+      - name: Run migrations through web image
+        run: docker run --rm --network host -e DATABASE_URL="$DATABASE_URL" akiksystems-web:aks-008 pnpm db:migrate
+      - name: Start web container
+        run: |
+          docker run -d --name akiksystems-web --network host -e DATABASE_URL="$DATABASE_URL" -e PORT=3000 akiksystems-web:aks-008
+      - name: Verify web container health
+        run: |
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3000/health > /tmp/health.json; then
+              cat /tmp/health.json
+              break
+            fi
+            sleep 1
+          done
+          grep -q '"status":"ok"' /tmp/health.json
+      - name: Verify worker image against PostgreSQL
+        run: docker run --rm --network host -e DATABASE_URL="$DATABASE_URL" akiksystems-worker:aks-008 pnpm --filter @akiksystems/worker smoke
+      - name: Inspect runtime filesystem contract
+        run: |
+          test -z "$(docker image inspect akiksystems-web:aks-008 --format '{{json .Config.Volumes}}' | grep -v '^null$' || true)"
+          test -z "$(docker image inspect akiksystems-worker:aks-008 --format '{{json .Config.Volumes}}' | grep -v '^null$' || true)"
