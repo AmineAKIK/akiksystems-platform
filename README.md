@@ -9,9 +9,30 @@ This repository is a pnpm monorepo with two applications and four shared package
 - `apps/web` — React Router Framework Mode web runtime served by Express.
 - `apps/worker` — Graphile Worker asynchronous job runtime.
 - `packages/core` — platform/domain primitives shared across applications.
-- `packages/db` — typed PostgreSQL boundary using Kysely.
+- `packages/db` — typed PostgreSQL boundary using Kysely plus DB health probing.
 - `packages/ui` — shared UI boundary.
-- `packages/config` — shared TypeScript, ESLint, Prettier, and runtime environment contracts.
+- `packages/config` — shared TypeScript, linting, runtime config, and observability contracts.
+
+## Runtime observability
+
+Web and worker emit newline-delimited JSON logs with a stable event field and service name.
+
+The web runtime:
+
+- assigns or accepts safe `x-request-id` and `x-correlation-id` values;
+- echoes both IDs on responses;
+- records method, path, status, and request duration;
+- exposes `GET /health` with a live PostgreSQL probe;
+- returns HTTP 503 when database health is unavailable or failing;
+- logs unexpected server errors through a redacting serializer without returning secret details.
+
+The worker emits structured lifecycle and job outcome events. Logger redaction removes configured
+secret values, sensitive-key fields, PostgreSQL credentials, and bearer tokens.
+
+```bash
+pnpm observability:verify
+pnpm smoke:observability
+```
 
 ## Runtime configuration
 
@@ -23,19 +44,11 @@ Server runtime configuration is validated through `@akiksystems/config/env`.
 - Invalid or inconsistent values fail immediately with an explicit field-level error.
 - Browser-safe configuration is an explicit projection; server secrets are never copied into it.
 
-```bash
-pnpm config:verify
-pnpm --filter @akiksystems/web check:client-secrets
-```
-
-The client-secret check scans the built browser bundle and rejects server-only markers such as
-`DATABASE_URL`, PostgreSQL URLs, or a secret sentinel.
-
 ## Requirements
 
 - Node.js 22.22 or newer.
 - pnpm 10 or newer.
-- PostgreSQL for database and worker commands.
+- PostgreSQL for database, worker, and full web health checks.
 
 ## Commands
 
@@ -49,27 +62,13 @@ pnpm test
 pnpm build
 pnpm smoke:web
 pnpm smoke:worker
+pnpm smoke:observability
 pnpm config:verify
+pnpm observability:verify
 pnpm format:check
-```
-
-The web runtime uses React Router Framework Mode with Vite and a custom Express server.
-The asynchronous runtime uses Graphile Worker backed by PostgreSQL.
-
-## Database
-
-Database commands read validated `DATABASE_URL` configuration.
-
-```bash
-export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/akiksystems
-
-pnpm db:check
-pnpm db:migrate
-pnpm db:migrate:down
-pnpm db:verify
 ```
 
 ## Backlog traceability
 
-AKS-001 through AKS-006 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
-Graphile Worker, and typed fail-fast runtime configuration.
+AKS-001 through AKS-007 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+Graphile Worker, typed fail-fast runtime configuration, and baseline observability.

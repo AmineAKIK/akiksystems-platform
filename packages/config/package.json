@@ -8,6 +8,10 @@
       "types": "./env/index.d.ts",
       "default": "./env/index.mjs"
     },
+    "./observability": {
+      "types": "./observability/index.d.ts",
+      "default": "./observability/index.mjs"
+    },
     "./eslint": "./eslint/base.mjs",
     "./prettier": "./prettier/base.mjs",
     "./tsconfig": "./tsconfig.base.json"

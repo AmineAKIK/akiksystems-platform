@@ -21,6 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
+    "observability:verify": "node packages/config/observability/verify.mjs",
+    "smoke:observability": "pnpm --filter @akiksystems/web smoke:observability",
     "smoke:web": "pnpm --filter @akiksystems/web smoke:ssr",
     "smoke:worker": "pnpm --filter @akiksystems/worker smoke",
     "start:worker": "pnpm --filter @akiksystems/worker start",
