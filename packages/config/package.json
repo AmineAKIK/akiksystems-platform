@@ -1,0 +1,11 @@
+{
+  "name": "@akiksystems/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": "./eslint/base.mjs",
+    "./prettier": "./prettier/base.mjs",
+    "./tsconfig": "./tsconfig.base.json"
+  }
+}
