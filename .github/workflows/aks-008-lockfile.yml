@@ -5,8 +5,12 @@ on:
     branches:
       - aks-008-lockfile
 
+permissions:
+  contents: write
+
 jobs:
   generate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,9 +22,10 @@ jobs:
         with:
           node-version: 22.22.0
       - run: pnpm install --lockfile-only
-      - name: Emit lockfile
+      - name: Commit lockfile
         run: |
-          echo 'LOCKFILE_B64_BEGIN'
-          base64 -w 0 pnpm-lock.yaml
-          echo
-          echo 'LOCKFILE_B64_END'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git diff --cached --quiet || git commit -m "chore: lock pnpm dependencies for AKS-008"
+          git push
