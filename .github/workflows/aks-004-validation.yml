@@ -1,0 +1,44 @@
+name: AKS-004 validation
+
+on:
+  push:
+    branches:
+      - aks-004-validation
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: akiksystems
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm db:check
+      - run: pnpm db:migrate
+      - run: pnpm db:verify
+      - run: pnpm db:migrate:down
+      - run: pnpm db:migrate
+      - run: pnpm db:verify
