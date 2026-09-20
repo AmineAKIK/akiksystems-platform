@@ -27,7 +27,9 @@
     "smoke:worker": "pnpm --filter @akiksystems/worker smoke",
     "start:worker": "pnpm --filter @akiksystems/worker start",
     "test": "vitest run --passWithNoTests",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
+    "docker:build:worker": "docker build -f apps/worker/Dockerfile -t akiksystems-worker ."
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

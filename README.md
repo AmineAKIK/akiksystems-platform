@@ -13,6 +13,26 @@ This repository is a pnpm monorepo with two applications and four shared package
 - `packages/ui` — shared UI boundary.
 - `packages/config` — shared TypeScript, linting, runtime config, and observability contracts.
 
+
+## Containers
+
+Web and Worker are built as separate Docker images from the same locked pnpm workspace.
+
+```bash
+pnpm docker:build:web
+pnpm docker:build:worker
+```
+
+Both images use Node 22.22.0 and pnpm 10.17.1, install dependencies from the committed
+`pnpm-lock.yaml` with `--frozen-lockfile`, and run as the non-root `node` user.
+
+- `apps/web/Dockerfile` builds and starts the SSR web runtime on port 3000.
+- `apps/worker/Dockerfile` builds and starts the Graphile Worker runtime.
+- Application containers keep no critical persistent state. PostgreSQL remains external and is
+  addressed only through `DATABASE_URL`.
+- Build output, source code and installed dependencies are immutable image contents; runtime
+  writes are not used as a persistence mechanism.
+
 ## Runtime observability
 
 Web and worker emit newline-delimited JSON logs with a stable event field and service name.
@@ -70,5 +90,5 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-007 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
-Graphile Worker, typed fail-fast runtime configuration, and baseline observability.
+AKS-001 through AKS-008 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+Graphile Worker, typed fail-fast runtime configuration, baseline observability, and reproducible separated Web/Worker containers.

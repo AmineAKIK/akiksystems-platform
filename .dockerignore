@@ -1,0 +1,16 @@
+.git
+.github
+.railway
+node_modules
+.pnpm-store
+**/node_modules
+**/dist
+**/build
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea
+.vscode
