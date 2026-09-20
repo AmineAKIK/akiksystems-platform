@@ -158,13 +158,12 @@ const serverErrorHandler = (error, request, response, next) => {
 
   if (response.headersSent) {
     next(error);
-    return;
+  } else {
+    response.status(500).json({
+      status: 'error',
+      requestId,
+    });
   }
-
-  response.status(500).json({
-    status: 'error',
-    requestId,
-  });
 };
 
 app.use(serverErrorHandler);
