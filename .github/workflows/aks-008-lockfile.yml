@@ -1,0 +1,26 @@
+name: AKS-008 lockfile
+
+on:
+  push:
+    branches:
+      - aks-008-lockfile
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+      - run: pnpm install --lockfile-only
+      - name: Emit lockfile
+        run: |
+          echo 'LOCKFILE_B64_BEGIN'
+          base64 -w 0 pnpm-lock.yaml
+          echo
+          echo 'LOCKFILE_B64_END'
