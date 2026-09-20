@@ -9,12 +9,17 @@ const forbiddenTokens = [
   'AKIKSYSTEMS_SECRET_SENTINEL',
 ];
 
+/**
+ * @param {URL | string} directory
+ * @returns {Promise<string[]>}
+ */
 async function filesRecursively(directory) {
   const entries = await fs.readdir(directory, { withFileTypes: true });
+  /** @type {string[]} */
   const files = [];
 
   for (const entry of entries) {
-    const entryPath = path.join(directory, entry.name);
+    const entryPath = path.join(directory.toString(), entry.name);
 
     if (entry.isDirectory()) {
       files.push(...(await filesRecursively(entryPath)));
