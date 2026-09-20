@@ -1,0 +1,31 @@
+.aks-proof-page {
+  min-height: 100dvh;
+  display: grid;
+  align-items: center;
+  padding-block: var(--aks-space-8);
+}
+
+.aks-proof-stack {
+  display: grid;
+  gap: var(--aks-space-5);
+}
+
+.aks-proof-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: var(--aks-tracking-label);
+}
+
+.aks-proof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4);
+  align-items: center;
+  padding-top: var(--aks-space-3);
+}
+
+.aks-proof-panel {
+  padding: var(--aks-space-6);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-raised);
+}

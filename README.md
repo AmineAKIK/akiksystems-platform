@@ -38,6 +38,16 @@ The public web runtime uses explicit locale-prefixed routes:
 
 Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` attribute follows the resolved URL locale.
 
+## UI foundations
+
+`@akiksystems/ui` provides the small shared visual foundation used by the web runtime.
+
+- CSS tokens cover typography, spacing, surfaces, focus treatment, radii, and motion.
+- Reduced-motion preferences collapse transition durations.
+- The shared primitives are `Text`, `Heading`, `Link`, `Button`, and `Container`.
+- Primitives stay intentionally semantic and low-opinionated; page-specific composition remains in the web app.
+- The current bilingual walking-skeleton pages consume these primitives directly as proof of integration.
+
 ## Containers
 
 Web and Worker are built as separate Docker images from the same locked pnpm workspace.
@@ -114,6 +124,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-010 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-011 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, and explicit bilingual routing.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, and shared UI foundations.

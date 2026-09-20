@@ -1,3 +1,7 @@
+import '@akiksystems/ui/styles.css';
+import './styles/app.css';
+
+import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import type { ReactNode } from 'react';
 import {
   isRouteErrorResponse,
@@ -67,11 +71,19 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   const homeLabel = locale === 'fr' ? 'Retour à l’accueil' : 'Return home';
 
   return (
-    <main>
-      <p>{status}</p>
-      <h1>{title}</h1>
-      <p>{details}</p>
-      <a href={homeHref}>{homeLabel}</a>
+    <main className="aks-proof-page">
+      <Container>
+        <div className="aks-proof-stack">
+          <Text size="sm" tone="muted">
+            {status}
+          </Text>
+          <Heading level={1} size="md">
+            {title}
+          </Heading>
+          <Text tone="muted">{details}</Text>
+          <Link href={homeHref}>{homeLabel}</Link>
+        </div>
+      </Container>
     </main>
   );
 }
