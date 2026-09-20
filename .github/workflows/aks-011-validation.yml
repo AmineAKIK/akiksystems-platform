@@ -1,0 +1,38 @@
+name: AKS-011 validation
+
+on:
+  push:
+    branches:
+      - aks-011-work
+
+jobs:
+  ui-foundations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm smoke:web
+      - name: Verify UI token contract
+        run: |
+          grep -q -- '--aks-font-size-heading-lg' packages/ui/styles/index.css
+          grep -q -- '--aks-space-9' packages/ui/styles/index.css
+          grep -q -- '--aks-surface-canvas' packages/ui/styles/index.css
+          grep -q -- '--aks-focus-color' packages/ui/styles/index.css
+          grep -q -- '--aks-motion-standard' packages/ui/styles/index.css
+      - name: Verify primitive exports
+        run: |
+          grep -q "export { Text }" packages/ui/src/index.ts
+          grep -q "export { Heading }" packages/ui/src/index.ts
+          grep -q "export { Link }" packages/ui/src/index.ts
+          grep -q "export { Button }" packages/ui/src/index.ts
+          grep -q "export { Container }" packages/ui/src/index.ts
