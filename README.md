@@ -13,6 +13,19 @@ This repository is a pnpm monorepo with two applications and four shared package
 - `packages/ui` — shared UI boundary.
 - `packages/config` — shared TypeScript, linting, runtime config, and observability contracts.
 
+## Continuous integration
+
+GitHub Actions runs the permanent CI pipeline on every push and pull request.
+
+The `CI / quality` job is deliberately sequential and fail-fast:
+
+1. locked install with `pnpm install --frozen-lockfile`;
+2. `pnpm lint`;
+3. `pnpm typecheck`;
+4. `pnpm test`;
+5. `pnpm build`.
+
+A failing step fails the job and prevents later validation steps from reporting a successful pipeline.
 
 ## Containers
 
@@ -90,5 +103,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-008 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
-Graphile Worker, typed fail-fast runtime configuration, baseline observability, and reproducible separated Web/Worker containers.
+AKS-001 through AKS-009 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
+Web/Worker containers, and permanent PR/push continuous integration.
