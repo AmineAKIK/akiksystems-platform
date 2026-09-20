@@ -1,7 +1,7 @@
 import { createRequestHandler } from '@react-router/express';
-import express from 'express';
+import express, { type Application } from 'express';
 
-export const app = express();
+export const app: Application = express();
 
 app.use(
   createRequestHandler({
