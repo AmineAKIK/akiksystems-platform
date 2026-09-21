@@ -84,6 +84,16 @@ At narrow viewports, the Experience Shell switches from the persistent desktop r
 - Menu links provide at least 44px touch targets, and the shell preserves the route context and locale control outside the disclosure.
 - The browser qualification exercises the menu at 320px, verifies collapsed/open behavior, touch target size, active deep-route orientation, and no horizontal page overflow.
 
+### Local route context
+
+Deep public routes expose compact semantic context inside the Experience Shell rather than a large breadcrumb trail.
+
+- First-level routes show only the active destination.
+- A deep route can provide a generic `localContext` payload with a current title and optional localized alternate URL.
+- When a child title exists, the shell renders a compact parent/current pair such as `Systems / Sentinel`, with the parent linked and the current item marked by `aria-current="page"`.
+- The contract is domain-neutral so later Writings or Learning detail routes can reuse it without System-specific shell logic.
+- The context is visible on desktop and mobile, truncates safely in constrained widths, and remains part of the initial SSR output.
+
 ## Experience Shell
 
 The public `/:locale` route boundary owns the AkikSystems Experience Shell.
