@@ -99,9 +99,17 @@ export default function Admin() {
                         <Text size="sm" tone="muted">
                           {system.id} · {system.lifecycle}
                         </Text>
-                        <Link href={`/admin/systems/${system.id}/assets`}>
-                          Manage contextual assets
-                        </Link>
+                        <div className="aks-proof-actions">
+                          <Link href={`/admin/systems/${system.id}/presentation/en`}>
+                            Edit EN presentation
+                          </Link>
+                          <Link href={`/admin/systems/${system.id}/presentation/fr`}>
+                            Edit FR presentation
+                          </Link>
+                          <Link href={`/admin/systems/${system.id}/assets`}>
+                            Manage contextual assets
+                          </Link>
+                        </div>
                       </div>
                     </article>
                   ))}
