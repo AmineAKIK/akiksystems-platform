@@ -549,3 +549,32 @@
     transform: translateY(var(--aks-transition-route-distance));
   }
 }
+
+
+/* AKS-044: preserve route semantics while removing non-essential motion. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --aks-transition-route-duration: 1ms;
+    --aks-transition-route-distance: 0rem;
+  }
+
+  .aks-experience-mobile-menu-icon {
+    transition: none;
+  }
+
+  ::view-transition-group(aks-experience-shell),
+  ::view-transition-group(aks-experience-content),
+  ::view-transition-old(aks-experience-shell),
+  ::view-transition-new(aks-experience-shell),
+  ::view-transition-old(aks-experience-content),
+  ::view-transition-new(aks-experience-content) {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+  }
+
+  ::view-transition-old(aks-experience-content),
+  ::view-transition-new(aks-experience-content) {
+    transform: none;
+  }
+}
