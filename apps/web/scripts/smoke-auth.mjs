@@ -1,0 +1,138 @@
+import { strict as assert } from 'node:assert';
+import { spawn } from 'node:child_process';
+import process from 'node:process';
+import { setTimeout as sleep } from 'node:timers/promises';
+import pg from 'pg';
+
+const { Pool } = pg;
+
+const databaseUrl = process.env.DATABASE_URL;
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+const betterAuthSecret = process.env.BETTER_AUTH_SECRET;
+
+if (!databaseUrl || !adminEmail || !adminPassword || !betterAuthSecret) {
+  throw new Error(
+    'DATABASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD and BETTER_AUTH_SECRET are required for auth smoke.',
+  );
+}
+
+const port = '4176';
+const origin = `http://127.0.0.1:${port}`;
+let stderr = '';
+
+const server = spawn(process.execPath, ['server.js'], {
+  cwd: new URL('..', import.meta.url),
+  env: {
+    ...process.env,
+    NODE_ENV: 'production',
+    PORT: port,
+    BETTER_AUTH_URL: origin,
+  },
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+
+server.stderr.on('data', (chunk) => {
+  stderr += chunk.toString();
+});
+
+async function waitForServer() {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    try {
+      const response = await globalThis.fetch(`${origin}/en`);
+      if (response.ok) return;
+    } catch {
+      // Server still starting.
+    }
+
+    await sleep(100);
+  }
+
+  throw new Error(`Auth smoke server did not become ready. stderr=${stderr}`);
+}
+
+async function postJson(path, body, cookie) {
+  return globalThis.fetch(`${origin}${path}`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: {
+      'content-type': 'application/json',
+      origin,
+      ...(cookie ? { cookie } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+try {
+  await waitForServer();
+
+  const anonymous = await globalThis.fetch(`${origin}/admin`, {
+    redirect: 'manual',
+  });
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.get('location'), '/admin/login');
+
+  const signup = await postJson('/api/auth/sign-up/email', {
+    email: 'attacker@example.invalid',
+    password: 'this-password-is-long-enough',
+    name: 'Attacker',
+  });
+  assert.ok(signup.status >= 400, `public signup unexpectedly returned ${signup.status}`);
+
+  const signIn = await postJson('/api/auth/sign-in/email', {
+    email: adminEmail,
+    password: adminPassword,
+  });
+  assert.equal(signIn.status, 200);
+
+  const setCookie = signIn.headers.get('set-cookie') ?? '';
+  assert.match(setCookie, /session_token/i);
+  assert.match(setCookie, /HttpOnly/i);
+  assert.match(setCookie, /Secure/i);
+  assert.match(setCookie, /SameSite=Lax/i);
+
+  const cookie = setCookie.split(';', 1)[0];
+
+  const privateAdmin = await globalThis.fetch(`${origin}/admin`, {
+    headers: { cookie },
+    redirect: 'manual',
+  });
+  const privateHtml = await privateAdmin.text();
+  assert.equal(privateAdmin.status, 200);
+  assert.match(privateHtml, /Sentinel administration/);
+
+  const twoFactor = await postJson(
+    '/api/auth/two-factor/enable',
+    {
+      password: adminPassword,
+      method: 'totp',
+      issuer: 'AkikSystems',
+    },
+    cookie,
+  );
+  const twoFactorBody = await twoFactor.json();
+  assert.equal(twoFactor.status, 200);
+  assert.equal(twoFactorBody.method, 'totp');
+  assert.match(twoFactorBody.totpURI, /^otpauth:\/\/totp\//);
+  assert.ok(Array.isArray(twoFactorBody.backupCodes));
+  assert.ok(twoFactorBody.backupCodes.length > 0);
+
+  const pool = new Pool({ connectionString: databaseUrl });
+  try {
+    const users = await pool.query('select count(*)::int as count from "user"');
+    assert.equal(users.rows[0]?.count, 1);
+  } finally {
+    await pool.end();
+  }
+
+  process.stdout.write(
+    'Auth smoke passed: signup blocked, anonymous admin denied, secure session works, single admin enforced, TOTP available.\n',
+  );
+} finally {
+  server.kill('SIGTERM');
+  await Promise.race([
+    new Promise((resolve) => server.once('exit', resolve)),
+    sleep(2_000),
+  ]);
+}
