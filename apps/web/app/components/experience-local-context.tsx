@@ -41,6 +41,7 @@ export function ExperienceLocalContext({
             <li>
               <Link
                 className="aks-link"
+                prefetch="intent"
                 to={destinationHref(destination.id, locale)}
                 viewTransition
               >
