@@ -42,6 +42,7 @@ const firstSystemId = randomUUID();
 const secondSystemId = randomUUID();
 const reactId = randomUUID();
 const typescriptId = randomUUID();
+const nodeId = randomUUID();
 const duplicateSlugId = randomUUID();
 
 try {
@@ -62,6 +63,7 @@ try {
     .values([
       { id: reactId, slug: 'react', name: 'React' },
       { id: typescriptId, slug: 'typescript', name: 'TypeScript' },
+      { id: nodeId, slug: 'nodejs', name: 'Node.js' },
     ])
     .execute();
 
@@ -93,10 +95,7 @@ try {
       'technologies.id',
       'system_technologies.technology_id',
     )
-    .select([
-      'technologies.slug',
-      'system_technologies.position',
-    ])
+    .select(['technologies.slug', 'system_technologies.position'])
     .where('system_technologies.system_id', '=', firstSystemId)
     .orderBy('system_technologies.position')
     .execute();
@@ -145,7 +144,7 @@ try {
         .insertInto('system_technologies')
         .values({
           system_id: firstSystemId,
-          technology_id: randomUUID(),
+          technology_id: nodeId,
           position: 1,
         })
         .execute(),
@@ -202,7 +201,7 @@ try {
     .execute();
   await db
     .deleteFrom('technologies')
-    .where('id', 'in', [reactId, typescriptId, duplicateSlugId])
+    .where('id', 'in', [reactId, typescriptId, nodeId, duplicateSlugId])
     .execute();
   await db.destroy();
 }
