@@ -167,6 +167,173 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
   }
 }
 
+async function assertFirstLevelDeepLinkAutonomy(browser, { mobile = false } = {}) {
+  const expectedNavigation = {
+    en: [
+      '/en/profile',
+      '/en/systems',
+      '/en/writings',
+      '/en/learning',
+      '/en/work-with-us',
+    ],
+    fr: [
+      '/fr/profil',
+      '/fr/systems',
+      '/fr/ecrits',
+      '/fr/apprentissage',
+      '/fr/travailler-ensemble',
+    ],
+  };
+
+  for (const destination of globalDestinations) {
+    const directContext = await browser.newContext({
+      viewport: mobile ? { width: 320, height: 720 } : { width: 1280, height: 800 },
+    });
+
+    try {
+      const page = await directContext.newPage();
+      const response = await page.goto(`${origin}${destination.path}`);
+
+      assert.equal(response?.status(), 200, `${destination.path} direct load must return HTTP 200.`);
+      assert.equal(
+        await page.locator('html').getAttribute('lang'),
+        destination.lang,
+        `${destination.path} must reconstruct its locale from the URL.`,
+      );
+      await page
+        .getByRole('heading', { level: 1, name: destination.heading, exact: true })
+        .waitFor();
+      await page.locator('.aks-brand-signature').waitFor();
+
+      const contextLabel =
+        destination.lang === 'fr' ? 'Contexte actuel' : 'Current context';
+      assert.equal(
+        (await page.locator(`[aria-label="${contextLabel}"]`).innerText()).trim(),
+        destination.context,
+        `${destination.path} must reconstruct its local context on direct load.`,
+      );
+
+      const alternateLocale = destination.lang === 'en' ? 'fr' : 'en';
+      assert.equal(
+        await page
+          .locator(`.aks-experience-meta a[hreflang="${alternateLocale}"]`)
+          .getAttribute('href'),
+        destination.alternate,
+        `${destination.path} must reconstruct its equivalent-language target on direct load.`,
+      );
+
+      if (mobile) {
+        const menu = page.locator('.aks-experience-mobile-menu');
+        await page.locator('.aks-experience-mobile-menu-trigger').click();
+        assert.notEqual(await menu.getAttribute('open'), null);
+        assert.equal(
+          await page
+            .locator('.aks-experience-mobile-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          destination.path,
+          `${destination.path} must reconstruct active mobile navigation on direct load.`,
+        );
+        assert.equal(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+          ),
+          true,
+          `${destination.path} direct load must not overflow at 320px.`,
+        );
+      } else {
+        assert.equal(
+          await page
+            .locator('.aks-experience-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          destination.path,
+          `${destination.path} must reconstruct active desktop navigation on direct load.`,
+        );
+
+        for (const href of expectedNavigation[destination.lang]) {
+          await page.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+        }
+      }
+    } finally {
+      await directContext.close();
+    }
+  }
+}
+
+async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false } = {}) {
+  for (const target of [
+    {
+      path: '/en/systems/sentinel',
+      lang: 'en',
+      contextLabel: 'Current context',
+      destinationHref: '/en/systems',
+      alternateHref: '/fr/systems/sentinel',
+    },
+    {
+      path: '/fr/systems/sentinel',
+      lang: 'fr',
+      contextLabel: 'Contexte actuel',
+      destinationHref: '/fr/systems',
+      alternateHref: '/en/systems/sentinel',
+    },
+  ]) {
+    const directContext = await browser.newContext({
+      viewport: mobile ? { width: 320, height: 720 } : { width: 1280, height: 800 },
+    });
+
+    try {
+      const page = await directContext.newPage();
+      const response = await page.goto(`${origin}${target.path}`);
+
+      assert.equal(response?.status(), 200, `${target.path} direct load must return HTTP 200.`);
+      assert.equal(await page.locator('html').getAttribute('lang'), target.lang);
+      await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+      await page.locator('.aks-brand-signature').waitFor();
+
+      const localContext = page.locator(`[aria-label="${target.contextLabel}"]`);
+      assert.equal(
+        await localContext.locator('a').getAttribute('href'),
+        target.destinationHref,
+        `${target.path} must reconstruct its parent destination on direct load.`,
+      );
+      assert.equal(
+        (await localContext.locator('[aria-current="page"]').innerText()).trim(),
+        'Sentinel',
+        `${target.path} must reconstruct its current item on direct load.`,
+      );
+
+      const alternateLocale = target.lang === 'en' ? 'fr' : 'en';
+      assert.equal(
+        await page
+          .locator(`.aks-experience-meta a[hreflang="${alternateLocale}"]`)
+          .getAttribute('href'),
+        target.alternateHref,
+        `${target.path} must reconstruct its translated deep-link target.`,
+      );
+
+      if (mobile) {
+        await page.locator('.aks-experience-mobile-menu-trigger').click();
+        assert.equal(
+          await page
+            .locator('.aks-experience-mobile-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          target.destinationHref,
+          `${target.path} must reconstruct Systems as active on mobile direct load.`,
+        );
+      } else {
+        assert.equal(
+          await page
+            .locator('.aks-experience-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          target.destinationHref,
+          `${target.path} must reconstruct Systems as active on desktop direct load.`,
+        );
+      }
+    } finally {
+      await directContext.close();
+    }
+  }
+}
+
 async function assertHomePortal(page, locale, { mobile = false } = {}) {
   const config =
     locale === 'fr'
@@ -414,6 +581,9 @@ async function assertAxe(page) {
     await assertHomePortal(page, 'en');
     await assertHomePortal(page, 'fr');
 
+    await assertFirstLevelDeepLinkAutonomy(browser);
+    await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
+
     await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
     await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
     await assertStaticHomeOrientation(browser, 'en', { width: 320, height: 720 });
@@ -508,6 +678,9 @@ async function assertAxe(page) {
       '/fr/systems/sentinel',
       'A published deep translation must switch to its equivalent localized System route.',
     );
+
+    await assertPublishedSystemDeepLinkAutonomy(browser);
+    await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
 
     const reducedDesktop = await browser.newContext({
       viewport: { width: 1280, height: 800 },
