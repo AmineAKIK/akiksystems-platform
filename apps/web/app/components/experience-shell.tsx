@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Container } from '@akiksystems/ui';
+import { Link as RouterLink } from 'react-router';
 
 import {
   destinationFromPathname,
