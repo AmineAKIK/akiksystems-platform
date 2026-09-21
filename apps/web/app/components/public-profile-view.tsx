@@ -2,15 +2,14 @@ import { Container, Heading, Text } from '@akiksystems/ui';
 
 import type { PublicProfile } from '@akiksystems/db';
 
+import { destinationById } from '../i18n/global-destinations';
+
 interface PublicProfileViewProps {
   profile: PublicProfile;
 }
 
 export function PublicProfileView({ profile }: PublicProfileViewProps) {
-  const fallback =
-    profile.locale === 'fr'
-      ? 'Le profil professionnel public sera enrichi par les prochaines étapes L3.'
-      : 'The public professional profile will be enriched by the next L3 steps.';
+  const fallback = destinationById('profile').description[profile.locale];
 
   return (
     <main className="aks-proof-page">
