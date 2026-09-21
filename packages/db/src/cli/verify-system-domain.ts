@@ -161,7 +161,7 @@ try {
 
   await expectPostgresError(
     '23514',
-    'systems_lifecycle_check',
+    'systems_lifecycle_archive_check',
     () =>
       sql`
         update systems
@@ -189,7 +189,7 @@ try {
 
   await expectPostgresError(
     '23514',
-    'system_localizations_publication_state_check',
+    'system_localizations_editorial_publication_check',
     () =>
       sql`
         insert into system_localizations (
