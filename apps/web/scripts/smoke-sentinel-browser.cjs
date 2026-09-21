@@ -71,20 +71,21 @@ async function savePresentation(page, locale, text) {
 }
 
 const globalDestinations = [
-  { path: '/en/profile', lang: 'en', heading: 'Profile', context: 'Profile' },
-  { path: '/en/systems', lang: 'en', heading: 'Systems', context: 'Systems' },
-  { path: '/en/writings', lang: 'en', heading: 'Writings', context: 'Writings' },
-  { path: '/en/learning', lang: 'en', heading: 'Learning', context: 'Learning' },
-  { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', context: 'Work with us' },
-  { path: '/fr/profil', lang: 'fr', heading: 'Profil', context: 'Profil' },
-  { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', context: 'Systèmes' },
-  { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', context: 'Écrits' },
-  { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', context: 'Apprentissage' },
+  { path: '/en/profile', lang: 'en', heading: 'Profile', context: 'Profile', alternate: '/fr/profil' },
+  { path: '/en/systems', lang: 'en', heading: 'Systems', context: 'Systems', alternate: '/fr/systems' },
+  { path: '/en/writings', lang: 'en', heading: 'Writings', context: 'Writings', alternate: '/fr/ecrits' },
+  { path: '/en/learning', lang: 'en', heading: 'Learning', context: 'Learning', alternate: '/fr/apprentissage' },
+  { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', context: 'Work with us', alternate: '/fr/travailler-ensemble' },
+  { path: '/fr/profil', lang: 'fr', heading: 'Profil', context: 'Profil', alternate: '/en/profile' },
+  { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', context: 'Systèmes', alternate: '/en/systems' },
+  { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', context: 'Écrits', alternate: '/en/writings' },
+  { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', context: 'Apprentissage', alternate: '/en/learning' },
   {
     path: '/fr/travailler-ensemble',
     lang: 'fr',
     heading: 'Travailler ensemble',
     context: 'Travailler ensemble',
+    alternate: '/en/work-with-us',
   },
 ];
 
@@ -142,6 +143,17 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
       destination.context,
       `${destination.path} must expose its first-level shell context.`,
     );
+    const alternateLocale = destination.lang === 'en' ? 'fr' : 'en';
+    const languageLink = page.locator(
+      `.aks-experience-meta a[hreflang="${alternateLocale}"]`,
+    );
+    await languageLink.waitFor();
+    assert.equal(
+      await languageLink.getAttribute('href'),
+      destination.alternate,
+      `${destination.path} must switch to its equivalent localized destination.`,
+    );
+
 
     if (mobile) {
       assert.equal(
@@ -459,6 +471,23 @@ async function assertAxe(page) {
     await page.goto(`${origin}${page.systemPath}`);
     await page.getByRole('button', { name: 'Publish EN' }).click();
     await page.getByRole('button', { name: 'Unpublish EN' }).waitFor();
+
+    await page.goto(`${origin}/en/systems/sentinel`);
+    await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+    const unavailableLanguage = page.locator('.aks-language-unavailable');
+    await unavailableLanguage.waitFor();
+    assert.equal(
+      (await unavailableLanguage.innerText()).trim(),
+      'French unavailable',
+      'A missing published translation must be explicit.',
+    );
+    assert.equal(
+      await page.locator('.aks-experience-meta a[hreflang="fr"]').count(),
+      0,
+      'A missing translation must not fall back to a misleading French link.',
+    );
+
+    await page.goto(`${origin}${page.systemPath}`);
     await page.getByRole('button', { name: 'Publish FR' }).click();
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
 
@@ -474,6 +503,11 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+    assert.equal(
+      await page.locator('.aks-experience-meta a[hreflang="fr"]').getAttribute('href'),
+      '/fr/systems/sentinel',
+      'A published deep translation must switch to its equivalent localized System route.',
+    );
 
     const reducedDesktop = await browser.newContext({
       viewport: { width: 1280, height: 800 },
