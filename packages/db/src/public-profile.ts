@@ -3,6 +3,13 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
+export interface PublicProfileWorkPrinciple {
+  id: string;
+  position: number;
+  title: string;
+  detail: string | null;
+}
+
 export interface PublicProfile {
   id: string;
   locale: PlatformLocale;
@@ -12,6 +19,7 @@ export interface PublicProfile {
   professionalTitle: string | null;
   introduction: string | null;
   foundationalCopy: string | null;
+  workPrinciples: PublicProfileWorkPrinciple[];
   alternateLocale: PlatformLocale;
 }
 
@@ -50,6 +58,24 @@ export async function getPublicProfile(
     return null;
   }
 
+  const workPrinciples = await db
+    .selectFrom('profile_work_principles')
+    .innerJoin(
+      'profile_work_principle_localizations',
+      'profile_work_principle_localizations.principle_id',
+      'profile_work_principles.id',
+    )
+    .select([
+      'profile_work_principles.id',
+      'profile_work_principles.position',
+      'profile_work_principle_localizations.title',
+      'profile_work_principle_localizations.detail',
+    ])
+    .where('profile_work_principles.profile_id', '=', profile.id)
+    .where('profile_work_principle_localizations.locale', '=', locale)
+    .orderBy('profile_work_principles.position')
+    .execute();
+
   return {
     id: profile.id,
     locale,
@@ -59,6 +85,7 @@ export async function getPublicProfile(
     professionalTitle: profile.professional_title,
     introduction: profile.introduction,
     foundationalCopy: profile.foundational_copy,
+    workPrinciples,
     alternateLocale: locale === 'en' ? 'fr' : 'en',
   };
 }
