@@ -200,6 +200,112 @@ try {
     .where('profile_id', '=', profileId)
     .execute();
 
+
+  const firstSystemId = randomUUID();
+  const secondSystemId = randomUUID();
+  const presentation = {
+    version: 1 as const,
+    blocks: [{ type: 'paragraph' as const, text: 'Published proof.' }],
+  };
+
+  await db
+    .insertInto('systems')
+    .values([
+      { id: firstSystemId, lifecycle: 'active' },
+      { id: secondSystemId, lifecycle: 'active' },
+    ])
+    .execute();
+
+  await db
+    .insertInto('system_localizations')
+    .values([
+      {
+        system_id: firstSystemId,
+        locale: 'en',
+        slug: 'profile-proof-one',
+        title: 'Profile Proof One',
+        summary: 'English summary one.',
+        presentation_document: presentation,
+        editorial_state: 'published',
+        published_at: new Date(),
+      },
+      {
+        system_id: firstSystemId,
+        locale: 'fr',
+        slug: 'preuve-profil-un',
+        title: 'Preuve Profil Un',
+        summary: 'Résumé français un.',
+        presentation_document: presentation,
+        editorial_state: 'published',
+        published_at: new Date(),
+      },
+      {
+        system_id: secondSystemId,
+        locale: 'en',
+        slug: 'profile-proof-two',
+        title: 'Profile Proof Two',
+        summary: 'English summary two.',
+        presentation_document: presentation,
+        editorial_state: 'published',
+        published_at: new Date(),
+      },
+      {
+        system_id: secondSystemId,
+        locale: 'fr',
+        slug: 'preuve-profil-deux',
+        title: 'Preuve Profil Deux',
+        summary: 'Résumé français deux.',
+        presentation_document: presentation,
+        editorial_state: 'draft',
+        published_at: null,
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_systems')
+    .values([
+      {
+        profile_id: profileId,
+        system_id: secondSystemId,
+        position: 0,
+      },
+      {
+        profile_id: profileId,
+        system_id: firstSystemId,
+        position: 1,
+      },
+    ])
+    .execute();
+
+  const englishWithSystems = await getPublicProfile(db, 'en');
+  const frenchWithSystems = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithSystems);
+  assert.ok(frenchWithSystems);
+  assert.deepEqual(
+    englishWithSystems.representativeSystems.map(({ title }) => title),
+    ['Profile Proof Two', 'Profile Proof One'],
+  );
+  assert.deepEqual(
+    englishWithSystems.representativeSystems.map(({ summary }) => summary),
+    ['English summary two.', 'English summary one.'],
+  );
+  assert.deepEqual(
+    frenchWithSystems.representativeSystems.map(({ title }) => title),
+    ['Preuve Profil Un'],
+    'A representative System without a published French localization must not leak into French Profile.',
+  );
+  assert.equal(
+    frenchWithSystems.representativeSystems[0]?.slug,
+    'preuve-profil-un',
+  );
+
+  await db
+    .deleteFrom('profile_systems')
+    .where('profile_id', '=', profileId)
+    .execute();
+  await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
+
   await db
     .updateTable('profiles')
     .set({
@@ -256,7 +362,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

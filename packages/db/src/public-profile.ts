@@ -10,6 +10,14 @@ export interface PublicProfileWorkPrinciple {
   detail: string | null;
 }
 
+export interface PublicProfileSystem {
+  id: string;
+  position: number;
+  slug: string;
+  title: string;
+  summary: string;
+}
+
 export interface PublicProfile {
   id: string;
   locale: PlatformLocale;
@@ -20,6 +28,7 @@ export interface PublicProfile {
   introduction: string | null;
   foundationalCopy: string | null;
   workPrinciples: PublicProfileWorkPrinciple[];
+  representativeSystems: PublicProfileSystem[];
   alternateLocale: PlatformLocale;
 }
 
@@ -58,6 +67,33 @@ export async function getPublicProfile(
     return null;
   }
 
+  const representativeSystems = await db
+    .selectFrom('profile_systems')
+    .innerJoin('systems', 'systems.id', 'profile_systems.system_id')
+    .innerJoin(
+      'system_localizations',
+      'system_localizations.system_id',
+      'systems.id',
+    )
+    .select([
+      'systems.id',
+      'profile_systems.position',
+      'system_localizations.slug',
+      'system_localizations.title',
+      'system_localizations.summary',
+    ])
+    .where('profile_systems.profile_id', '=', profile.id)
+    .where('systems.lifecycle', '=', 'active')
+    .where('system_localizations.locale', '=', locale)
+    .where('system_localizations.editorial_state', '=', 'published')
+    .where('system_localizations.published_at', 'is not', null)
+    .where('system_localizations.presentation_document', 'is not', null)
+    .where('system_localizations.slug', 'is not', null)
+    .where('system_localizations.title', 'is not', null)
+    .where('system_localizations.summary', 'is not', null)
+    .orderBy('profile_systems.position')
+    .execute();
+
   const workPrinciples = await db
     .selectFrom('profile_work_principles')
     .innerJoin(
@@ -86,6 +122,13 @@ export async function getPublicProfile(
     introduction: profile.introduction,
     foundationalCopy: profile.foundational_copy,
     workPrinciples,
+    representativeSystems: representativeSystems.map((system) => ({
+      id: system.id,
+      position: system.position,
+      slug: system.slug!,
+      title: system.title!,
+      summary: system.summary!,
+    })),
     alternateLocale: locale === 'en' ? 'fr' : 'en',
   };
 }

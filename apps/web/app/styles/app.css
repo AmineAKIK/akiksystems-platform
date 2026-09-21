@@ -1008,3 +1008,31 @@
 .aks-profile-work-principle-list .aks-proof-stack {
   gap: var(--aks-space-1);
 }
+
+/* AKS-057: Profile points to real System objects instead of duplicating project copy. */
+.aks-profile-representative-systems {
+  display: grid;
+  gap: var(--aks-space-4);
+  padding-block-start: var(--aks-space-4);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-system-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-profile-system {
+  min-width: 0;
+  padding: var(--aks-space-4);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-raised);
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-system-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -207,6 +207,74 @@ async function assertProfileAdministration(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertRepresentativeSystemSelection(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', { level: 2, name: 'Representative Systems', exact: true })
+    .waitFor();
+
+  const sentinelCard = page.locator('.aks-admin-card').filter({
+    has: page.getByText('Sentinel', { exact: true }),
+  });
+  const checkbox = sentinelCard.locator('input[name="representativeSystem"]');
+  await checkbox.check();
+  await sentinelCard.locator('input[type="number"]').fill('0');
+  await page.getByRole('button', { name: 'Save representative Systems' }).click();
+  await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
+
+  await page.goto(`${origin}/en/profile`);
+  await page
+    .getByRole('heading', { level: 2, name: 'Representative Systems', exact: true })
+    .waitFor();
+  const englishCard = page.locator('.aks-profile-system').filter({
+    has: page.getByRole('heading', { level: 3, name: 'Sentinel', exact: true }),
+  });
+  await englishCard
+    .getByText(
+      'Operational visibility built from industrial context and inspectable evidence.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal(
+    await englishCard.getByRole('link', { name: 'Inspect System' }).getAttribute('href'),
+    '/en/systems/sentinel',
+  );
+
+  await page.goto(`${origin}/fr/profil`);
+  await page
+    .getByRole('heading', { level: 2, name: 'Systèmes représentatifs', exact: true })
+    .waitFor();
+  const frenchCard = page.locator('.aks-profile-system').filter({
+    has: page.getByRole('heading', { level: 3, name: 'Sentinel', exact: true }),
+  });
+  await frenchCard
+    .getByText(
+      'Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal(
+    await frenchCard
+      .getByRole('link', { name: 'Inspecter le système' })
+      .getAttribute('href'),
+    '/fr/systems/sentinel',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/en/profile', '/fr/profil']) {
+    await page.goto(`${origin}${path}`);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${path} representative Systems must not overflow on mobile.`,
+    );
+    assert.equal(await page.locator('.aks-profile-system').count(), 1);
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function saveLocalization(page, locale, values) {
   const heading = locale === 'en' ? 'English' : 'Français';
   const button = locale === 'en' ? 'Save EN only' : 'Save FR only';
@@ -1370,6 +1438,8 @@ async function assertAxe(page) {
     await page.getByRole('button', { name: 'Publish FR' }).click();
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
 
+    await assertRepresentativeSystemSelection(page);
+
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
     assert.equal(englishResponse.status(), 200);
@@ -1516,6 +1586,15 @@ async function assertAxe(page) {
     assert.match(
       await englishAfterFrenchEdit.text(),
       /Operational visibility built from industrial context/,
+    );
+    const frenchProfileAfterSystemEdit = await context.request.get(
+      `${origin}/fr/profil`,
+    );
+    assert.equal(frenchProfileAfterSystemEdit.status(), 200);
+    assert.match(
+      await frenchProfileAfterSystemEdit.text(),
+      /Visibilité opérationnelle, contexte industriel et preuves inspectables\./,
+      'Profile must reflect the current published System summary rather than a copied snapshot.',
     );
 
     const mobile = await browser.newContext({
