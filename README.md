@@ -97,6 +97,18 @@ Each localized System can carry a versioned structured presentation document wit
 - EN and FR presentation documents remain independent because they live with their respective System localizations.
 - Code-defined renderers remain responsible for visual composition; content JSON carries semantics and evidence only.
 
+### Minimal System presentation editor
+
+The private admin can edit each localized System presentation through controlled semantic blocks.
+
+- `/admin/systems/:systemId/presentation/:locale` edits EN or FR independently.
+- The editor supports only the v1 presentation vocabulary: headings, paragraphs, ordered/unordered lists, code, contextual images, and quotations.
+- Blocks can be added, removed, and reordered without exposing raw JSON or arbitrary HTML.
+- Image blocks select only assets already linked to the current System.
+- Every save is parsed and validated again on the server with the shared AKS-019 contract before PostgreSQL is updated.
+- Server validation rejects unknown block properties, page-builder semantics, invalid image asset IDs, and image references outside the current System context.
+- The editor deliberately does not include layout controls, columns, templates, or styling knobs; public rendering remains code-defined.
+
 ### System links
 
 Systems can expose multiple ordered external destinations without adding dedicated URL columns.
@@ -220,6 +232,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-019 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-020 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, and versioned localized presentation documents.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, and a server-validated localized presentation editor.
