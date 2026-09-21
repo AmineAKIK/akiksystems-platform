@@ -24,7 +24,7 @@ export function GlobalDestinationView({
           <Text size="sm" tone="muted">
             AkikSystems
           </Text>
-          <Heading as="h1" size="md">
+          <Heading level={1} size="md">
             {destination.label[locale]}
           </Heading>
           <Text size="lg" tone="muted">
