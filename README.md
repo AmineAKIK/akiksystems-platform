@@ -48,6 +48,15 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 - Primitives stay intentionally semantic and low-opinionated; page-specific composition remains in the web app.
 - The current bilingual walking-skeleton pages consume these primitives directly as proof of integration.
 
+## Experience Shell
+
+The public `/:locale` route boundary owns the AkikSystems Experience Shell.
+
+- AkikSystems identity, primary navigation, current route context, locale access, and the public experience outlet are rendered once around all localized public pages.
+- Direct deep links remain understandable because child route loader data can enrich the shell context, including the current published System title.
+- The shell provides a first-focus skip link and responsive desktop/mobile layout without turning domain renderers into navigation containers.
+- Public domain renderers stay responsible for their content; private admin preview remains outside the public shell.
+
 ## System domain model
 
 The core System model keeps shared identity separate from localized editorial content.
