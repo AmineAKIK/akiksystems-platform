@@ -155,6 +155,83 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
   }
 }
 
+async function assertHomePortal(page, locale, { mobile = false } = {}) {
+  const config =
+    locale === 'fr'
+      ? {
+          path: '/fr',
+          heading: 'AkikSystems',
+          label: 'Explorer AkikSystems',
+          hrefs: [
+            '/fr/profil',
+            '/fr/systems',
+            '/fr/ecrits',
+            '/fr/apprentissage',
+            '/fr/travailler-ensemble',
+          ],
+        }
+      : {
+          path: '/en',
+          heading: 'AkikSystems',
+          label: 'Explore AkikSystems',
+          hrefs: [
+            '/en/profile',
+            '/en/systems',
+            '/en/writings',
+            '/en/learning',
+            '/en/work-with-us',
+          ],
+        };
+
+  const response = await page.goto(`${origin}${config.path}`);
+  assert.equal(response?.status(), 200, `${config.path} must return HTTP 200.`);
+  await page.getByRole('heading', { level: 1, name: config.heading, exact: true }).waitFor();
+
+  const portal = page.locator('.aks-home-portal');
+  await portal.waitFor();
+  const navigation = page.getByRole('navigation', { name: config.label });
+  await navigation.waitFor();
+
+  for (const href of config.hrefs) {
+    const door = navigation.locator(`a[href="${href}"]`);
+    await door.waitFor();
+    assert.equal(await door.isVisible(), true, `${href} must be visible on Home.`);
+  }
+
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+    true,
+    `${config.path} must not overflow horizontally.`,
+  );
+
+  if (!mobile) {
+    const layout = await page.evaluate(() => {
+      const portalElement = document.querySelector('.aks-home-portal');
+      const orbitElement = document.querySelector('.aks-home-orbit');
+      if (!(portalElement instanceof HTMLElement) || !(orbitElement instanceof HTMLElement)) {
+        return null;
+      }
+      return {
+        portalColumns: getComputedStyle(portalElement).gridTemplateColumns,
+        orbitColumns: getComputedStyle(orbitElement).gridTemplateColumns,
+      };
+    });
+    assert.ok(layout, 'Desktop Home layout must be measurable.');
+    assert.match(
+      layout.portalColumns,
+      /\S+\s+\S+/,
+      'Desktop Home must use a two-column identity/orbit composition.',
+    );
+    assert.match(
+      layout.orbitColumns,
+      /\S+\s+\S+\s+\S+/,
+      'Desktop Home orbital layer must expose three spatial columns.',
+    );
+  }
+}
+
 async function assertAxe(page) {
   await page.addScriptTag({ content: axe.source });
   const result = await page.evaluate(async () => globalThis.axe.run(document));
@@ -182,6 +259,8 @@ async function assertAxe(page) {
     const page = await context.newPage();
 
     await assertGlobalDestinations(page);
+    await assertHomePortal(page, 'en');
+    await assertHomePortal(page, 'fr');
 
     await page.goto(`${origin}/admin/login`);
     await page.getByLabel('Email').fill(adminEmail);
@@ -382,6 +461,8 @@ async function assertAxe(page) {
     try {
       const mobilePage = await mobile.newPage();
       await assertGlobalDestinations(mobilePage, { mobile: true });
+      await assertHomePortal(mobilePage, 'en', { mobile: true });
+      await assertHomePortal(mobilePage, 'fr', { mobile: true });
       await mobilePage.goto(`${origin}/en/systems/sentinel`);
       assert.equal(
         await mobilePage.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
