@@ -27,7 +27,7 @@ export default [
     route('profile', 'routes/profile.tsx'),
     route('profile/portrait', 'routes/profile-portrait.ts'),
     route('profil', 'routes/profile-fr.tsx'),
-    route('profil/portrait', 'routes/profile-portrait.ts'),
+    route('profil/portrait', 'routes/profile-portrait-fr.ts'),
     route('systems', 'routes/systems.tsx'),
     route('writings', 'routes/writings.tsx'),
     route('ecrits', 'routes/writings-fr.tsx'),
