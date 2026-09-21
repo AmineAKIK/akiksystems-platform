@@ -76,3 +76,43 @@ export interface SystemExperience {
   relationKind: SystemExperienceRelationKind;
   createdAt: Date;
 }
+
+export type AssetId = string;
+
+export interface Asset {
+  id: AssetId;
+  storageKey: string;
+  originalFilename: string;
+  mimeType: string;
+  byteSize: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AssetLocalization {
+  assetId: AssetId;
+  locale: PlatformLocale;
+  altText: string | null;
+  caption: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SystemAsset {
+  systemId: SystemId;
+  assetId: AssetId;
+  position: number;
+  createdAt: Date;
+}
+
+export const assetUploadMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+  'application/pdf',
+] as const;
+
+export type AssetUploadMimeType = (typeof assetUploadMimeTypes)[number];
+
+export const assetUploadMaxBytes = 10 * 1024 * 1024;

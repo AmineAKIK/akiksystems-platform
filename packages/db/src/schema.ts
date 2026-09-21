@@ -93,6 +93,32 @@ export interface SystemExperiencesTable {
   created_at: TimestampColumn;
 }
 
+export interface AssetsTable {
+  id: string;
+  storage_key: string;
+  original_filename: string;
+  mime_type: string;
+  byte_size: number;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface AssetLocalizationsTable {
+  asset_id: string;
+  locale: PlatformLocale;
+  alt_text: string | null;
+  caption: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface SystemAssetsTable {
+  system_id: string;
+  asset_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
 export type SystemRow = Selectable<SystemsTable>;
 export type NewSystemRow = Insertable<SystemsTable>;
 export type SystemUpdate = Updateable<SystemsTable>;
@@ -124,6 +150,18 @@ export type SystemExperienceRow = Selectable<SystemExperiencesTable>;
 export type NewSystemExperienceRow = Insertable<SystemExperiencesTable>;
 export type SystemExperienceUpdate = Updateable<SystemExperiencesTable>;
 
+export type AssetRow = Selectable<AssetsTable>;
+export type NewAssetRow = Insertable<AssetsTable>;
+export type AssetUpdate = Updateable<AssetsTable>;
+
+export type AssetLocalizationRow = Selectable<AssetLocalizationsTable>;
+export type NewAssetLocalizationRow = Insertable<AssetLocalizationsTable>;
+export type AssetLocalizationUpdate = Updateable<AssetLocalizationsTable>;
+
+export type SystemAssetRow = Selectable<SystemAssetsTable>;
+export type NewSystemAssetRow = Insertable<SystemAssetsTable>;
+export type SystemAssetUpdate = Updateable<SystemAssetsTable>;
+
 export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
@@ -133,4 +171,7 @@ export interface Database {
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;
+  assets: AssetsTable;
+  asset_localizations: AssetLocalizationsTable;
+  system_assets: SystemAssetsTable;
 }
