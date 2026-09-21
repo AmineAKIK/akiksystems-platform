@@ -44,6 +44,23 @@ const authEnvironmentSchema = z.object({
   ADMIN_EMAIL: adminEmailSchema,
 });
 
+const assetStorageSchema = z.object({
+  BUCKET: z.string().trim().min(1, 'BUCKET must not be empty.'),
+  REGION: z.string().trim().min(1, 'REGION must not be empty.'),
+  ENDPOINT: z
+    .string()
+    .trim()
+    .url('ENDPOINT must be a valid URL.')
+    .refine(
+      (value) => value.startsWith('https://'),
+      'ENDPOINT must use the https:// scheme.',
+    ),
+  ACCESS_KEY_ID: z.string().trim().min(1, 'ACCESS_KEY_ID must not be empty.'),
+  SECRET_ACCESS_KEY: z
+    .string()
+    .min(1, 'SECRET_ACCESS_KEY must not be empty.'),
+});
+
 const webServerSchema = z.object({
   NODE_ENV: nodeEnvironmentSchema,
   PORT: portSchema,
@@ -105,6 +122,10 @@ export function parseAuthEnv(source = process.env) {
 
 export function parseAdminBootstrapEnv(source = process.env) {
   return parse(adminBootstrapSchema, source, 'administrator bootstrap');
+}
+
+export function parseAssetStorageEnv(source = process.env) {
+  return parse(assetStorageSchema, source, 'asset storage');
 }
 
 export function toPublicWebEnv(env) {
