@@ -5,6 +5,7 @@ import {
   destinationById,
   destinationFromPathname,
   destinationHref,
+  globalDestinations,
 } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
@@ -62,12 +63,15 @@ export function ExperienceShell({
               >
                 {dictionary.shell.homeLabel}
               </Link>
-              <Link
-                aria-current={destinationId === 'profile' ? 'page' : undefined}
-                href={destinationHref('profile', locale)}
-              >
-                {dictionary.shell.profileLabel}
-              </Link>
+              {globalDestinations.map((destination) => (
+                <Link
+                  aria-current={destinationId === destination.id ? 'page' : undefined}
+                  href={destinationHref(destination.id, locale)}
+                  key={destination.id}
+                >
+                  {destination.label[locale]}
+                </Link>
+              ))}
             </nav>
 
             <div className="aks-experience-meta">
