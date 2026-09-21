@@ -28,10 +28,10 @@ function localContext(matches: ReturnType<typeof useMatches>) {
 
   return {
     title: null,
-    alternateHref: null,
+    alternateHref: undefined,
   } satisfies {
     title: string | null;
-    alternateHref: string | null;
+    alternateHref?: string | null;
   };
 }
 
@@ -43,7 +43,7 @@ export default function LocaleLayout() {
 
   return (
     <ExperienceShell
-      alternateHref={context.alternateHref ?? null}
+      alternateHref={context.alternateHref}
       currentTitle={context.title}
       locale={locale as Locale}
       pathname={location.pathname}
