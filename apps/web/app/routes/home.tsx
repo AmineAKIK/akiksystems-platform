@@ -56,6 +56,7 @@ export function HomePortal({ locale }: HomePortalProps) {
                 className="aks-home-door"
                 data-destination={destination.id}
                 key={destination.id}
+                prefetch="intent"
                 to={destinationHref(destination.id, locale)}
                 viewTransition
               >
