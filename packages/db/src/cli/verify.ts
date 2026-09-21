@@ -32,6 +32,18 @@ try {
     .limit(1)
     .execute();
 
+  await db
+    .selectFrom('profiles')
+    .select(['id', 'singleton_key'])
+    .limit(1)
+    .execute();
+
+  await db
+    .selectFrom('profile_localizations')
+    .select(['profile_id', 'locale'])
+    .limit(1)
+    .execute();
+
   process.stdout.write('Typed Kysely database verification passed.\n');
 } finally {
   await db.destroy();
