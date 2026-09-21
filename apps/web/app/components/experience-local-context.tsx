@@ -1,4 +1,4 @@
-import { Link } from '@akiksystems/ui';
+import { Link } from 'react-router';
 
 import {
   destinationById,
@@ -39,7 +39,11 @@ export function ExperienceLocalContext({
         {hasChildContext && destination !== null ? (
           <>
             <li>
-              <Link href={destinationHref(destination.id, locale)}>
+              <Link
+                className="aks-link"
+                to={destinationHref(destination.id, locale)}
+                viewTransition
+              >
                 {sectionLabel}
               </Link>
             </li>
