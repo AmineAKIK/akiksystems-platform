@@ -1,5 +1,6 @@
 import { createDatabase } from '@akiksystems/db';
 import { Link, Text } from '@akiksystems/ui';
+import { useLoaderData } from 'react-router';
 
 import { SystemDetailView } from '../components/system-detail-view';
 import { requireAdminSession } from '../lib/admin.server';
