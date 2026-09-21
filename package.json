@@ -19,6 +19,7 @@
     "db:migrate:down": "pnpm --filter @akiksystems/db migrate:down",
     "db:verify": "pnpm --filter @akiksystems/db db:verify",
     "db:verify-system-domain": "pnpm --filter @akiksystems/db db:verify-system-domain",
+    "db:verify-system-experiences": "pnpm --filter @akiksystems/db db:verify-system-experiences",
     "db:verify-system-technologies": "pnpm --filter @akiksystems/db db:verify-system-technologies",
     "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate",
     "dev:web": "pnpm --filter @akiksystems/web dev",
