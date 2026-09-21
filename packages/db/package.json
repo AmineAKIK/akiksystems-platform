@@ -15,12 +15,14 @@
     "build": "tsc -b",
     "db:check": "tsx src/cli/check.ts",
     "db:verify": "tsx src/cli/verify.ts",
+    "db:verify-system-domain": "tsx src/cli/verify-system-domain.ts",
     "migrate:down": "tsx src/cli/migrate.ts down",
     "migrate:latest": "tsx src/cli/migrate.ts latest",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
+    "@akiksystems/core": "workspace:*",
     "kysely": "0.29.6",
     "pg": "8.23.0"
   },

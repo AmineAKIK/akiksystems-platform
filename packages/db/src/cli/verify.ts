@@ -20,6 +20,18 @@ try {
     .limit(1)
     .execute();
 
+  await db
+    .selectFrom('systems')
+    .select(['id', 'lifecycle', 'created_at'])
+    .limit(1)
+    .execute();
+
+  await db
+    .selectFrom('system_localizations')
+    .select(['system_id', 'locale', 'editorial_state'])
+    .limit(1)
+    .execute();
+
   process.stdout.write('Typed Kysely database verification passed.\n');
 } finally {
   await db.destroy();
