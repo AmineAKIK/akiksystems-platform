@@ -20,7 +20,7 @@ export default defineRailway((ctx) => {
   const web = service('web', {
     source,
     build:
-      'pnpm --filter @akiksystems/db build && pnpm --filter @akiksystems/web build',
+      'pnpm --filter @akiksystems/core build && pnpm --filter @akiksystems/db build && pnpm --filter @akiksystems/web build',
     start: 'pnpm --filter @akiksystems/web start',
     preDeploy: 'pnpm deploy:migrate',
     replicas: {
