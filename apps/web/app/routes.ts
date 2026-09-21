@@ -5,6 +5,7 @@ export default [
   route('admin/login', 'routes/admin-login.tsx'),
   route('admin/two-factor', 'routes/admin-two-factor.tsx'),
   route('admin/security', 'routes/admin-security.tsx'),
+  route('admin/profile', 'routes/admin-profile.tsx'),
   route('admin/systems/:systemId', 'routes/admin-system.tsx'),
   route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
   route(
@@ -24,7 +25,9 @@ export default [
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
     route('profile', 'routes/profile.tsx'),
+    route('profile/portrait', 'routes/profile-portrait.ts'),
     route('profil', 'routes/profile-fr.tsx'),
+    route('profil/portrait', 'routes/profile-portrait.ts'),
     route('systems', 'routes/systems.tsx'),
     route('writings', 'routes/writings.tsx'),
     route('ecrits', 'routes/writings-fr.tsx'),
