@@ -1,6 +1,7 @@
 export { getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
+  PublicProfileExperience,
   PublicProfileSystem,
   PublicProfileWorkPrinciple,
 } from './public-profile.js';
