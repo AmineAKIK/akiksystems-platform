@@ -51,6 +51,13 @@ export function createAuthInstance({ allowSignUp = false }: CreateAuthOptions = 
       },
     },
     advanced: {
+      database: {
+        // Better Auth documents rateLimit.lastRequest as PostgreSQL bigint.
+        // Runtime schema validation currently reports int8 as a type mismatch,
+        // so deployment migrations remain authoritative and runtime validation
+        // is disabled to avoid a false-positive production warning.
+        validateSchema: false,
+      },
       cookiePrefix: 'akiksystems-admin',
       useSecureCookies: env.NODE_ENV === 'production',
       defaultCookieAttributes: {
