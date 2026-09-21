@@ -15,7 +15,8 @@ export interface UiDictionary {
     eyebrow: string;
     title: string;
     description: string;
-    aboutLink: string;
+    destinationsLabel: string;
+    coreLabel: string;
   };
   about: {
     eyebrow: string;
@@ -36,10 +37,12 @@ const dictionaries = {
       currentContextLabel: 'Current context',
     },
     home: {
-      eyebrow: 'AkikSystems',
-      title: 'Platform walking skeleton',
-      description: 'This page is rendered on the server and hydrated for client navigation.',
-      aboutLink: 'Open the client-navigation proof route',
+      eyebrow: 'Independent software systems',
+      title: 'Engineering made inspectable.',
+      description:
+        'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
+      destinationsLabel: 'Explore AkikSystems',
+      coreLabel: 'Five doors / one system',
     },
     about: {
       eyebrow: 'Runtime proof',
@@ -58,10 +61,12 @@ const dictionaries = {
       currentContextLabel: 'Contexte actuel',
     },
     home: {
-      eyebrow: 'AkikSystems',
-      title: 'Squelette fonctionnel de la plateforme',
-      description: 'Cette page est rendue côté serveur puis hydratée pour la navigation côté client.',
-      aboutLink: 'Ouvrir la route de preuve de navigation',
+      eyebrow: 'Systèmes logiciels indépendants',
+      title: 'L’ingénierie rendue inspectable.',
+      description:
+        'Explorez les systèmes, les preuves, l’apprentissage, les écrits et les voies de collaboration qui composent AkikSystems.',
+      destinationsLabel: 'Explorer AkikSystems',
+      coreLabel: 'Cinq portes / un système',
     },
     about: {
       eyebrow: 'Preuve du runtime',
