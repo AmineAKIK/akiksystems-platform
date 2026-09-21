@@ -21,13 +21,13 @@ describe('global destinations', () => {
   it('builds localized hrefs from the code-defined registry', () => {
     expect(destinationHref('profile', 'en')).toBe('/en/profile');
     expect(destinationHref('profile', 'fr')).toBe('/fr/profil');
-    expect(destinationHref('systems', 'fr')).toBe('/fr/systemes');
+    expect(destinationHref('systems', 'fr')).toBe('/fr/systems');
     expect(destinationHref('work-with-us', 'fr')).toBe('/fr/travailler-ensemble');
   });
 
   it('resolves deep routes back to their first-level destination', () => {
     expect(destinationFromPathname('/en/systems/sentinel')).toBe('systems');
-    expect(destinationFromPathname('/fr/systemes/sentinel')).toBe('systems');
+    expect(destinationFromPathname('/fr/systems/sentinel')).toBe('systems');
     expect(destinationFromPathname('/fr/ecrits/architecture')).toBe('writings');
     expect(destinationFromPathname('/en')).toBeNull();
   });
