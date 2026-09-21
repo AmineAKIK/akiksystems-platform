@@ -46,8 +46,34 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .on('admin_audit_events')
     .columns(['actor_user_id', 'created_at'])
     .execute();
+
+  await sql`
+    create function prevent_admin_audit_event_mutation()
+    returns trigger
+    language plpgsql
+    as $
+    begin
+      raise exception 'admin audit events are append-only';
+    end;
+    $
+  `.execute(db);
+
+  await sql`
+    create trigger admin_audit_events_no_update
+    before update on admin_audit_events
+    for each row execute function prevent_admin_audit_event_mutation()
+  `.execute(db);
+
+  await sql`
+    create trigger admin_audit_events_no_delete
+    before delete on admin_audit_events
+    for each row execute function prevent_admin_audit_event_mutation()
+  `.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('admin_audit_events').execute();
+  await sql`drop function if exists prevent_admin_audit_event_mutation()`.execute(
+    db,
+  );
 }
