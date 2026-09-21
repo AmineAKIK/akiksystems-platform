@@ -26,7 +26,6 @@ export default [
     route('profile', 'routes/profile.tsx'),
     route('profil', 'routes/profile.tsx'),
     route('systems', 'routes/systems.tsx'),
-    route('systemes', 'routes/systems.tsx'),
     route('writings', 'routes/writings.tsx'),
     route('ecrits', 'routes/writings.tsx'),
     route('learning', 'routes/learning.tsx'),
