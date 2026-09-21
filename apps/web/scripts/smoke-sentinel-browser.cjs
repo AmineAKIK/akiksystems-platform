@@ -229,6 +229,47 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
       /\S+\s+\S+\s+\S+/,
       'Desktop Home orbital layer must expose three spatial columns.',
     );
+  } else {
+    const mobileLayout = await page.evaluate((hrefs) => {
+      const orbitElement = document.querySelector('.aks-home-orbit');
+      const coreElement = document.querySelector('.aks-home-core');
+      if (!(orbitElement instanceof HTMLElement) || !(coreElement instanceof HTMLElement)) {
+        return null;
+      }
+
+      const doors = hrefs
+        .map((href) => orbitElement.querySelector(`a[href="${href}"]`))
+        .filter((element) => element instanceof HTMLElement);
+
+      return {
+        columns: getComputedStyle(orbitElement).gridTemplateColumns,
+        gap: getComputedStyle(orbitElement).gap,
+        coreRadius: getComputedStyle(coreElement).borderRadius,
+        doorHeights: doors.map((door) => door.getBoundingClientRect().height),
+        doorTops: doors.map((door) => door.getBoundingClientRect().top),
+      };
+    }, config.hrefs);
+
+    assert.ok(mobileLayout, 'Mobile Home layout must be measurable.');
+    assert.equal(
+      mobileLayout.columns.split(' ').filter(Boolean).length,
+      1,
+      'Mobile Home must use one dedicated reading column.',
+    );
+    assert.equal(mobileLayout.gap, '0px', 'Mobile Home must use a continuous route rather than an orbital gap.');
+    assert.notEqual(
+      mobileLayout.coreRadius,
+      '50%',
+      'Mobile Home core must not retain the desktop orbital circle.',
+    );
+    assert.ok(
+      mobileLayout.doorHeights.every((height) => height >= 44),
+      'Every mobile Home door must provide at least a 44px touch target.',
+    );
+    assert.ok(
+      mobileLayout.doorTops.every((top, index, values) => index === 0 || top > values[index - 1]),
+      'Mobile Home doors must form a clear top-to-bottom sequence.',
+    );
   }
 }
 
