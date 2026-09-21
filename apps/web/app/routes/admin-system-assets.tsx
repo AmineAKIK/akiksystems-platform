@@ -1,5 +1,5 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
+import { writeAdminAuditEvent } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import {
   Form,
@@ -8,7 +8,7 @@ import {
 } from 'react-router';
 
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 import {
   assetExtensionForMimeType,
   deleteAssetObject,
@@ -41,9 +41,8 @@ function optionalText(value: FormDataEntryValue | null): string | null {
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .select(['id', 'lifecycle'])
@@ -91,9 +90,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       system,
       assets,
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -101,9 +97,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   const systemId = requiredSystemId(params.systemId);
   const form = await request.formData();
   const intent = form.get('_intent');
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     if (intent === 'upload') {
       const file = form.get('file');
 
@@ -297,9 +292,6 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     return { ok: false, message: 'Unsupported asset operation.' };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export default function AdminSystemAssets() {
