@@ -1,0 +1,61 @@
+import { Link } from '@akiksystems/ui';
+
+import {
+  destinationById,
+  destinationHref,
+  type GlobalDestinationId,
+} from '../i18n/global-destinations';
+import { dictionaryFor, type Locale } from '../i18n/locales';
+
+export interface ExperienceLocalContextProps {
+  destinationId: GlobalDestinationId | null;
+  locale: Locale;
+  currentTitle?: string | null;
+}
+
+export function ExperienceLocalContext({
+  destinationId,
+  locale,
+  currentTitle = null,
+}: ExperienceLocalContextProps) {
+  const dictionary = dictionaryFor(locale);
+  const destination =
+    destinationId === null ? null : destinationById(destinationId);
+  const sectionLabel =
+    destination === null
+      ? dictionary.shell.homeLabel
+      : destination.label[locale];
+  const hasChildContext =
+    currentTitle !== null &&
+    currentTitle.trim().length > 0 &&
+    currentTitle !== sectionLabel;
+
+  return (
+    <nav
+      aria-label={dictionary.shell.currentContextLabel}
+      className="aks-experience-context"
+    >
+      <ol className="aks-experience-context-list">
+        {hasChildContext && destination !== null ? (
+          <>
+            <li>
+              <Link href={destinationHref(destination.id, locale)}>
+                {sectionLabel}
+              </Link>
+            </li>
+            <li aria-hidden="true" className="aks-experience-context-separator">
+              /
+            </li>
+            <li>
+              <span aria-current="page">{currentTitle}</span>
+            </li>
+          </>
+        ) : (
+          <li>
+            <span aria-current="page">{sectionLabel}</span>
+          </li>
+        )}
+      </ol>
+    </nav>
+  );
+}
