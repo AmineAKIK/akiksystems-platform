@@ -958,7 +958,7 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
       return {
         columns: getComputedStyle(orbitElement).gridTemplateColumns,
         gap: getComputedStyle(orbitElement).gap,
-        coreRadius: getComputedStyle(coreElement).borderRadius,
+        coreDisplay: getComputedStyle(coreElement).display,
         doorHeights: doors.map((door) => door.getBoundingClientRect().height),
         doorTops: doors.map((door) => door.getBoundingClientRect().top),
       };
@@ -971,10 +971,10 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
       'Mobile Home must use one dedicated reading column.',
     );
     assert.equal(mobileLayout.gap, '0px', 'Mobile Home must use a continuous route rather than an orbital gap.');
-    assert.notEqual(
-      mobileLayout.coreRadius,
-      '50%',
-      'Mobile Home core must not retain the desktop orbital circle.',
+    assert.equal(
+      mobileLayout.coreDisplay,
+      'none',
+      'Mobile Home must remove the redundant desktop orbital core from its reading sequence.',
     );
     assert.ok(
       mobileLayout.doorHeights.every((height) => height >= 44),
