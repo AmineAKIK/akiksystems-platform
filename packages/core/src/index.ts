@@ -26,6 +26,7 @@ export interface SystemLocalization {
   slug: string | null;
   title: string | null;
   summary: string | null;
+  presentationDocument: PresentationDocument | null;
   editorialState: SystemEditorialState;
   publishedAt: Date | null;
   createdAt: Date;
