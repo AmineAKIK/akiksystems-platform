@@ -94,6 +94,28 @@ async function assertProfileAdministration(page) {
   await page.getByRole('button', { name: 'Save professional identity' }).click();
   await page.getByText('Professional identity updated.').waitFor();
 
+  const workPrinciples = page.locator('textarea[name="workPrinciples"]');
+  await workPrinciples.fill(
+    'Expose CSSOV | Internal methodology name. || Exposer CSSOV | Nom de méthodologie interne.',
+  );
+  await page.getByRole('button', { name: 'Save How I work' }).click();
+  await page
+    .getByText(
+      'Public working principles must describe the practice directly without naming CSSOV.',
+      { exact: true },
+    )
+    .waitFor();
+
+  await workPrinciples.fill(
+    [
+      'Make evidence inspectable | Prefer concrete proof over opaque claims. || Rendre les preuves inspectables | Privilégier des preuves concrètes aux affirmations opaques.',
+      'Reduce before adding | Remove accidental complexity before introducing another layer. || Réduire avant d’ajouter | Retirer la complexité accidentelle avant d’ajouter une couche.',
+      'Design for direct entry | Every meaningful route should stand on its own. || Concevoir pour l’accès direct | Chaque route utile doit pouvoir être comprise seule.',
+    ].join('\n'),
+  );
+  await page.getByRole('button', { name: 'Save How I work' }).click();
+  await page.getByText('How I work updated.', { exact: true }).waitFor();
+
   await page.goto(`${origin}/en/profile`);
   await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
   await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
@@ -107,6 +129,22 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
+  await page
+    .getByRole('heading', { level: 2, name: 'How I work', exact: true })
+    .waitFor();
+  const englishPrinciples = await page
+    .locator('.aks-profile-work-principle-list h3')
+    .allInnerTexts();
+  assert.deepEqual(englishPrinciples, [
+    'Make evidence inspectable',
+    'Reduce before adding',
+    'Design for direct entry',
+  ]);
+  assert.equal(
+    /CSSOV/i.test(await page.locator('body').innerText()),
+    false,
+    'The public English Profile must not expose the internal CSSOV name.',
+  );
   assert.equal(
     await page.locator('.aks-experience-meta a[hreflang="fr"]').getAttribute('href'),
     '/fr/profil',
@@ -125,6 +163,22 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
+  await page
+    .getByRole('heading', { level: 2, name: 'Ma manière de travailler', exact: true })
+    .waitFor();
+  const frenchPrinciples = await page
+    .locator('.aks-profile-work-principle-list h3')
+    .allInnerTexts();
+  assert.deepEqual(frenchPrinciples, [
+    'Rendre les preuves inspectables',
+    'Réduire avant d’ajouter',
+    'Concevoir pour l’accès direct',
+  ]);
+  assert.equal(
+    /CSSOV/i.test(await page.locator('body').innerText()),
+    false,
+    'The public French Profile must not expose the internal CSSOV name.',
+  );
 
   await page.setViewportSize({ width: 390, height: 844 });
   for (const target of [
@@ -143,6 +197,11 @@ async function assertProfileAdministration(page) {
       `${target.path} administered Profile must not overflow on mobile.`,
     );
     await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+    assert.equal(
+      await page.locator('.aks-profile-work-principle-list li').count(),
+      3,
+      `${target.path} must preserve the three administered working principles on mobile.`,
+    );
   }
 
   await page.setViewportSize({ width: 1280, height: 800 });

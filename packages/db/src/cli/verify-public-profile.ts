@@ -127,6 +127,79 @@ try {
     'Portrait professionnel',
   );
 
+
+  const firstPrincipleId = randomUUID();
+  const secondPrincipleId = randomUUID();
+
+  await db
+    .insertInto('profile_work_principles')
+    .values([
+      {
+        id: firstPrincipleId,
+        profile_id: profileId,
+        position: 0,
+      },
+      {
+        id: secondPrincipleId,
+        profile_id: profileId,
+        position: 1,
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_work_principle_localizations')
+    .values([
+      {
+        principle_id: firstPrincipleId,
+        locale: 'en',
+        title: 'Make evidence inspectable',
+        detail: 'Prefer concrete proof over opaque claims.',
+      },
+      {
+        principle_id: firstPrincipleId,
+        locale: 'fr',
+        title: 'Rendre les preuves inspectables',
+        detail: 'Privilégier des preuves concrètes aux affirmations opaques.',
+      },
+      {
+        principle_id: secondPrincipleId,
+        locale: 'en',
+        title: 'Reduce before adding',
+        detail: null,
+      },
+      {
+        principle_id: secondPrincipleId,
+        locale: 'fr',
+        title: 'Réduire avant d’ajouter',
+        detail: null,
+      },
+    ])
+    .execute();
+
+  const englishWithPrinciples = await getPublicProfile(db, 'en');
+  const frenchWithPrinciples = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithPrinciples);
+  assert.ok(frenchWithPrinciples);
+  assert.deepEqual(
+    englishWithPrinciples.workPrinciples.map(({ title }) => title),
+    ['Make evidence inspectable', 'Reduce before adding'],
+  );
+  assert.deepEqual(
+    frenchWithPrinciples.workPrinciples.map(({ title }) => title),
+    ['Rendre les preuves inspectables', 'Réduire avant d’ajouter'],
+  );
+  assert.equal(
+    englishWithPrinciples.workPrinciples[0]?.detail,
+    'Prefer concrete proof over opaque claims.',
+  );
+  assert.equal(frenchWithPrinciples.workPrinciples[1]?.detail, null);
+
+  await db
+    .deleteFrom('profile_work_principles')
+    .where('profile_id', '=', profileId)
+    .execute();
+
   await db
     .updateTable('profiles')
     .set({
@@ -183,7 +256,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

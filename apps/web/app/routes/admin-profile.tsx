@@ -31,6 +31,59 @@ function optionalText(form: FormData, name: string): string | null {
   return value === '' ? null : value;
 }
 
+interface ParsedWorkPrinciple {
+  enTitle: string;
+  enDetail: string | null;
+  frTitle: string;
+  frDetail: string | null;
+}
+
+function parseWorkPrinciples(value: string): ParsedWorkPrinciple[] {
+  const lines = value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length > 8) {
+    throw new Error('How I work is limited to eight concise principles.');
+  }
+
+  return lines.map((line, index) => {
+    const parts = line.split('||');
+    if (parts.length !== 2) {
+      throw new Error(
+        `Principle line ${index + 1} must use "EN title | EN detail || FR title | FR detail".`,
+      );
+    }
+
+    const [enPart, frPart] = parts;
+    const [enTitleRaw, ...enDetailParts] = (enPart ?? '').split('|');
+    const [frTitleRaw, ...frDetailParts] = (frPart ?? '').split('|');
+    const enTitle = (enTitleRaw ?? '').trim();
+    const frTitle = (frTitleRaw ?? '').trim();
+    const enDetail = enDetailParts.join('|').trim() || null;
+    const frDetail = frDetailParts.join('|').trim() || null;
+
+    if (enTitle === '' || frTitle === '') {
+      throw new Error(
+        `Principle line ${index + 1} requires both English and French titles.`,
+      );
+    }
+
+    const publicCopy = [enTitle, enDetail, frTitle, frDetail]
+      .filter((part): part is string => part !== null)
+      .join(' ');
+
+    if (/\bcssov\b/i.test(publicCopy)) {
+      throw new Error(
+        'Public working principles must describe the practice directly without naming CSSOV.',
+      );
+    }
+
+    return { enTitle, enDetail, frTitle, frDetail };
+  });
+}
+
 async function publicProfileId(): Promise<string> {
   const profile = await appDb
     .selectFrom('profiles')
@@ -113,11 +166,40 @@ export async function loader({ request }: Route.LoaderArgs) {
     localizations.map((localization) => [localization.locale, localization]),
   );
 
+  const principles = await appDb
+    .selectFrom('profile_work_principles')
+    .leftJoin(
+      'profile_work_principle_localizations as principle_en',
+      (join) =>
+        join
+          .onRef('principle_en.principle_id', '=', 'profile_work_principles.id')
+          .on('principle_en.locale', '=', 'en'),
+    )
+    .leftJoin(
+      'profile_work_principle_localizations as principle_fr',
+      (join) =>
+        join
+          .onRef('principle_fr.principle_id', '=', 'profile_work_principles.id')
+          .on('principle_fr.locale', '=', 'fr'),
+    )
+    .select([
+      'profile_work_principles.id',
+      'profile_work_principles.position',
+      'principle_en.title as title_en',
+      'principle_en.detail as detail_en',
+      'principle_fr.title as title_fr',
+      'principle_fr.detail as detail_fr',
+    ])
+    .where('profile_work_principles.profile_id', '=', profileId)
+    .orderBy('profile_work_principles.position')
+    .execute();
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
     fr: byLocale.get('fr') ?? null,
     portrait: portrait ?? null,
+    principles,
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
@@ -187,6 +269,75 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'Professional identity updated.' };
+  }
+
+  if (intent === 'work-principles') {
+    let principles: ParsedWorkPrinciple[];
+
+    try {
+      principles = parseWorkPrinciples(textField(form, 'workPrinciples'));
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Working principles are invalid.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('profile_work_principles')
+        .where('profile_id', '=', profileId)
+        .execute();
+
+      for (const [position, principle] of principles.entries()) {
+        const principleId = randomUUID();
+
+        await transaction
+          .insertInto('profile_work_principles')
+          .values({
+            id: principleId,
+            profile_id: profileId,
+            position,
+          })
+          .execute();
+
+        await transaction
+          .insertInto('profile_work_principle_localizations')
+          .values([
+            {
+              principle_id: principleId,
+              locale: 'en',
+              title: principle.enTitle,
+              detail: principle.enDetail,
+            },
+            {
+              principle_id: principleId,
+              locale: 'fr',
+              title: principle.frTitle,
+              detail: principle.frDetail,
+            },
+          ])
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.work_principles_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          principleCount: principles.length,
+          locales: ['en', 'fr'],
+          ordering: 'explicit',
+        },
+      });
+    });
+
+    return { ok: true, message: 'How I work updated.' };
   }
 
   if (intent === 'portrait') {
@@ -478,6 +629,31 @@ export default function AdminProfile() {
                 </fieldset>
               </div>
               <Button type="submit">Save professional identity</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="work-principles" />
+              <Heading level={2} size="sm">
+                How I work
+              </Heading>
+              <Text size="sm" tone="muted">
+                Keep this public section concise and practice-oriented. Do not
+                expose internal methodology names. One ordered principle per
+                line: EN title | EN detail || FR title | FR detail.
+              </Text>
+              <textarea
+                defaultValue={data.principles
+                  .map(
+                    (principle) =>
+                      `${principle.title_en ?? ''} | ${principle.detail_en ?? ''} || ${principle.title_fr ?? ''} | ${principle.detail_fr ?? ''}`,
+                  )
+                  .join('\n')}
+                name="workPrinciples"
+                rows={10}
+              />
+              <Button type="submit">Save How I work</Button>
             </Form>
           </section>
 
