@@ -21,6 +21,16 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           <Heading level={1} size="md">
             {profile.locale === 'fr' ? 'Profil' : 'Profile'}
           </Heading>
+          {profile.portraitAssetId !== null && profile.portraitAltText !== null ? (
+            <img
+              alt={profile.portraitAltText}
+              className="aks-profile-portrait"
+              height={320}
+              loading="eager"
+              src={profile.locale === 'fr' ? '/fr/profil/portrait' : '/en/profile/portrait'}
+              width={320}
+            />
+          ) : null}
           {profile.displayName !== null ? (
             <Heading level={2} size="sm">
               {profile.displayName}
