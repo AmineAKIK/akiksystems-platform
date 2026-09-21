@@ -47,6 +47,29 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           {profile.foundationalCopy !== null ? (
             <Text>{profile.foundationalCopy}</Text>
           ) : null}
+          {profile.professionalJourney.length > 0 ? (
+            <section className="aks-profile-professional-journey">
+              <Heading level={2} size="sm">
+                {profile.locale === 'fr'
+                  ? 'Parcours professionnel pertinent'
+                  : 'Relevant professional journey'}
+              </Heading>
+              <ol className="aks-profile-journey-list">
+                {profile.professionalJourney.map((experience) => (
+                  <li key={experience.id}>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {experience.title}
+                      </Heading>
+                      {experience.summary !== null ? (
+                        <Text tone="muted">{experience.summary}</Text>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
           {profile.representativeSystems.length > 0 ? (
             <section className="aks-profile-representative-systems">
               <Heading level={2} size="sm">
