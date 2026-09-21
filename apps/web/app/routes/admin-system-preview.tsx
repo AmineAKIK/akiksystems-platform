@@ -164,6 +164,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export default function AdminSystemPreview() {
   const data = useLoaderData<typeof loader>();
+  const alternateLocale = data.locale === 'en' ? 'fr' : 'en';
 
   return (
     <>
@@ -174,6 +175,7 @@ export default function AdminSystemPreview() {
         <Link href={`/admin/systems/${data.systemId}`}>Back to workspace</Link>
       </div>
       <SystemDetailView
+        alternateHref={`/admin/systems/${data.systemId}/preview/${alternateLocale}`}
         assets={data.assets}
         links={data.links}
         locale={data.locale}
