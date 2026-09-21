@@ -822,11 +822,16 @@
 @media (max-width: 48rem) {
   .aks-home {
     min-height: auto;
-    padding-block: var(--aks-space-7);
+    overflow: visible;
+    padding-block: var(--aks-space-6);
   }
 
   .aks-home-portal {
-    gap: var(--aks-space-7);
+    gap: var(--aks-space-6);
+  }
+
+  .aks-home-intro {
+    gap: var(--aks-space-3);
   }
 
   .aks-home-identity {
@@ -842,8 +847,15 @@
     height: 2.5rem;
   }
 
+  .aks-home-tagline {
+    max-width: 24ch;
+  }
+
   .aks-home-orbit {
+    position: relative;
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
     grid-template-areas:
       "core"
       "profile"
@@ -851,24 +863,73 @@
       "writings"
       "learning"
       "work";
+    gap: 0;
+    min-height: auto;
+    border-block: 1px solid var(--aks-border-subtle);
   }
 
   .aks-home-core {
-    justify-self: start;
+    justify-self: stretch;
     width: auto;
+    min-height: 3rem;
     aspect-ratio: auto;
-    grid-template-columns: auto auto;
-    border-radius: var(--aks-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--aks-space-2);
+    margin: 0;
+    padding: var(--aks-space-3) 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     text-align: start;
   }
 
   .aks-home-core-mark {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.35rem;
+    height: 1.35rem;
   }
 
-  .aks-home-door {
-    min-height: 4.75rem;
+  .aks-home-door,
+  .aks-home-door[data-destination] {
+    width: 100%;
+    min-height: 4.5rem;
+    justify-self: stretch;
+    align-self: stretch;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    gap: var(--aks-space-3);
+    align-items: center;
+    padding: var(--aks-space-3) 0;
+    border: 0;
+    border-top: 1px solid var(--aks-border-subtle);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .aks-home-door:hover,
+  .aks-home-door:focus-visible {
+    transform: none;
+    border-color: var(--aks-border-subtle);
+    background: var(--aks-surface-subtle);
+  }
+
+  .aks-home-door-copy {
+    gap: 0.15rem;
+  }
+
+  .aks-home-door-label {
+    font-size: var(--aks-font-size-lg);
+    line-height: 1.25;
+  }
+
+  .aks-home-door-description {
+    font-size: var(--aks-font-size-xs);
+    line-height: 1.35;
+  }
+
+  .aks-home-door-index,
+  .aks-home-door-arrow {
+    align-self: center;
   }
 }
 
