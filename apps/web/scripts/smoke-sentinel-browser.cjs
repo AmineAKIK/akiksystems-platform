@@ -376,8 +376,8 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
       );
       assert.equal(
         mobileMenuVisible,
-        device.compact,
-        `${device.name} must use the expected compact navigation mode.`,
+        false,
+        `${device.name} Home must not duplicate the five-door portal with a second compact navigation control.`,
       );
 
       await page.goto(`${origin}/en/profile`);
@@ -395,6 +395,11 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
       );
 
       if (device.compact) {
+        assert.equal(
+          await page.locator('.aks-experience-mobile-menu').isVisible(),
+          true,
+          `${device.name} first-level route must expose compact global navigation.`,
+        );
         const menu = page.locator('.aks-experience-mobile-menu');
         await page.locator('.aks-experience-mobile-menu-trigger').click();
         assert.notEqual(
