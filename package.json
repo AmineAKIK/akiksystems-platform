@@ -39,7 +39,8 @@
     "test": "vitest run --passWithNoTests",
     "typecheck": "pnpm -r --if-present typecheck",
     "db:verify-system-links": "pnpm --filter @akiksystems/db db:verify-system-links",
-    "db:verify-presentation-documents": "pnpm --filter @akiksystems/db db:verify-presentation-documents"
+    "db:verify-presentation-documents": "pnpm --filter @akiksystems/db db:verify-presentation-documents",
+    "db:verify-publication-readiness": "pnpm --filter @akiksystems/db db:verify-publication-readiness"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
