@@ -334,6 +334,153 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
   }
 }
 
+async function assertGlobalKeyboardNavigation(browser) {
+  const desktop = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+
+  try {
+    const page = await desktop.newPage();
+    await page.goto(`${origin}/en`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.classList.contains('aks-skip-link')),
+      true,
+      'Desktop keyboard navigation must expose Skip to content first.',
+    );
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.classList.contains('aks-brand-signature')),
+      true,
+      'Brand/Home must be the next desktop shell focus target.',
+    );
+
+    for (const href of [
+      '/en',
+      '/en/profile',
+      '/en/systems',
+      '/en/writings',
+      '/en/learning',
+      '/en/work-with-us',
+    ]) {
+      await page.keyboard.press('Tab');
+      assert.equal(
+        await page.evaluate(() => document.activeElement?.getAttribute('href')),
+        href,
+        `Desktop Tab order must reach ${href} in global navigation order.`,
+      );
+    }
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.getAttribute('hreflang')),
+      'fr',
+      'Desktop Tab order must reach the language switch after global navigation.',
+    );
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`${origin}/fr`);
+    assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
+
+    await page.goto(`${origin}/en/systems/sentinel`);
+    await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.id),
+      'experience-outlet',
+      'Skip link must move focus into the deep-link content outlet.',
+    );
+
+    await page.locator('.aks-brand-signature').focus();
+    for (let i = 0; i < 7; i += 1) {
+      await page.keyboard.press('Tab');
+    }
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.getAttribute('href')),
+      '/en/systems',
+      'Deep-link keyboard order must expose the parent Systems context.',
+    );
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`${origin}/en/systems`);
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({
+    viewport: { width: 320, height: 720 },
+  });
+
+  try {
+    const page = await mobile.newPage();
+    await page.goto(`${origin}/en/profile`);
+    await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.classList.contains('aks-skip-link')),
+      true,
+      'Mobile keyboard navigation must expose Skip to content first.',
+    );
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.classList.contains('aks-brand-signature')),
+      true,
+      'Mobile brand/Home must follow the skip link.',
+    );
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() =>
+        document.activeElement?.classList.contains('aks-experience-mobile-menu-trigger'),
+      ),
+      true,
+      'Mobile Menu must appear in keyboard order before metadata shown below it.',
+    );
+
+    await page.keyboard.press('Enter');
+    assert.notEqual(
+      await page.locator('.aks-experience-mobile-menu').getAttribute('open'),
+      null,
+      'Enter must open the mobile navigation disclosure.',
+    );
+
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.getAttribute('href')),
+      '/en',
+      'Open mobile navigation must expose Home first.',
+    );
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.getAttribute('href')),
+      '/en/profile',
+      'Open mobile navigation must expose the current first-level destination.',
+    );
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.getAttribute('href')),
+      '/en/systems',
+      'Mobile global navigation must be fully reachable by Tab.',
+    );
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`${origin}/en/systems`);
+
+    await page.goto(`${origin}/en/profile`);
+    await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+    await page.locator('.aks-experience-meta a[hreflang="fr"]').focus();
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`${origin}/fr/profil`);
+    assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertIntentPrefetching(browser) {
   const prefetchSelector = 'link[rel="prefetch"], link[rel="modulepreload"]';
   const descriptorCount = (page) => page.locator(prefetchSelector).count();
@@ -682,6 +829,7 @@ async function assertAxe(page) {
     await assertHomePortal(page, 'fr');
 
     await assertIntentPrefetching(browser);
+    await assertGlobalKeyboardNavigation(browser);
 
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
