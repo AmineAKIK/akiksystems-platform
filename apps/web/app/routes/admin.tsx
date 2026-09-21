@@ -1,5 +1,5 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { createDatabase } from '@akiksystems/db';
+import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
 import { Form, redirect, useLoaderData } from 'react-router';
@@ -43,7 +43,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const form = await request.formData();
   const intent = form.get('_intent');
 
@@ -91,6 +91,19 @@ export async function action({ request }: Route.ActionArgs) {
           },
         ])
         .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'system.created',
+        entityType: 'system',
+        entityId: systemId,
+        systemId,
+        metadata: {
+          initialLocales: ['en', 'fr'],
+          initialSlug: 'sentinel',
+        },
+      });
     });
 
     return redirect(`/admin/systems/${systemId}`);
