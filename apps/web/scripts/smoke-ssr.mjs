@@ -98,9 +98,7 @@ try {
     assert.equal(response.status, 200, `${route.path} direct SSR load must return HTTP 200.`);
     assert.match(html, new RegExp(`<html lang="${route.lang}"`));
     assert.match(html, /class="aks-brand-signature"/);
-    assert.match(html, new RegExp(`<h1[^>]*>${route.heading.replace(/[.*+?^$()|[\\]{}]/g, '\\  const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
-    redirect: 'manual',
-  });')}<\\/h1>`));
+    assert.match(html, new RegExp(`<h1[^>]*>${route.heading}<\\/h1>`));
     assert.match(
       html,
       new RegExp(`aria-current="page"[^>]*href="${route.activeHref}"`),
