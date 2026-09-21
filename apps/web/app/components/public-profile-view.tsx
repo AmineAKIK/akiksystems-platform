@@ -47,6 +47,27 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           {profile.foundationalCopy !== null ? (
             <Text>{profile.foundationalCopy}</Text>
           ) : null}
+          {profile.workPrinciples.length > 0 ? (
+            <section className="aks-profile-work-principles">
+              <Heading level={2} size="sm">
+                {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
+              </Heading>
+              <ol className="aks-profile-work-principle-list">
+                {profile.workPrinciples.map((principle) => (
+                  <li key={principle.id}>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {principle.title}
+                      </Heading>
+                      {principle.detail !== null ? (
+                        <Text tone="muted">{principle.detail}</Text>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
         </div>
       </Container>
     </main>
