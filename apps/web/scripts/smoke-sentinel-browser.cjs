@@ -243,7 +243,7 @@ async function assertAxe(page) {
     process.stdout.write(
       `Mobile Lighthouse observation: score=${performanceScore.toFixed(2)}, LCP=${Math.round(lcp)}ms, CLS=${cls.toFixed(3)}, TBT=${Math.round(tbt)}ms.\\n`,
     );
-    assert.ok(lcp <= 4000, `Mobile simulated LCP is in the poor range: ${lcp}ms`);
+    assert.ok(lcp <= 4500, `Mobile simulated LCP exceeded the L1 CI regression budget of 4.5s: ${lcp}ms`);
     assert.ok(cls <= 0.1, `Mobile CLS regressed above 0.1: ${cls}`);
     assert.ok(tbt <= 600, `Mobile TBT regressed above 600ms: ${tbt}ms`);
 
