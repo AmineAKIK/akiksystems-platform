@@ -27,13 +27,9 @@ function requiredLocale(value: string | undefined): 'en' | 'fr' {
   return value;
 }
 
-export function meta({ data }: Route.MetaArgs) {
-  const title = data?.title
-    ? `${data.title} · Preview · AkikSystems`
-    : 'System preview · AkikSystems';
-
+export function meta() {
   return [
-    { title },
+    { title: 'System preview · AkikSystems' },
     { name: 'robots', content: 'noindex, nofollow, noarchive, nosnippet' },
   ];
 }
