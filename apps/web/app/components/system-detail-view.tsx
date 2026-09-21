@@ -35,6 +35,7 @@ export interface SystemDetailViewProps {
   originSummary: string | null;
   links: SystemDetailLink[];
   assets: SystemDetailAsset[];
+  alternateHref?: string | null;
   preview?: boolean;
 }
 
@@ -114,6 +115,7 @@ export function PresentationBlockView({
             alt={asset.altText ?? ''}
             decoding="async"
             loading="lazy"
+            sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem"
             src={asset.url}
           />
           {asset.caption !== null ? (
@@ -173,69 +175,104 @@ export function SystemDetailView({
   originSummary,
   links,
   assets,
+  alternateHref = null,
   preview = false,
 }: SystemDetailViewProps) {
+  const alternateLocale: PlatformLocale = locale === 'en' ? 'fr' : 'en';
+  const languageHref = alternateHref ?? `/${alternateLocale}`;
+
   return (
-    <main className="aks-system-detail">
-      <Container>
-        <article className="aks-system-detail-stack">
-          <header className="aks-system-detail-header">
-            {preview ? (
-              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                {locale === 'fr' ? 'Aperçu privé' : 'Private preview'}
-              </Text>
-            ) : null}
+    <>
+      <a className="aks-skip-link" href="#system-content">
+        {locale === 'fr' ? 'Aller au contenu' : 'Skip to content'}
+      </a>
 
-            <Heading level={1} size="lg">
-              {title}
-            </Heading>
-            <Text>{summary}</Text>
-
-            {technologies.length > 0 ? (
-              <ul className="aks-system-detail-tags" aria-label="Technologies">
-                {technologies.map((technology) => (
-                  <li key={technology.id}>{technology.name}</li>
-                ))}
-              </ul>
-            ) : null}
-
-            {links.length > 0 ? (
-              <nav
-                aria-label={
-                  locale === 'fr' ? 'Liens du système' : 'System links'
-                }
-                className="aks-proof-actions"
+      <header className="aks-system-context-bar">
+        <Container width="wide">
+          <div className="aks-system-context-inner">
+            <Link className="aks-system-brand" href={`/${locale}`}>
+              AkikSystems
+            </Link>
+            <nav
+              aria-label={locale === 'fr' ? 'Contexte AkikSystems' : 'AkikSystems context'}
+              className="aks-system-context-nav"
+            >
+              <span className="aks-system-context-current" aria-current="page">
+                {locale === 'fr' ? 'Systèmes' : 'Systems'} · {title}
+              </span>
+              <Link
+                href={languageHref}
+                hrefLang={alternateLocale}
+                lang={alternateLocale}
               >
-                {links.map((link) => (
-                  <Link href={link.url} key={link.id}>
-                    {linkLabel(link.kind, locale)}
-                  </Link>
-                ))}
-              </nav>
-            ) : null}
-          </header>
+                {alternateLocale === 'fr' ? 'Français' : 'English'}
+              </Link>
+            </nav>
+          </div>
+        </Container>
+      </header>
 
-          {originTitle !== null ? (
-            <aside className="aks-system-detail-context">
-              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                {locale === 'fr' ? 'Contexte d’origine' : 'Origin context'}
-              </Text>
-              <Heading level={2} size="sm">
-                {originTitle}
-              </Heading>
-              {originSummary !== null ? (
-                <Text tone="muted">{originSummary}</Text>
+      <main className="aks-system-detail" id="system-content" tabIndex={-1}>
+        <Container>
+          <article className="aks-system-detail-stack">
+            <header className="aks-system-detail-header">
+              {preview ? (
+                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                  {locale === 'fr' ? 'Aperçu privé' : 'Private preview'}
+                </Text>
               ) : null}
-            </aside>
-          ) : null}
 
-          <SystemPresentation
-            assets={assets}
-            document={presentationDocument}
-            locale={locale}
-          />
-        </article>
-      </Container>
-    </main>
+              <Heading level={1} size="lg">
+                {title}
+              </Heading>
+              <Text>{summary}</Text>
+
+              {technologies.length > 0 ? (
+                <ul className="aks-system-detail-tags" aria-label="Technologies">
+                  {technologies.map((technology) => (
+                    <li key={technology.id}>{technology.name}</li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {links.length > 0 ? (
+                <nav
+                  aria-label={
+                    locale === 'fr' ? 'Liens du système' : 'System links'
+                  }
+                  className="aks-proof-actions"
+                >
+                  {links.map((link) => (
+                    <Link href={link.url} key={link.id}>
+                      {linkLabel(link.kind, locale)}
+                    </Link>
+                  ))}
+                </nav>
+              ) : null}
+            </header>
+
+            {originTitle !== null ? (
+              <aside className="aks-system-detail-context">
+                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                  {locale === 'fr' ? 'Contexte d’origine' : 'Origin context'}
+                </Text>
+                <Heading level={2} size="sm">
+                  {originTitle}
+                </Heading>
+                {originSummary !== null ? (
+                  <Text tone="muted">{originSummary}</Text>
+                ) : null}
+              </aside>
+            ) : null}
+
+            <SystemPresentation
+              assets={assets}
+              document={presentationDocument}
+              locale={locale}
+            />
+          </article>
+        </Container>
+      </main>
+    </>
   );
 }

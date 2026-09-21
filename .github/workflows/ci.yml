@@ -11,7 +11,35 @@ jobs:
   quality:
     name: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
+      BETTER_AUTH_SECRET: ci-only-better-auth-secret-with-more-than-32-characters
+      BETTER_AUTH_URL: http://127.0.0.1:4177
+      ADMIN_EMAIL: admin@example.invalid
+      ADMIN_PASSWORD: ci-only-admin-password-12345
+      BUCKET: ci-placeholder
+      REGION: us-east-1
+      ENDPOINT: https://example.invalid
+      ACCESS_KEY_ID: ci-placeholder
+      SECRET_ACCESS_KEY: ci-placeholder
 
     steps:
       - name: Checkout
@@ -43,3 +71,36 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Migrate L1 qualification database
+        run: pnpm deploy:migrate
+
+      - name: Verify L1 System domain rules
+        run: |
+          pnpm db:verify-system-domain
+          pnpm db:verify-system-technologies
+          pnpm db:verify-system-experiences
+          pnpm db:verify-assets
+          pnpm db:verify-system-links
+          pnpm db:verify-presentation-documents
+          pnpm db:verify-publication-readiness
+          pnpm db:verify-independent-publication
+          pnpm db:verify-admin-audit
+          pnpm db:verify-public-system
+
+      - name: Bootstrap browser-smoke administrator
+        run: pnpm auth:bootstrap-admin
+
+      - name: Install isolated browser qualification runtime
+        run: |
+          mkdir -p /tmp/akiksystems-l1-browser
+          cd /tmp/akiksystems-l1-browser
+          npm init -y
+          npm install playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Qualify Sentinel admin-to-public journey
+        env:
+          NODE_PATH: /tmp/akiksystems-l1-browser/node_modules
+          LIGHTHOUSE_BIN: /tmp/akiksystems-l1-browser/node_modules/.bin/lighthouse
+        run: node apps/web/scripts/smoke-sentinel-browser.cjs

@@ -97,7 +97,6 @@
   font-size: var(--aks-font-size-sm);
 }
 
-
 .aks-admin-form select,
 .aks-admin-presentation-add select {
   min-height: 2.75rem;
@@ -145,7 +144,6 @@
   font-family: var(--aks-font-mono);
 }
 
-
 .aks-admin-domain-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
@@ -167,7 +165,6 @@
   font-weight: 700;
 }
 
-
 .aks-preview-toolbar {
   position: sticky;
   top: 0;
@@ -182,9 +179,59 @@
   background: var(--aks-surface-raised);
 }
 
+.aks-skip-link {
+  position: fixed;
+  z-index: 100;
+  inset-block-start: var(--aks-space-3);
+  inset-inline-start: var(--aks-space-3);
+  transform: translateY(-200%);
+  padding: var(--aks-space-3) var(--aks-space-4);
+  border-radius: var(--aks-radius-sm);
+  background: var(--aks-action-primary);
+  color: var(--aks-text-inverse);
+}
+
+.aks-skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.aks-system-context-bar {
+  border-bottom: 1px solid var(--aks-border-subtle);
+  background: var(--aks-surface-canvas);
+}
+
+.aks-system-context-inner {
+  display: flex;
+  gap: var(--aks-space-4);
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem;
+  padding-block: var(--aks-space-3);
+}
+
+.aks-system-brand {
+  font-weight: 720;
+  text-decoration: none;
+  letter-spacing: var(--aks-tracking-tight);
+}
+
+.aks-system-context-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-3) var(--aks-space-5);
+  align-items: center;
+  justify-content: flex-end;
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-system-context-current {
+  color: var(--aks-text-muted);
+}
+
 .aks-system-detail {
-  min-height: 100dvh;
+  min-height: calc(100dvh - 4rem);
   padding-block: var(--aks-space-8);
+  scroll-margin-top: var(--aks-space-6);
 }
 
 .aks-system-detail-stack,
@@ -254,7 +301,6 @@
   border-inline-start: 3px solid var(--aks-border-subtle);
 }
 
-
 .aks-admin-audit-list {
   display: grid;
   gap: var(--aks-space-4);
@@ -274,4 +320,25 @@
   white-space: pre-wrap;
   font-family: var(--aks-font-mono);
   font-size: var(--aks-font-size-sm);
+}
+
+@media (max-width: 40rem) {
+  .aks-system-context-inner {
+    align-items: flex-start;
+  }
+
+  .aks-system-context-nav {
+    display: grid;
+    justify-items: end;
+  }
+
+  .aks-system-detail {
+    padding-block: var(--aks-space-7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-skip-link {
+    transition: none;
+  }
 }

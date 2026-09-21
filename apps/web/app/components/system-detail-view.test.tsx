@@ -4,9 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { SystemDetailView } from './system-detail-view';
 
 describe('SystemDetailView', () => {
-  it('renders the v1 presentation vocabulary as semantic HTML in source order', () => {
+  it('renders AkikSystems context and the v1 presentation vocabulary in source order', () => {
     const html = renderToStaticMarkup(
       <SystemDetailView
+        alternateHref="/fr/systems/sentinel"
         assets={[
           {
             id: 'asset-image',
@@ -58,7 +59,16 @@ describe('SystemDetailView', () => {
       />,
     );
 
-    expect(html).toContain('<main class="aks-system-detail">');
+    expect(html).toContain('class="aks-skip-link" href="#system-content"');
+    expect(html).toContain('class="aks-system-context-bar"');
+    expect(html).toContain('>AkikSystems</a>');
+    expect(html).toContain('aria-current="page">Systems · Sentinel</span>');
+    expect(html).toContain(
+      'href="/fr/systems/sentinel" hrefLang="fr" lang="fr"',
+    );
+    expect(html).toContain(
+      '<main class="aks-system-detail" id="system-content" tabindex="-1">',
+    );
     expect(html).toContain('<article class="aks-system-detail-stack">');
     expect(html).toContain('<h1');
     expect(html).toContain('>Sentinel</h1>');
@@ -85,7 +95,7 @@ describe('SystemDetailView', () => {
     expect(html).toContain('<li>Observe</li>');
     expect(html).toContain('<code data-language="bash">pnpm build</code>');
     expect(html).toContain(
-      '<img alt="Sentinel dashboard" decoding="async" loading="lazy" src="/private-preview/image"/>',
+      '<img alt="Sentinel dashboard" decoding="async" loading="lazy" sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem" src="/private-preview/image"/>',
     );
     expect(html).toContain('<figcaption>Operational dashboard</figcaption>');
     expect(html).toContain('<footer>— AkikSystems</footer>');
@@ -126,6 +136,7 @@ describe('SystemDetailView', () => {
 
     expect(html).toContain('<ul class="aks-system-presentation-list">');
     expect(html).toContain('>Ouvrir le document</a>');
+    expect(html).toContain('href="/en" hrefLang="en" lang="en"');
     expect(html).not.toContain('<figure');
   });
 

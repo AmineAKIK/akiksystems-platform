@@ -2,6 +2,7 @@ export { getPublishedSystem } from './public-system.js';
 export type {
   GetPublishedSystemInput,
   PublishedSystem,
+  PublicSystemAlternate,
   PublicSystemLink,
   PublicSystemMedia,
   PublicSystemOrigin,
