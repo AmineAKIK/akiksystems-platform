@@ -1,0 +1,56 @@
+name: AKS-013 validation
+
+on:
+  push:
+    branches:
+      - aks-013-work
+
+jobs:
+  private-admin:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: akiksystems
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
+      NODE_ENV: production
+      BETTER_AUTH_URL: http://127.0.0.1:4176
+      ADMIN_EMAIL: admin@validation.invalid
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: pnpm
+      - name: Generate ephemeral auth credentials
+        run: |
+          auth_secret="$(openssl rand -hex 32)"
+          admin_password="$(openssl rand -base64 36 | tr -d '\n')"
+          echo "::add-mask::$auth_secret"
+          echo "::add-mask::$admin_password"
+          echo "BETTER_AUTH_SECRET=$auth_secret" >> "$GITHUB_ENV"
+          echo "ADMIN_PASSWORD=$admin_password" >> "$GITHUB_ENV"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm config:verify
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm --filter @akiksystems/web check:client-secrets
+      - run: pnpm auth:migrate
+      - run: pnpm auth:bootstrap-admin
+      - run: pnpm smoke:auth
