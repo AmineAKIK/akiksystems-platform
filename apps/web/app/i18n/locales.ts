@@ -95,6 +95,22 @@ export function requireLocale(value: string | undefined): Locale {
   return value;
 }
 
+export function requireExactLocale(
+  value: string | undefined,
+  expected: Locale,
+): Locale {
+  const locale = requireLocale(value);
+
+  if (locale !== expected) {
+    throw new Response('Route is not available for this locale.', {
+      status: 404,
+      statusText: 'Localized route not found',
+    });
+  }
+
+  return locale;
+}
+
 export function dictionaryFor(locale: Locale): UiDictionary {
   return dictionaries[locale];
 }

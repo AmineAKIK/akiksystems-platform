@@ -376,8 +376,8 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
       );
       assert.equal(
         mobileMenuVisible,
-        device.compact,
-        `${device.name} must use the expected compact navigation mode.`,
+        false,
+        `${device.name} Home must not duplicate the five-door portal with a second compact navigation control.`,
       );
 
       await page.goto(`${origin}/en/profile`);
@@ -395,6 +395,11 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
       );
 
       if (device.compact) {
+        assert.equal(
+          await page.locator('.aks-experience-mobile-menu').isVisible(),
+          true,
+          `${device.name} first-level route must expose compact global navigation.`,
+        );
         const menu = page.locator('.aks-experience-mobile-menu');
         await page.locator('.aks-experience-mobile-menu-trigger').click();
         assert.notEqual(
@@ -528,12 +533,14 @@ async function assertTenSecondComprehensionBaseline(browser) {
       if (kind === 'home') {
         await page.getByText('Independent software systems', { exact: true }).waitFor();
         await page.getByText('Engineering made inspectable.', { exact: true }).waitFor();
-        await page
-          .getByText(
-            'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
-            { exact: true },
-          )
-          .waitFor();
+        if (viewport.width > 768) {
+          await page
+            .getByText(
+              'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
+              { exact: true },
+            )
+            .waitFor();
+        }
 
         const destinationLabels = await page
           .locator('.aks-home-door-label')
@@ -558,9 +565,10 @@ async function assertTenSecondComprehensionBaseline(browser) {
               .filter(Boolean),
           viewport.height);
 
-        assert.ok(
-          aboveFoldDestinations.length >= 1,
-          `${name} must expose at least one concrete destination in the initial viewport.`,
+        assert.deepEqual(
+          aboveFoldDestinations,
+          ['Profile', 'Systems', 'Writings', 'Learning', 'Work with us'],
+          `${name} must expose all five destinations in the initial viewport.`,
         );
 
         observations.push({
@@ -750,6 +758,11 @@ async function assertGlobalKeyboardNavigation(browser) {
     );
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/en/systems`);
+    assert.equal(
+      await page.locator('.aks-experience-mobile-menu').getAttribute('open'),
+      null,
+      'Mobile navigation must reset closed after route navigation.',
+    );
 
     await page.goto(`${origin}/en/profile`);
     await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
@@ -952,7 +965,7 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
       return {
         columns: getComputedStyle(orbitElement).gridTemplateColumns,
         gap: getComputedStyle(orbitElement).gap,
-        coreRadius: getComputedStyle(coreElement).borderRadius,
+        coreDisplay: getComputedStyle(coreElement).display,
         doorHeights: doors.map((door) => door.getBoundingClientRect().height),
         doorTops: doors.map((door) => door.getBoundingClientRect().top),
       };
@@ -965,10 +978,10 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
       'Mobile Home must use one dedicated reading column.',
     );
     assert.equal(mobileLayout.gap, '0px', 'Mobile Home must use a continuous route rather than an orbital gap.');
-    assert.notEqual(
-      mobileLayout.coreRadius,
-      '50%',
-      'Mobile Home core must not retain the desktop orbital circle.',
+    assert.equal(
+      mobileLayout.coreDisplay,
+      'none',
+      'Mobile Home must remove the redundant desktop orbital core from its reading sequence.',
     );
     assert.ok(
       mobileLayout.doorHeights.every((height) => height >= 44),

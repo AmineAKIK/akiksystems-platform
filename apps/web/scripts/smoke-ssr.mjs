@@ -106,6 +106,24 @@ try {
     );
   }
 
+  for (const invalidAlias of [
+    '/fr/profile',
+    '/en/profil',
+    '/fr/writings',
+    '/en/ecrits',
+    '/fr/learning',
+    '/en/apprentissage',
+    '/fr/work-with-us',
+    '/en/travailler-ensemble',
+  ]) {
+    const response = await globalThis.fetch(`${origin}${invalidAlias}`);
+    assert.equal(
+      response.status,
+      404,
+      `${invalidAlias} must not create a second URL for localized content.`,
+    );
+  }
+
   const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
     redirect: 'manual',
   });

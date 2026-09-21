@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Container } from '@akiksystems/ui';
+import { useEffect, useState, type ReactNode } from 'react';
+import { BrandMark, Container } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
 import {
@@ -25,6 +25,12 @@ export function ExperienceShell({
   currentTitle = null,
   children,
 }: ExperienceShellProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
@@ -41,7 +47,7 @@ export function ExperienceShell({
         {dictionary.shell.skipToContent}
       </a>
 
-      <header className="aks-experience-shell">
+      <header className="aks-experience-shell" data-destination={destinationId ?? 'home'}>
         <Container width="wide">
           <div className="aks-experience-shell-inner">
             <RouterLink
@@ -51,9 +57,7 @@ export function ExperienceShell({
               to={`/${locale}`}
               viewTransition
             >
-              <span aria-hidden="true" className="aks-brand-mark">
-                <span className="aks-brand-mark-core" />
-              </span>
+              <BrandMark />
               <span className="aks-brand-wordmark">AkikSystems</span>
             </RouterLink>
 
@@ -84,7 +88,12 @@ export function ExperienceShell({
               ))}
             </nav>
 
-            <details className="aks-experience-mobile-menu">
+            <details
+              className="aks-experience-mobile-menu"
+              key={pathname}
+              onToggle={(event) => setMobileMenuOpen(event.currentTarget.open)}
+              open={mobileMenuOpen}
+            >
               <summary className="aks-experience-mobile-menu-trigger">
                 <span>{dictionary.shell.menuLabel}</span>
                 <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
@@ -98,6 +107,7 @@ export function ExperienceShell({
                 <RouterLink
                   aria-current={destinationId === null ? 'page' : undefined}
                   className="aks-link"
+                  onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
                   to={`/${locale}`}
                   viewTransition
@@ -109,6 +119,7 @@ export function ExperienceShell({
                     aria-current={destinationId === destination.id ? 'page' : undefined}
                     className="aks-link"
                     key={destination.id}
+                    onClick={() => setMobileMenuOpen(false)}
                     prefetch="intent"
                     to={destinationHref(destination.id, locale)}
                     viewTransition
