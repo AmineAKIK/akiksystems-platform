@@ -17,14 +17,6 @@ function requiredSlug(value: string | undefined): string {
   return value;
 }
 
-export function meta({ data }: Route.MetaArgs) {
-  if (data === undefined) {
-    return [{ title: 'System · AkikSystems' }];
-  }
-
-  return [{ title: `${data.system.title} · AkikSystems` }];
-}
-
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
