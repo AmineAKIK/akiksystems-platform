@@ -96,10 +96,11 @@ jobs:
           mkdir -p /tmp/akiksystems-l1-browser
           cd /tmp/akiksystems-l1-browser
           npm init -y
-          npm install playwright@1.55.0 axe-core@4.10.3
+          npm install playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
           ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Qualify Sentinel admin-to-public journey
         env:
           NODE_PATH: /tmp/akiksystems-l1-browser/node_modules
+          LIGHTHOUSE_BIN: /tmp/akiksystems-l1-browser/node_modules/.bin/lighthouse
         run: node apps/web/scripts/smoke-sentinel-browser.cjs
