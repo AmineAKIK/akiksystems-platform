@@ -1,4 +1,3 @@
-import { getPublishedSystem } from '@akiksystems/db';
 
 import { requireLocale } from '../i18n/locales';
 import { getAssetObject } from '../lib/asset-storage.server';
