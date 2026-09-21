@@ -250,6 +250,42 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+
+    const reducedDesktop = await browser.newContext({
+      viewport: { width: 1280, height: 800 },
+      reducedMotion: 'reduce',
+    });
+    try {
+      const reducedPage = await reducedDesktop.newPage();
+      await reducedPage.goto(`${origin}/en/systems/sentinel`);
+      await reducedPage.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+      assert.equal(
+        await reducedPage.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+        true,
+        'Desktop qualification must exercise the reduced-motion preference.',
+      );
+      const reducedTokens = await reducedPage.evaluate(() => {
+        const styles = getComputedStyle(document.documentElement);
+        return {
+          duration: styles.getPropertyValue('--aks-transition-route-duration').trim(),
+          distance: styles.getPropertyValue('--aks-transition-route-distance').trim(),
+        };
+      });
+      assert.deepEqual(reducedTokens, { duration: '1ms', distance: '0rem' });
+      await reducedPage.locator('.aks-experience-nav a[href="/en/profile"]').click();
+      await reducedPage.waitForURL(`${origin}/en/profile`);
+      await reducedPage
+        .getByRole('heading', { level: 1, name: 'Profile', exact: true })
+        .waitFor();
+      assert.equal(
+        await reducedPage.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
+        '/en/profile',
+        'Reduced motion must preserve complete desktop navigation semantics.',
+      );
+    } finally {
+      await reducedDesktop.close();
+    }
+
     assert.equal(
       await page.evaluate(() => typeof document.startViewTransition),
       'function',
@@ -347,6 +383,23 @@ async function assertAxe(page) {
       const mobilePage = await mobile.newPage();
       await assertGlobalDestinations(mobilePage, { mobile: true });
       await mobilePage.goto(`${origin}/en/systems/sentinel`);
+      assert.equal(
+        await mobilePage.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+        true,
+        'Mobile qualification must exercise the reduced-motion preference.',
+      );
+      const reducedMotionTokens = await mobilePage.evaluate(() => {
+        const styles = getComputedStyle(document.documentElement);
+        return {
+          duration: styles.getPropertyValue('--aks-transition-route-duration').trim(),
+          distance: styles.getPropertyValue('--aks-transition-route-distance').trim(),
+        };
+      });
+      assert.deepEqual(
+        reducedMotionTokens,
+        { duration: '1ms', distance: '0rem' },
+        'Reduced motion must remove perceptible route travel while preserving navigation.',
+      );
       const mobileMenu = mobilePage.locator('.aks-experience-mobile-menu');
       await mobilePage.locator('.aks-experience-mobile-menu-trigger').click();
       assert.equal(
