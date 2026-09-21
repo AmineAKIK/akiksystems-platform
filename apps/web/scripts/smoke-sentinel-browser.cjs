@@ -1478,6 +1478,24 @@ async function assertAxe(page) {
     );
 
     await page.goto(`${origin}${page.systemPath}`);
+    const originContextForm = page.locator('form').filter({
+      has: page.getByRole('heading', { level: 2, name: 'Origin context', exact: true }),
+    });
+    await originContextForm.locator('input[name="experienceTitleEn"]').fill('Marelli');
+    await originContextForm
+      .locator('textarea[name="experienceSummaryEn"]')
+      .fill(
+        'Industrial software context where operational constraints shaped the work.',
+      );
+    await originContextForm.locator('input[name="experienceTitleFr"]').fill('Marelli');
+    await originContextForm
+      .locator('textarea[name="experienceSummaryFr"]')
+      .fill(
+        'Contexte logiciel industriel où les contraintes opérationnelles ont façonné le travail.',
+      );
+    await originContextForm.getByRole('button', { name: 'Save origin context' }).click();
+    await page.getByText('Professional context updated.', { exact: true }).waitFor();
+
     await page.locator('textarea[name="links"]').fill(
       'live | https://sentinel.akiksystems.fr',
     );
