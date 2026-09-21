@@ -36,6 +36,16 @@ function nullableField(form: FormData, name: string): string | null {
   return value === '' ? null : value;
 }
 
+function requiredFormLocale(form: FormData): PlatformLocale {
+  const locale = field(form, 'locale');
+
+  if (locale !== 'en' && locale !== 'fr') {
+    throw new Response('Locale not found.', { status: 404 });
+  }
+
+  return locale;
+}
+
 function parseTechnologyLines(value: string): Array<{ slug: string; name: string }> {
   if (value.trim() === '') {
     return [];
@@ -323,88 +333,138 @@ export async function action({ request, params }: Route.ActionArgs) {
       return { ok: true, message: 'System identity updated.' };
     }
 
-    if (intent === 'localizations') {
-      const enSlug = nullableField(form, 'enSlug');
-      const frSlug = nullableField(form, 'frSlug');
-      const enTitle = nullableField(form, 'enTitle');
-      const frTitle = nullableField(form, 'frTitle');
-      const enSummary = nullableField(form, 'enSummary');
-      const frSummary = nullableField(form, 'frSummary');
+    if (intent === 'localization') {
+      const locale = requiredFormLocale(form);
+      const slug = nullableField(form, 'slug');
+      const title = nullableField(form, 'title');
+      const summary = nullableField(form, 'summary');
 
-      if (enSlug !== null && !slugPattern.test(enSlug)) {
-        return { ok: false, message: 'EN slug is invalid.' };
+      if (slug !== null && !slugPattern.test(slug)) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} slug is invalid.`,
+        };
       }
 
-      if (frSlug !== null && !slugPattern.test(frSlug)) {
-        return { ok: false, message: 'FR slug is invalid.' };
-      }
-
-      const currentLocalizations = await db
+      const current = await db
         .selectFrom('system_localizations')
-        .select([
-          'locale',
-          'editorial_state',
-          'presentation_document',
-        ])
+        .select(['editorial_state', 'presentation_document'])
         .where('system_id', '=', systemId)
-        .execute();
+        .where('locale', '=', locale)
+        .executeTakeFirst();
 
-      const currentByLocale = new Map(
-        currentLocalizations.map((localization) => [
-          localization.locale,
-          localization,
-        ]),
-      );
+      if (current?.editorial_state === 'published') {
+        const readiness = validateSystemPublicationReadiness({
+          slug,
+          title,
+          summary,
+          presentationDocument: current.presentation_document,
+        });
 
-      for (const [locale, candidate] of [
-        [
-          'en',
-          {
-            slug: enSlug,
-            title: enTitle,
-            summary: enSummary,
-          },
-        ],
-        [
-          'fr',
-          {
-            slug: frSlug,
-            title: frTitle,
-            summary: frSummary,
-          },
-        ],
-      ] as const) {
-        const current = currentByLocale.get(locale);
-
-        if (current?.editorial_state === 'published') {
-          const readiness = validateSystemPublicationReadiness({
-            ...candidate,
-            presentationDocument: current.presentation_document,
-          });
-
-          if (!readiness.ready) {
-            return {
-              ok: false,
-              message: `${locale.toUpperCase()} is published and cannot become incomplete: ${readiness.errors.join(' ')}`,
-            };
-          }
+        if (!readiness.ready) {
+          return {
+            ok: false,
+            message: `${locale.toUpperCase()} is published and cannot become incomplete: ${readiness.errors.join(' ')}`,
+          };
         }
       }
 
-      await db.transaction().execute(async (transaction) => {
-        await upsertLocalization(transaction, systemId, 'en', {
-          slug: enSlug,
-          title: enTitle,
-          summary: enSummary,
-        });
-        await upsertLocalization(transaction, systemId, 'fr', {
-          slug: frSlug,
-          title: frTitle,
-          summary: frSummary,
-        });
+      await upsertLocalization(db, systemId, locale, {
+        slug,
+        title,
+        summary,
       });
 
-      return { ok: true, message: 'EN/FR content updated.' };
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} content updated independently.`,
+      };
+    }
+
+    if (intent === 'publish' || intent === 'unpublish') {
+      const locale = requiredFormLocale(form);
+
+      const localization = await db
+        .selectFrom('system_localizations')
+        .select([
+          'slug',
+          'title',
+          'summary',
+          'presentation_document',
+          'editorial_state',
+        ])
+        .where('system_id', '=', systemId)
+        .where('locale', '=', locale)
+        .executeTakeFirst();
+
+      if (localization === undefined) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} localization does not exist.`,
+        };
+      }
+
+      if (intent === 'publish') {
+        const readiness = validateSystemPublicationReadiness({
+          slug: localization.slug,
+          title: localization.title,
+          summary: localization.summary,
+          presentationDocument: localization.presentation_document,
+        });
+
+        if (!readiness.ready) {
+          return {
+            ok: false,
+            message: `${locale.toUpperCase()} cannot publish: ${readiness.errors.join(' ')}`,
+          };
+        }
+
+        if (localization.editorial_state === 'published') {
+          return {
+            ok: true,
+            message: `${locale.toUpperCase()} is already published.`,
+          };
+        }
+
+        await db
+          .updateTable('system_localizations')
+          .set({
+            editorial_state: 'published',
+            published_at: new Date(),
+            updated_at: new Date(),
+          })
+          .where('system_id', '=', systemId)
+          .where('locale', '=', locale)
+          .execute();
+
+        return {
+          ok: true,
+          message: `${locale.toUpperCase()} published independently.`,
+        };
+      }
+
+      if (localization.editorial_state === 'draft') {
+        return {
+          ok: true,
+          message: `${locale.toUpperCase()} is already draft.`,
+        };
+      }
+
+      await db
+        .updateTable('system_localizations')
+        .set({
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })
+        .where('system_id', '=', systemId)
+        .where('locale', '=', locale)
+        .execute();
+
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} unpublished independently.`,
+      };
     }
 
     if (intent === 'technologies') {
@@ -698,59 +758,124 @@ export default function AdminSystem() {
                 </div>
 
                 <Text size="sm" tone="muted">
-                  Publication controls remain in AKS-023. AKS-022 makes the readiness
-                  decision explicit and prevents incomplete published state.
+                  Publication is locale-scoped. EN and FR can independently be draft or published.
                 </Text>
               </div>
             </section>
           </div>
 
           <section className="aks-admin-card">
-            <Form className="aks-admin-form" method="post">
-              <input name="_intent" type="hidden" value="localizations" />
-              <Heading level={2} size="sm">Bilingual content</Heading>
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">Localized content & publication</Heading>
+              <Text size="sm" tone="muted">
+                Each locale saves and publishes independently. Editing FR never
+                writes EN, and editing EN never writes FR.
+              </Text>
+
               <div className="aks-admin-domain-grid">
-                <fieldset className="aks-admin-fieldset">
-                  <legend>English</legend>
-                  <label>
-                    <span>Slug</span>
-                    <input defaultValue={data.en?.slug ?? ''} name="enSlug" />
-                  </label>
-                  <label>
-                    <span>Title</span>
-                    <input defaultValue={data.en?.title ?? ''} name="enTitle" />
-                  </label>
-                  <label>
-                    <span>Summary</span>
-                    <textarea
-                      defaultValue={data.en?.summary ?? ''}
-                      name="enSummary"
-                      rows={5}
-                    />
-                  </label>
-                </fieldset>
-                <fieldset className="aks-admin-fieldset">
-                  <legend>Français</legend>
-                  <label>
-                    <span>Slug</span>
-                    <input defaultValue={data.fr?.slug ?? ''} name="frSlug" />
-                  </label>
-                  <label>
-                    <span>Titre</span>
-                    <input defaultValue={data.fr?.title ?? ''} name="frTitle" />
-                  </label>
-                  <label>
-                    <span>Résumé</span>
-                    <textarea
-                      defaultValue={data.fr?.summary ?? ''}
-                      name="frSummary"
-                      rows={5}
-                    />
-                  </label>
-                </fieldset>
+                <div className="aks-admin-fieldset">
+                  <Form className="aks-admin-form" method="post">
+                    <input name="_intent" type="hidden" value="localization" />
+                    <input name="locale" type="hidden" value="en" />
+                    <Heading level={3} size="sm">English</Heading>
+                    <label>
+                      <span>Slug</span>
+                      <input defaultValue={data.en?.slug ?? ''} name="slug" />
+                    </label>
+                    <label>
+                      <span>Title</span>
+                      <input defaultValue={data.en?.title ?? ''} name="title" />
+                    </label>
+                    <label>
+                      <span>Summary</span>
+                      <textarea
+                        defaultValue={data.en?.summary ?? ''}
+                        name="summary"
+                        rows={5}
+                      />
+                    </label>
+                    <Button type="submit">Save EN only</Button>
+                  </Form>
+                  <div className="aks-proof-stack">
+                    <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
+                      {data.en?.editorial_state ?? 'draft'} ·{' '}
+                      {data.enReadiness.ready ? 'ready' : 'not ready'}
+                    </Text>
+                    <Form method="post">
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value={data.en?.editorial_state === 'published' ? 'unpublish' : 'publish'}
+                      />
+                      <input name="locale" type="hidden" value="en" />
+                      <Button
+                        disabled={
+                          data.en?.editorial_state !== 'published' &&
+                          !data.enReadiness.ready
+                        }
+                        emphasis="quiet"
+                        type="submit"
+                      >
+                        {data.en?.editorial_state === 'published'
+                          ? 'Unpublish EN'
+                          : 'Publish EN'}
+                      </Button>
+                    </Form>
+                  </div>
+                </div>
+
+                <div className="aks-admin-fieldset">
+                  <Form className="aks-admin-form" method="post">
+                    <input name="_intent" type="hidden" value="localization" />
+                    <input name="locale" type="hidden" value="fr" />
+                    <Heading level={3} size="sm">Français</Heading>
+                    <label>
+                      <span>Slug</span>
+                      <input defaultValue={data.fr?.slug ?? ''} name="slug" />
+                    </label>
+                    <label>
+                      <span>Titre</span>
+                      <input defaultValue={data.fr?.title ?? ''} name="title" />
+                    </label>
+                    <label>
+                      <span>Résumé</span>
+                      <textarea
+                        defaultValue={data.fr?.summary ?? ''}
+                        name="summary"
+                        rows={5}
+                      />
+                    </label>
+                    <Button type="submit">Save FR only</Button>
+                  </Form>
+                  <div className="aks-proof-stack">
+                    <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
+                      {data.fr?.editorial_state ?? 'draft'} ·{' '}
+                      {data.frReadiness.ready ? 'ready' : 'not ready'}
+                    </Text>
+                    <Form method="post">
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value={data.fr?.editorial_state === 'published' ? 'unpublish' : 'publish'}
+                      />
+                      <input name="locale" type="hidden" value="fr" />
+                      <Button
+                        disabled={
+                          data.fr?.editorial_state !== 'published' &&
+                          !data.frReadiness.ready
+                        }
+                        emphasis="quiet"
+                        type="submit"
+                      >
+                        {data.fr?.editorial_state === 'published'
+                          ? 'Unpublish FR'
+                          : 'Publish FR'}
+                      </Button>
+                    </Form>
+                  </div>
+                </div>
               </div>
-              <Button type="submit">Save bilingual content</Button>
-            </Form>
+            </div>
           </section>
 
           <section className="aks-admin-card">

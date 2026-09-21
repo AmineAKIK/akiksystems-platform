@@ -27,7 +27,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:verify-system-links": "tsx src/cli/verify-system-links.ts",
     "db:verify-presentation-documents": "tsx src/cli/verify-presentation-documents.ts",
-    "db:verify-publication-readiness": "tsx src/cli/verify-publication-readiness.ts"
+    "db:verify-publication-readiness": "tsx src/cli/verify-publication-readiness.ts",
+    "db:verify-independent-publication": "tsx src/cli/verify-independent-publication.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
