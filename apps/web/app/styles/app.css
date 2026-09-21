@@ -376,23 +376,32 @@
 
 @media (max-width: 48rem) {
   .aks-experience-shell-inner {
-    grid-template-columns: 1fr auto;
-    gap: var(--aks-space-3) var(--aks-space-4);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--aks-space-3);
     padding-block: var(--aks-space-3);
   }
 
-  .aks-experience-nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    overflow-x: auto;
-    padding-block-end: var(--aks-space-1);
+  .aks-experience-brand {
+    grid-row: 1;
   }
 
   .aks-experience-meta {
+    grid-row: 2;
+    min-width: 0;
+    justify-content: space-between;
     gap: var(--aks-space-3);
   }
 
   .aks-experience-context {
-    max-width: min(42vw, 13rem);
+    min-width: 0;
+    max-width: none;
+  }
+
+  .aks-experience-nav {
+    grid-row: 3;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-block-end: var(--aks-space-1);
   }
 }
