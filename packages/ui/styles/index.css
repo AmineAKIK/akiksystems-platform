@@ -113,6 +113,43 @@
 }
 
 @layer primitives {
+  .aks-brand-mark {
+    display: block;
+    width: 1.35em;
+    height: 1.35em;
+    flex: 0 0 auto;
+  }
+
+  .aks-brand-signature {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.6em;
+    color: var(--aks-text-primary);
+    font-weight: 720;
+    letter-spacing: var(--aks-tracking-tight);
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .aks-brand-signature[data-size="sm"] {
+    font-size: var(--aks-font-size-sm);
+  }
+
+  .aks-brand-signature[data-size="md"] {
+    font-size: var(--aks-font-size-lg);
+  }
+
+  .aks-brand-signature:hover .aks-brand-wordmark {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+
+  .aks-brand-wordmark {
+    white-space: nowrap;
+  }
+
   .aks-container {
     width: min(calc(100% - 2 * var(--aks-space-5)), var(--aks-content-width));
     margin-inline: auto;

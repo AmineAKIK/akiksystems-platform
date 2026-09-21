@@ -44,9 +44,18 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 
 - CSS tokens cover typography, spacing, surfaces, focus treatment, radii, and motion.
 - Reduced-motion preferences collapse transition durations.
-- The shared primitives are `Text`, `Heading`, `Link`, `Button`, and `Container`.
+- The shared primitives are `Text`, `Heading`, `Link`, `Button`, `Container`, `BrandMark`, and `BrandSignature`.
 - Primitives stay intentionally semantic and low-opinionated; page-specific composition remains in the web app.
 - The current bilingual walking-skeleton pages consume these primitives directly as proof of integration.
+
+### Global identity
+
+`@akiksystems/ui` owns the reusable AkikSystems identity primitives.
+
+- `BrandMark` is an inline SVG mark that inherits `currentColor`, works without network assets, and can be decorative or explicitly labelled when used alone.
+- `BrandSignature` combines the mark and AkikSystems wordmark into one accessible linked signature with controlled size variants.
+- Brand markup and styling live in the shared UI package rather than individual routes or the Experience Shell.
+- The public shell consumes the shared signature and supplies only route-specific destination/accessibility context.
 
 ## Experience Shell
 

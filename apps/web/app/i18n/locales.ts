@@ -3,7 +3,6 @@ export const locales = ['en', 'fr'] as const;
 export type Locale = (typeof locales)[number];
 
 export interface UiDictionary {
-  brand: string;
   shell: {
     skipToContent: string;
     navigationLabel: string;
@@ -28,7 +27,6 @@ export interface UiDictionary {
 
 const dictionaries = {
   en: {
-    brand: 'AkikSystems',
     shell: {
       skipToContent: 'Skip to content',
       navigationLabel: 'Primary navigation',
@@ -51,7 +49,6 @@ const dictionaries = {
     },
   },
   fr: {
-    brand: 'AkikSystems',
     shell: {
       skipToContent: 'Aller au contenu',
       navigationLabel: 'Navigation principale',
