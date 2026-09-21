@@ -65,7 +65,7 @@ async function savePresentation(page, locale, text) {
   await page.goto(`${origin}${page.systemPath}/presentation/${locale}`);
   await page.getByLabel('Block type').selectOption('paragraph');
   await page.getByRole('button', { name: 'Add block' }).click();
-  await page.getByLabel('Paragraph').fill(text);
+  await page.getByRole('textbox', { name: 'Paragraph' }).fill(text);
   await page.getByRole('button', { name: 'Save presentation' }).click();
   await page.getByText(`${locale.toUpperCase()} presentation saved.`).waitFor();
 }
