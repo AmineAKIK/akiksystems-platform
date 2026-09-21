@@ -2,7 +2,7 @@ import { getMigrations } from 'better-auth/db/migration';
 
 import { createAuthInstance } from '../app/lib/auth.factory.server';
 
-const instance = createAuthInstance();
+const instance = createAuthInstance({ suppressKnownSchemaDiagnostics: true });
 
 try {
   const migrations = await getMigrations(instance.auth.options);

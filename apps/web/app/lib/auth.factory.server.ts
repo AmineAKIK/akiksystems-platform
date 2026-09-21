@@ -6,9 +6,13 @@ import { Pool } from 'pg';
 
 export interface CreateAuthOptions {
   allowSignUp?: boolean;
+  suppressKnownSchemaDiagnostics?: boolean;
 }
 
-export function createAuthInstance({ allowSignUp = false }: CreateAuthOptions = {}) {
+export function createAuthInstance({
+  allowSignUp = false,
+  suppressKnownSchemaDiagnostics = false,
+}: CreateAuthOptions = {}) {
   const env = parseAuthEnv(process.env);
   const database = new Pool({
     connectionString: env.DATABASE_URL,
@@ -18,6 +22,25 @@ export function createAuthInstance({ allowSignUp = false }: CreateAuthOptions = 
 
   const auth = betterAuth({
     appName: 'AkikSystems',
+    ...(suppressKnownSchemaDiagnostics
+      ? {
+          logger: {
+            level: 'warn' as const,
+            log(level: string, message: string, ...args: unknown[]) {
+              const knownRateLimitDiagnostic =
+                message.includes('Field lastRequest in table rateLimit') &&
+                message.includes('Expected number but got int8');
+
+              if (knownRateLimitDiagnostic) {
+                return;
+              }
+
+              const sink = level === 'error' ? console.error : console.warn;
+              sink(`[Better Auth] ${message}`, ...args);
+            },
+          },
+        }
+      : {}),
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [env.BETTER_AUTH_URL],
     secret: env.BETTER_AUTH_SECRET,
