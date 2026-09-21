@@ -334,6 +334,99 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
   }
 }
 
+async function assertIntentPrefetching(browser) {
+  const desktop = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+
+  try {
+    const page = await desktop.newPage();
+    await page.goto(`${origin}/en`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+
+    const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
+    const profileDoor = homeNav.locator('a[href="/en/profile"]');
+    await profileDoor.waitFor();
+
+    assert.equal(
+      await homeNav.locator('link[rel="prefetch"]').count(),
+      0,
+      'Home must not eagerly prefetch destination routes before user intent.',
+    );
+
+    await profileDoor.hover();
+    await homeNav.locator('link[rel="prefetch"]').first().waitFor();
+
+    assert.ok(
+      (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
+      'Hovering an intended Home destination must trigger route prefetching.',
+    );
+
+    await page.mouse.move(0, 0);
+    await page.waitForTimeout(150);
+    assert.equal(
+      await homeNav.locator('link[rel="prefetch"]').count(),
+      0,
+      'Leaving an intended destination must remove transient prefetch descriptors.',
+    );
+
+    await page.goto(`${origin}/en/systems`);
+    const shellNav = page.locator('.aks-experience-nav');
+    const writingsLink = shellNav.locator('a[href="/en/writings"]');
+    await writingsLink.waitFor();
+
+    assert.equal(
+      await shellNav.locator('link[rel="prefetch"]').count(),
+      0,
+      'Global shell navigation must not prefetch every destination on render.',
+    );
+
+    await writingsLink.focus();
+    await shellNav.locator('link[rel="prefetch"]').first().waitFor();
+    assert.ok(
+      (await shellNav.locator('link[rel="prefetch"]').count()) > 0,
+      'Keyboard focus must count as navigation intent for shell prefetching.',
+    );
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({
+    viewport: { width: 320, height: 720 },
+    hasTouch: true,
+    isMobile: true,
+  });
+
+  try {
+    const page = await mobile.newPage();
+    await page.goto(`${origin}/en`);
+    const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
+    const systemsDoor = homeNav.locator('a[href="/en/systems"]');
+    await systemsDoor.waitFor();
+
+    assert.equal(
+      await homeNav.locator('link[rel="prefetch"]').count(),
+      0,
+      'Mobile Home must remain idle until touch intent.',
+    );
+
+    await systemsDoor.dispatchEvent('touchstart');
+    await homeNav.locator('link[rel="prefetch"]').first().waitFor();
+
+    assert.ok(
+      (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
+      'Touch intent must trigger prefetching without requiring navigation.',
+    );
+    assert.equal(
+      new URL(page.url()).pathname,
+      '/en',
+      'Touch prefetch qualification must not navigate away from Home.',
+    );
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertHomePortal(page, locale, { mobile = false } = {}) {
   const config =
     locale === 'fr'
@@ -580,6 +673,8 @@ async function assertAxe(page) {
     await assertGlobalDestinations(page);
     await assertHomePortal(page, 'en');
     await assertHomePortal(page, 'fr');
+
+    await assertIntentPrefetching(browser);
 
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
