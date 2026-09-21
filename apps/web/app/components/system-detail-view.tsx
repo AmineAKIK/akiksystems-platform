@@ -35,7 +35,6 @@ export interface SystemDetailViewProps {
   originSummary: string | null;
   links: SystemDetailLink[];
   assets: SystemDetailAsset[];
-  alternateHref?: string | null;
   preview?: boolean;
 }
 
