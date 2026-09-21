@@ -50,13 +50,33 @@ try {
   const englishHtml = await english.text();
   assert.equal(english.status, 200);
   assert.match(englishHtml, /<html lang="en"/);
-  assert.match(englishHtml, /Platform walking skeleton/);
+  assert.match(englishHtml, /class="aks-home-portal"/);
+  assert.match(englishHtml, /<h1[^>]*>AkikSystems<\/h1>/);
+  for (const href of [
+    '/en/profile',
+    '/en/systems',
+    '/en/writings',
+    '/en/learning',
+    '/en/work-with-us',
+  ]) {
+    assert.match(englishHtml, new RegExp(`href="${href}"`));
+  }
 
   const french = await globalThis.fetch(`${origin}/fr`);
   const frenchHtml = await french.text();
   assert.equal(french.status, 200);
   assert.match(frenchHtml, /<html lang="fr"/);
-  assert.match(frenchHtml, /Squelette fonctionnel de la plateforme/);
+  assert.match(frenchHtml, /class="aks-home-portal"/);
+  assert.match(frenchHtml, /<h1[^>]*>AkikSystems<\/h1>/);
+  for (const href of [
+    '/fr/profil',
+    '/fr/systems',
+    '/fr/ecrits',
+    '/fr/apprentissage',
+    '/fr/travailler-ensemble',
+  ]) {
+    assert.match(frenchHtml, new RegExp(`href="${href}"`));
+  }
 
   const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
     redirect: 'manual',
