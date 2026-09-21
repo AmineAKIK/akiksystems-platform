@@ -35,6 +35,11 @@ export interface PublicSystemMedia {
   position: number;
 }
 
+export interface PublicSystemAlternate {
+  locale: PlatformLocale;
+  slug: string;
+}
+
 export interface PublishedSystem {
   id: string;
   locale: PlatformLocale;
@@ -47,6 +52,7 @@ export interface PublishedSystem {
   origin: PublicSystemOrigin | null;
   links: PublicSystemLink[];
   media: PublicSystemMedia[];
+  alternate: PublicSystemAlternate | null;
 }
 
 export interface GetPublishedSystemInput {
@@ -91,8 +97,9 @@ export async function getPublishedSystem(
   }
 
   const systemId = localization.id;
+  const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
 
-  const [technologies, origin, links, media] = await Promise.all([
+  const [technologies, origin, links, media, alternate] = await Promise.all([
     db
       .selectFrom('system_technologies')
       .innerJoin(
@@ -151,6 +158,14 @@ export async function getPublishedSystem(
       .where('system_assets.system_id', '=', systemId)
       .orderBy('system_assets.position')
       .execute(),
+    db
+      .selectFrom('system_localizations')
+      .select(['locale', 'slug'])
+      .where('system_id', '=', systemId)
+      .where('locale', '=', alternateLocale)
+      .where('editorial_state', '=', 'published')
+      .where('slug', 'is not', null)
+      .executeTakeFirst(),
   ]);
 
   return {
@@ -171,5 +186,12 @@ export async function getPublishedSystem(
       caption: asset.caption,
       position: asset.position,
     })),
+    alternate:
+      alternate === undefined || alternate.slug === null
+        ? null
+        : {
+            locale: alternate.locale,
+            slug: alternate.slug,
+          },
   };
 }
