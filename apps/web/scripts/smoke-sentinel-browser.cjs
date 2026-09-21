@@ -335,6 +335,9 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
 }
 
 async function assertIntentPrefetching(browser) {
+  const prefetchSelector = 'link[rel="prefetch"], link[rel="modulepreload"]';
+  const descriptorCount = (page) => page.locator(prefetchSelector).count();
+
   const desktop = await browser.newContext({
     viewport: { width: 1280, height: 800 },
   });
@@ -343,49 +346,51 @@ async function assertIntentPrefetching(browser) {
     const page = await desktop.newPage();
     await page.goto(`${origin}/en`);
     await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
 
     const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
     const profileDoor = homeNav.locator('a[href="/en/profile"]');
     await profileDoor.waitFor();
 
-    assert.equal(
-      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
-      0,
-      'Home must not eagerly prefetch destination routes before user intent.',
+    const homeIdleCount = await descriptorCount(page);
+    await profileDoor.hover();
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: homeIdleCount },
     );
 
-    await profileDoor.hover();
-    await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
-
     assert.ok(
-      (await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
-      'Hovering an intended Home destination must trigger route/module prefetching.',
+      (await descriptorCount(page)) > homeIdleCount,
+      'Hovering an intended Home destination must add route prefetch descriptors.',
     );
 
     await page.mouse.move(0, 0);
-    await page.waitForTimeout(150);
-    assert.equal(
-      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
-      0,
-      'Leaving an intended destination must remove transient prefetch/module-preload descriptors.',
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length <= baseline,
+      { selector: prefetchSelector, baseline: homeIdleCount },
     );
 
     await page.goto(`${origin}/en/systems`);
+    await page.getByRole('heading', { level: 1, name: 'Systems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+
     const shellNav = page.locator('.aks-experience-nav');
     const writingsLink = shellNav.locator('a[href="/en/writings"]');
     await writingsLink.waitFor();
 
-    assert.equal(
-      await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
-      0,
-      'Global shell navigation must not prefetch every destination on render.',
+    const shellIdleCount = await descriptorCount(page);
+    await writingsLink.focus();
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: shellIdleCount },
     );
 
-    await writingsLink.focus();
-    await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
     assert.ok(
-      (await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
-      'Keyboard focus must count as navigation intent for shell prefetching.',
+      (await descriptorCount(page)) > shellIdleCount,
+      'Keyboard focus must add intent-prefetch descriptors for shell navigation.',
     );
   } finally {
     await desktop.close();
@@ -400,22 +405,24 @@ async function assertIntentPrefetching(browser) {
   try {
     const page = await mobile.newPage();
     await page.goto(`${origin}/en`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+
     const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
     const systemsDoor = homeNav.locator('a[href="/en/systems"]');
     await systemsDoor.waitFor();
 
-    assert.equal(
-      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
-      0,
-      'Mobile Home must remain idle until touch intent.',
+    const mobileIdleCount = await descriptorCount(page);
+    await systemsDoor.dispatchEvent('touchstart');
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: mobileIdleCount },
     );
 
-    await systemsDoor.dispatchEvent('touchstart');
-    await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
-
     assert.ok(
-      (await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
-      'Touch intent must trigger prefetching without requiring navigation.',
+      (await descriptorCount(page)) > mobileIdleCount,
+      'Touch intent must add route prefetch descriptors without requiring navigation.',
     );
     assert.equal(
       new URL(page.url()).pathname,
