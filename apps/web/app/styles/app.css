@@ -1036,3 +1036,22 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* AKS-058: an intentionally selected professional journey, not an exhaustive CV timeline. */
+.aks-profile-professional-journey {
+  display: grid;
+  gap: var(--aks-space-4);
+  padding-block-start: var(--aks-space-4);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-journey-list {
+  display: grid;
+  gap: var(--aks-space-4);
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.aks-profile-journey-list > li {
+  padding-inline-start: var(--aks-space-2);
+}
