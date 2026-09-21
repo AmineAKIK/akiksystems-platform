@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 import { BrandSignature, Container, Link, Text } from '@akiksystems/ui';
 
+import {
+  destinationById,
+  destinationFromPathname,
+  destinationHref,
+} from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
 export interface ExperienceShellProps {
@@ -11,20 +16,6 @@ export interface ExperienceShellProps {
   children: ReactNode;
 }
 
-function activeSection(pathname: string): 'home' | 'about' | 'systems' {
-  const segments = pathname.split('/').filter(Boolean);
-
-  if (segments[1] === 'about') {
-    return 'about';
-  }
-
-  if (segments[1] === 'systems') {
-    return 'systems';
-  }
-
-  return 'home';
-}
-
 export function ExperienceShell({
   locale,
   pathname,
@@ -33,15 +24,17 @@ export function ExperienceShell({
   children,
 }: ExperienceShellProps) {
   const dictionary = dictionaryFor(locale);
-  const section = activeSection(pathname);
+  const destinationId = destinationFromPathname(pathname);
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
-  const languageHref = alternateHref ?? `/${alternateLocale}`;
+  const languageHref =
+    alternateHref ??
+    (destinationId === null
+      ? `/${alternateLocale}`
+      : destinationHref(destinationId, alternateLocale));
   const sectionLabel =
-    section === 'systems'
-      ? dictionary.shell.systemsLabel
-      : section === 'about'
-        ? dictionary.shell.aboutLabel
-        : dictionary.shell.homeLabel;
+    destinationId === null
+      ? dictionary.shell.homeLabel
+      : destinationById(destinationId).label[locale];
   const contextLabel =
     currentTitle === null ? sectionLabel : `${sectionLabel} · ${currentTitle}`;
 
@@ -64,16 +57,16 @@ export function ExperienceShell({
               className="aks-experience-nav"
             >
               <Link
-                aria-current={section === 'home' ? 'page' : undefined}
+                aria-current={destinationId === null ? 'page' : undefined}
                 href={`/${locale}`}
               >
                 {dictionary.shell.homeLabel}
               </Link>
               <Link
-                aria-current={section === 'about' ? 'page' : undefined}
-                href={`/${locale}/about`}
+                aria-current={destinationId === 'profile' ? 'page' : undefined}
+                href={destinationHref('profile', locale)}
               >
-                {dictionary.shell.aboutLabel}
+                {dictionary.shell.profileLabel}
               </Link>
             </nav>
 
