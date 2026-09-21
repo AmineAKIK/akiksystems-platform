@@ -462,6 +462,158 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
   }
 }
 
+async function assertTenSecondComprehensionBaseline(browser) {
+  const scenarios = [
+    {
+      name: 'desktop Home',
+      viewport: { width: 1440, height: 900 },
+      path: '/en',
+      kind: 'home',
+    },
+    {
+      name: 'mobile Home',
+      viewport: { width: 390, height: 844 },
+      path: '/en',
+      kind: 'home',
+    },
+    {
+      name: 'desktop Sentinel deep link',
+      viewport: { width: 1440, height: 900 },
+      path: '/en/systems/sentinel',
+      kind: 'deep',
+    },
+    {
+      name: 'mobile Sentinel deep link',
+      viewport: { width: 390, height: 844 },
+      path: '/en/systems/sentinel',
+      kind: 'deep',
+    },
+  ];
+
+  const sessions = await Promise.all(
+    scenarios.map(async (scenario) => {
+      const context = await browser.newContext({ viewport: scenario.viewport });
+      const page = await context.newPage();
+      const response = await page.goto(`${origin}${scenario.path}`);
+      assert.equal(response?.status(), 200, `${scenario.name} must return HTTP 200.`);
+
+      if (scenario.kind === 'home') {
+        await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+      } else {
+        await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+      }
+
+      await page.waitForLoadState('networkidle');
+      return { ...scenario, context, page };
+    }),
+  );
+
+  try {
+    // Ten-second-test exposure: no clicks, scrolling, hover, focus, or explanatory prompt.
+    await sleep(10_000);
+
+    const observations = [];
+
+    for (const session of sessions) {
+      const { name, viewport, kind, page } = session;
+
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${name} must remain horizontally readable during first impression.`,
+      );
+
+      if (kind === 'home') {
+        await page.getByText('Independent software systems', { exact: true }).waitFor();
+        await page.getByText('Engineering made inspectable.', { exact: true }).waitFor();
+        await page
+          .getByText(
+            'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
+            { exact: true },
+          )
+          .waitFor();
+
+        const destinationLabels = await page
+          .locator('.aks-home-door-label')
+          .allInnerTexts();
+        assert.deepEqual(
+          destinationLabels.map((label) => label.trim()),
+          ['Profile', 'Systems', 'Writings', 'Learning', 'Work with us'],
+          `${name} must expose all five destination concepts without interaction.`,
+        );
+
+        const aboveFoldDestinations = await page
+          .locator('.aks-home-door')
+          .evaluateAll((links, height) =>
+            links
+              .filter((link) => {
+                const rect = link.getBoundingClientRect();
+                return rect.bottom > 0 && rect.top < height;
+              })
+              .map((link) =>
+                link.querySelector('.aks-home-door-label')?.textContent?.trim() ?? '',
+              )
+              .filter(Boolean),
+          viewport.height);
+
+        assert.ok(
+          aboveFoldDestinations.length >= 1,
+          `${name} must expose at least one concrete destination in the initial viewport.`,
+        );
+
+        observations.push({
+          scenario: name,
+          perceivedIdentityCues: [
+            'Independent software systems',
+            'AkikSystems',
+            'Engineering made inspectable.',
+          ],
+          destinationsPresent: destinationLabels.map((label) => label.trim()),
+          destinationsAboveFold: aboveFoldDestinations,
+        });
+      } else {
+        await page.locator('.aks-brand-signature').waitFor();
+        const localContext = page.locator('[aria-label="Current context"]');
+        assert.equal(await localContext.locator('a').getAttribute('href'), '/en/systems');
+        assert.equal(
+          (await localContext.locator('[aria-current="page"]').innerText()).trim(),
+          'Sentinel',
+          `${name} must identify the current deep-linked System without interaction.`,
+        );
+
+        const activeDestination = viewport.width <= 768
+          ? page.locator('.aks-experience-mobile-nav a[aria-current="page"]')
+          : page.locator('.aks-experience-nav a[aria-current="page"]');
+
+        if (viewport.width <= 768) {
+          await page.locator('.aks-experience-mobile-menu-trigger').waitFor();
+          assert.equal(
+            await page.locator('.aks-experience-mobile-menu').getAttribute('open'),
+            null,
+            'Ten-second mobile deep-link exposure must remain interaction-free.',
+          );
+        } else {
+          assert.equal(await activeDestination.getAttribute('href'), '/en/systems');
+        }
+
+        observations.push({
+          scenario: name,
+          perceivedIdentityCues: ['AkikSystems', 'Systems', 'Sentinel'],
+          currentContext: 'Systems / Sentinel',
+        });
+      }
+    }
+
+    process.stdout.write(
+      `AKS-053 ten-second automated baseline: ${JSON.stringify(observations)}\\n`,
+    );
+  } finally {
+    await Promise.all(sessions.map(({ context }) => context.close()));
+  }
+}
+
 async function assertGlobalKeyboardNavigation(browser) {
   const desktop = await browser.newContext({
     viewport: { width: 1280, height: 800 },
@@ -1062,6 +1214,7 @@ async function assertAxe(page) {
     await assertPublishedSystemDeepLinkAutonomy(browser);
     await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
     await assertRealDeviceClasses(browser, { includeDeep: true });
+    await assertTenSecondComprehensionBaseline(browser);
     await assertGlobalKeyboardNavigation(browser);
 
     const reducedDesktop = await browser.newContext({
