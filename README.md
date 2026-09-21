@@ -48,6 +48,23 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 - Primitives stay intentionally semantic and low-opinionated; page-specific composition remains in the web app.
 - The current bilingual walking-skeleton pages consume these primitives directly as proof of integration.
 
+## Private administration
+
+The administration surface is intentionally single-user and closed to public registration.
+
+- Better Auth provides database-backed sessions and email/password authentication.
+- Public sign-up is disabled; the single allowed identity is constrained by `ADMIN_EMAIL`.
+- The initial administrator is created only through the server-side `pnpm auth:bootstrap-admin`
+  command with a one-time `ADMIN_PASSWORD`.
+- `/admin` and `/admin/security` are guarded by server loaders and redirect anonymous requests to
+  `/admin/login`.
+- Production-mode cookies are HttpOnly, Secure, SameSite=Lax, and use an AkikSystems-specific prefix.
+- TOTP two-factor authentication and recovery codes are available through Better Auth.
+- Auth schema changes run through `pnpm auth:migrate` before application database migrations.
+
+Required server-only variables are `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and
+`ADMIN_EMAIL`. `ADMIN_PASSWORD` is intentionally only used for the one-time bootstrap command.
+
 ## Containers
 
 Web and Worker are built as separate Docker images from the same locked pnpm workspace.
@@ -124,6 +141,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-011 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-013 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, and shared UI foundations.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, and a secured single-user administration.
