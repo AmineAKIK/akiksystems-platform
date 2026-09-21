@@ -85,6 +85,18 @@ Professional Experience is modeled once and localized independently from Systems
 
 Broader Experience publication/profile rules remain outside AKS-016 and can evolve with the Profile milestone.
 
+### Presentation documents
+
+Each localized System can carry a versioned structured presentation document without becoming a page builder.
+
+- `system_localizations.presentation_document` stores the locale-specific document as JSONB.
+- Schema v1 is explicit and limited to `heading`, `paragraph`, `list`, `code`, `image`, and `quote` blocks.
+- Heading levels are constrained to h2/h3 semantics; lists are ordered or unordered; image blocks reference contextual asset IDs.
+- Raw HTML, embeds, templates, columns, arbitrary style/layout properties, and unknown blocks are rejected by the shared server-side validator.
+- The document carries an explicit `version: 1`; PostgreSQL also enforces the version, block-array envelope, and absence of unknown top-level controls.
+- EN and FR presentation documents remain independent because they live with their respective System localizations.
+- Code-defined renderers remain responsible for visual composition; content JSON carries semantics and evidence only.
+
 ### System links
 
 Systems can expose multiple ordered external destinations without adding dedicated URL columns.
@@ -194,6 +206,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm db:verify-assets
+pnpm db:verify-presentation-documents
 pnpm db:verify-system-experiences
 pnpm db:verify-system-links
 pnpm db:verify-system-technologies
@@ -207,6 +220,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-018 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-019 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, and ordered typed System links.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, and versioned localized presentation documents.
