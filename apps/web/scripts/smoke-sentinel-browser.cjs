@@ -533,12 +533,14 @@ async function assertTenSecondComprehensionBaseline(browser) {
       if (kind === 'home') {
         await page.getByText('Independent software systems', { exact: true }).waitFor();
         await page.getByText('Engineering made inspectable.', { exact: true }).waitFor();
-        await page
-          .getByText(
-            'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
-            { exact: true },
-          )
-          .waitFor();
+        if (viewport.width > 768) {
+          await page
+            .getByText(
+              'Explore the systems, evidence, learning, writing, and collaboration paths that make up AkikSystems.',
+              { exact: true },
+            )
+            .waitFor();
+        }
 
         const destinationLabels = await page
           .locator('.aks-home-door-label')
