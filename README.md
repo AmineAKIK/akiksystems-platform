@@ -85,6 +85,17 @@ Professional Experience is modeled once and localized independently from Systems
 
 Broader Experience publication/profile rules remain outside AKS-016 and can evolve with the Profile milestone.
 
+### System links
+
+Systems can expose multiple ordered external destinations without adding dedicated URL columns.
+
+- `system_links` stores one typed link per row with a UUID, System relation, kind, URL, and position.
+- Supported kinds are `live`, `repository`, `demo`, and `documentation`.
+- URLs must use HTTP or HTTPS; unsafe schemes such as `javascript:` are rejected by PostgreSQL constraints.
+- Position is unique per System and non-negative, giving a stable explicit presentation order.
+- Exact duplicate kind+URL pairs are rejected for the same System.
+- Deleting a System cascades its links; the System table itself remains free of one-off URL columns.
+
 ### Contextual assets
 
 Assets are stored once, related to domain context, and localized independently.
@@ -184,6 +195,7 @@ pnpm test
 pnpm build
 pnpm db:verify-assets
 pnpm db:verify-system-experiences
+pnpm db:verify-system-links
 pnpm db:verify-system-technologies
 pnpm smoke:web
 pnpm smoke:worker
@@ -195,6 +207,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-017 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-018 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, and contextual S3-backed asset management.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, and ordered typed System links.

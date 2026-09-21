@@ -3,6 +3,7 @@ import type {
   SystemEditorialState,
   SystemExperienceRelationKind,
   SystemLifecycle,
+  SystemLinkKind,
 } from '@akiksystems/core';
 import type {
   ColumnType,
@@ -119,6 +120,16 @@ export interface SystemAssetsTable {
   created_at: TimestampColumn;
 }
 
+export interface SystemLinksTable {
+  id: string;
+  system_id: string;
+  kind: SystemLinkKind;
+  url: string;
+  position: number;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export type SystemRow = Selectable<SystemsTable>;
 export type NewSystemRow = Insertable<SystemsTable>;
 export type SystemUpdate = Updateable<SystemsTable>;
@@ -162,6 +173,10 @@ export type SystemAssetRow = Selectable<SystemAssetsTable>;
 export type NewSystemAssetRow = Insertable<SystemAssetsTable>;
 export type SystemAssetUpdate = Updateable<SystemAssetsTable>;
 
+export type SystemLinkRow = Selectable<SystemLinksTable>;
+export type NewSystemLinkRow = Insertable<SystemLinksTable>;
+export type SystemLinkUpdate = Updateable<SystemLinksTable>;
+
 export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
@@ -174,4 +189,5 @@ export interface Database {
   assets: AssetsTable;
   asset_localizations: AssetLocalizationsTable;
   system_assets: SystemAssetsTable;
+  system_links: SystemLinksTable;
 }
