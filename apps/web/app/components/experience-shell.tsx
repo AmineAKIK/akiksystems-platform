@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { BrandMark, Container } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
@@ -25,6 +25,12 @@ export function ExperienceShell({
   currentTitle = null,
   children,
 }: ExperienceShellProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
@@ -82,7 +88,11 @@ export function ExperienceShell({
               ))}
             </nav>
 
-            <details className="aks-experience-mobile-menu" key={pathname}>
+            <details
+              className="aks-experience-mobile-menu"
+              onToggle={(event) => setMobileMenuOpen(event.currentTarget.open)}
+              open={mobileMenuOpen}
+            >
               <summary className="aks-experience-mobile-menu-trigger">
                 <span>{dictionary.shell.menuLabel}</span>
                 <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
