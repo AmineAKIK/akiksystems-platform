@@ -47,6 +47,107 @@ async function waitForServer() {
   throw new Error(`Sentinel browser smoke server did not become ready. stderr=${stderr}`);
 }
 
+async function assertProfileAdministration(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', { level: 1, name: 'Professional identity', exact: true })
+    .waitFor();
+
+  const portraitInput = page.locator('input[name="file"]');
+  await portraitInput.waitFor();
+  assert.equal(
+    await portraitInput.getAttribute('accept'),
+    'image/jpeg,image/png,image/webp,image/avif',
+    'Profile portrait admin must accept image formats only.',
+  );
+  assert.notEqual(
+    await page.locator('input[name="altEn"]').getAttribute('required'),
+    null,
+    'English portrait alt text must be required.',
+  );
+  assert.notEqual(
+    await page.locator('input[name="altFr"]').getAttribute('required'),
+    null,
+    'French portrait alt text must be required.',
+  );
+
+  await page.locator('input[name="displayName"]').fill('Amine AKIK');
+  await page
+    .locator('input[name="professionalTitleEn"]')
+    .fill('Software systems builder');
+  await page
+    .locator('textarea[name="introductionEn"]')
+    .fill('I design and build inspectable software systems.');
+  await page
+    .locator('textarea[name="foundationalCopyEn"]')
+    .fill('This Profile connects professional identity to inspectable evidence without reproducing a CV.');
+  await page
+    .locator('input[name="professionalTitleFr"]')
+    .fill('Concepteur de systèmes logiciels');
+  await page
+    .locator('textarea[name="introductionFr"]')
+    .fill('Je conçois et construis des systèmes logiciels inspectables.');
+  await page
+    .locator('textarea[name="foundationalCopyFr"]')
+    .fill('Ce Profil relie l’identité professionnelle à des preuves inspectables sans reproduire un CV.');
+
+  await page.getByRole('button', { name: 'Save professional identity' }).click();
+  await page.getByText('Professional identity updated.').waitFor();
+
+  await page.goto(`${origin}/en/profile`);
+  await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+  await page.getByText('Software systems builder', { exact: true }).waitFor();
+  await page
+    .getByText('I design and build inspectable software systems.', { exact: true })
+    .waitFor();
+  await page
+    .getByText(
+      'This Profile connects professional identity to inspectable evidence without reproducing a CV.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal(
+    await page.locator('.aks-experience-meta a[hreflang="fr"]').getAttribute('href'),
+    '/fr/profil',
+  );
+
+  await page.goto(`${origin}/fr/profil`);
+  await page.getByRole('heading', { level: 1, name: 'Profil', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+  await page.getByText('Concepteur de systèmes logiciels', { exact: true }).waitFor();
+  await page
+    .getByText('Je conçois et construis des systèmes logiciels inspectables.', { exact: true })
+    .waitFor();
+  await page
+    .getByText(
+      'Ce Profil relie l’identité professionnelle à des preuves inspectables sans reproduire un CV.',
+      { exact: true },
+    )
+    .waitFor();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const target of [
+    { path: '/en/profile', heading: 'Profile' },
+    { path: '/fr/profil', heading: 'Profil' },
+  ]) {
+    await page.goto(`${origin}${target.path}`);
+    await page
+      .getByRole('heading', { level: 1, name: target.heading, exact: true })
+      .waitFor();
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${target.path} administered Profile must not overflow on mobile.`,
+    );
+    await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+  }
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function saveLocalization(page, locale, values) {
   const heading = locale === 'en' ? 'English' : 'Français';
   const button = locale === 'en' ? 'Save EN only' : 'Save FR only';
@@ -1140,6 +1241,9 @@ async function assertAxe(page) {
     await page.getByLabel('Password').fill(adminPassword);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL(`${origin}/admin`);
+
+    await assertProfileAdministration(page);
+    await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();
     await page.waitForURL(/\/admin\/systems\/[0-9a-f-]+$/i);

@@ -134,6 +134,7 @@ export default function Admin() {
                 Two-factor authentication: {data.twoFactorEnabled ? 'enabled' : 'available'}
               </Text>
               <div className="aks-proof-actions">
+                <Link href="/admin/profile">Professional identity</Link>
                 <Link href="/admin/security">Security settings</Link>
                 <Button disabled={pending} emphasis="quiet" onClick={signOut}>
                   {pending ? 'Signing out…' : 'Sign out'}
