@@ -273,6 +273,105 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
   }
 }
 
+async function assertStaticHomeOrientation(browser, locale, viewport) {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport,
+  });
+
+  try {
+    const page = await context.newPage();
+    const path = locale === 'fr' ? '/fr' : '/en';
+    const navigationLabel = locale === 'fr' ? 'Explorer AkikSystems' : 'Explore AkikSystems';
+    const hrefs =
+      locale === 'fr'
+        ? [
+            '/fr/profil',
+            '/fr/systems',
+            '/fr/ecrits',
+            '/fr/apprentissage',
+            '/fr/travailler-ensemble',
+          ]
+        : [
+            '/en/profile',
+            '/en/systems',
+            '/en/writings',
+            '/en/learning',
+            '/en/work-with-us',
+          ];
+
+    const response = await page.goto(`${origin}${path}`);
+    assert.equal(response?.status(), 200, `${path} must SSR without JavaScript.`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+
+    const navigation = page.getByRole('navigation', { name: navigationLabel });
+    await navigation.waitFor();
+
+    for (const href of hrefs) {
+      const door = navigation.locator(`a[href="${href}"]`);
+      await door.waitFor();
+      assert.equal(await door.isVisible(), true, `${href} must be visible before enhancement.`);
+    }
+
+    const staticState = await page.evaluate((expectedHrefs) => {
+      const intro = document.querySelector('.aks-home-intro');
+      const doors = expectedHrefs
+        .map((href) => document.querySelector(`.aks-home-door[href="${href}"]`))
+        .filter((element) => element instanceof HTMLElement);
+
+      if (!(intro instanceof HTMLElement) || doors.length !== expectedHrefs.length) {
+        return null;
+      }
+
+      const introStyles = getComputedStyle(intro);
+      return {
+        intro: {
+          opacity: introStyles.opacity,
+          visibility: introStyles.visibility,
+          animationName: introStyles.animationName,
+          transform: introStyles.transform,
+        },
+        doors: doors.map((door) => {
+          const styles = getComputedStyle(door);
+          return {
+            opacity: styles.opacity,
+            visibility: styles.visibility,
+            animationName: styles.animationName,
+            transform: styles.transform,
+          };
+        }),
+        overflowFree:
+          document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      };
+    }, hrefs);
+
+    assert.ok(staticState, 'Static Home orientation must be measurable.');
+    assert.deepEqual(
+      staticState.intro,
+      {
+        opacity: '1',
+        visibility: 'visible',
+        animationName: 'none',
+        transform: 'none',
+      },
+      'Home identity must be fully legible in the initial static state.',
+    );
+    assert.ok(
+      staticState.doors.every(
+        (door) =>
+          door.opacity === '1' &&
+          door.visibility === 'visible' &&
+          door.animationName === 'none' &&
+          door.transform === 'none',
+      ),
+      'All Home destinations must be fully legible before motion or JavaScript loads.',
+    );
+    assert.equal(staticState.overflowFree, true, 'Static Home must not overflow the viewport.');
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertAxe(page) {
   await page.addScriptTag({ content: axe.source });
   const result = await page.evaluate(async () => globalThis.axe.run(document));
@@ -302,6 +401,11 @@ async function assertAxe(page) {
     await assertGlobalDestinations(page);
     await assertHomePortal(page, 'en');
     await assertHomePortal(page, 'fr');
+
+    await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
+    await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
+    await assertStaticHomeOrientation(browser, 'en', { width: 320, height: 720 });
+    await assertStaticHomeOrientation(browser, 'fr', { width: 320, height: 720 });
 
     await page.goto(`${origin}/admin/login`);
     await page.getByLabel('Email').fill(adminEmail);
@@ -613,6 +717,26 @@ async function assertAxe(page) {
       assert.match(
         await noJsPage.locator('body').innerText(),
         /Sentinel turns operational signals/,
+      );
+      await noJsPage.locator('.aks-brand-signature').waitFor();
+      for (const href of [
+        '/en/profile',
+        '/en/systems',
+        '/en/writings',
+        '/en/learning',
+        '/en/work-with-us',
+      ]) {
+        await noJsPage.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+      }
+      assert.equal(
+        await noJsPage.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
+        '/en/systems',
+        'Deep-link orientation must identify Systems before client enhancement.',
+      );
+      assert.equal(
+        await noJsPage.locator('[aria-label="Current context"] [aria-current="page"]').innerText(),
+        'Sentinel',
+        'Deep-link local context must identify the current System without JavaScript.',
       );
     } finally {
       await noJs.close();
