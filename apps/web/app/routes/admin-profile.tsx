@@ -275,6 +275,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     principles,
     selectableSystems,
     selectedSystems,
+    selectableExperiences,
+    selectedExperiences,
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
