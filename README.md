@@ -75,6 +75,15 @@ The Experience Shell exposes Home plus all five global destinations from every l
 - The desktop composition keeps the complete first-level information architecture visible in one persistent shell.
 - Narrow layouts retain the same complete destination set in an overflow-safe row; the dedicated touch-oriented mobile navigation treatment remains scoped to AKS-041.
 
+### Mobile global navigation
+
+At narrow viewports, the Experience Shell switches from the persistent desktop row to a native disclosure menu.
+
+- The menu uses semantic `details/summary`, so opening and closing require no client-side JavaScript.
+- Home and all five global destinations remain available, with the current first-level destination marked by `aria-current="page"`.
+- Menu links provide at least 44px touch targets, and the shell preserves the route context and locale control outside the disclosure.
+- The browser qualification exercises the menu at 320px, verifies collapsed/open behavior, touch target size, active deep-route orientation, and no horizontal page overflow.
+
 ## Experience Shell
 
 The public `/:locale` route boundary owns the AkikSystems Experience Shell.

@@ -115,8 +115,24 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
       .waitFor();
     await page.locator('.aks-brand-signature').waitFor();
 
-    for (const href of expectedNavigation[destination.lang]) {
-      await page.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+    if (mobile) {
+      const menu = page.locator('.aks-experience-mobile-menu');
+      const trigger = page.locator('.aks-experience-mobile-menu-trigger');
+      await trigger.waitFor();
+      assert.equal(await menu.getAttribute('open'), null, 'Mobile menu should start collapsed.');
+      await trigger.click();
+      assert.notEqual(await menu.getAttribute('open'), null, 'Mobile menu should open on tap.');
+
+      for (const href of expectedNavigation[destination.lang]) {
+        const link = page.locator(`.aks-experience-mobile-nav a[href="${href}"]`);
+        await link.waitFor();
+        const box = await link.boundingBox();
+        assert.ok(box && box.height >= 44, `${href} must expose a 44px mobile touch target.`);
+      }
+    } else {
+      for (const href of expectedNavigation[destination.lang]) {
+        await page.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+      }
     }
 
     const contextLabel =
@@ -284,6 +300,21 @@ async function assertAxe(page) {
       const mobilePage = await mobile.newPage();
       await assertGlobalDestinations(mobilePage, { mobile: true });
       await mobilePage.goto(`${origin}/en/systems/sentinel`);
+      const mobileMenu = mobilePage.locator('.aks-experience-mobile-menu');
+      await mobilePage.locator('.aks-experience-mobile-menu-trigger').click();
+      assert.equal(
+        await mobilePage
+          .locator('.aks-experience-mobile-nav a[aria-current="page"]')
+          .getAttribute('href'),
+        '/en/systems',
+        'Mobile deep System routes must preserve Systems as the active destination.',
+      );
+      await mobilePage.locator('.aks-experience-mobile-menu-trigger').click();
+      assert.equal(await mobileMenu.getAttribute('open'), null);
+
+      // Reload before the keyboard-only skip-link scenario so focus starts from
+      // the document rather than remaining on the disclosure trigger.
+      await mobilePage.goto(`${origin}/en/systems/sentinel`);
       await mobilePage.keyboard.press('Tab');
       assert.equal(
         await mobilePage.evaluate(() => document.activeElement?.classList.contains('aks-skip-link')),
@@ -360,7 +391,7 @@ async function assertAxe(page) {
     }
 
     process.stdout.write(
-      'Sentinel L1 browser qualification passed: global destination deep links on desktop/mobile, admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\\n',
+      'Sentinel L1 browser qualification passed: global destination deep links and touch navigation on desktop/mobile, admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\\n',
     );
   } finally {
     await browser.close();

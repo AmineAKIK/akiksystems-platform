@@ -74,6 +74,35 @@ export function ExperienceShell({
               ))}
             </nav>
 
+            <details className="aks-experience-mobile-menu">
+              <summary className="aks-experience-mobile-menu-trigger">
+                <span>{dictionary.shell.menuLabel}</span>
+                <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
+                  +
+                </span>
+              </summary>
+              <nav
+                aria-label={dictionary.shell.navigationLabel}
+                className="aks-experience-mobile-nav"
+              >
+                <Link
+                  aria-current={destinationId === null ? 'page' : undefined}
+                  href={`/${locale}`}
+                >
+                  {dictionary.shell.homeLabel}
+                </Link>
+                {globalDestinations.map((destination) => (
+                  <Link
+                    aria-current={destinationId === destination.id ? 'page' : undefined}
+                    href={destinationHref(destination.id, locale)}
+                    key={destination.id}
+                  >
+                    {destination.label[locale]}
+                  </Link>
+                ))}
+              </nav>
+            </details>
+
             <div className="aks-experience-meta">
               <Text
                 aria-label={dictionary.shell.currentContextLabel}
