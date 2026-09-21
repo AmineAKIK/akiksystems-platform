@@ -144,3 +144,25 @@
 .aks-admin-code-input {
   font-family: var(--aks-font-mono);
 }
+
+
+.aks-admin-domain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--aks-space-5);
+}
+
+.aks-admin-fieldset {
+  display: grid;
+  gap: var(--aks-space-4);
+  min-width: 0;
+  margin: 0;
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-sm);
+}
+
+.aks-admin-fieldset legend {
+  padding-inline: var(--aks-space-2);
+  font-weight: 700;
+}
