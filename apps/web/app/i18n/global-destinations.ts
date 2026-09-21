@@ -29,7 +29,7 @@ export const globalDestinations: readonly GlobalDestination[] = [
   },
   {
     id: 'systems',
-    slug: { en: 'systems', fr: 'systemes' },
+    slug: { en: 'systems', fr: 'systems' },
     label: { en: 'Systems', fr: 'Systèmes' },
     description: {
       en: 'Software systems, products, and operating tools built through AkikSystems.',
