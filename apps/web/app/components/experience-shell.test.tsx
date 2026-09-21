@@ -48,6 +48,40 @@ describe('ExperienceShell', () => {
     expect(html).toContain('<main><h1>Sentinel</h1></main>');
   });
 
+  it('derives the equivalent localized first-level destination when no override is supplied', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <ExperienceShell locale="en" pathname="/en/profile">
+          <main><h1>Profile</h1></main>
+        </ExperienceShell>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain(
+      'hrefLang="fr" lang="fr" href="/fr/profil" data-discover="true">Français</a>',
+    );
+  });
+
+  it('renders an explicit non-link state when a deep translation is unavailable', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/systems/sentinel']}>
+        <ExperienceShell
+          alternateHref={null}
+          currentTitle="Sentinel"
+          locale="en"
+          pathname="/en/systems/sentinel"
+        >
+          <main><h1>Sentinel</h1></main>
+        </ExperienceShell>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain(
+      '<span aria-disabled="true" class="aks-language-unavailable">French unavailable</span>',
+    );
+    expect(html).not.toContain('hrefLang="fr" lang="fr" href="/fr"');
+  });
+
   it('marks the current top-level destination and localizes the shell in French', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/fr/about']}>
