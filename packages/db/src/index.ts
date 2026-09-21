@@ -1,5 +1,8 @@
 export { getPublicProfile } from './public-profile.js';
-export type { PublicProfile } from './public-profile.js';
+export type {
+  PublicProfile,
+  PublicProfileWorkPrinciple,
+} from './public-profile.js';
 export { getPublishedSystem } from './public-system.js';
 export type {
   GetPublishedSystemInput,
@@ -36,6 +39,8 @@ export type {
   NewExperienceRow,
   NewProfileLocalizationRow,
   NewProfileRow,
+  NewProfileWorkPrincipleLocalizationRow,
+  NewProfileWorkPrincipleRow,
   NewSystemAssetRow,
   NewSystemExperienceRow,
   NewSystemLinkRow,
@@ -50,6 +55,12 @@ export type {
   ProfileRow,
   ProfilesTable,
   ProfileUpdate,
+  ProfileWorkPrincipleLocalizationRow,
+  ProfileWorkPrincipleLocalizationsTable,
+  ProfileWorkPrincipleLocalizationUpdate,
+  ProfileWorkPrincipleRow,
+  ProfileWorkPrinciplesTable,
+  ProfileWorkPrincipleUpdate,
   SystemAssetRow,
   SystemAssetsTable,
   SystemAssetUpdate,
