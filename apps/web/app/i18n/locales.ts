@@ -10,6 +10,7 @@ export interface UiDictionary {
     homeLabel: string;
     profileLabel: string;
     currentContextLabel: string;
+    languageUnavailableLabel: string;
   };
   home: {
     eyebrow: string;
@@ -35,6 +36,7 @@ const dictionaries = {
       homeLabel: 'Home',
       profileLabel: 'Profile',
       currentContextLabel: 'Current context',
+      languageUnavailableLabel: 'French unavailable',
     },
     home: {
       eyebrow: 'Independent software systems',
@@ -59,6 +61,7 @@ const dictionaries = {
       homeLabel: 'Accueil',
       profileLabel: 'Profil',
       currentContextLabel: 'Contexte actuel',
+      languageUnavailableLabel: 'Anglais indisponible',
     },
     home: {
       eyebrow: 'Systèmes logiciels indépendants',
