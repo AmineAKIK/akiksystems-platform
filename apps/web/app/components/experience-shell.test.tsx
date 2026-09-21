@@ -21,7 +21,7 @@ describe('ExperienceShell', () => {
 
     expect(html).toContain('class="aks-skip-link" href="#experience-outlet"');
     expect(html).toContain('class="aks-brand-signature"');
-    expect(html).toContain('class="aks-brand-mark"');
+    expect(html).toContain('<svg aria-hidden="true" class="aks-brand-mark"');
     expect(html).toContain('class="aks-brand-wordmark">AkikSystems</span>');
     expect(html).toContain('aria-label="Primary navigation"');
     expect(html).toContain('href="/en" data-discover="true">Home</a>');
