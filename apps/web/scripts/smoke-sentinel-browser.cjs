@@ -558,9 +558,10 @@ async function assertTenSecondComprehensionBaseline(browser) {
               .filter(Boolean),
           viewport.height);
 
-        assert.ok(
-          aboveFoldDestinations.length >= 1,
-          `${name} must expose at least one concrete destination in the initial viewport.`,
+        assert.deepEqual(
+          aboveFoldDestinations,
+          ['Profile', 'Systems', 'Writings', 'Learning', 'Work with us'],
+          `${name} must expose all five destinations in the initial viewport.`,
         );
 
         observations.push({
@@ -750,6 +751,11 @@ async function assertGlobalKeyboardNavigation(browser) {
     );
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/en/systems`);
+    assert.equal(
+      await page.locator('.aks-experience-mobile-menu').getAttribute('open'),
+      null,
+      'Mobile navigation must reset closed after route navigation.',
+    );
 
     await page.goto(`${origin}/en/profile`);
     await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
