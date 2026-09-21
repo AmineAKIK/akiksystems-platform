@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Container } from '@akiksystems/ui';
+import { BrandMark, Container } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
 import {
@@ -51,9 +51,7 @@ export function ExperienceShell({
               to={`/${locale}`}
               viewTransition
             >
-              <span aria-hidden="true" className="aks-brand-mark">
-                <span className="aks-brand-mark-core" />
-              </span>
+              <BrandMark />
               <span className="aks-brand-wordmark">AkikSystems</span>
             </RouterLink>
 
@@ -84,7 +82,7 @@ export function ExperienceShell({
               ))}
             </nav>
 
-            <details className="aks-experience-mobile-menu">
+            <details className="aks-experience-mobile-menu" key={pathname}>
               <summary className="aks-experience-mobile-menu-trigger">
                 <span>{dictionary.shell.menuLabel}</span>
                 <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
