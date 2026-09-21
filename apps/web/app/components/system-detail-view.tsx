@@ -1,5 +1,6 @@
 import type {
   PlatformLocale,
+  PresentationBlock,
   PresentationDocument,
   SystemLinkKind,
 } from '@akiksystems/core';
@@ -37,6 +38,13 @@ export interface SystemDetailViewProps {
   preview?: boolean;
 }
 
+interface PresentationBlockViewProps {
+  block: PresentationBlock;
+  index: number;
+  locale: PlatformLocale;
+  assetById: ReadonlyMap<string, SystemDetailAsset>;
+}
+
 function linkLabel(kind: SystemLinkKind, locale: PlatformLocale): string {
   const labels = {
     live: locale === 'fr' ? 'Site' : 'Live',
@@ -46,6 +54,113 @@ function linkLabel(kind: SystemLinkKind, locale: PlatformLocale): string {
   };
 
   return labels[kind];
+}
+
+export function PresentationBlockView({
+  block,
+  index,
+  locale,
+  assetById,
+}: PresentationBlockViewProps) {
+  const key = `${block.type}-${index}`;
+
+  switch (block.type) {
+    case 'heading':
+      return (
+        <Heading key={key} level={block.level} size="sm">
+          {block.text}
+        </Heading>
+      );
+    case 'paragraph':
+      return <Text key={key}>{block.text}</Text>;
+    case 'list': {
+      const List = block.style === 'ordered' ? 'ol' : 'ul';
+
+      return (
+        <List className="aks-system-presentation-list" key={key}>
+          {block.items.map((item, itemIndex) => (
+            <li key={`${key}-${itemIndex}`}>{item}</li>
+          ))}
+        </List>
+      );
+    }
+    case 'code':
+      return (
+        <pre className="aks-system-presentation-code" key={key}>
+          <code data-language={block.language ?? undefined}>{block.code}</code>
+        </pre>
+      );
+    case 'image': {
+      const asset = assetById.get(block.assetId);
+
+      if (asset === undefined) {
+        return null;
+      }
+
+      if (!asset.mimeType.startsWith('image/')) {
+        return (
+          <p key={key}>
+            <Link href={asset.url}>
+              {asset.caption ??
+                (locale === 'fr' ? 'Ouvrir le document' : 'Open document')}
+            </Link>
+          </p>
+        );
+      }
+
+      return (
+        <figure className="aks-system-presentation-figure" key={key}>
+          <img
+            alt={asset.altText ?? ''}
+            decoding="async"
+            loading="lazy"
+            src={asset.url}
+          />
+          {asset.caption !== null ? (
+            <figcaption>{asset.caption}</figcaption>
+          ) : null}
+        </figure>
+      );
+    }
+    case 'quote':
+      return (
+        <blockquote className="aks-system-presentation-quote" key={key}>
+          <Text>{block.text}</Text>
+          {block.attribution !== null ? (
+            <footer>— {block.attribution}</footer>
+          ) : null}
+        </blockquote>
+      );
+  }
+}
+
+export function SystemPresentation({
+  document,
+  locale,
+  assets,
+}: {
+  document: PresentationDocument;
+  locale: PlatformLocale;
+  assets: SystemDetailAsset[];
+}) {
+  const assetById = new Map(assets.map((asset) => [asset.id, asset]));
+
+  return (
+    <section
+      aria-label={locale === 'fr' ? 'Présentation du système' : 'System presentation'}
+      className="aks-system-presentation"
+    >
+      {document.blocks.map((block, index) => (
+        <PresentationBlockView
+          assetById={assetById}
+          block={block}
+          index={index}
+          key={`${block.type}-${index}`}
+          locale={locale}
+        />
+      ))}
+    </section>
+  );
 }
 
 export function SystemDetailView({
@@ -60,8 +175,6 @@ export function SystemDetailView({
   assets,
   preview = false,
 }: SystemDetailViewProps) {
-  const assetById = new Map(assets.map((asset) => [asset.id, asset]));
-
   return (
     <main className="aks-system-detail">
       <Container>
@@ -72,6 +185,7 @@ export function SystemDetailView({
                 {locale === 'fr' ? 'Aperçu privé' : 'Private preview'}
               </Text>
             ) : null}
+
             <Heading level={1} size="lg">
               {title}
             </Heading>
@@ -115,84 +229,11 @@ export function SystemDetailView({
             </aside>
           ) : null}
 
-          <div className="aks-system-presentation">
-            {presentationDocument.blocks.map((block, index) => {
-              const key = `${block.type}-${index}`;
-
-              switch (block.type) {
-                case 'heading':
-                  return (
-                    <Heading key={key} level={block.level} size="sm">
-                      {block.text}
-                    </Heading>
-                  );
-                case 'paragraph':
-                  return <Text key={key}>{block.text}</Text>;
-                case 'list': {
-                  const List = block.style === 'ordered' ? 'ol' : 'ul';
-                  return (
-                    <List className="aks-system-presentation-list" key={key}>
-                      {block.items.map((item, itemIndex) => (
-                        <li key={`${key}-${itemIndex}`}>{item}</li>
-                      ))}
-                    </List>
-                  );
-                }
-                case 'code':
-                  return (
-                    <pre className="aks-system-presentation-code" key={key}>
-                      <code
-                        data-language={block.language ?? undefined}
-                      >
-                        {block.code}
-                      </code>
-                    </pre>
-                  );
-                case 'image': {
-                  const asset = assetById.get(block.assetId);
-
-                  if (asset === undefined) {
-                    return null;
-                  }
-
-                  if (!asset.mimeType.startsWith('image/')) {
-                    return (
-                      <p key={key}>
-                        <Link href={asset.url}>
-                          {asset.caption ??
-                            (locale === 'fr'
-                              ? 'Ouvrir le document'
-                              : 'Open document')}
-                        </Link>
-                      </p>
-                    );
-                  }
-
-                  return (
-                    <figure className="aks-system-presentation-figure" key={key}>
-                      <img
-                        alt={asset.altText ?? ''}
-                        loading="lazy"
-                        src={asset.url}
-                      />
-                      {asset.caption !== null ? (
-                        <figcaption>{asset.caption}</figcaption>
-                      ) : null}
-                    </figure>
-                  );
-                }
-                case 'quote':
-                  return (
-                    <blockquote className="aks-system-presentation-quote" key={key}>
-                      <Text>{block.text}</Text>
-                      {block.attribution !== null ? (
-                        <footer>— {block.attribution}</footer>
-                      ) : null}
-                    </blockquote>
-                  );
-              }
-            })}
-          </div>
+          <SystemPresentation
+            assets={assets}
+            document={presentationDocument}
+            locale={locale}
+          />
         </article>
       </Container>
     </main>
