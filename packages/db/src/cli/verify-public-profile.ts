@@ -42,6 +42,114 @@ try {
   assert.equal(english.alternateLocale, 'fr');
   assert.equal(french.alternateLocale, 'en');
 
+  const profileId = profiles[0]?.id;
+  assert.ok(profileId);
+
+  const portraitId = randomUUID();
+  await db
+    .insertInto('assets')
+    .values({
+      id: portraitId,
+      storage_key: `qualification/profile/${portraitId}.webp`,
+      original_filename: 'profile.webp',
+      mime_type: 'image/webp',
+      byte_size: 128,
+    })
+    .execute();
+
+  await db
+    .insertInto('asset_localizations')
+    .values([
+      {
+        asset_id: portraitId,
+        locale: 'en',
+        alt_text: 'Professional portrait',
+        caption: null,
+      },
+      {
+        asset_id: portraitId,
+        locale: 'fr',
+        alt_text: 'Portrait professionnel',
+        caption: null,
+      },
+    ])
+    .execute();
+
+  await db
+    .updateTable('profiles')
+    .set({
+      display_name: 'Qualification Person',
+      portrait_asset_id: portraitId,
+      updated_at: new Date(),
+    })
+    .where('id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  await db
+    .updateTable('profile_localizations')
+    .set({
+      professional_title: 'Software systems builder',
+      introduction: 'English introduction.',
+      foundational_copy: 'English foundational copy.',
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+
+  await db
+    .updateTable('profile_localizations')
+    .set({
+      professional_title: 'Concepteur de systèmes logiciels',
+      introduction: 'Introduction française.',
+      foundational_copy: 'Texte fondateur français.',
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .where('locale', '=', 'fr')
+    .executeTakeFirstOrThrow();
+
+  const administeredEnglish = await getPublicProfile(db, 'en');
+  const administeredFrench = await getPublicProfile(db, 'fr');
+  assert.ok(administeredEnglish);
+  assert.ok(administeredFrench);
+  assert.equal(administeredEnglish.displayName, 'Qualification Person');
+  assert.equal(administeredFrench.displayName, 'Qualification Person');
+  assert.equal(administeredEnglish.professionalTitle, 'Software systems builder');
+  assert.equal(
+    administeredFrench.professionalTitle,
+    'Concepteur de systèmes logiciels',
+  );
+  assert.equal(administeredEnglish.portraitAssetId, portraitId);
+  assert.equal(administeredEnglish.portraitAltText, 'Professional portrait');
+  assert.equal(
+    administeredFrench.portraitAltText,
+    'Portrait professionnel',
+  );
+
+  await db
+    .updateTable('profiles')
+    .set({
+      display_name: null,
+      portrait_asset_id: null,
+      updated_at: new Date(),
+    })
+    .where('id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  await db
+    .updateTable('profile_localizations')
+    .set({
+      professional_title: null,
+      introduction: null,
+      foundational_copy: null,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .execute();
+
+  await db.deleteFrom('assets').where('id', '=', portraitId).execute();
+
   let duplicateError: unknown;
   try {
     await db
@@ -75,7 +183,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, EN/FR localizations, localized public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();
