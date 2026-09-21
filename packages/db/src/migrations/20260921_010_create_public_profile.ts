@@ -51,21 +51,17 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 
-  await db
-    .insertInto('profiles')
-    .values({
-      id: publicProfileId,
-      singleton_key: 'public',
-    })
-    .execute();
+  await sql`
+    insert into profiles (id, singleton_key)
+    values (${publicProfileId}::uuid, 'public')
+  `.execute(db);
 
-  await db
-    .insertInto('profile_localizations')
-    .values([
-      { profile_id: publicProfileId, locale: 'en' },
-      { profile_id: publicProfileId, locale: 'fr' },
-    ])
-    .execute();
+  await sql`
+    insert into profile_localizations (profile_id, locale)
+    values
+      (${publicProfileId}::uuid, 'en'),
+      (${publicProfileId}::uuid, 'fr')
+  `.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
