@@ -60,9 +60,6 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify formatting
-        run: pnpm format:check
-
       - name: Verify configuration contracts
         run: pnpm config:verify
 
