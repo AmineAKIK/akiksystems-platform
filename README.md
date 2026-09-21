@@ -327,8 +327,20 @@ pnpm observability:verify
 pnpm format:check
 ```
 
+## L1 Sentinel qualification
+
+The Sentinel vertical slice (AKS-028 through AKS-036) is the first end-to-end System qualification baseline.
+
+- Public Sentinel renders inside minimal AkikSystems context with publication-aware EN/FR navigation.
+- Public routes emit technical SEO metadata (title/description, canonical, published-only hreflang, OpenGraph); private preview remains non-indexable.
+- CI provisions PostgreSQL 16 and executes the System constraint/read-model verification suite before browser qualification.
+- Chromium covers admin login → bilingual edit → private preview → independent publication → localized public SSR.
+- The browser gate checks keyboard/focus, semantic structure, 320px reflow, reduced-motion preference, axe serious/critical violations, no-JS reading, and mobile Lighthouse performance.
+- The post-Sentinel architecture review is recorded in Linear before the pattern is replicated to later portfolio areas.
+- Railway staging health is checked through `GET /health`; published content routes are never used as infrastructure liveness probes.
+
 ## Backlog traceability
 
-AKS-001 through AKS-028 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-036 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, an append-only readable audit trail for significant admin mutations, a single public System read model that excludes drafts, archived Systems, admin state, private storage details, and other-locale content, a semantic SSR-capable System renderer v1 shared by preview and public delivery, and a localized deep-linkable public System route backed only by published read-model data.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, an append-only readable audit trail for significant admin mutations, a single public System read model that excludes drafts, archived Systems, admin state, private storage details, and other-locale content, a semantic SSR-capable System renderer v1 shared by preview and public delivery, a localized deep-linkable public System route backed only by published read-model data, minimal AkikSystems context around Sentinel, route-level technical SEO with publication-aware alternates, PostgreSQL-backed domain qualification, a real Chromium admin-to-public EN/FR journey, accessibility and mobile performance gates, staging qualification, and a documented post-Sentinel architecture review.
