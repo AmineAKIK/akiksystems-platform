@@ -27,6 +27,14 @@ export interface AdminBootstrapEnv extends AuthEnv {
   ADMIN_PASSWORD: string;
 }
 
+export interface AssetStorageEnv {
+  BUCKET: string;
+  REGION: string;
+  ENDPOINT: string;
+  ACCESS_KEY_ID: string;
+  SECRET_ACCESS_KEY: string;
+}
+
 export interface PublicWebEnv {
   readonly environment: NodeEnvironment;
 }
@@ -36,4 +44,5 @@ export function parseWorkerEnv(source?: NodeJS.ProcessEnv): WorkerEnv;
 export function parseDatabaseCommandEnv(source?: NodeJS.ProcessEnv): DatabaseCommandEnv;
 export function parseAuthEnv(source?: NodeJS.ProcessEnv): AuthEnv;
 export function parseAdminBootstrapEnv(source?: NodeJS.ProcessEnv): AdminBootstrapEnv;
+export function parseAssetStorageEnv(source?: NodeJS.ProcessEnv): AssetStorageEnv;
 export function toPublicWebEnv(env: WebServerEnv): PublicWebEnv;
