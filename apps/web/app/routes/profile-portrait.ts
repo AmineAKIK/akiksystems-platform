@@ -5,10 +5,7 @@ import { appDb } from '../lib/db.server';
 import type { Route } from './+types/profile-portrait';
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const locale =
-    params.locale === 'fr'
-      ? requireExactLocale(params.locale, 'fr')
-      : requireExactLocale(params.locale, 'en');
+  const locale = requireExactLocale(params.locale, 'en');
 
   const portrait = await appDb
     .selectFrom('profiles')
