@@ -7,7 +7,6 @@ describe('SystemDetailView', () => {
   it('renders the v1 System presentation vocabulary in source order', () => {
     const html = renderToStaticMarkup(
       <SystemDetailView
-        alternateHref="/fr/systems/sentinel"
         assets={[
           {
             id: 'asset-image',
