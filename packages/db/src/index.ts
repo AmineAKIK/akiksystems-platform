@@ -1,5 +1,9 @@
+export { writeAdminAuditEvent } from './admin-audit.js';
+export type { AdminAuditEventInput, AdminAuditMetadata } from './admin-audit.js';
 export { checkDatabaseConnection, createDatabase } from './database.js';
 export type {
+  AdminAuditEventRow,
+  AdminAuditEventsTable,
   AssetLocalizationRow,
   AssetLocalizationUpdate,
   AssetLocalizationsTable,
@@ -13,6 +17,7 @@ export type {
   ExperienceRow,
   ExperiencesTable,
   ExperienceUpdate,
+  NewAdminAuditEventRow,
   NewAssetLocalizationRow,
   NewAssetRow,
   NewExperienceLocalizationRow,
