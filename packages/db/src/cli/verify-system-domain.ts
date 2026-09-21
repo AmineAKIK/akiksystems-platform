@@ -67,6 +67,15 @@ try {
         slug,
         title: 'Sentinel',
         summary: 'Published English proof.',
+        presentation_document: {
+          version: 1,
+          blocks: [
+            {
+              type: 'paragraph',
+              text: 'Published English proof.',
+            },
+          ],
+        },
         editorial_state: 'published',
         published_at: publishedAt,
       },

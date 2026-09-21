@@ -2,6 +2,7 @@ import {
   parsePresentationDocument,
   presentationDocumentVersion,
   validatePresentationDocument,
+  validateSystemPublicationReadiness,
   type PlatformLocale,
   type PresentationBlock,
   type PresentationDocument,
@@ -220,10 +221,35 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     const localization = await db
       .selectFrom('system_localizations')
-      .select(['system_id', 'locale'])
+      .select([
+        'system_id',
+        'locale',
+        'slug',
+        'title',
+        'summary',
+        'editorial_state',
+      ])
       .where('system_id', '=', systemId)
       .where('locale', '=', locale)
       .executeTakeFirst();
+
+    if (localization?.editorial_state === 'published') {
+      const readiness = validateSystemPublicationReadiness({
+        slug: localization.slug,
+        title: localization.title,
+        summary: localization.summary,
+        presentationDocument: document,
+      });
+
+      if (!readiness.ready) {
+        return {
+          ok: false,
+          message:
+            'This localization is already published and cannot become incomplete.',
+          errors: readiness.errors,
+        };
+      }
+    }
 
     if (localization === undefined) {
       await db

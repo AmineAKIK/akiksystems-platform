@@ -1,5 +1,6 @@
 import {
   systemLinkKinds,
+  validateSystemPublicationReadiness,
   type PlatformLocale,
   type SystemLinkKind,
 } from '@akiksystems/core';
@@ -252,10 +253,28 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       localizations.map((localization) => [localization.locale, localization]),
     );
 
+    const en = byLocale.get('en') ?? null;
+    const fr = byLocale.get('fr') ?? null;
+
+    const enReadiness = validateSystemPublicationReadiness({
+      slug: en?.slug ?? null,
+      title: en?.title ?? null,
+      summary: en?.summary ?? null,
+      presentationDocument: en?.presentation_document ?? null,
+    });
+    const frReadiness = validateSystemPublicationReadiness({
+      slug: fr?.slug ?? null,
+      title: fr?.title ?? null,
+      summary: fr?.summary ?? null,
+      presentationDocument: fr?.presentation_document ?? null,
+    });
+
     return {
       system,
-      en: byLocale.get('en') ?? null,
-      fr: byLocale.get('fr') ?? null,
+      en,
+      fr,
+      enReadiness,
+      frReadiness,
       technologies,
       experience: experiences[0] ?? null,
       links,
@@ -307,6 +326,10 @@ export async function action({ request, params }: Route.ActionArgs) {
     if (intent === 'localizations') {
       const enSlug = nullableField(form, 'enSlug');
       const frSlug = nullableField(form, 'frSlug');
+      const enTitle = nullableField(form, 'enTitle');
+      const frTitle = nullableField(form, 'frTitle');
+      const enSummary = nullableField(form, 'enSummary');
+      const frSummary = nullableField(form, 'frSummary');
 
       if (enSlug !== null && !slugPattern.test(enSlug)) {
         return { ok: false, message: 'EN slug is invalid.' };
@@ -316,16 +339,68 @@ export async function action({ request, params }: Route.ActionArgs) {
         return { ok: false, message: 'FR slug is invalid.' };
       }
 
+      const currentLocalizations = await db
+        .selectFrom('system_localizations')
+        .select([
+          'locale',
+          'editorial_state',
+          'presentation_document',
+        ])
+        .where('system_id', '=', systemId)
+        .execute();
+
+      const currentByLocale = new Map(
+        currentLocalizations.map((localization) => [
+          localization.locale,
+          localization,
+        ]),
+      );
+
+      for (const [locale, candidate] of [
+        [
+          'en',
+          {
+            slug: enSlug,
+            title: enTitle,
+            summary: enSummary,
+          },
+        ],
+        [
+          'fr',
+          {
+            slug: frSlug,
+            title: frTitle,
+            summary: frSummary,
+          },
+        ],
+      ] as const) {
+        const current = currentByLocale.get(locale);
+
+        if (current?.editorial_state === 'published') {
+          const readiness = validateSystemPublicationReadiness({
+            ...candidate,
+            presentationDocument: current.presentation_document,
+          });
+
+          if (!readiness.ready) {
+            return {
+              ok: false,
+              message: `${locale.toUpperCase()} is published and cannot become incomplete: ${readiness.errors.join(' ')}`,
+            };
+          }
+        }
+      }
+
       await db.transaction().execute(async (transaction) => {
         await upsertLocalization(transaction, systemId, 'en', {
           slug: enSlug,
-          title: nullableField(form, 'enTitle'),
-          summary: nullableField(form, 'enSummary'),
+          title: enTitle,
+          summary: enSummary,
         });
         await upsertLocalization(transaction, systemId, 'fr', {
           slug: frSlug,
-          title: nullableField(form, 'frTitle'),
-          summary: nullableField(form, 'frSummary'),
+          title: frTitle,
+          summary: frSummary,
         });
       });
 
@@ -588,17 +663,43 @@ export default function AdminSystem() {
 
             <section className="aks-admin-card">
               <div className="aks-proof-stack">
-                <Heading level={2} size="sm">Editorial state</Heading>
-                <Text size="sm">
-                  EN: {data.en?.editorial_state ?? 'draft'} ·{' '}
-                  {data.en?.published_at ? 'published timestamp set' : 'not published'}
-                </Text>
-                <Text size="sm">
-                  FR: {data.fr?.editorial_state ?? 'draft'} ·{' '}
-                  {data.fr?.published_at ? 'published timestamp set' : 'not published'}
-                </Text>
+                <Heading level={2} size="sm">Publication readiness</Heading>
+
+                <div className="aks-admin-readiness">
+                  <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
+                    EN · {data.en?.editorial_state ?? 'draft'} ·{' '}
+                    {data.enReadiness.ready ? 'ready to publish' : 'not ready'}
+                  </Text>
+                  {!data.enReadiness.ready ? (
+                    <ul>
+                      {data.enReadiness.errors.map((error) => (
+                        <li key={error}>
+                          <Text size="sm">{error}</Text>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+
+                <div className="aks-admin-readiness">
+                  <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
+                    FR · {data.fr?.editorial_state ?? 'draft'} ·{' '}
+                    {data.frReadiness.ready ? 'ready to publish' : 'not ready'}
+                  </Text>
+                  {!data.frReadiness.ready ? (
+                    <ul>
+                      {data.frReadiness.errors.map((error) => (
+                        <li key={error}>
+                          <Text size="sm">{error}</Text>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+
                 <Text size="sm" tone="muted">
-                  Publication controls are intentionally handled by AKS-022/023.
+                  Publication controls remain in AKS-023. AKS-022 makes the readiness
+                  decision explicit and prevents incomplete published state.
                 </Text>
               </div>
             </section>

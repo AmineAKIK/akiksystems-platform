@@ -1,3 +1,5 @@
+import type { PresentationDocument } from './presentation-document.js';
+
 export const platformLocales = ['en', 'fr'] as const;
 
 export type PlatformLocale = (typeof platformLocales)[number];
@@ -26,6 +28,7 @@ export interface SystemLocalization {
   slug: string | null;
   title: string | null;
   summary: string | null;
+  presentationDocument: PresentationDocument | null;
   editorialState: SystemEditorialState;
   publishedAt: Date | null;
   createdAt: Date;
@@ -139,3 +142,5 @@ export interface SystemLink {
 }
 
 export * from './presentation-document.js';
+
+export * from './system-publication-readiness.js';
