@@ -9,6 +9,8 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
+    "auth:bootstrap-admin": "pnpm --filter @akiksystems/web auth:bootstrap-admin",
+    "auth:migrate": "pnpm --filter @akiksystems/web auth:migrate",
     "build": "pnpm -r --if-present build",
     "clean": "tsc -b --clean && rimraf \"apps/*/dist\" \"apps/*/build\" \"packages/*/dist\" coverage",
     "config:verify": "node packages/config/env/verify.mjs",
@@ -18,18 +20,19 @@
     "db:verify": "pnpm --filter @akiksystems/db db:verify",
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "dev:worker": "pnpm --filter @akiksystems/worker dev",
+    "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
+    "docker:build:worker": "docker build -f apps/worker/Dockerfile -t akiksystems-worker .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "observability:verify": "node packages/config/observability/verify.mjs",
+    "smoke:auth": "pnpm --filter @akiksystems/web smoke:auth",
     "smoke:observability": "pnpm --filter @akiksystems/web smoke:observability",
     "smoke:web": "pnpm --filter @akiksystems/web smoke:ssr",
     "smoke:worker": "pnpm --filter @akiksystems/worker smoke",
     "start:worker": "pnpm --filter @akiksystems/worker start",
     "test": "vitest run --passWithNoTests",
-    "typecheck": "pnpm -r --if-present typecheck",
-    "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
-    "docker:build:worker": "docker build -f apps/worker/Dockerfile -t akiksystems-worker ."
+    "typecheck": "pnpm -r --if-present typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

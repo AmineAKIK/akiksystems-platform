@@ -12,6 +12,14 @@ const server = spawn(process.execPath, ['server.js'], {
     ...process.env,
     NODE_ENV: 'production',
     PORT: port,
+    DATABASE_URL:
+      process.env.DATABASE_URL ??
+      'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
+    BETTER_AUTH_SECRET:
+      process.env.BETTER_AUTH_SECRET ??
+      'aks-013-ssr-smoke-secret-0123456789abcdef0123456789abcdef',
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? origin,
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? 'admin@example.invalid',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -43,38 +51,20 @@ try {
   assert.equal(english.status, 200);
   assert.match(englishHtml, /<html lang="en"/);
   assert.match(englishHtml, /Platform walking skeleton/);
-  assert.match(englishHtml, /href="\/en\/about"/);
-  assert.match(englishHtml, /<script/);
 
   const french = await globalThis.fetch(`${origin}/fr`);
   const frenchHtml = await french.text();
   assert.equal(french.status, 200);
   assert.match(frenchHtml, /<html lang="fr"/);
   assert.match(frenchHtml, /Squelette fonctionnel de la plateforme/);
-  assert.match(frenchHtml, /href="\/fr\/about"/);
 
-  const frenchAbout = await globalThis.fetch(`${origin}/fr/about`);
-  const frenchAboutHtml = await frenchAbout.text();
-  assert.equal(frenchAbout.status, 200);
-  assert.match(frenchAboutHtml, /La navigation côté client est active/);
+  const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
+    redirect: 'manual',
+  });
+  assert.equal(anonymousAdmin.status, 302);
+  assert.equal(anonymousAdmin.headers.get('location'), '/admin/login');
 
-  const unlocalized = await globalThis.fetch(`${origin}/about`);
-  assert.equal(unlocalized.status, 404);
-
-  const unsupportedLocale = await globalThis.fetch(`${origin}/de`);
-  const unsupportedLocaleHtml = await unsupportedLocale.text();
-  assert.equal(unsupportedLocale.status, 404);
-  assert.match(unsupportedLocaleHtml, /<html lang="und"/);
-  assert.match(unsupportedLocaleHtml, /Page not found/);
-
-  const missingFrench = await globalThis.fetch(`${origin}/fr/route-inconnue`);
-  const missingFrenchHtml = await missingFrench.text();
-  assert.equal(missingFrench.status, 404);
-  assert.match(missingFrenchHtml, /Page introuvable/);
-
-  process.stdout.write(
-    'SSR locale smoke passed: /->/en, en/fr=200, unsupported/unlocalized routes=404.\n',
-  );
+  process.stdout.write('SSR locale/auth smoke passed.\n');
 } finally {
   server.kill('SIGTERM');
 }

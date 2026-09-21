@@ -19,6 +19,31 @@ const databaseUrlSchema = z
     'DATABASE_URL must use the postgres:// or postgresql:// scheme.',
   );
 
+const authUrlSchema = z
+  .string()
+  .trim()
+  .url('BETTER_AUTH_URL must be a valid URL.')
+  .refine(
+    (value) => value.startsWith('http://') || value.startsWith('https://'),
+    'BETTER_AUTH_URL must use the http:// or https:// scheme.',
+  );
+
+const adminEmailSchema = z
+  .string()
+  .trim()
+  .email('ADMIN_EMAIL must be a valid email address.')
+  .transform((value) => value.toLowerCase());
+
+const authEnvironmentSchema = z.object({
+  NODE_ENV: nodeEnvironmentSchema,
+  DATABASE_URL: databaseUrlSchema,
+  BETTER_AUTH_SECRET: z
+    .string()
+    .min(32, 'BETTER_AUTH_SECRET must contain at least 32 characters.'),
+  BETTER_AUTH_URL: authUrlSchema,
+  ADMIN_EMAIL: adminEmailSchema,
+});
+
 const webServerSchema = z.object({
   NODE_ENV: nodeEnvironmentSchema,
   PORT: portSchema,
@@ -32,6 +57,13 @@ const workerSchema = z.object({
 
 const databaseCommandSchema = z.object({
   DATABASE_URL: databaseUrlSchema,
+});
+
+const adminBootstrapSchema = authEnvironmentSchema.extend({
+  ADMIN_PASSWORD: z
+    .string()
+    .min(14, 'ADMIN_PASSWORD must contain at least 14 characters.')
+    .max(128, 'ADMIN_PASSWORD must contain at most 128 characters.'),
 });
 
 function formatConfigError(scope, error) {
@@ -65,6 +97,14 @@ export function parseWorkerEnv(source = process.env) {
 
 export function parseDatabaseCommandEnv(source = process.env) {
   return parse(databaseCommandSchema, source, 'database command');
+}
+
+export function parseAuthEnv(source = process.env) {
+  return parse(authEnvironmentSchema, source, 'authentication');
+}
+
+export function parseAdminBootstrapEnv(source = process.env) {
+  return parse(adminBootstrapSchema, source, 'administrator bootstrap');
 }
 
 export function toPublicWebEnv(env) {
