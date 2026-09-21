@@ -217,12 +217,10 @@ async function assertProfessionalJourneySelection(page) {
     })
     .waitFor();
 
-  const marelliCard = page.locator('.aks-admin-card').filter({
-    has: page.getByText('Marelli', { exact: true }),
-  });
-  const checkbox = marelliCard.locator('input[name="professionalExperience"]');
+  const checkbox = page.getByRole('checkbox', { name: 'Marelli', exact: true });
   await checkbox.check();
-  await marelliCard.locator('input[type="number"]').fill('0');
+  const marelliCard = checkbox.locator('..').locator('..');
+  await marelliCard.getByRole('spinbutton', { name: 'Order', exact: true }).fill('0');
   await page.getByRole('button', { name: 'Save professional journey' }).click();
   await page.getByText('Professional journey updated.', { exact: true }).waitFor();
 
