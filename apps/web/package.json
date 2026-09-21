@@ -28,7 +28,8 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "8.4.0",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@akiksystems/core": "workspace:*"
   },
   "devDependencies": {
     "@react-router/dev": "8.4.0",

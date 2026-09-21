@@ -6,6 +6,10 @@ export default [
   route('admin/two-factor', 'routes/admin-two-factor.tsx'),
   route('admin/security', 'routes/admin-security.tsx'),
   route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
+  route(
+    'admin/systems/:systemId/presentation/:locale',
+    'routes/admin-system-presentation.tsx',
+  ),
   route('admin', 'routes/admin.tsx'),
   index('routes/locale-index.tsx'),
   route(':locale', 'routes/locale-layout.tsx', [

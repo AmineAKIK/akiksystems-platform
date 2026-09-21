@@ -38,6 +38,9 @@ importers:
       '@akiksystems/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@akiksystems/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@akiksystems/db':
         specifier: workspace:*
         version: link:../../packages/db
