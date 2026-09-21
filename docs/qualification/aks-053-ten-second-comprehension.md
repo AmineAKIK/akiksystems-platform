@@ -64,7 +64,7 @@ Do not turn a single participant preference into a product rule. Preserve the ra
 
 The CI qualification checks that, after ten seconds with no interaction:
 
-- Home exposes the AkikSystems identity, “Independent software systems”, “Engineering made inspectable.”, the explanatory sentence, and all five semantic destinations.
+- Home exposes the AkikSystems identity, “Independent software systems”, “Engineering made inspectable.”, and all five semantic destinations. The explanatory sentence remains part of the desktop first impression; mobile prioritizes identity, proposition and the five doors so orientation does not depend on scrolling.
 - All five first-level destinations intersect the initial viewport on both desktop and mobile.
 - A direct Sentinel deep link exposes AkikSystems identity and the “Systems / Sentinel” local context without prior navigation.
 - The same scenarios remain horizontally readable on desktop and mobile.
