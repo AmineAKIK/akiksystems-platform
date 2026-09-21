@@ -59,6 +59,25 @@ export interface SystemLocalizationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface ProfilesTable {
+  id: string;
+  singleton_key: DefaultedColumn<'public'>;
+  display_name: string | null;
+  portrait_asset_id: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileLocalizationsTable {
+  profile_id: string;
+  locale: PlatformLocale;
+  professional_title: string | null;
+  introduction: string | null;
+  foundational_copy: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface TechnologiesTable {
   id: string;
   slug: string;
@@ -153,6 +172,14 @@ export type SystemLocalizationRow = Selectable<SystemLocalizationsTable>;
 export type NewSystemLocalizationRow = Insertable<SystemLocalizationsTable>;
 export type SystemLocalizationUpdate = Updateable<SystemLocalizationsTable>;
 
+export type ProfileRow = Selectable<ProfilesTable>;
+export type NewProfileRow = Insertable<ProfilesTable>;
+export type ProfileUpdate = Updateable<ProfilesTable>;
+
+export type ProfileLocalizationRow = Selectable<ProfileLocalizationsTable>;
+export type NewProfileLocalizationRow = Insertable<ProfileLocalizationsTable>;
+export type ProfileLocalizationUpdate = Updateable<ProfileLocalizationsTable>;
+
 export type TechnologyRow = Selectable<TechnologiesTable>;
 export type NewTechnologyRow = Insertable<TechnologiesTable>;
 export type TechnologyUpdate = Updateable<TechnologiesTable>;
@@ -199,6 +226,8 @@ export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
   system_localizations: SystemLocalizationsTable;
+  profiles: ProfilesTable;
+  profile_localizations: ProfileLocalizationsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
   experiences: ExperiencesTable;
