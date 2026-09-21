@@ -71,6 +71,18 @@ Publication readiness is a shared domain rule rather than UI-only validation.
 - PostgreSQL prevents incomplete rows from entering or remaining in `published` state, including later edits that would make an already-published localization incomplete.
 - Actual publish/unpublish controls remain scoped to AKS-023; AKS-022 defines and enforces the precondition.
 
+### Independent localized publication
+
+System publication is controlled per localization rather than per shared System identity.
+
+- EN and FR content are saved through separate locale-scoped admin actions.
+- Each locale has its own Publish / Unpublish control and its own `published_at` timestamp.
+- Publishing EN never changes FR state or content; publishing/unpublishing FR never changes EN.
+- A locale can publish only after satisfying the AKS-022 readiness contract.
+- Editing a draft localization does not write any columns in the other locale, including `updated_at`.
+- `EN=PUBLISHED / FR=DRAFT` is an explicitly supported state.
+- The public read model remains scoped to AKS-026; AKS-023 guarantees the persisted localized publication boundary it will consume.
+
 ### Technologies
 
 Technologies are modeled as reusable typed entities rather than strings embedded in a System record.
@@ -241,6 +253,7 @@ pnpm build
 pnpm db:verify-assets
 pnpm db:verify-presentation-documents
 pnpm db:verify-publication-readiness
+pnpm db:verify-independent-publication
 pnpm db:verify-system-experiences
 pnpm db:verify-system-links
 pnpm db:verify-system-technologies
@@ -254,6 +267,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-022 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-023 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, and explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, and independent EN/FR save/publish/unpublish flows.
