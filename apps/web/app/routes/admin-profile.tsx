@@ -102,7 +102,16 @@ export async function loader({ request }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const profileId = await publicProfileId();
 
-  const [profile, localizations, portrait, auditEvents, selectableSystems, selectedSystems] = await Promise.all([
+  const [
+    profile,
+    localizations,
+    portrait,
+    auditEvents,
+    selectableSystems,
+    selectedSystems,
+    selectableExperiences,
+    selectedExperiences,
+  ] = await Promise.all([
     appDb
       .selectFrom('profiles')
       .select(['id', 'display_name', 'portrait_asset_id'])
@@ -191,6 +200,37 @@ export async function loader({ request }: Route.LoaderArgs) {
       .where('profile_id', '=', profileId)
       .orderBy('position')
       .execute(),
+    appDb
+      .selectFrom('experiences')
+      .leftJoin(
+        'experience_localizations as experience_en',
+        (join) =>
+          join
+            .onRef('experience_en.experience_id', '=', 'experiences.id')
+            .on('experience_en.locale', '=', 'en'),
+      )
+      .leftJoin(
+        'experience_localizations as experience_fr',
+        (join) =>
+          join
+            .onRef('experience_fr.experience_id', '=', 'experiences.id')
+            .on('experience_fr.locale', '=', 'fr'),
+      )
+      .select([
+        'experiences.id',
+        'experience_en.title as title_en',
+        'experience_en.summary as summary_en',
+        'experience_fr.title as title_fr',
+        'experience_fr.summary as summary_fr',
+      ])
+      .orderBy('experiences.created_at', 'desc')
+      .execute(),
+    appDb
+      .selectFrom('profile_experiences')
+      .select(['experience_id', 'position'])
+      .where('profile_id', '=', profileId)
+      .orderBy('position')
+      .execute(),
   ]);
 
   const byLocale = new Map(
@@ -233,6 +273,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     principles,
     selectableSystems,
     selectedSystems,
+    selectableExperiences,
+    selectedExperiences,
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
@@ -371,6 +413,68 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'How I work updated.' };
+  }
+
+  if (intent === 'professional-journey') {
+    const selectedIds = form
+      .getAll('professionalExperience')
+      .filter((value): value is string => typeof value === 'string');
+    const orderedIds = [...new Set(selectedIds)].sort((left, right) => {
+      const leftPosition = Number(textField(form, `experience-position-${left}`));
+      const rightPosition = Number(textField(form, `experience-position-${right}`));
+      return leftPosition - rightPosition;
+    });
+
+    const validExperiences =
+      orderedIds.length === 0
+        ? []
+        : await appDb
+            .selectFrom('experiences')
+            .select('id')
+            .where('id', 'in', orderedIds)
+            .execute();
+
+    if (validExperiences.length !== orderedIds.length) {
+      return {
+        ok: false,
+        message: 'Professional journey must reference existing Experience objects.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('profile_experiences')
+        .where('profile_id', '=', profileId)
+        .execute();
+
+      if (orderedIds.length > 0) {
+        await transaction
+          .insertInto('profile_experiences')
+          .values(
+            orderedIds.map((experienceId, position) => ({
+              profile_id: profileId,
+              experience_id: experienceId,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.professional_journey_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          experienceIds: orderedIds,
+          ordering: 'explicit',
+          inclusion: 'intentional-only',
+        },
+      });
+    });
+
+    return { ok: true, message: 'Professional journey updated.' };
   }
 
   if (intent === 'representative-systems') {
@@ -749,6 +853,64 @@ export default function AdminProfile() {
                 rows={10}
               />
               <Button type="submit">Save How I work</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="professional-journey" />
+              <Heading level={2} size="sm">
+                Relevant professional journey
+              </Heading>
+              <Text size="sm" tone="muted">
+                Include only deliberately selected technology or industrial
+                Experience objects. Nothing from older history is added
+                automatically.
+              </Text>
+              <div className="aks-proof-stack">
+                {data.selectableExperiences.length === 0 ? (
+                  <Text tone="muted">No Experience objects are available yet.</Text>
+                ) : (
+                  data.selectableExperiences.map((experience) => {
+                    const selected = data.selectedExperiences.find(
+                      (relation) => relation.experience_id === experience.id,
+                    );
+
+                    return (
+                      <div className="aks-admin-card" key={experience.id}>
+                        <label>
+                          <input
+                            defaultChecked={selected !== undefined}
+                            name="professionalExperience"
+                            type="checkbox"
+                            value={experience.id}
+                          />
+                          <span>
+                            {experience.title_en ??
+                              experience.title_fr ??
+                              experience.id}
+                          </span>
+                        </label>
+                        <Text size="sm" tone="muted">
+                          {experience.summary_en ??
+                            experience.summary_fr ??
+                            'No summary yet.'}
+                        </Text>
+                        <label>
+                          <span>Order</span>
+                          <input
+                            defaultValue={selected?.position ?? 999}
+                            min={0}
+                            name={`experience-position-${experience.id}`}
+                            type="number"
+                          />
+                        </label>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <Button type="submit">Save professional journey</Button>
             </Form>
           </section>
 

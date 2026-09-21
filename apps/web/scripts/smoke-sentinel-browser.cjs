@@ -207,6 +207,85 @@ async function assertProfileAdministration(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertProfessionalJourneySelection(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: 'Relevant professional journey',
+      exact: true,
+    })
+    .waitFor();
+
+  const checkbox = page.getByRole('checkbox', { name: 'Marelli', exact: true });
+  await checkbox.check();
+  const marelliCard = checkbox.locator('..').locator('..');
+  await marelliCard.getByRole('spinbutton', { name: 'Order', exact: true }).fill('0');
+  await page.getByRole('button', { name: 'Save professional journey' }).click();
+  await page.getByText('Professional journey updated.', { exact: true }).waitFor();
+
+  await page.goto(`${origin}/en/profile`);
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: 'Relevant professional journey',
+      exact: true,
+    })
+    .waitFor();
+  const englishJourney = page.locator('.aks-profile-journey-list');
+  await englishJourney
+    .getByRole('heading', { level: 3, name: 'Marelli', exact: true })
+    .waitFor();
+  await englishJourney
+    .getByText(
+      'Industrial software context where operational constraints shaped the work.',
+      { exact: true },
+    )
+    .waitFor();
+
+  await page.goto(`${origin}/fr/profil`);
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: 'Parcours professionnel pertinent',
+      exact: true,
+    })
+    .waitFor();
+  const frenchJourney = page.locator('.aks-profile-journey-list');
+  await frenchJourney
+    .getByRole('heading', { level: 3, name: 'Marelli', exact: true })
+    .waitFor();
+  await frenchJourney
+    .getByText(
+      'Contexte logiciel industriel où les contraintes opérationnelles ont façonné le travail.',
+      { exact: true },
+    )
+    .waitFor();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const target of [
+    { path: '/en/profile', heading: 'Relevant professional journey' },
+    { path: '/fr/profil', heading: 'Parcours professionnel pertinent' },
+  ]) {
+    await page.goto(`${origin}${target.path}`);
+    await page.getByRole('heading', { level: 2, name: target.heading, exact: true }).waitFor();
+    assert.equal(
+      await page.locator('.aks-profile-journey-list li').count(),
+      1,
+      `${target.path} must expose only the explicitly selected Experience.`,
+    );
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${target.path} professional journey must not overflow on mobile.`,
+    );
+  }
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -1399,6 +1478,24 @@ async function assertAxe(page) {
     );
 
     await page.goto(`${origin}${page.systemPath}`);
+    const originContextForm = page.locator('form').filter({
+      has: page.getByRole('heading', { level: 2, name: 'Origin context', exact: true }),
+    });
+    await originContextForm.locator('input[name="experienceTitleEn"]').fill('Marelli');
+    await originContextForm
+      .locator('textarea[name="experienceSummaryEn"]')
+      .fill(
+        'Industrial software context where operational constraints shaped the work.',
+      );
+    await originContextForm.locator('input[name="experienceTitleFr"]').fill('Marelli');
+    await originContextForm
+      .locator('textarea[name="experienceSummaryFr"]')
+      .fill(
+        'Contexte logiciel industriel où les contraintes opérationnelles ont façonné le travail.',
+      );
+    await originContextForm.getByRole('button', { name: 'Save origin context' }).click();
+    await page.getByText('Professional context updated.', { exact: true }).waitFor();
+
     await page.locator('textarea[name="links"]').fill(
       'live | https://sentinel.akiksystems.fr',
     );
@@ -1439,6 +1536,8 @@ async function assertAxe(page) {
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
 
     await assertRepresentativeSystemSelection(page);
+
+    await assertProfessionalJourneySelection(page);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();

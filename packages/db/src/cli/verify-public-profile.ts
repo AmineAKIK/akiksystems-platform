@@ -306,6 +306,88 @@ try {
     .execute();
   await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
 
+
+  const selectedExperienceId = randomUUID();
+  const unrelatedExperienceId = randomUUID();
+
+  await db
+    .insertInto('experiences')
+    .values([
+      { id: selectedExperienceId },
+      { id: unrelatedExperienceId },
+    ])
+    .execute();
+
+  await db
+    .insertInto('experience_localizations')
+    .values([
+      {
+        experience_id: selectedExperienceId,
+        locale: 'en',
+        title: 'Selected industrial experience',
+        summary: 'Relevant English industrial context.',
+      },
+      {
+        experience_id: selectedExperienceId,
+        locale: 'fr',
+        title: 'Expérience industrielle sélectionnée',
+        summary: 'Contexte industriel français pertinent.',
+      },
+      {
+        experience_id: unrelatedExperienceId,
+        locale: 'en',
+        title: 'Unrelated older work',
+        summary: 'This must never appear automatically.',
+      },
+    ])
+    .execute();
+
+  const beforeJourneySelection = await getPublicProfile(db, 'en');
+  assert.ok(beforeJourneySelection);
+  assert.deepEqual(
+    beforeJourneySelection.professionalJourney,
+    [],
+    'Existing Experience objects must never enter Profile automatically.',
+  );
+
+  await db
+    .insertInto('profile_experiences')
+    .values({
+      profile_id: profileId,
+      experience_id: selectedExperienceId,
+      position: 0,
+    })
+    .execute();
+
+  const englishWithJourney = await getPublicProfile(db, 'en');
+  const frenchWithJourney = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithJourney);
+  assert.ok(frenchWithJourney);
+  assert.deepEqual(
+    englishWithJourney.professionalJourney.map(({ title }) => title),
+    ['Selected industrial experience'],
+  );
+  assert.deepEqual(
+    frenchWithJourney.professionalJourney.map(({ title }) => title),
+    ['Expérience industrielle sélectionnée'],
+  );
+  assert.equal(
+    englishWithJourney.professionalJourney.some(
+      ({ title }) => title === 'Unrelated older work',
+    ),
+    false,
+    'Unselected older work must remain private even when it exists in the Experience domain.',
+  );
+
+  await db
+    .deleteFrom('profile_experiences')
+    .where('profile_id', '=', profileId)
+    .execute();
+  await db
+    .deleteFrom('experiences')
+    .where('id', 'in', [selectedExperienceId, unrelatedExperienceId])
+    .execute();
+
   await db
     .updateTable('profiles')
     .set({
@@ -362,7 +444,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

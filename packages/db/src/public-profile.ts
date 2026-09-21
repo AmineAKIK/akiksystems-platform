@@ -10,6 +10,13 @@ export interface PublicProfileWorkPrinciple {
   detail: string | null;
 }
 
+export interface PublicProfileExperience {
+  id: string;
+  position: number;
+  title: string;
+  summary: string | null;
+}
+
 export interface PublicProfileSystem {
   id: string;
   position: number;
@@ -29,6 +36,7 @@ export interface PublicProfile {
   foundationalCopy: string | null;
   workPrinciples: PublicProfileWorkPrinciple[];
   representativeSystems: PublicProfileSystem[];
+  professionalJourney: PublicProfileExperience[];
   alternateLocale: PlatformLocale;
 }
 
@@ -66,6 +74,24 @@ export async function getPublicProfile(
   if (profile === undefined) {
     return null;
   }
+
+  const professionalJourney = await db
+    .selectFrom('profile_experiences')
+    .innerJoin(
+      'experience_localizations',
+      'experience_localizations.experience_id',
+      'profile_experiences.experience_id',
+    )
+    .select([
+      'profile_experiences.experience_id as id',
+      'profile_experiences.position',
+      'experience_localizations.title',
+      'experience_localizations.summary',
+    ])
+    .where('profile_experiences.profile_id', '=', profile.id)
+    .where('experience_localizations.locale', '=', locale)
+    .orderBy('profile_experiences.position')
+    .execute();
 
   const representativeSystems = await db
     .selectFrom('profile_systems')
@@ -122,6 +148,7 @@ export async function getPublicProfile(
     introduction: profile.introduction,
     foundationalCopy: profile.foundational_copy,
     workPrinciples,
+    professionalJourney,
     representativeSystems: representativeSystems.map((system) => ({
       id: system.id,
       position: system.position,

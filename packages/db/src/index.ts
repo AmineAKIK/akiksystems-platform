@@ -1,6 +1,7 @@
 export { getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
+  PublicProfileExperience,
   PublicProfileSystem,
   PublicProfileWorkPrinciple,
 } from './public-profile.js';
@@ -38,6 +39,7 @@ export type {
   NewAssetRow,
   NewExperienceLocalizationRow,
   NewExperienceRow,
+  NewProfileExperienceRow,
   NewProfileLocalizationRow,
   NewProfileRow,
   NewProfileSystemRow,
@@ -54,6 +56,9 @@ export type {
   ProfileLocalizationRow,
   ProfileLocalizationsTable,
   ProfileLocalizationUpdate,
+  ProfileExperienceRow,
+  ProfileExperiencesTable,
+  ProfileExperienceUpdate,
   ProfileRow,
   ProfileSystemRow,
   ProfileSystemsTable,
