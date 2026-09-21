@@ -831,7 +831,6 @@ async function assertAxe(page) {
     await assertHomePortal(page, 'fr');
 
     await assertIntentPrefetching(browser);
-    await assertGlobalKeyboardNavigation(browser);
 
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
@@ -933,6 +932,7 @@ async function assertAxe(page) {
 
     await assertPublishedSystemDeepLinkAutonomy(browser);
     await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
+    await assertGlobalKeyboardNavigation(browser);
 
     const reducedDesktop = await browser.newContext({
       viewport: { width: 1280, height: 800 },
