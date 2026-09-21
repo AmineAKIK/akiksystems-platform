@@ -8,6 +8,7 @@ export interface PublicProfile {
   locale: PlatformLocale;
   displayName: string | null;
   portraitAssetId: string | null;
+  portraitAltText: string | null;
   professionalTitle: string | null;
   introduction: string | null;
   foundationalCopy: string | null;
@@ -25,10 +26,18 @@ export async function getPublicProfile(
       'profile_localizations.profile_id',
       'profiles.id',
     )
+    .leftJoin(
+      'asset_localizations as portrait_localization',
+      (join) =>
+        join
+          .onRef('portrait_localization.asset_id', '=', 'profiles.portrait_asset_id')
+          .onRef('portrait_localization.locale', '=', 'profile_localizations.locale'),
+    )
     .select([
       'profiles.id',
       'profiles.display_name',
       'profiles.portrait_asset_id',
+      'portrait_localization.alt_text as portrait_alt_text',
       'profile_localizations.professional_title',
       'profile_localizations.introduction',
       'profile_localizations.foundational_copy',
@@ -46,6 +55,7 @@ export async function getPublicProfile(
     locale,
     displayName: profile.display_name,
     portraitAssetId: profile.portrait_asset_id,
+    portraitAltText: profile.portrait_alt_text,
     professionalTitle: profile.professional_title,
     introduction: profile.introduction,
     foundationalCopy: profile.foundational_copy,
