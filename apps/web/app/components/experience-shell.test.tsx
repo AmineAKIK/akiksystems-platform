@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { ExperienceShell } from './experience-shell';
@@ -6,6 +7,7 @@ import { ExperienceShell } from './experience-shell';
 describe('ExperienceShell', () => {
   it('renders public identity, navigation, context, locale and outlet on a deep System link', () => {
     const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/systems/sentinel']}>
       <ExperienceShell
         alternateHref="/fr/systems/sentinelle"
         currentTitle="Sentinel"
@@ -13,7 +15,8 @@ describe('ExperienceShell', () => {
         pathname="/en/systems/sentinel"
       >
         <main><h1>Sentinel</h1></main>
-      </ExperienceShell>,
+      </ExperienceShell>
+      </MemoryRouter>,
     );
 
     expect(html).toContain('class="aks-skip-link" href="#experience-outlet"');
@@ -47,9 +50,11 @@ describe('ExperienceShell', () => {
 
   it('marks the current top-level destination and localizes the shell in French', () => {
     const html = renderToStaticMarkup(
-      <ExperienceShell locale="fr" pathname="/fr/about">
-        <main><h1>À propos</h1></main>
-      </ExperienceShell>,
+      <MemoryRouter initialEntries={['/fr/about']}>
+        <ExperienceShell locale="fr" pathname="/fr/about">
+          <main><h1>À propos</h1></main>
+        </ExperienceShell>
+      </MemoryRouter>,
     );
 
     expect(html).toContain('aria-label="Navigation principale"');
