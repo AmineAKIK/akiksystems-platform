@@ -35,7 +35,6 @@ export interface SystemDetailViewProps {
   originSummary: string | null;
   links: SystemDetailLink[];
   assets: SystemDetailAsset[];
-  alternateHref?: string | null;
   preview?: boolean;
 }
 
@@ -175,44 +174,10 @@ export function SystemDetailView({
   originSummary,
   links,
   assets,
-  alternateHref = null,
   preview = false,
 }: SystemDetailViewProps) {
-  const alternateLocale: PlatformLocale = locale === 'en' ? 'fr' : 'en';
-  const languageHref = alternateHref ?? `/${alternateLocale}`;
-
   return (
-    <>
-      <a className="aks-skip-link" href="#system-content">
-        {locale === 'fr' ? 'Aller au contenu' : 'Skip to content'}
-      </a>
-
-      <header className="aks-system-context-bar">
-        <Container width="wide">
-          <div className="aks-system-context-inner">
-            <Link className="aks-system-brand" href={`/${locale}`}>
-              AkikSystems
-            </Link>
-            <nav
-              aria-label={locale === 'fr' ? 'Contexte AkikSystems' : 'AkikSystems context'}
-              className="aks-system-context-nav"
-            >
-              <span className="aks-system-context-current" aria-current="page">
-                {locale === 'fr' ? 'Systèmes' : 'Systems'} · {title}
-              </span>
-              <Link
-                href={languageHref}
-                hrefLang={alternateLocale}
-                lang={alternateLocale}
-              >
-                {alternateLocale === 'fr' ? 'Français' : 'English'}
-              </Link>
-            </nav>
-          </div>
-        </Container>
-      </header>
-
-      <main className="aks-system-detail" id="system-content" tabIndex={-1}>
+    <main className="aks-system-detail" id="system-content" tabIndex={-1}>
         <Container>
           <article className="aks-system-detail-stack">
             <header className="aks-system-detail-header">
@@ -272,7 +237,6 @@ export function SystemDetailView({
             />
           </article>
         </Container>
-      </main>
-    </>
+    </main>
   );
 }

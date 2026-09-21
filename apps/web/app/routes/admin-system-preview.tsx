@@ -167,10 +167,18 @@ export default function AdminSystemPreview() {
         <Text size="sm" tone="muted">
           {data.locale.toUpperCase()} · {data.editorialState} · private preview
         </Text>
-        <Link href={`/admin/systems/${data.systemId}`}>Back to workspace</Link>
+        <div className="aks-preview-toolbar-actions">
+          <Link
+            href={`/admin/systems/${data.systemId}/preview/${alternateLocale}`}
+            hrefLang={alternateLocale}
+            lang={alternateLocale}
+          >
+            {alternateLocale.toUpperCase()}
+          </Link>
+          <Link href={`/admin/systems/${data.systemId}`}>Back to workspace</Link>
+        </div>
       </div>
       <SystemDetailView
-        alternateHref={`/admin/systems/${data.systemId}/preview/${alternateLocale}`}
         assets={data.assets}
         links={data.links}
         locale={data.locale}

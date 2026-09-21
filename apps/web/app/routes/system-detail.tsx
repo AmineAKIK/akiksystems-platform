@@ -130,15 +130,8 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 
 export default function SystemDetailRoute() {
   const { system } = useLoaderData<typeof loader>();
-  const alternateLocale = system.locale === 'en' ? 'fr' : 'en';
-  const alternateHref =
-    system.alternate === null
-      ? `/${alternateLocale}`
-      : `/${system.alternate.locale}/systems/${system.alternate.slug}`;
-
   return (
     <SystemDetailView
-      alternateHref={alternateHref}
       assets={system.media}
       links={system.links}
       locale={system.locale}

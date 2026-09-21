@@ -179,6 +179,14 @@
   background: var(--aks-surface-raised);
 }
 
+
+.aks-preview-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4);
+  align-items: center;
+}
+
 .aks-skip-link {
   position: fixed;
   z-index: 100;
@@ -193,39 +201,6 @@
 
 .aks-skip-link:focus-visible {
   transform: translateY(0);
-}
-
-.aks-system-context-bar {
-  border-bottom: 1px solid var(--aks-border-subtle);
-  background: var(--aks-surface-canvas);
-}
-
-.aks-system-context-inner {
-  display: flex;
-  gap: var(--aks-space-4);
-  align-items: center;
-  justify-content: space-between;
-  min-height: 4rem;
-  padding-block: var(--aks-space-3);
-}
-
-.aks-system-brand {
-  font-weight: 720;
-  text-decoration: none;
-  letter-spacing: var(--aks-tracking-tight);
-}
-
-.aks-system-context-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--aks-space-3) var(--aks-space-5);
-  align-items: center;
-  justify-content: flex-end;
-  font-size: var(--aks-font-size-sm);
-}
-
-.aks-system-context-current {
-  color: var(--aks-text-muted);
 }
 
 .aks-system-detail {
@@ -340,5 +315,93 @@
 @media (prefers-reduced-motion: reduce) {
   .aks-skip-link {
     transition: none;
+  }
+}
+
+
+.aks-experience-shell {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--aks-border-subtle);
+  background: color-mix(in srgb, var(--aks-surface-canvas) 94%, transparent);
+  backdrop-filter: blur(0.75rem);
+}
+
+.aks-experience-shell-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--aks-space-6);
+  align-items: center;
+  min-height: 4.5rem;
+}
+
+.aks-experience-brand {
+  font-weight: 760;
+  text-decoration: none;
+  letter-spacing: var(--aks-tracking-tight);
+}
+
+.aks-experience-nav,
+.aks-experience-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--aks-space-4);
+}
+
+.aks-experience-nav {
+  min-width: 0;
+}
+
+.aks-experience-nav [aria-current='page'] {
+  text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.35em;
+}
+
+.aks-experience-meta {
+  justify-content: flex-end;
+}
+
+.aks-experience-context {
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aks-experience-outlet {
+  min-width: 0;
+  outline: none;
+}
+
+@media (max-width: 48rem) {
+  .aks-experience-shell-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--aks-space-3);
+    padding-block: var(--aks-space-3);
+  }
+
+  .aks-experience-brand {
+    grid-row: 1;
+  }
+
+  .aks-experience-meta {
+    grid-row: 2;
+    min-width: 0;
+    justify-content: space-between;
+    gap: var(--aks-space-3);
+  }
+
+  .aks-experience-context {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .aks-experience-nav {
+    grid-row: 3;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-block-end: var(--aks-space-1);
   }
 }
