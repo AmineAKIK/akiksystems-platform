@@ -89,6 +89,23 @@ const globalDestinations = [
 ];
 
 async function assertGlobalDestinations(page, { mobile = false } = {}) {
+  const expectedNavigation = {
+    en: [
+      '/en/profile',
+      '/en/systems',
+      '/en/writings',
+      '/en/learning',
+      '/en/work-with-us',
+    ],
+    fr: [
+      '/fr/profil',
+      '/fr/systems',
+      '/fr/ecrits',
+      '/fr/apprentissage',
+      '/fr/travailler-ensemble',
+    ],
+  };
+
   for (const destination of globalDestinations) {
     const response = await page.goto(`${origin}${destination.path}`);
     assert.equal(response?.status(), 200, `${destination.path} must return HTTP 200.`);
@@ -97,6 +114,10 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
       .getByRole('heading', { level: 1, name: destination.heading, exact: true })
       .waitFor();
     await page.locator('.aks-brand-signature').waitFor();
+
+    for (const href of expectedNavigation[destination.lang]) {
+      await page.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+    }
 
     const contextLabel =
       destination.lang === 'fr' ? 'Contexte actuel' : 'Current context';
@@ -213,6 +234,20 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+    for (const href of [
+      '/en/profile',
+      '/en/systems',
+      '/en/writings',
+      '/en/learning',
+      '/en/work-with-us',
+    ]) {
+      await page.locator(`.aks-experience-nav a[href="${href}"]`).waitFor();
+    }
+    assert.equal(
+      await page.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
+      '/en/systems',
+      'A deep System route must keep Systems marked as the current global destination.',
+    );
     assert.equal(await page.locator('html').getAttribute('lang'), 'en');
     assert.equal(
       await page.locator('a[href="https://sentinel.akiksystems.fr"]').getAttribute('href'),

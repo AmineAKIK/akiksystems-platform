@@ -66,6 +66,15 @@ The five first-level public destinations are code-defined in one typed registry:
 - Current paths are Profile `/en/profile` ↔ `/fr/profil`, Systems `/en/systems` ↔ `/fr/systems`, Writings `/en/writings` ↔ `/fr/ecrits`, Learning `/en/learning` ↔ `/fr/apprentissage`, and Work with us `/en/work-with-us` ↔ `/fr/travailler-ensemble`.
 - Minimal SSR route surfaces make every first-level destination directly addressable now; richer navigation and Home presentation remain scoped to later L2 tickets.
 
+### Desktop global navigation
+
+The Experience Shell exposes Home plus all five global destinations from every localized public route.
+
+- Navigation items are generated from the typed global destination registry rather than duplicated route-specific markup.
+- Deep routes resolve to their first-level destination, so `/en/systems/sentinel` keeps Systems marked with `aria-current="page"`.
+- The desktop composition keeps the complete first-level information architecture visible in one persistent shell.
+- Narrow layouts retain the same complete destination set in an overflow-safe row; the dedicated touch-oriented mobile navigation treatment remains scoped to AKS-041.
+
 ## Experience Shell
 
 The public `/:locale` route boundary owns the AkikSystems Experience Shell.
