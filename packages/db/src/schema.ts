@@ -1,5 +1,6 @@
 import type {
   PlatformLocale,
+  PresentationDocument,
   SystemEditorialState,
   SystemExperienceRelationKind,
   SystemLifecycle,
@@ -53,6 +54,7 @@ export interface SystemLocalizationsTable {
   summary: string | null;
   editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
+  presentation_document: PresentationDocument | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
