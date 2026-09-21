@@ -47,3 +47,32 @@ export interface SystemTechnology {
   technologyId: TechnologyId;
   position: number;
 }
+
+export type ExperienceId = string;
+
+export interface Experience {
+  id: ExperienceId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExperienceLocalization {
+  experienceId: ExperienceId;
+  locale: PlatformLocale;
+  title: string;
+  summary: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export const systemExperienceRelationKinds = ['origin_context'] as const;
+
+export type SystemExperienceRelationKind =
+  (typeof systemExperienceRelationKinds)[number];
+
+export interface SystemExperience {
+  systemId: SystemId;
+  experienceId: ExperienceId;
+  relationKind: SystemExperienceRelationKind;
+  createdAt: Date;
+}
