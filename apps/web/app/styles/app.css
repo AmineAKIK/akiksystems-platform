@@ -438,7 +438,7 @@
 
 .aks-experience-context-separator {
   flex: 0 0 auto;
-  color: var(--aks-border-strong);
+  color: var(--aks-border-subtle);
 }
 
 .aks-experience-outlet {
@@ -833,15 +833,15 @@
   .aks-home {
     min-height: auto;
     overflow: visible;
-    padding-block: var(--aks-space-6);
+    padding-block: var(--aks-space-4);
   }
 
   .aks-home-portal {
-    gap: var(--aks-space-6);
+    gap: var(--aks-space-4);
   }
 
   .aks-home-intro {
-    gap: var(--aks-space-3);
+    gap: var(--aks-space-2);
   }
 
   .aks-home-identity {
@@ -867,7 +867,6 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
     grid-template-areas:
-      "core"
       "profile"
       "systems"
       "writings"
@@ -879,20 +878,7 @@
   }
 
   .aks-home-core {
-    justify-self: stretch;
-    width: auto;
-    min-height: 3rem;
-    aspect-ratio: auto;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: var(--aks-space-2);
-    margin: 0;
-    padding: var(--aks-space-3) 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    text-align: start;
+    display: none;
   }
 
   .aks-home-core-mark {
@@ -903,13 +889,13 @@
   .aks-home-door,
   .aks-home-door[data-destination] {
     width: 100%;
-    min-height: 4.5rem;
+    min-height: 3.35rem;
     justify-self: stretch;
     align-self: stretch;
     grid-template-columns: 2rem minmax(0, 1fr) auto;
     gap: var(--aks-space-3);
     align-items: center;
-    padding: var(--aks-space-3) 0;
+    padding: var(--aks-space-2) 0;
     border: 0;
     border-top: 1px solid var(--aks-border-subtle);
     border-radius: 0;
@@ -924,17 +910,20 @@
   }
 
   .aks-home-door-copy {
-    gap: 0.15rem;
+    gap: 0.05rem;
   }
 
   .aks-home-door-label {
-    font-size: var(--aks-font-size-lg);
-    line-height: 1.25;
+    font-size: var(--aks-font-size-md);
+    line-height: 1.2;
   }
 
   .aks-home-door-description {
-    font-size: var(--aks-font-size-xs);
-    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7rem;
+    line-height: 1.2;
   }
 
   .aks-home-door-index,
