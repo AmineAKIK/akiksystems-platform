@@ -102,7 +102,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const profileId = await publicProfileId();
 
-  const [profile, localizations, portrait, auditEvents] = await Promise.all([
+  const [profile, localizations, portrait, auditEvents, selectableSystems, selectedSystems] = await Promise.all([
     appDb
       .selectFrom('profiles')
       .select(['id', 'display_name', 'portrait_asset_id'])
@@ -160,6 +160,37 @@ export async function loader({ request }: Route.LoaderArgs) {
       .orderBy('created_at', 'desc')
       .limit(20)
       .execute(),
+    appDb
+      .selectFrom('systems')
+      .leftJoin(
+        'system_localizations as system_en',
+        (join) =>
+          join
+            .onRef('system_en.system_id', '=', 'systems.id')
+            .on('system_en.locale', '=', 'en'),
+      )
+      .leftJoin(
+        'system_localizations as system_fr',
+        (join) =>
+          join
+            .onRef('system_fr.system_id', '=', 'systems.id')
+            .on('system_fr.locale', '=', 'fr'),
+      )
+      .select([
+        'systems.id',
+        'systems.lifecycle',
+        'system_en.title as title_en',
+        'system_fr.title as title_fr',
+      ])
+      .where('systems.lifecycle', '=', 'active')
+      .orderBy('systems.created_at', 'desc')
+      .execute(),
+    appDb
+      .selectFrom('profile_systems')
+      .select(['system_id', 'position'])
+      .where('profile_id', '=', profileId)
+      .orderBy('position')
+      .execute(),
   ]);
 
   const byLocale = new Map(
@@ -200,6 +231,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     fr: byLocale.get('fr') ?? null,
     portrait: portrait ?? null,
     principles,
+    selectableSystems,
+    selectedSystems,
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
@@ -338,6 +371,68 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'How I work updated.' };
+  }
+
+  if (intent === 'representative-systems') {
+    const selectedIds = form
+      .getAll('representativeSystem')
+      .filter((value): value is string => typeof value === 'string');
+    const orderedIds = [...new Set(selectedIds)].sort((left, right) => {
+      const leftPosition = Number(textField(form, `position-${left}`));
+      const rightPosition = Number(textField(form, `position-${right}`));
+      return leftPosition - rightPosition;
+    });
+
+    const validSystems =
+      orderedIds.length === 0
+        ? []
+        : await appDb
+            .selectFrom('systems')
+            .select('id')
+            .where('lifecycle', '=', 'active')
+            .where('id', 'in', orderedIds)
+            .execute();
+
+    if (validSystems.length !== orderedIds.length) {
+      return {
+        ok: false,
+        message: 'Representative Systems must reference active System objects.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('profile_systems')
+        .where('profile_id', '=', profileId)
+        .execute();
+
+      if (orderedIds.length > 0) {
+        await transaction
+          .insertInto('profile_systems')
+          .values(
+            orderedIds.map((systemId, position) => ({
+              profile_id: profileId,
+              system_id: systemId,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.representative_systems_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          systemIds: orderedIds,
+          ordering: 'explicit',
+        },
+      });
+    });
+
+    return { ok: true, message: 'Representative Systems updated.' };
   }
 
   if (intent === 'portrait') {
@@ -654,6 +749,56 @@ export default function AdminProfile() {
                 rows={10}
               />
               <Button type="submit">Save How I work</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="representative-systems" />
+              <Heading level={2} size="sm">
+                Representative Systems
+              </Heading>
+              <Text size="sm" tone="muted">
+                Select and order real System objects. Profile reuses their published
+                localized title and summary; it does not copy project text.
+              </Text>
+              <div className="aks-proof-stack">
+                {data.selectableSystems.length === 0 ? (
+                  <Text tone="muted">No active Systems are available yet.</Text>
+                ) : (
+                  data.selectableSystems.map((system) => {
+                    const selected = data.selectedSystems.find(
+                      (relation) => relation.system_id === system.id,
+                    );
+
+                    return (
+                      <div className="aks-admin-card" key={system.id}>
+                        <label>
+                          <input
+                            defaultChecked={selected !== undefined}
+                            name="representativeSystem"
+                            type="checkbox"
+                            value={system.id}
+                          />
+                          <span>
+                            {system.title_en ?? system.title_fr ?? system.id}
+                          </span>
+                        </label>
+                        <label>
+                          <span>Order</span>
+                          <input
+                            defaultValue={selected?.position ?? 999}
+                            min={0}
+                            name={`position-${system.id}`}
+                            type="number"
+                          />
+                        </label>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <Button type="submit">Save representative Systems</Button>
             </Form>
           </section>
 
