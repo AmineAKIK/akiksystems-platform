@@ -355,7 +355,7 @@ async function assertIntentPrefetching(browser) {
     );
 
     await profileDoor.hover();
-    await homeNav.locator('link[rel="prefetch"]').first().waitFor();
+    await homeNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
 
     assert.ok(
       (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
@@ -382,7 +382,7 @@ async function assertIntentPrefetching(browser) {
     );
 
     await writingsLink.focus();
-    await shellNav.locator('link[rel="prefetch"]').first().waitFor();
+    await shellNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
     assert.ok(
       (await shellNav.locator('link[rel="prefetch"]').count()) > 0,
       'Keyboard focus must count as navigation intent for shell prefetching.',
@@ -411,7 +411,7 @@ async function assertIntentPrefetching(browser) {
     );
 
     await systemsDoor.dispatchEvent('touchstart');
-    await homeNav.locator('link[rel="prefetch"]').first().waitFor();
+    await homeNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
 
     assert.ok(
       (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
