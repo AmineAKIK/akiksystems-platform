@@ -1,7 +1,7 @@
 import { Outlet, useLoaderData, useLocation, useMatches } from 'react-router';
 
 import { ExperienceShell } from '../components/experience-shell';
-import { requireLocale } from '../i18n/locales';
+import { requireLocale, type Locale } from '../i18n/locales';
 
 import type { Route } from './+types/locale-layout';
 
@@ -11,40 +11,27 @@ export function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-interface SystemMatchData {
-  system?: {
-    title?: string;
-    locale?: 'en' | 'fr';
-    alternate?: {
-      locale: 'en' | 'fr';
-      slug: string;
-    } | null;
+interface ExperienceMatchData {
+  localContext?: {
+    title: string;
+    alternateHref?: string | null;
   };
 }
 
-function systemContext(matches: ReturnType<typeof useMatches>) {
+function localContext(matches: ReturnType<typeof useMatches>) {
   for (const match of matches) {
-    const data = match.loaderData as SystemMatchData | undefined;
-    const system = data?.system;
-
-    if (system?.title === undefined || system.locale === undefined) {
-      continue;
+    const data = match.loaderData as ExperienceMatchData | undefined;
+    if (data?.localContext !== undefined) {
+      return data.localContext;
     }
-
-    const alternateLocale = system.locale === 'en' ? 'fr' : 'en';
-
-    return {
-      currentTitle: system.title,
-      alternateHref:
-        system.alternate === null || system.alternate === undefined
-          ? `/${alternateLocale}`
-          : `/${system.alternate.locale}/systems/${system.alternate.slug}`,
-    };
   }
 
   return {
-    currentTitle: null,
+    title: null,
     alternateHref: null,
+  } satisfies {
+    title: string | null;
+    alternateHref: string | null;
   };
 }
 
@@ -52,13 +39,13 @@ export default function LocaleLayout() {
   const { locale } = useLoaderData<typeof loader>();
   const location = useLocation();
   const matches = useMatches();
-  const context = systemContext(matches);
+  const context = localContext(matches);
 
   return (
     <ExperienceShell
-      alternateHref={context.alternateHref}
-      currentTitle={context.currentTitle}
-      locale={locale}
+      alternateHref={context.alternateHref ?? null}
+      currentTitle={context.title}
+      locale={locale as Locale}
       pathname={location.pathname}
     >
       <Outlet />
