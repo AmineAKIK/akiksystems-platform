@@ -111,8 +111,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedSystems,
     selectableExperiences,
     selectedExperiences,
-    selectableExperiences,
-    selectedExperiences,
   ] = await Promise.all([
     appDb
       .selectFrom('profiles')
