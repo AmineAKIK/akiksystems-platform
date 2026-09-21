@@ -1,4 +1,3 @@
-import { getPublishedSystem } from '@akiksystems/db';
 import { Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
