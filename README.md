@@ -71,6 +71,18 @@ Publication readiness is a shared domain rule rather than UI-only validation.
 - PostgreSQL prevents incomplete rows from entering or remaining in `published` state, including later edits that would make an already-published localization incomplete.
 - Actual publish/unpublish controls remain scoped to AKS-023; AKS-022 defines and enforces the precondition.
 
+### Public localized System route
+
+Published Systems are directly accessible by localized deep link.
+
+- `/:locale/systems/:slug` resolves through the AKS-026 `getPublishedSystem` boundary and renders through the AKS-027 shared renderer.
+- Draft localizations and archived Systems return 404 because the public route never queries admin state directly.
+- EN and FR remain independent; each URL exists only when that specific localization is published.
+- Initial HTML is server-rendered and includes the System title, summary, technologies, origin context, links, and structured presentation without requiring client JavaScript.
+- Contextual media uses `/:locale/systems/:slug/assets/:assetId`; the asset route verifies the owning System is active and that the requested localization is published before reading private object storage.
+- Public HTML and media responses use short cache lifetimes with stale-while-revalidate.
+- Responsive layout comes from the shared renderer styles; technical SEO metadata/canonical/hreflang/OpenGraph remains intentionally scoped to AKS-030.
+
 ### System renderer v1
 
 The v1 System renderer is a code-defined semantic rendering boundary shared by private preview and the upcoming public route.
@@ -317,6 +329,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-027 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-028 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, an append-only readable audit trail for significant admin mutations, a single public System read model that excludes drafts, archived Systems, admin state, private storage details, and other-locale content, and a semantic SSR-capable System renderer v1 shared by preview and the upcoming public route.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, an append-only readable audit trail for significant admin mutations, a single public System read model that excludes drafts, archived Systems, admin state, private storage details, and other-locale content, a semantic SSR-capable System renderer v1 shared by preview and public delivery, and a localized deep-linkable public System route backed only by published read-model data.
