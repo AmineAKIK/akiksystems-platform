@@ -78,6 +78,36 @@ try {
     assert.match(frenchHtml, new RegExp(`href="${href}"`));
   }
 
+  const directRoutes = [
+    { path: '/en/profile', lang: 'en', heading: 'Profile', activeHref: '/en/profile' },
+    { path: '/en/systems', lang: 'en', heading: 'Systems', activeHref: '/en/systems' },
+    { path: '/en/writings', lang: 'en', heading: 'Writings', activeHref: '/en/writings' },
+    { path: '/en/learning', lang: 'en', heading: 'Learning', activeHref: '/en/learning' },
+    { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', activeHref: '/en/work-with-us' },
+    { path: '/fr/profil', lang: 'fr', heading: 'Profil', activeHref: '/fr/profil' },
+    { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', activeHref: '/fr/systems' },
+    { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', activeHref: '/fr/ecrits' },
+    { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', activeHref: '/fr/apprentissage' },
+    { path: '/fr/travailler-ensemble', lang: 'fr', heading: 'Travailler ensemble', activeHref: '/fr/travailler-ensemble' },
+  ];
+
+  for (const route of directRoutes) {
+    const response = await globalThis.fetch(`${origin}${route.path}`);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, `${route.path} direct SSR load must return HTTP 200.`);
+    assert.match(html, new RegExp(`<html lang="${route.lang}"`));
+    assert.match(html, /class="aks-brand-signature"/);
+    assert.match(html, new RegExp(`<h1[^>]*>${route.heading.replace(/[.*+?^$()|[\\]{}]/g, '\\  const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
+    redirect: 'manual',
+  });')}<\\/h1>`));
+    assert.match(
+      html,
+      new RegExp(`aria-current="page"[^>]*href="${route.activeHref}"`),
+      `${route.path} must reconstruct its active destination during SSR.`,
+    );
+  }
+
   const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
     redirect: 'manual',
   });
