@@ -71,6 +71,18 @@ Publication readiness is a shared domain rule rather than UI-only validation.
 - PostgreSQL prevents incomplete rows from entering or remaining in `published` state, including later edits that would make an already-published localization incomplete.
 - Actual publish/unpublish controls remain scoped to AKS-023; AKS-022 defines and enforces the precondition.
 
+### Public System read model
+
+Public System consumption goes through one explicit query boundary: `getPublishedSystem(db, { locale, slug })`.
+
+- The root query requires `systems.lifecycle = active` and the requested localization to be `published`.
+- Draft localizations return `null`, including when another locale for the same System is published.
+- Archived Systems return `null` even if a localization still carries a published editorial state.
+- The returned projection contains only public identity/content plus ordered technologies, localized origin context, typed links, contextual media metadata, and the validated presentation document.
+- Admin lifecycle state, editorial state, audit events, storage keys, original filenames, byte sizes, internal timestamps, and content from the other locale are not part of the projection.
+- Media is represented by public-safe asset identity and localized metadata; delivery URL construction remains a web/runtime responsibility.
+- AKS-027 consumes this projection through the shared System renderer rather than querying admin tables directly.
+
 ### Secure unpublished preview
 
 Draft System content can be previewed without creating a public route.
@@ -277,6 +289,7 @@ pnpm db:verify-assets
 pnpm db:verify-admin-audit
 pnpm db:verify-presentation-documents
 pnpm db:verify-publication-readiness
+pnpm db:verify-public-system
 pnpm db:verify-independent-publication
 pnpm db:verify-system-experiences
 pnpm db:verify-system-links
@@ -291,6 +304,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-025 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-026 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, and an append-only readable audit trail for significant admin mutations.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, an append-only readable audit trail for significant admin mutations, and a single public System read model that excludes drafts, archived Systems, admin state, private storage details, and other-locale content.
