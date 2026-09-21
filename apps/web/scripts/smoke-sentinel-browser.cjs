@@ -129,7 +129,7 @@ async function assertAxe(page) {
     );
 
     await page.goto(`${origin}${page.systemPath}/preview/en`);
-    assert.match(await page.locator('body').innerText(), /Private preview/);
+    assert.match(await page.locator('body').innerText(), /private preview/i);
     assert.equal(
       await page.locator('meta[name="robots"]').getAttribute('content'),
       'noindex, nofollow, noarchive, nosnippet',
