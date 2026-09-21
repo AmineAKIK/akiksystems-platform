@@ -24,7 +24,7 @@ interface SystemMatchData {
 
 function systemContext(matches: ReturnType<typeof useMatches>) {
   for (const match of matches) {
-    const data = match.data as SystemMatchData | undefined;
+    const data = match.loaderData as SystemMatchData | undefined;
     const system = data?.system;
 
     if (system?.title === undefined || system.locale === undefined) {
