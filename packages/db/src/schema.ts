@@ -95,6 +95,13 @@ export interface ProfileWorkPrincipleLocalizationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface ProfileSystemsTable {
+  profile_id: string;
+  system_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
 export interface TechnologiesTable {
   id: string;
   slug: string;
@@ -208,6 +215,10 @@ export type NewProfileWorkPrincipleLocalizationRow =
 export type ProfileWorkPrincipleLocalizationUpdate =
   Updateable<ProfileWorkPrincipleLocalizationsTable>;
 
+export type ProfileSystemRow = Selectable<ProfileSystemsTable>;
+export type NewProfileSystemRow = Insertable<ProfileSystemsTable>;
+export type ProfileSystemUpdate = Updateable<ProfileSystemsTable>;
+
 export type TechnologyRow = Selectable<TechnologiesTable>;
 export type NewTechnologyRow = Insertable<TechnologiesTable>;
 export type TechnologyUpdate = Updateable<TechnologiesTable>;
@@ -258,6 +269,7 @@ export interface Database {
   profile_localizations: ProfileLocalizationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
+  profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
   experiences: ExperiencesTable;
