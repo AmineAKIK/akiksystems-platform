@@ -1,3 +1,5 @@
+import type { PresentationDocument } from './presentation-document.js';
+
 export const platformLocales = ['en', 'fr'] as const;
 
 export type PlatformLocale = (typeof platformLocales)[number];
