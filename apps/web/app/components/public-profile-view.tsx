@@ -1,4 +1,4 @@
-import { Container, Heading, Text } from '@akiksystems/ui';
+import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import type { PublicProfile } from '@akiksystems/db';
 
@@ -46,6 +46,38 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           </Text>
           {profile.foundationalCopy !== null ? (
             <Text>{profile.foundationalCopy}</Text>
+          ) : null}
+          {profile.representativeSystems.length > 0 ? (
+            <section className="aks-profile-representative-systems">
+              <Heading level={2} size="sm">
+                {profile.locale === 'fr'
+                  ? 'Systèmes représentatifs'
+                  : 'Representative Systems'}
+              </Heading>
+              <div className="aks-profile-system-list">
+                {profile.representativeSystems.map((system) => (
+                  <article className="aks-profile-system" key={system.id}>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {system.title}
+                      </Heading>
+                      <Text tone="muted">{system.summary}</Text>
+                      <Link
+                        href={
+                          profile.locale === 'fr'
+                            ? `/fr/systems/${system.slug}`
+                            : `/en/systems/${system.slug}`
+                        }
+                      >
+                        {profile.locale === 'fr'
+                          ? 'Inspecter le système'
+                          : 'Inspect System'}
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
           ) : null}
           {profile.workPrinciples.length > 0 ? (
             <section className="aks-profile-work-principles">
