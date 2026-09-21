@@ -47,6 +47,13 @@ export async function loader({ params }: Route.LoaderArgs) {
             url: `/${locale}/systems/${slug}/assets/${asset.id}`,
           })),
         },
+        localContext: {
+          title: system.title,
+          alternateHref:
+            system.alternate === null
+              ? `/${locale === 'en' ? 'fr' : 'en'}`
+              : `/${system.alternate.locale}/systems/${system.alternate.slug}`,
+        },
       },
       {
         headers: {
