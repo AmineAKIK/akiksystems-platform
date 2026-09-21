@@ -23,6 +23,11 @@ describe('ExperienceShell', () => {
     expect(html).toContain('aria-label="Primary navigation"');
     expect(html).toContain('href="/en">Home</a>');
     expect(html).toContain('href="/en/profile">Profile</a>');
+    expect(html).toContain('href="/en/systems">Systems</a>');
+    expect(html).toContain('href="/en/writings">Writings</a>');
+    expect(html).toContain('href="/en/learning">Learning</a>');
+    expect(html).toContain('href="/en/work-with-us">Work with us</a>');
+    expect(html).toContain('aria-current="page" href="/en/systems">Systems</a>');
     expect(html).toContain('aria-label="Current context"');
     expect(html).toContain('>Systems · Sentinel</p>');
     expect(html).toContain(
