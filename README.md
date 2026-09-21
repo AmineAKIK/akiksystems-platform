@@ -85,6 +85,18 @@ Professional Experience is modeled once and localized independently from Systems
 
 Broader Experience publication/profile rules remain outside AKS-016 and can evolve with the Profile milestone.
 
+### Contextual assets
+
+Assets are stored once, related to domain context, and localized independently.
+
+- `assets` stores immutable storage identity plus original filename, MIME type, and byte size.
+- `asset_localizations` stores EN/FR alt text and captions without duplicating the binary object.
+- `system_assets` links assets to a System with explicit ordering; media is managed from the System context rather than through a public media library.
+- Uploads accept JPEG, PNG, WebP, AVIF, and PDF up to 10 MiB. Validation is enforced both before storage and by PostgreSQL constraints.
+- Private object bytes live in S3-compatible storage. The web server signs PUT/DELETE requests with AWS Signature Version 4; storage credentials remain server-only.
+- Deleting an asset that is still referenced is blocked by database constraints. The admin removal path verifies references before unlinking metadata and deleting the object.
+- Staging uses an isolated Railway Storage Bucket, so staging assets do not share credentials or objects with other environments.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
@@ -100,7 +112,9 @@ The administration surface is intentionally single-user and closed to public reg
 - Auth schema changes run through `pnpm auth:migrate` before application database migrations.
 
 Required server-only variables are `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and
-`ADMIN_EMAIL`. `ADMIN_PASSWORD` is intentionally only used for the one-time bootstrap command.
+`ADMIN_EMAIL`. Contextual asset operations additionally require `BUCKET`, `REGION`, `ENDPOINT`,
+`ACCESS_KEY_ID`, and `SECRET_ACCESS_KEY`. `ADMIN_PASSWORD` is intentionally only used for the
+one-time bootstrap command.
 
 ## Containers
 
@@ -168,6 +182,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm db:verify-assets
 pnpm db:verify-system-experiences
 pnpm db:verify-system-technologies
 pnpm smoke:web
@@ -180,6 +195,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-016 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-017 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, and localized Experience↔System origin context.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, and contextual S3-backed asset management.
