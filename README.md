@@ -61,6 +61,17 @@ The core System model keeps shared identity separate from localized editorial co
 
 Publication-readiness rules for required localized fields remain intentionally deferred to AKS-022.
 
+### Technologies
+
+Technologies are modeled as reusable typed entities rather than strings embedded in a System record.
+
+- `technologies` stores one canonical technology identity with a unique slug and display name.
+- `system_technologies` is an explicit many-to-many relation between Systems and Technologies.
+- `position` preserves a stable display order per System.
+- A System cannot reference the same Technology twice or reuse the same position twice.
+- Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
+- The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
@@ -144,6 +155,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm db:verify-system-technologies
 pnpm smoke:web
 pnpm smoke:worker
 pnpm smoke:observability
@@ -154,6 +166,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-014 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-015 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, and the foundational System domain model.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, and reusable ordered System↔Technology relations.
