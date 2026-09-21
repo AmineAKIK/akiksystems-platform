@@ -177,6 +177,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experiences,
       links,
       assetCount,
+      auditEvents,
     ] = await Promise.all([
       db
         .selectFrom('system_localizations')
@@ -257,6 +258,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .select(({ fn }) => fn.countAll<number>().as('count'))
         .where('system_id', '=', systemId)
         .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('admin_audit_events')
+        .select([
+          'id',
+          'actor_email',
+          'action',
+          'entity_type',
+          'entity_id',
+          'locale',
+          'metadata',
+          'created_at',
+        ])
+        .where('system_id', '=', systemId)
+        .orderBy('created_at', 'desc')
+        .limit(20)
+        .execute(),
     ]);
 
     const byLocale = new Map(
@@ -289,6 +306,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experience: experiences[0] ?? null,
       links,
       assetCount: Number(assetCount.count),
+      auditEvents: auditEvents.map((event) => ({
+        ...event,
+        created_at: event.created_at.toISOString(),
+      })),
     };
   } finally {
     await db.destroy();
@@ -750,6 +771,26 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 }
 
+function auditActionLabel(action: string): string {
+  const labels: Record<string, string> = {
+    'system.created': 'System created',
+    'system.archived': 'System archived',
+    'system.restored': 'System restored',
+    'system.lifecycle_updated': 'Lifecycle updated',
+    'system.localization_updated': 'Localized content updated',
+    'system.localization_published': 'Localization published',
+    'system.localization_unpublished': 'Localization unpublished',
+    'system.technologies_updated': 'Technology stack updated',
+    'system.origin_context_updated': 'Origin context updated',
+    'system.links_updated': 'Links updated',
+    'system.presentation_updated': 'Presentation updated',
+    'system.asset_uploaded': 'Asset uploaded',
+    'system.asset_deleted': 'Asset deleted',
+  };
+
+  return labels[action] ?? action;
+}
+
 export default function AdminSystem() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -1055,6 +1096,36 @@ export default function AdminSystem() {
               <textarea defaultValue={linkText} name="links" rows={8} />
               <Button type="submit">Save links</Button>
             </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">Recent audit activity</Heading>
+              <Text size="sm" tone="muted">
+                Significant admin mutations only. Editorial payloads and secrets
+                are deliberately excluded.
+              </Text>
+              {data.auditEvents.length === 0 ? (
+                <Text size="sm" tone="muted">No audit events yet.</Text>
+              ) : (
+                <ol className="aks-admin-audit-list">
+                  {data.auditEvents.map((event) => (
+                    <li key={event.id}>
+                      <div className="aks-proof-stack">
+                        <Text tone="strong">{auditActionLabel(event.action)}</Text>
+                        <Text size="sm" tone="muted">
+                          {event.locale ? `${event.locale.toUpperCase()} · ` : ''}
+                          {event.entity_type} · {event.actor_email} · {event.created_at}
+                        </Text>
+                        <code className="aks-admin-audit-metadata">
+                          {JSON.stringify(event.metadata)}
+                        </code>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
           </section>
 
           <section className="aks-admin-card">
