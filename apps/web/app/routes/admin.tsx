@@ -1,20 +1,19 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
+import { writeAdminAuditEvent } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
 import { Form, redirect, useLoaderData } from 'react-router';
 
 import { authClient } from '../lib/auth.client';
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/admin';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await requireAdminSession(request);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const systems = await db
       .selectFrom('systems')
       .leftJoin(
@@ -37,9 +36,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
       systems,
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -51,9 +47,8 @@ export async function action({ request }: Route.ActionArgs) {
     return null;
   }
 
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const existing = await db
       .selectFrom('systems')
       .select('id')
@@ -107,9 +102,6 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return redirect(`/admin/systems/${systemId}`);
-  } finally {
-    await db.destroy();
-  }
 }
 
 export default function Admin() {
