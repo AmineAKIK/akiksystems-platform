@@ -407,10 +407,38 @@
 }
 
 .aks-experience-context {
+  min-width: 0;
   max-width: 20rem;
+}
+
+.aks-experience-context-list {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  list-style: none;
+  white-space: nowrap;
+}
+
+.aks-experience-context-list li {
+  min-width: 0;
+}
+
+.aks-experience-context-list .aks-link,
+.aks-experience-context-list [aria-current='page'] {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.aks-experience-context-separator {
+  flex: 0 0 auto;
+  color: var(--aks-border-strong);
 }
 
 .aks-experience-outlet {
@@ -438,7 +466,7 @@
 
   .aks-experience-context {
     min-width: 0;
-    max-width: none;
+    max-width: min(60vw, 18rem);
   }
 
   .aks-experience-nav {
