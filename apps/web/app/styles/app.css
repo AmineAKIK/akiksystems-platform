@@ -578,3 +578,303 @@
     transform: none;
   }
 }
+
+
+/* AKS-045: desktop Home portal. The five doors stay semantic links; the
+   orbital composition is a desktop spatial layer rather than navigation logic. */
+.aks-home {
+  min-height: calc(100dvh - 4.5rem);
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  padding-block: clamp(var(--aks-space-6), 5vh, var(--aks-space-8));
+}
+
+.aks-home-portal {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(32rem, 1.28fr);
+  gap: clamp(var(--aks-space-6), 5vw, var(--aks-space-9));
+  align-items: center;
+}
+
+.aks-home-intro {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: var(--aks-space-4);
+  max-width: 32rem;
+}
+
+.aks-home-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: var(--aks-tracking-label);
+}
+
+.aks-home-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--aks-space-4);
+}
+
+.aks-home-brand-mark {
+  width: clamp(2.8rem, 5vw, 4.5rem);
+  height: clamp(2.8rem, 5vw, 4.5rem);
+}
+
+.aks-home-tagline {
+  max-width: 28ch;
+  font-weight: 650;
+}
+
+.aks-home-description {
+  max-width: 48ch;
+}
+
+.aks-home-orbit {
+  position: relative;
+  isolation: isolate;
+  min-height: min(34rem, calc(100dvh - 10rem));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    "profile profile systems"
+    "writings core systems"
+    "learning work work";
+  gap: var(--aks-space-3);
+  align-items: stretch;
+}
+
+.aks-home-orbit::before,
+.aks-home-orbit::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 50% auto auto 50%;
+  width: min(72%, 25rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.aks-home-orbit::after {
+  width: min(48%, 16rem);
+  border-style: dashed;
+  opacity: 0.65;
+}
+
+.aks-home-core {
+  grid-area: core;
+  place-self: center;
+  width: clamp(7rem, 12vw, 9rem);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--aks-space-2);
+  padding: var(--aks-space-3);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--aks-surface-canvas) 88%, transparent);
+  color: var(--aks-text-muted);
+  text-align: center;
+  font-size: var(--aks-font-size-xs);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+}
+
+.aks-home-core-mark {
+  width: 2rem;
+  height: 2rem;
+  color: var(--aks-text-primary);
+}
+
+.aks-home-door {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--aks-space-3);
+  align-items: start;
+  min-width: 0;
+  padding: var(--aks-space-4);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: color-mix(in srgb, var(--aks-surface-raised) 88%, transparent);
+  color: var(--aks-text-primary);
+  text-decoration: none;
+  transition:
+    transform var(--aks-motion-fast) var(--aks-ease-standard),
+    border-color var(--aks-motion-fast) var(--aks-ease-standard),
+    background-color var(--aks-motion-fast) var(--aks-ease-standard);
+}
+
+.aks-home-door:hover,
+.aks-home-door:focus-visible {
+  transform: translateY(-0.15rem);
+  border-color: var(--aks-text-muted);
+  background: var(--aks-surface-raised);
+}
+
+.aks-home-door[data-destination="profile"] {
+  grid-area: profile;
+  width: min(18rem, 100%);
+  justify-self: end;
+  align-self: end;
+}
+
+.aks-home-door[data-destination="systems"] {
+  grid-area: systems;
+  width: min(18rem, 100%);
+  justify-self: start;
+  align-self: center;
+}
+
+.aks-home-door[data-destination="writings"] {
+  grid-area: writings;
+  width: min(17rem, 100%);
+  justify-self: end;
+  align-self: center;
+}
+
+.aks-home-door[data-destination="learning"] {
+  grid-area: learning;
+  width: min(18rem, 100%);
+  justify-self: end;
+  align-self: start;
+}
+
+.aks-home-door[data-destination="work-with-us"] {
+  grid-area: work;
+  width: min(20rem, 100%);
+  justify-self: start;
+  align-self: start;
+}
+
+.aks-home-door-index {
+  color: var(--aks-text-muted);
+  font-family: var(--aks-font-mono);
+  font-size: var(--aks-font-size-xs);
+  line-height: 1.7;
+}
+
+.aks-home-door-copy {
+  display: grid;
+  gap: var(--aks-space-1);
+  min-width: 0;
+}
+
+.aks-home-door-label {
+  font-weight: 700;
+  letter-spacing: var(--aks-tracking-tight);
+}
+
+.aks-home-door-description {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  line-height: 1.45;
+}
+
+.aks-home-door-arrow {
+  color: var(--aks-text-muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 60rem) {
+  .aks-home {
+    overflow: visible;
+    align-items: start;
+  }
+
+  .aks-home-portal {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-home-orbit {
+    min-height: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+    grid-template-areas:
+      "core core"
+      "profile systems"
+      "writings learning"
+      "work work";
+  }
+
+  .aks-home-core {
+    margin-block: var(--aks-space-3);
+  }
+
+  .aks-home-door[data-destination] {
+    width: 100%;
+    justify-self: stretch;
+    align-self: stretch;
+  }
+
+  .aks-home-orbit::before,
+  .aks-home-orbit::after {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-home {
+    min-height: auto;
+    padding-block: var(--aks-space-7);
+  }
+
+  .aks-home-portal {
+    gap: var(--aks-space-7);
+  }
+
+  .aks-home-identity {
+    gap: var(--aks-space-3);
+  }
+
+  .aks-home-identity .aks-heading {
+    font-size: var(--aks-font-size-heading-md);
+  }
+
+  .aks-home-brand-mark {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .aks-home-orbit {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "core"
+      "profile"
+      "systems"
+      "writings"
+      "learning"
+      "work";
+  }
+
+  .aks-home-core {
+    justify-self: start;
+    width: auto;
+    aspect-ratio: auto;
+    grid-template-columns: auto auto;
+    border-radius: var(--aks-radius-md);
+    text-align: start;
+  }
+
+  .aks-home-core-mark {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .aks-home-door {
+    min-height: 4.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-home-door:hover,
+  .aks-home-door:focus-visible {
+    transform: none;
+  }
+}
