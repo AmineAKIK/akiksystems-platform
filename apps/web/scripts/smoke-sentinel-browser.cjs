@@ -58,7 +58,7 @@ async function saveLocalization(page, locale, values) {
   await form.locator('input[name="title"]').fill(values.title);
   await form.locator('textarea[name="summary"]').fill(values.summary);
   await form.getByRole('button', { name: button }).click();
-  await page.getByText(locale === 'en' ? 'EN content saved.' : 'FR content saved.').waitFor();
+  await page.getByText(locale === 'en' ? 'EN content updated independently.' : 'FR content updated independently.').waitFor();
 }
 
 async function savePresentation(page, locale, text) {
