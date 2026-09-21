@@ -86,6 +86,8 @@ export async function getPublicProfile(
     .where('systems.lifecycle', '=', 'active')
     .where('system_localizations.locale', '=', locale)
     .where('system_localizations.editorial_state', '=', 'published')
+    .where('system_localizations.published_at', 'is not', null)
+    .where('system_localizations.presentation_document', 'is not', null)
     .where('system_localizations.slug', 'is not', null)
     .where('system_localizations.title', 'is not', null)
     .where('system_localizations.summary', 'is not', null)
