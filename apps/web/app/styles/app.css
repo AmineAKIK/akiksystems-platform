@@ -336,12 +336,6 @@
   min-height: 4.5rem;
 }
 
-.aks-experience-brand {
-  font-weight: 760;
-  text-decoration: none;
-  letter-spacing: var(--aks-tracking-tight);
-}
-
 .aks-experience-nav,
 .aks-experience-meta {
   display: flex;
