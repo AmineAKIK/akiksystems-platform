@@ -24,5 +24,10 @@ export default [
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
     route('about', 'routes/about.tsx'),
+    route('systems/:slug', 'routes/system-detail.tsx'),
+    route(
+      'systems/:slug/assets/:assetId',
+      'routes/system-detail-asset.ts',
+    ),
   ]),
 ] satisfies RouteConfig;
