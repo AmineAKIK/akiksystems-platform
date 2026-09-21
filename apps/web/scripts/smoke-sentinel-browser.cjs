@@ -334,6 +334,134 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
   }
 }
 
+async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
+  const devices = [
+    { name: 'small mobile', viewport: { width: 320, height: 568 }, compact: true, homeColumns: 1 },
+    { name: 'large mobile', viewport: { width: 430, height: 932 }, compact: true, homeColumns: 1 },
+    { name: 'tablet', viewport: { width: 768, height: 1024 }, compact: true, homeColumns: 1 },
+    { name: 'laptop', viewport: { width: 1366, height: 768 }, compact: false, homeColumns: 2 },
+    { name: 'desktop', viewport: { width: 1440, height: 900 }, compact: false, homeColumns: 2 },
+  ];
+
+  for (const device of devices) {
+    const context = await browser.newContext({ viewport: device.viewport });
+
+    try {
+      const page = await context.newPage();
+
+      await page.goto(`${origin}/en`);
+      await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+        true,
+        `${device.name} Home must not overflow horizontally.`,
+      );
+
+      const homeColumns = await page.locator('.aks-home-portal').evaluate(
+        (element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length,
+      );
+      assert.equal(
+        homeColumns,
+        device.homeColumns,
+        `${device.name} Home must expose the expected spatial composition.`,
+      );
+
+      const desktopNavVisible = await page.locator('.aks-experience-nav').isVisible();
+      const mobileMenuVisible = await page.locator('.aks-experience-mobile-menu').isVisible();
+      assert.equal(
+        desktopNavVisible,
+        !device.compact,
+        `${device.name} must use the expected global navigation mode.`,
+      );
+      assert.equal(
+        mobileMenuVisible,
+        device.compact,
+        `${device.name} must use the expected compact navigation mode.`,
+      );
+
+      await page.goto(`${origin}/en/profile`);
+      await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+        true,
+        `${device.name} first-level route must not overflow horizontally.`,
+      );
+      assert.equal(
+        (await page.locator('[aria-label="Current context"]').innerText()).trim(),
+        'Profile',
+        `${device.name} first-level route must preserve shell context.`,
+      );
+
+      if (device.compact) {
+        const menu = page.locator('.aks-experience-mobile-menu');
+        await page.locator('.aks-experience-mobile-menu-trigger').click();
+        assert.notEqual(
+          await menu.getAttribute('open'),
+          null,
+          `${device.name} compact menu must open.`,
+        );
+        assert.equal(
+          await page
+            .locator('.aks-experience-mobile-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          '/en/profile',
+          `${device.name} compact navigation must preserve the active destination.`,
+        );
+      } else {
+        assert.equal(
+          await page
+            .locator('.aks-experience-nav a[aria-current="page"]')
+            .getAttribute('href'),
+          '/en/profile',
+          `${device.name} desktop navigation must preserve the active destination.`,
+        );
+      }
+
+      if (includeDeep) {
+        await page.goto(`${origin}/en/systems/sentinel`);
+        await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+
+        assert.equal(
+          await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+          true,
+          `${device.name} deep System route must not overflow horizontally.`,
+        );
+
+        const deepContext = page.locator('[aria-label="Current context"]');
+        assert.equal(await deepContext.locator('a').getAttribute('href'), '/en/systems');
+        assert.equal(
+          (await deepContext.locator('[aria-current="page"]').innerText()).trim(),
+          'Sentinel',
+          `${device.name} deep route must preserve item-level orientation.`,
+        );
+
+        if (device.compact) {
+          await page.locator('.aks-experience-mobile-menu-trigger').click();
+          assert.equal(
+            await page
+              .locator('.aks-experience-mobile-nav a[aria-current="page"]')
+              .getAttribute('href'),
+            '/en/systems',
+            `${device.name} deep route must keep Systems active in compact navigation.`,
+          );
+        } else {
+          assert.equal(
+            await page
+              .locator('.aks-experience-nav a[aria-current="page"]')
+              .getAttribute('href'),
+            '/en/systems',
+            `${device.name} deep route must keep Systems active in desktop navigation.`,
+          );
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  }
+}
+
 async function assertGlobalKeyboardNavigation(browser) {
   const desktop = await browser.newContext({
     viewport: { width: 1280, height: 800 },
@@ -831,6 +959,7 @@ async function assertAxe(page) {
     await assertHomePortal(page, 'fr');
 
     await assertIntentPrefetching(browser);
+    await assertRealDeviceClasses(browser);
 
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
@@ -932,6 +1061,7 @@ async function assertAxe(page) {
 
     await assertPublishedSystemDeepLinkAutonomy(browser);
     await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
+    await assertRealDeviceClasses(browser, { includeDeep: true });
     await assertGlobalKeyboardNavigation(browser);
 
     const reducedDesktop = await browser.newContext({
