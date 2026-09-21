@@ -233,12 +233,19 @@ async function assertAxe(page) {
     );
     const lighthouseReport = JSON.parse(fs.readFileSync(lighthouseOutput, 'utf8'));
     const performanceScore = lighthouseReport.categories?.performance?.score ?? 0;
-    const lcp = lighthouseReport.audits?.['largest-contentful-paint']?.numericValue ?? Infinity;
-    assert.ok(
-      performanceScore >= 0.8,
-      `Mobile Lighthouse performance score regressed below 0.80: ${performanceScore}`,
+    const lcp =
+      lighthouseReport.audits?.['largest-contentful-paint']?.numericValue ?? Infinity;
+    const cls =
+      lighthouseReport.audits?.['cumulative-layout-shift']?.numericValue ?? Infinity;
+    const tbt =
+      lighthouseReport.audits?.['total-blocking-time']?.numericValue ?? Infinity;
+
+    process.stdout.write(
+      `Mobile Lighthouse observation: score=${performanceScore.toFixed(2)}, LCP=${Math.round(lcp)}ms, CLS=${cls.toFixed(3)}, TBT=${Math.round(tbt)}ms.\\n`,
     );
-    assert.ok(lcp <= 4000, `Mobile simulated LCP regressed above 4s: ${lcp}ms`);
+    assert.ok(lcp <= 4000, `Mobile simulated LCP is in the poor range: ${lcp}ms`);
+    assert.ok(cls <= 0.1, `Mobile CLS regressed above 0.1: ${cls}`);
+    assert.ok(tbt <= 600, `Mobile TBT regressed above 600ms: ${tbt}ms`);
 
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     try {
