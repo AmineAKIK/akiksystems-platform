@@ -138,7 +138,7 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
     const contextLabel =
       destination.lang === 'fr' ? 'Contexte actuel' : 'Current context';
     assert.equal(
-      await page.locator(`[aria-label="${contextLabel}"]`).innerText(),
+      (await page.locator(`[aria-label="${contextLabel}"]`).innerText()).trim(),
       destination.context,
       `${destination.path} must expose its first-level shell context.`,
     );
@@ -264,6 +264,17 @@ async function assertAxe(page) {
       '/en/systems',
       'A deep System route must keep Systems marked as the current global destination.',
     );
+    const localContext = page.locator('[aria-label="Current context"]');
+    assert.equal(
+      await localContext.locator('a').getAttribute('href'),
+      '/en/systems',
+      'Deep System local context must link back to its first-level destination.',
+    );
+    assert.equal(
+      await localContext.locator('[aria-current="page"]').innerText(),
+      'Sentinel',
+      'Deep System local context must identify the current item.',
+    );
     assert.equal(await page.locator('html').getAttribute('lang'), 'en');
     assert.equal(
       await page.locator('a[href="https://sentinel.akiksystems.fr"]').getAttribute('href'),
@@ -308,6 +319,12 @@ async function assertAxe(page) {
           .getAttribute('href'),
         '/en/systems',
         'Mobile deep System routes must preserve Systems as the active destination.',
+      );
+      const mobileLocalContext = mobilePage.locator('[aria-label="Current context"]');
+      assert.equal(await mobileLocalContext.locator('a').getAttribute('href'), '/en/systems');
+      assert.equal(
+        await mobileLocalContext.locator('[aria-current="page"]').innerText(),
+        'Sentinel',
       );
       await mobilePage.locator('.aks-experience-mobile-menu-trigger').click();
       assert.equal(await mobileMenu.getAttribute('open'), null);

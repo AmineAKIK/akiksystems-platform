@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import { BrandSignature, Container, Link, Text } from '@akiksystems/ui';
+import { BrandSignature, Container, Link } from '@akiksystems/ui';
 
 import {
-  destinationById,
   destinationFromPathname,
   destinationHref,
   globalDestinations,
 } from '../i18n/global-destinations';
+import { ExperienceLocalContext } from './experience-local-context';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
 export interface ExperienceShellProps {
@@ -32,12 +32,6 @@ export function ExperienceShell({
     (destinationId === null
       ? `/${alternateLocale}`
       : destinationHref(destinationId, alternateLocale));
-  const sectionLabel =
-    destinationId === null
-      ? dictionary.shell.homeLabel
-      : destinationById(destinationId).label[locale];
-  const contextLabel =
-    currentTitle === null ? sectionLabel : `${sectionLabel} · ${currentTitle}`;
 
   return (
     <>
@@ -104,14 +98,11 @@ export function ExperienceShell({
             </details>
 
             <div className="aks-experience-meta">
-              <Text
-                aria-label={dictionary.shell.currentContextLabel}
-                className="aks-experience-context"
-                size="sm"
-                tone="muted"
-              >
-                {contextLabel}
-              </Text>
+              <ExperienceLocalContext
+                currentTitle={currentTitle}
+                destinationId={destinationId}
+                locale={locale}
+              />
               <Link
                 href={languageHref}
                 hrefLang={alternateLocale}
