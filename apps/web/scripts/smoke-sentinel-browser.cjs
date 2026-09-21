@@ -70,6 +70,54 @@ async function savePresentation(page, locale, text) {
   await page.getByText(`${locale.toUpperCase()} presentation saved.`).waitFor();
 }
 
+const globalDestinations = [
+  { path: '/en/profile', lang: 'en', heading: 'Profile', context: 'Profile' },
+  { path: '/en/systems', lang: 'en', heading: 'Systems', context: 'Systems' },
+  { path: '/en/writings', lang: 'en', heading: 'Writings', context: 'Writings' },
+  { path: '/en/learning', lang: 'en', heading: 'Learning', context: 'Learning' },
+  { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', context: 'Work with us' },
+  { path: '/fr/profil', lang: 'fr', heading: 'Profil', context: 'Profil' },
+  { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', context: 'Systèmes' },
+  { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', context: 'Écrits' },
+  { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', context: 'Apprentissage' },
+  {
+    path: '/fr/travailler-ensemble',
+    lang: 'fr',
+    heading: 'Travailler ensemble',
+    context: 'Travailler ensemble',
+  },
+];
+
+async function assertGlobalDestinations(page, { mobile = false } = {}) {
+  for (const destination of globalDestinations) {
+    const response = await page.goto(`${origin}${destination.path}`);
+    assert.equal(response?.status(), 200, `${destination.path} must return HTTP 200.`);
+    assert.equal(await page.locator('html').getAttribute('lang'), destination.lang);
+    await page
+      .getByRole('heading', { level: 1, name: destination.heading, exact: true })
+      .waitFor();
+    await page.locator('.aks-brand-signature').waitFor();
+
+    const contextLabel =
+      destination.lang === 'fr' ? 'Contexte actuel' : 'Current context';
+    assert.equal(
+      await page.locator(`[aria-label="${contextLabel}"]`).innerText(),
+      destination.context,
+      `${destination.path} must expose its first-level shell context.`,
+    );
+
+    if (mobile) {
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${destination.path} must not overflow at 320px.`,
+      );
+    }
+  }
+}
+
 async function assertAxe(page) {
   await page.addScriptTag({ content: axe.source });
   const result = await page.evaluate(async () => globalThis.axe.run(document));
@@ -95,6 +143,8 @@ async function assertAxe(page) {
   try {
     const context = await browser.newContext();
     const page = await context.newPage();
+
+    await assertGlobalDestinations(page);
 
     await page.goto(`${origin}/admin/login`);
     await page.getByLabel('Email').fill(adminEmail);
@@ -197,6 +247,7 @@ async function assertAxe(page) {
     });
     try {
       const mobilePage = await mobile.newPage();
+      await assertGlobalDestinations(mobilePage, { mobile: true });
       await mobilePage.goto(`${origin}/en/systems/sentinel`);
       await mobilePage.keyboard.press('Tab');
       assert.equal(
@@ -274,7 +325,7 @@ async function assertAxe(page) {
     }
 
     process.stdout.write(
-      'Sentinel L1 browser qualification passed: admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\n',
+      'Sentinel L1 browser qualification passed: global destination deep links on desktop/mobile, admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\\n',
     );
   } finally {
     await browser.close();
