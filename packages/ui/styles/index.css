@@ -156,7 +156,7 @@
   }
 
   .aks-container[data-width="wide"] {
-    max-width: var(--aks-wide-width);
+    width: min(calc(100% - 2 * var(--aks-space-5)), var(--aks-wide-width));
   }
 
   .aks-text {
