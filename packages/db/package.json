@@ -16,6 +16,7 @@
     "db:check": "tsx src/cli/check.ts",
     "db:verify": "tsx src/cli/verify.ts",
     "db:verify-system-domain": "tsx src/cli/verify-system-domain.ts",
+    "db:verify-system-experiences": "tsx src/cli/verify-system-experiences.ts",
     "db:verify-system-technologies": "tsx src/cli/verify-system-technologies.ts",
     "migrate:down": "tsx src/cli/migrate.ts down",
     "migrate:latest": "tsx src/cli/migrate.ts latest",

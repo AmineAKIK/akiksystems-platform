@@ -72,6 +72,19 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Experience context
+
+Professional Experience is modeled once and localized independently from Systems.
+
+- `experiences` owns the stable Experience identity.
+- `experience_localizations` stores EN/FR title and summary without duplicating the Experience itself.
+- `system_experiences` links Systems to shared Experience records through a typed relation.
+- The initial relation kind is `origin_context`, matching the product model `Marelli → origin context → Sentinel`.
+- A Sentinel record can therefore reference Marelli context without copying Marelli editorial content into the System.
+- Foreign-key cascades remove relation/localization rows when their owning entity is deleted.
+
+Broader Experience publication/profile rules remain outside AKS-016 and can evolve with the Profile milestone.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
@@ -155,6 +168,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm db:verify-system-experiences
 pnpm db:verify-system-technologies
 pnpm smoke:web
 pnpm smoke:worker
@@ -166,6 +180,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-015 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-016 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, and reusable ordered System↔Technology relations.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, and localized Experience↔System origin context.
