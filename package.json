@@ -41,7 +41,8 @@
     "db:verify-system-links": "pnpm --filter @akiksystems/db db:verify-system-links",
     "db:verify-presentation-documents": "pnpm --filter @akiksystems/db db:verify-presentation-documents",
     "db:verify-publication-readiness": "pnpm --filter @akiksystems/db db:verify-publication-readiness",
-    "db:verify-independent-publication": "pnpm --filter @akiksystems/db db:verify-independent-publication"
+    "db:verify-independent-publication": "pnpm --filter @akiksystems/db db:verify-independent-publication",
+    "db:verify-admin-audit": "pnpm --filter @akiksystems/db db:verify-admin-audit"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
