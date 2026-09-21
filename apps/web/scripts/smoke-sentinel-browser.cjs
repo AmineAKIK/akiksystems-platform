@@ -53,6 +53,24 @@ async function assertProfileAdministration(page) {
     .getByRole('heading', { level: 1, name: 'Professional identity', exact: true })
     .waitFor();
 
+  const portraitInput = page.locator('input[name="file"]');
+  await portraitInput.waitFor();
+  assert.equal(
+    await portraitInput.getAttribute('accept'),
+    'image/jpeg,image/png,image/webp,image/avif',
+    'Profile portrait admin must accept image formats only.',
+  );
+  assert.notEqual(
+    await page.locator('input[name="altEn"]').getAttribute('required'),
+    null,
+    'English portrait alt text must be required.',
+  );
+  assert.notEqual(
+    await page.locator('input[name="altFr"]').getAttribute('required'),
+    null,
+    'French portrait alt text must be required.',
+  );
+
   await page.locator('input[name="displayName"]').fill('Amine AKIK');
   await page
     .locator('input[name="professionalTitleEn"]')
