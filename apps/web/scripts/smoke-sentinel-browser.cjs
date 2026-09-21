@@ -206,7 +206,7 @@ async function assertAxe(page) {
       await mobilePage.keyboard.press('Enter');
       assert.equal(
         await mobilePage.evaluate(() => document.activeElement?.id),
-        'system-content',
+        'experience-outlet',
       );
       assert.equal(
         await mobilePage.evaluate(
