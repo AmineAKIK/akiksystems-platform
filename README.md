@@ -93,7 +93,9 @@ Public shell navigation is progressively enhanced with React Router View Transit
 - The Experience Shell stays visually stable while the experience outlet uses a short 160ms opacity/vertical transition to reduce perceived rupture.
 - Motion is limited to compositor-friendly opacity and transform properties; route completion is never delayed behind an animation.
 - Navigation remains authoritative and interruptible: transition state does not gate input or route completion.
-- Timing and distance are centralized as CSS custom properties so AKS-044 can define the reduced-motion policy without rewriting navigation.
+- Timing and distance are centralized as CSS custom properties.
+- With `prefers-reduced-motion: reduce`, route duration collapses to 1ms and travel to 0rem; the route still changes normally, preserving all content, focus targets, deep links, and navigation semantics.
+- The reduced-motion contract is qualified in Chromium at both 1280px desktop and 320px mobile widths.
 
 ### Local route context
 
