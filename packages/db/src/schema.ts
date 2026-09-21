@@ -5,7 +5,6 @@ import type {
 } from '@akiksystems/core';
 import type {
   ColumnType,
-  Generated,
   Insertable,
   Selectable,
   Updateable,
@@ -23,6 +22,12 @@ export type NullableTimestampColumn = ColumnType<
   Date | string | null
 >;
 
+export type DefaultedColumn<Value> = ColumnType<
+  Value,
+  Value | undefined,
+  Value
+>;
+
 export interface SystemMetadataTable {
   key: string;
   value: unknown;
@@ -32,7 +37,7 @@ export interface SystemMetadataTable {
 
 export interface SystemsTable {
   id: string;
-  lifecycle: Generated<SystemLifecycle>;
+  lifecycle: DefaultedColumn<SystemLifecycle>;
   archived_at: NullableTimestampColumn;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
@@ -44,7 +49,7 @@ export interface SystemLocalizationsTable {
   slug: string | null;
   title: string | null;
   summary: string | null;
-  editorial_state: Generated<SystemEditorialState>;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
