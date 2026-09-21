@@ -51,7 +51,7 @@ export async function loader({ params }: Route.LoaderArgs) {
           title: system.title,
           alternateHref:
             system.alternate === null
-              ? `/${locale === 'en' ? 'fr' : 'en'}`
+              ? null
               : `/${system.alternate.locale}/systems/${system.alternate.slug}`,
         },
       },
