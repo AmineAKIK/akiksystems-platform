@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 
 import {
   parseAdminBootstrapEnv,
+  parseAssetStorageEnv,
   parseAuthEnv,
   parseDatabaseCommandEnv,
   parseWebServerEnv,
@@ -39,6 +40,17 @@ const bootstrap = parseAdminBootstrapEnv({
 
 assert.equal(bootstrap.ADMIN_PASSWORD, 'a-strong-password-for-testing');
 
+const storage = parseAssetStorageEnv({
+  BUCKET: 'akiksystems-staging',
+  REGION: 'auto',
+  ENDPOINT: 'https://storage.example.com',
+  ACCESS_KEY_ID: 'access-key',
+  SECRET_ACCESS_KEY: 'secret-key',
+});
+
+assert.equal(storage.BUCKET, 'akiksystems-staging');
+assert.equal(storage.REGION, 'auto');
+
 assert.throws(
   () => parseWorkerEnv({ NODE_ENV: 'production' }),
   /Invalid worker configuration: DATABASE_URL:/,
@@ -71,6 +83,18 @@ assert.throws(
       ADMIN_EMAIL: 'admin@example.com',
     }),
   /Invalid authentication configuration: BETTER_AUTH_SECRET:/,
+);
+
+assert.throws(
+  () =>
+    parseAssetStorageEnv({
+      BUCKET: 'akiksystems-staging',
+      REGION: 'auto',
+      ENDPOINT: 'http://insecure.example.com',
+      ACCESS_KEY_ID: 'access-key',
+      SECRET_ACCESS_KEY: 'secret-key',
+    }),
+  /Invalid asset storage configuration: ENDPOINT:/,
 );
 
 process.stdout.write('Runtime configuration contract verification passed.\n');
