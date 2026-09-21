@@ -4,6 +4,14 @@ export type Locale = (typeof locales)[number];
 
 export interface UiDictionary {
   brand: string;
+  shell: {
+    skipToContent: string;
+    navigationLabel: string;
+    homeLabel: string;
+    aboutLabel: string;
+    systemsLabel: string;
+    currentContextLabel: string;
+  };
   home: {
     eyebrow: string;
     title: string;
@@ -21,6 +29,14 @@ export interface UiDictionary {
 const dictionaries = {
   en: {
     brand: 'AkikSystems',
+    shell: {
+      skipToContent: 'Skip to content',
+      navigationLabel: 'Primary navigation',
+      homeLabel: 'Home',
+      aboutLabel: 'About',
+      systemsLabel: 'Systems',
+      currentContextLabel: 'Current context',
+    },
     home: {
       eyebrow: 'AkikSystems',
       title: 'Platform walking skeleton',
@@ -36,6 +52,14 @@ const dictionaries = {
   },
   fr: {
     brand: 'AkikSystems',
+    shell: {
+      skipToContent: 'Aller au contenu',
+      navigationLabel: 'Navigation principale',
+      homeLabel: 'Accueil',
+      aboutLabel: 'À propos',
+      systemsLabel: 'Systèmes',
+      currentContextLabel: 'Contexte actuel',
+    },
     home: {
       eyebrow: 'AkikSystems',
       title: 'Squelette fonctionnel de la plateforme',
