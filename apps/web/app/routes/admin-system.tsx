@@ -773,99 +773,107 @@ export default function AdminSystem() {
               </Text>
 
               <div className="aks-admin-domain-grid">
-                <Form className="aks-admin-form aks-admin-fieldset" method="post">
-                  <input name="_intent" type="hidden" value="localization" />
-                  <input name="locale" type="hidden" value="en" />
-                  <Heading level={3} size="sm">English</Heading>
-                  <label>
-                    <span>Slug</span>
-                    <input defaultValue={data.en?.slug ?? ''} name="slug" />
-                  </label>
-                  <label>
-                    <span>Title</span>
-                    <input defaultValue={data.en?.title ?? ''} name="title" />
-                  </label>
-                  <label>
-                    <span>Summary</span>
-                    <textarea
-                      defaultValue={data.en?.summary ?? ''}
-                      name="summary"
-                      rows={5}
-                    />
-                  </label>
-                  <Button type="submit">Save EN only</Button>
-                  <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
-                    {data.en?.editorial_state ?? 'draft'} ·{' '}
-                    {data.enReadiness.ready ? 'ready' : 'not ready'}
-                  </Text>
-                  <Form method="post">
-                    <input
-                      name="_intent"
-                      type="hidden"
-                      value={data.en?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                    />
+                <div className="aks-admin-fieldset">
+                  <Form className="aks-admin-form" method="post">
+                    <input name="_intent" type="hidden" value="localization" />
                     <input name="locale" type="hidden" value="en" />
-                    <Button
-                      disabled={
-                        data.en?.editorial_state !== 'published' &&
-                        !data.enReadiness.ready
-                      }
-                      emphasis="quiet"
-                      type="submit"
-                    >
-                      {data.en?.editorial_state === 'published'
-                        ? 'Unpublish EN'
-                        : 'Publish EN'}
-                    </Button>
+                    <Heading level={3} size="sm">English</Heading>
+                    <label>
+                      <span>Slug</span>
+                      <input defaultValue={data.en?.slug ?? ''} name="slug" />
+                    </label>
+                    <label>
+                      <span>Title</span>
+                      <input defaultValue={data.en?.title ?? ''} name="title" />
+                    </label>
+                    <label>
+                      <span>Summary</span>
+                      <textarea
+                        defaultValue={data.en?.summary ?? ''}
+                        name="summary"
+                        rows={5}
+                      />
+                    </label>
+                    <Button type="submit">Save EN only</Button>
                   </Form>
-                </Form>
+                  <div className="aks-proof-stack">
+                    <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
+                      {data.en?.editorial_state ?? 'draft'} ·{' '}
+                      {data.enReadiness.ready ? 'ready' : 'not ready'}
+                    </Text>
+                    <Form method="post">
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value={data.en?.editorial_state === 'published' ? 'unpublish' : 'publish'}
+                      />
+                      <input name="locale" type="hidden" value="en" />
+                      <Button
+                        disabled={
+                          data.en?.editorial_state !== 'published' &&
+                          !data.enReadiness.ready
+                        }
+                        emphasis="quiet"
+                        type="submit"
+                      >
+                        {data.en?.editorial_state === 'published'
+                          ? 'Unpublish EN'
+                          : 'Publish EN'}
+                      </Button>
+                    </Form>
+                  </div>
+                </div>
 
-                <Form className="aks-admin-form aks-admin-fieldset" method="post">
-                  <input name="_intent" type="hidden" value="localization" />
-                  <input name="locale" type="hidden" value="fr" />
-                  <Heading level={3} size="sm">Français</Heading>
-                  <label>
-                    <span>Slug</span>
-                    <input defaultValue={data.fr?.slug ?? ''} name="slug" />
-                  </label>
-                  <label>
-                    <span>Titre</span>
-                    <input defaultValue={data.fr?.title ?? ''} name="title" />
-                  </label>
-                  <label>
-                    <span>Résumé</span>
-                    <textarea
-                      defaultValue={data.fr?.summary ?? ''}
-                      name="summary"
-                      rows={5}
-                    />
-                  </label>
-                  <Button type="submit">Save FR only</Button>
-                  <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
-                    {data.fr?.editorial_state ?? 'draft'} ·{' '}
-                    {data.frReadiness.ready ? 'ready' : 'not ready'}
-                  </Text>
-                  <Form method="post">
-                    <input
-                      name="_intent"
-                      type="hidden"
-                      value={data.fr?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                    />
+                <div className="aks-admin-fieldset">
+                  <Form className="aks-admin-form" method="post">
+                    <input name="_intent" type="hidden" value="localization" />
                     <input name="locale" type="hidden" value="fr" />
-                    <Button
-                      disabled={
-                        data.fr?.editorial_state !== 'published' &&
-                        !data.frReadiness.ready
-                      }
-                      emphasis="quiet"
-                      type="submit"
-                    >
-                      {data.fr?.editorial_state === 'published'
-                        ? 'Unpublish FR'
-                        : 'Publish FR'}
-                    </Button>
+                    <Heading level={3} size="sm">Français</Heading>
+                    <label>
+                      <span>Slug</span>
+                      <input defaultValue={data.fr?.slug ?? ''} name="slug" />
+                    </label>
+                    <label>
+                      <span>Titre</span>
+                      <input defaultValue={data.fr?.title ?? ''} name="title" />
+                    </label>
+                    <label>
+                      <span>Résumé</span>
+                      <textarea
+                        defaultValue={data.fr?.summary ?? ''}
+                        name="summary"
+                        rows={5}
+                      />
+                    </label>
+                    <Button type="submit">Save FR only</Button>
                   </Form>
-                </Form>
+                  <div className="aks-proof-stack">
+                    <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
+                      {data.fr?.editorial_state ?? 'draft'} ·{' '}
+                      {data.frReadiness.ready ? 'ready' : 'not ready'}
+                    </Text>
+                    <Form method="post">
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value={data.fr?.editorial_state === 'published' ? 'unpublish' : 'publish'}
+                      />
+                      <input name="locale" type="hidden" value="fr" />
+                      <Button
+                        disabled={
+                          data.fr?.editorial_state !== 'published' &&
+                          !data.frReadiness.ready
+                        }
+                        emphasis="quiet"
+                        type="submit"
+                      >
+                        {data.fr?.editorial_state === 'published'
+                          ? 'Unpublish FR'
+                          : 'Publish FR'}
+                      </Button>
+                    </Form>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
