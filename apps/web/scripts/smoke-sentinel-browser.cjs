@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const { strict: assert } = require('node:assert');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
