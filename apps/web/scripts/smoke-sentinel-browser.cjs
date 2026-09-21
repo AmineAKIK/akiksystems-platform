@@ -334,6 +334,106 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
   }
 }
 
+async function assertIntentPrefetching(browser) {
+  const prefetchSelector = 'link[rel="prefetch"], link[rel="modulepreload"]';
+  const descriptorCount = (page) => page.locator(prefetchSelector).count();
+
+  const desktop = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+
+  try {
+    const page = await desktop.newPage();
+    await page.goto(`${origin}/en`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+
+    const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
+    const profileDoor = homeNav.locator('a[href="/en/profile"]');
+    await profileDoor.waitFor();
+
+    const homeIdleCount = await descriptorCount(page);
+    await profileDoor.hover();
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: homeIdleCount },
+    );
+
+    assert.ok(
+      (await descriptorCount(page)) > homeIdleCount,
+      'Hovering an intended Home destination must add route prefetch descriptors.',
+    );
+
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length <= baseline,
+      { selector: prefetchSelector, baseline: homeIdleCount },
+    );
+
+    await page.goto(`${origin}/en/systems`);
+    await page.getByRole('heading', { level: 1, name: 'Systems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+
+    const shellNav = page.locator('.aks-experience-nav');
+    const writingsLink = shellNav.locator('a[href="/en/writings"]');
+    await writingsLink.waitFor();
+
+    const shellIdleCount = await descriptorCount(page);
+    await writingsLink.focus();
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: shellIdleCount },
+    );
+
+    assert.ok(
+      (await descriptorCount(page)) > shellIdleCount,
+      'Keyboard focus must add intent-prefetch descriptors for shell navigation.',
+    );
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({
+    viewport: { width: 320, height: 720 },
+    hasTouch: true,
+    isMobile: true,
+  });
+
+  try {
+    const page = await mobile.newPage();
+    await page.goto(`${origin}/en`);
+    await page.getByRole('heading', { level: 1, name: 'AkikSystems', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+
+    const homeNav = page.getByRole('navigation', { name: 'Explore AkikSystems' });
+    const systemsDoor = homeNav.locator('a[href="/en/systems"]');
+    await systemsDoor.waitFor();
+
+    const mobileIdleCount = await descriptorCount(page);
+    await systemsDoor.dispatchEvent('touchstart');
+    await page.waitForFunction(
+      ({ selector, baseline }) =>
+        document.querySelectorAll(selector).length > baseline,
+      { selector: prefetchSelector, baseline: mobileIdleCount },
+    );
+
+    assert.ok(
+      (await descriptorCount(page)) > mobileIdleCount,
+      'Touch intent must add route prefetch descriptors without requiring navigation.',
+    );
+    assert.equal(
+      new URL(page.url()).pathname,
+      '/en',
+      'Touch prefetch qualification must not navigate away from Home.',
+    );
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertHomePortal(page, locale, { mobile = false } = {}) {
   const config =
     locale === 'fr'
@@ -580,6 +680,8 @@ async function assertAxe(page) {
     await assertGlobalDestinations(page);
     await assertHomePortal(page, 'en');
     await assertHomePortal(page, 'fr');
+
+    await assertIntentPrefetching(browser);
 
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
