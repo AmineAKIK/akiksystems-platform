@@ -95,6 +95,17 @@ System publication is controlled per localization rather than per shared System 
 - `EN=PUBLISHED / FR=DRAFT` is an explicitly supported state.
 - The public read model remains scoped to AKS-026; AKS-023 guarantees the persisted localized publication boundary it will consume.
 
+### Admin audit trail
+
+Significant private-administration mutations produce readable, append-only audit events.
+
+- `admin_audit_events` records actor user ID/email, action, entity type/ID, optional System/locale scope, minimal metadata, and timestamp.
+- Audited operations include initial System creation, archive/restore/lifecycle changes, localized content updates, publish/unpublish, technology stack changes, origin-context changes, typed link changes, presentation updates, and contextual asset upload/deletion.
+- Events deliberately exclude passwords, tokens, authentication secrets, raw presentation JSON, summaries, code blocks, and other full editorial payloads.
+- PostgreSQL triggers reject UPDATE and DELETE on audit rows so the log is append-only.
+- The Sentinel workspace shows the 20 most recent System-scoped events for human inspection.
+- Full content rollback/version restoration is intentionally out of scope for AKS-025.
+
 ### Technologies
 
 Technologies are modeled as reusable typed entities rather than strings embedded in a System record.
@@ -263,6 +274,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm db:verify-assets
+pnpm db:verify-admin-audit
 pnpm db:verify-presentation-documents
 pnpm db:verify-publication-readiness
 pnpm db:verify-independent-publication
@@ -279,6 +291,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-024 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-025 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, and secure non-indexed preview of unpublished localized System content through the shared renderer.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media, explicit publication-readiness rules enforced in the domain, admin, and PostgreSQL, independent EN/FR save/publish/unpublish flows, secure non-indexed preview of unpublished localized System content through the shared renderer, and an append-only readable audit trail for significant admin mutations.

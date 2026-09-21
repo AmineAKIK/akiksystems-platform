@@ -132,6 +132,19 @@ export interface SystemLinksTable {
   updated_at: TimestampColumn;
 }
 
+export interface AdminAuditEventsTable {
+  id: string;
+  actor_user_id: string;
+  actor_email: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  system_id: string | null;
+  locale: PlatformLocale | null;
+  metadata: Record<string, unknown>;
+  created_at: TimestampColumn;
+}
+
 export type SystemRow = Selectable<SystemsTable>;
 export type NewSystemRow = Insertable<SystemsTable>;
 export type SystemUpdate = Updateable<SystemsTable>;
@@ -179,6 +192,9 @@ export type SystemLinkRow = Selectable<SystemLinksTable>;
 export type NewSystemLinkRow = Insertable<SystemLinksTable>;
 export type SystemLinkUpdate = Updateable<SystemLinksTable>;
 
+export type AdminAuditEventRow = Selectable<AdminAuditEventsTable>;
+export type NewAdminAuditEventRow = Insertable<AdminAuditEventsTable>;
+
 export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
@@ -192,4 +208,5 @@ export interface Database {
   asset_localizations: AssetLocalizationsTable;
   system_assets: SystemAssetsTable;
   system_links: SystemLinksTable;
+  admin_audit_events: AdminAuditEventsTable;
 }

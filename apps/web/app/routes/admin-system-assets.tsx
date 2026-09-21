@@ -1,5 +1,5 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { createDatabase } from '@akiksystems/db';
+import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import {
   Form,
@@ -97,7 +97,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
   const form = await request.formData();
   const intent = form.get('_intent');
@@ -181,6 +181,21 @@ export async function action({ request, params }: Route.ActionArgs) {
               position,
             })
             .execute();
+
+          await writeAdminAuditEvent(transaction, {
+            actorUserId: session.user.id,
+            actorEmail: session.user.email,
+            action: 'system.asset_uploaded',
+            entityType: 'asset',
+            entityId: assetId,
+            systemId,
+            metadata: {
+              mimeType: file.type,
+              byteSize: file.size,
+              position,
+              localizedMetadata: ['en', 'fr'],
+            },
+          });
         });
       } catch (error) {
         try {
@@ -254,6 +269,18 @@ export async function action({ request, params }: Route.ActionArgs) {
           .deleteFrom('assets')
           .where('id', '=', assetId)
           .executeTakeFirstOrThrow();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.asset_deleted',
+          entityType: 'asset',
+          entityId: assetId,
+          systemId,
+          metadata: {
+            storageCleanupPending: true,
+          },
+        });
       });
 
       try {

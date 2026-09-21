@@ -4,7 +4,7 @@ import {
   type PlatformLocale,
   type SystemLinkKind,
 } from '@akiksystems/core';
-import { createDatabase } from '@akiksystems/db';
+import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -177,6 +177,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experiences,
       links,
       assetCount,
+      auditEvents,
     ] = await Promise.all([
       db
         .selectFrom('system_localizations')
@@ -257,6 +258,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .select(({ fn }) => fn.countAll<number>().as('count'))
         .where('system_id', '=', systemId)
         .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('admin_audit_events')
+        .select([
+          'id',
+          'actor_email',
+          'action',
+          'entity_type',
+          'entity_id',
+          'locale',
+          'metadata',
+          'created_at',
+        ])
+        .where('system_id', '=', systemId)
+        .orderBy('created_at', 'desc')
+        .limit(20)
+        .execute(),
     ]);
 
     const byLocale = new Map(
@@ -289,6 +306,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experience: experiences[0] ?? null,
       links,
       assetCount: Number(assetCount.count),
+      auditEvents: auditEvents.map((event) => ({
+        ...event,
+        created_at: event.created_at.toISOString(),
+      })),
     };
   } finally {
     await db.destroy();
@@ -296,7 +317,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
   const form = await request.formData();
   const intent = field(form, '_intent');
@@ -305,7 +326,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   try {
     const system = await db
       .selectFrom('systems')
-      .select('id')
+      .select(['id', 'lifecycle'])
       .where('id', '=', systemId)
       .executeTakeFirst();
 
@@ -320,15 +341,35 @@ export async function action({ request, params }: Route.ActionArgs) {
         return { ok: false, message: 'Invalid lifecycle.' };
       }
 
-      await db
-        .updateTable('systems')
-        .set({
-          lifecycle,
-          archived_at: lifecycle === 'archived' ? new Date() : null,
-          updated_at: new Date(),
-        })
-        .where('id', '=', systemId)
-        .execute();
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .updateTable('systems')
+          .set({
+            lifecycle,
+            archived_at: lifecycle === 'archived' ? new Date() : null,
+            updated_at: new Date(),
+          })
+          .where('id', '=', systemId)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action:
+            lifecycle === 'archived'
+              ? 'system.archived'
+              : system.lifecycle === 'archived'
+                ? 'system.restored'
+                : 'system.lifecycle_updated',
+          entityType: 'system',
+          entityId: systemId,
+          systemId,
+          metadata: {
+            previousLifecycle: system.lifecycle,
+            lifecycle,
+          },
+        });
+      });
 
       return { ok: true, message: 'System identity updated.' };
     }
@@ -373,6 +414,20 @@ export async function action({ request, params }: Route.ActionArgs) {
         slug,
         title,
         summary,
+      });
+
+      await writeAdminAuditEvent(db, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'system.localization_updated',
+        entityType: 'system_localization',
+        entityId: `${systemId}:${locale}`,
+        systemId,
+        locale,
+        metadata: {
+          fields: ['slug', 'title', 'summary'],
+          editorialState: current?.editorial_state ?? 'draft',
+        },
       });
 
       return {
@@ -426,16 +481,29 @@ export async function action({ request, params }: Route.ActionArgs) {
           };
         }
 
-        await db
-          .updateTable('system_localizations')
-          .set({
-            editorial_state: 'published',
-            published_at: new Date(),
-            updated_at: new Date(),
-          })
-          .where('system_id', '=', systemId)
-          .where('locale', '=', locale)
-          .execute();
+        await db.transaction().execute(async (transaction) => {
+          await transaction
+            .updateTable('system_localizations')
+            .set({
+              editorial_state: 'published',
+              published_at: new Date(),
+              updated_at: new Date(),
+            })
+            .where('system_id', '=', systemId)
+            .where('locale', '=', locale)
+            .execute();
+
+          await writeAdminAuditEvent(transaction, {
+            actorUserId: session.user.id,
+            actorEmail: session.user.email,
+            action: 'system.localization_published',
+            entityType: 'system_localization',
+            entityId: `${systemId}:${locale}`,
+            systemId,
+            locale,
+            metadata: { previousState: localization.editorial_state },
+          });
+        });
 
         return {
           ok: true,
@@ -450,16 +518,29 @@ export async function action({ request, params }: Route.ActionArgs) {
         };
       }
 
-      await db
-        .updateTable('system_localizations')
-        .set({
-          editorial_state: 'draft',
-          published_at: null,
-          updated_at: new Date(),
-        })
-        .where('system_id', '=', systemId)
-        .where('locale', '=', locale)
-        .execute();
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .updateTable('system_localizations')
+          .set({
+            editorial_state: 'draft',
+            published_at: null,
+            updated_at: new Date(),
+          })
+          .where('system_id', '=', systemId)
+          .where('locale', '=', locale)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.localization_unpublished',
+          entityType: 'system_localization',
+          entityId: `${systemId}:${locale}`,
+          systemId,
+          locale,
+          metadata: { previousState: localization.editorial_state },
+        });
+      });
 
       return {
         ok: true,
@@ -523,6 +604,19 @@ export async function action({ request, params }: Route.ActionArgs) {
             })
             .execute();
         }
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.technologies_updated',
+          entityType: 'system',
+          entityId: systemId,
+          systemId,
+          metadata: {
+            technologyCount: technologies.length,
+            technologySlugs: technologies.map((technology) => technology.slug),
+          },
+        });
       });
 
       return { ok: true, message: 'Technology stack updated.' };
@@ -605,6 +699,19 @@ export async function action({ request, params }: Route.ActionArgs) {
               .execute();
           }
         }
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.origin_context_updated',
+          entityType: 'experience',
+          entityId: experienceId,
+          systemId,
+          metadata: {
+            relationKind: 'origin_context',
+            locales: ['en', 'fr'],
+          },
+        });
       });
 
       return { ok: true, message: 'Professional context updated.' };
@@ -640,6 +747,19 @@ export async function action({ request, params }: Route.ActionArgs) {
             })
             .execute();
         }
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.links_updated',
+          entityType: 'system',
+          entityId: systemId,
+          systemId,
+          metadata: {
+            linkCount: links.length,
+            linkKinds: links.map((link) => link.kind),
+          },
+        });
       });
 
       return { ok: true, message: 'System links updated.' };
@@ -649,6 +769,26 @@ export async function action({ request, params }: Route.ActionArgs) {
   } finally {
     await db.destroy();
   }
+}
+
+function auditActionLabel(action: string): string {
+  const labels: Record<string, string> = {
+    'system.created': 'System created',
+    'system.archived': 'System archived',
+    'system.restored': 'System restored',
+    'system.lifecycle_updated': 'Lifecycle updated',
+    'system.localization_updated': 'Localized content updated',
+    'system.localization_published': 'Localization published',
+    'system.localization_unpublished': 'Localization unpublished',
+    'system.technologies_updated': 'Technology stack updated',
+    'system.origin_context_updated': 'Origin context updated',
+    'system.links_updated': 'Links updated',
+    'system.presentation_updated': 'Presentation updated',
+    'system.asset_uploaded': 'Asset uploaded',
+    'system.asset_deleted': 'Asset deleted',
+  };
+
+  return labels[action] ?? action;
 }
 
 export default function AdminSystem() {
@@ -956,6 +1096,36 @@ export default function AdminSystem() {
               <textarea defaultValue={linkText} name="links" rows={8} />
               <Button type="submit">Save links</Button>
             </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">Recent audit activity</Heading>
+              <Text size="sm" tone="muted">
+                Significant admin mutations only. Editorial payloads and secrets
+                are deliberately excluded.
+              </Text>
+              {data.auditEvents.length === 0 ? (
+                <Text size="sm" tone="muted">No audit events yet.</Text>
+              ) : (
+                <ol className="aks-admin-audit-list">
+                  {data.auditEvents.map((event) => (
+                    <li key={event.id}>
+                      <div className="aks-proof-stack">
+                        <Text tone="strong">{auditActionLabel(event.action)}</Text>
+                        <Text size="sm" tone="muted">
+                          {event.locale ? `${event.locale.toUpperCase()} · ` : ''}
+                          {event.entity_type} · {event.actor_email} · {event.created_at}
+                        </Text>
+                        <code className="aks-admin-audit-metadata">
+                          {JSON.stringify(event.metadata)}
+                        </code>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
           </section>
 
           <section className="aks-admin-card">
