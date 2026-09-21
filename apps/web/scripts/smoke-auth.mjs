@@ -112,7 +112,7 @@ try {
   });
   const privateHtml = await privateAdmin.text();
   assert.equal(privateAdmin.status, 200);
-  assert.match(privateHtml, /Sentinel administration/);
+  assert.match(privateHtml, /AkikSystems administration/);
 
   const twoFactor = await postJson(
     '/api/auth/two-factor/enable',

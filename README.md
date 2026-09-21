@@ -132,6 +132,17 @@ Assets are stored once, related to domain context, and localized independently.
 - Deleting an asset that is still referenced is blocked by database constraints. The admin removal path verifies references before unlinking metadata and deleting the object.
 - Staging uses an isolated Railway Storage Bucket, so staging assets do not share credentials or objects with other environments.
 
+### Sentinel System workspace
+
+AKS-021 consolidates the Sentinel slice into one domain-specific System workspace.
+
+- `/admin/systems/:systemId` is the coherent editing surface for identity/lifecycle, EN/FR title/slug/summary, ordered technologies, origin Experience context, ordered typed links, presentation and media.
+- `/admin` can create the initial Sentinel System identity plus minimal EN/FR localization rows when no System exists yet.
+- Presentation and contextual media reuse the specialized editors from AKS-020 and AKS-017 instead of duplicating those capabilities.
+- Technology and link ordering remain explicit and are rewritten transactionally from the workspace.
+- The origin context is managed as a shared Experience relation, not duplicated System text.
+- Publication state is visible but remains intentionally read-only here; publication readiness and EN/FR publishing controls belong to AKS-022/023.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
@@ -232,6 +243,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-020 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-021 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, and a server-validated localized presentation editor.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, the foundational System domain model, reusable ordered System↔Technology relations, localized Experience↔System origin context, contextual S3-backed asset management, ordered typed System links, versioned localized presentation documents, a server-validated localized presentation editor, and a coherent Sentinel System workspace spanning identity, bilingual content, technologies, professional context, links, presentation, and media.

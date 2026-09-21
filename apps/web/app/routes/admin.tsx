@@ -1,7 +1,8 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { createDatabase } from '@akiksystems/db';
+import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { Form, redirect, useLoaderData } from 'react-router';
 
 import { authClient } from '../lib/auth.client';
 import { requireAdminSession } from '../lib/admin.server';
@@ -41,6 +42,63 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
+export async function action({ request }: Route.ActionArgs) {
+  await requireAdminSession(request);
+  const form = await request.formData();
+  const intent = form.get('_intent');
+
+  if (intent !== 'create-sentinel') {
+    return null;
+  }
+
+  const db = createDatabase(authEnv.DATABASE_URL);
+
+  try {
+    const existing = await db
+      .selectFrom('systems')
+      .select('id')
+      .orderBy('created_at')
+      .executeTakeFirst();
+
+    if (existing !== undefined) {
+      return redirect(`/admin/systems/${existing.id}`);
+    }
+
+    const systemId = randomUUID();
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('systems')
+        .values({ id: systemId })
+        .execute();
+
+      await transaction
+        .insertInto('system_localizations')
+        .values([
+          {
+            system_id: systemId,
+            locale: 'en',
+            slug: 'sentinel',
+            title: 'Sentinel',
+            summary: null,
+          },
+          {
+            system_id: systemId,
+            locale: 'fr',
+            slug: 'sentinel',
+            title: 'Sentinel',
+            summary: null,
+          },
+        ])
+        .execute();
+    });
+
+    return redirect(`/admin/systems/${systemId}`);
+  } finally {
+    await db.destroy();
+  }
+}
+
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
   const [pending, setPending] = useState(false);
@@ -61,10 +119,11 @@ export default function Admin() {
                 Private administration
               </Text>
               <Heading level={1} size="md">
-                Sentinel administration
+                AkikSystems administration
               </Heading>
               <Text tone="muted">
-                Authenticated as {data.email}. This route is server-guarded before rendering.
+                Authenticated as {data.email}. Domain-specific administration
+                stays separate from the public experience.
               </Text>
               <Text size="sm" tone={data.twoFactorEnabled ? 'strong' : 'muted'}>
                 Two-factor authentication: {data.twoFactorEnabled ? 'enabled' : 'available'}
@@ -81,13 +140,23 @@ export default function Admin() {
           <section className="aks-admin-card">
             <div className="aks-proof-stack">
               <Heading level={2} size="sm">
-                System content
+                Systems
               </Heading>
               {data.systems.length === 0 ? (
-                <Text tone="muted">
-                  No System records exist yet. Asset management becomes available
-                  as soon as the Sentinel System identity is created.
-                </Text>
+                <>
+                  <Text tone="muted">
+                    Create Sentinel to start the L1 vertical slice with a stable
+                    System identity and independent EN/FR content.
+                  </Text>
+                  <Form method="post">
+                    <input
+                      name="_intent"
+                      type="hidden"
+                      value="create-sentinel"
+                    />
+                    <Button type="submit">Create Sentinel</Button>
+                  </Form>
+                </>
               ) : (
                 <div className="aks-admin-asset-list">
                   {data.systems.map((system) => (
@@ -100,14 +169,17 @@ export default function Admin() {
                           {system.id} · {system.lifecycle}
                         </Text>
                         <div className="aks-proof-actions">
+                          <Link href={`/admin/systems/${system.id}`}>
+                            Open System workspace
+                          </Link>
                           <Link href={`/admin/systems/${system.id}/presentation/en`}>
-                            Edit EN presentation
+                            EN presentation
                           </Link>
                           <Link href={`/admin/systems/${system.id}/presentation/fr`}>
-                            Edit FR presentation
+                            FR presentation
                           </Link>
                           <Link href={`/admin/systems/${system.id}/assets`}>
-                            Manage contextual assets
+                            Contextual media
                           </Link>
                         </div>
                       </div>
