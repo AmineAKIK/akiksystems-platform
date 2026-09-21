@@ -22,6 +22,7 @@ describe('ExperienceShell', () => {
     expect(html).toContain('class="aks-brand-wordmark">AkikSystems</span>');
     expect(html).toContain('aria-label="Primary navigation"');
     expect(html).toContain('href="/en">Home</a>');
+    expect(html).toContain('href="/en/profile">Profile</a>');
     expect(html).toContain('aria-label="Current context"');
     expect(html).toContain('>Systems · Sentinel</p>');
     expect(html).toContain(
@@ -41,9 +42,9 @@ describe('ExperienceShell', () => {
     );
 
     expect(html).toContain('aria-label="Navigation principale"');
-    expect(html).toContain('aria-current="page" href="/fr/about">À propos</a>');
+    expect(html).toContain('href="/fr/profil">Profil</a>');
     expect(html).toContain('aria-label="Contexte actuel"');
-    expect(html).toContain('>À propos</p>');
+    expect(html).toContain('>Accueil</p>');
     expect(html).toContain('href="/en" hrefLang="en" lang="en">English</a>');
   });
 });

@@ -7,8 +7,7 @@ export interface UiDictionary {
     skipToContent: string;
     navigationLabel: string;
     homeLabel: string;
-    aboutLabel: string;
-    systemsLabel: string;
+    profileLabel: string;
     currentContextLabel: string;
   };
   home: {
@@ -31,8 +30,7 @@ const dictionaries = {
       skipToContent: 'Skip to content',
       navigationLabel: 'Primary navigation',
       homeLabel: 'Home',
-      aboutLabel: 'About',
-      systemsLabel: 'Systems',
+      profileLabel: 'Profile',
       currentContextLabel: 'Current context',
     },
     home: {
@@ -53,8 +51,7 @@ const dictionaries = {
       skipToContent: 'Aller au contenu',
       navigationLabel: 'Navigation principale',
       homeLabel: 'Accueil',
-      aboutLabel: 'À propos',
-      systemsLabel: 'Systèmes',
+      profileLabel: 'Profil',
       currentContextLabel: 'Contexte actuel',
     },
     home: {

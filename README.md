@@ -57,6 +57,15 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 - Brand markup and styling live in the shared UI package rather than individual routes or the Experience Shell.
 - The public shell consumes the shared signature and supplies only route-specific destination/accessibility context.
 
+### Global destinations
+
+The five first-level public destinations are code-defined in one typed registry: Profile, Systems, Writings, Learning, and Work with us.
+
+- Each destination owns stable EN/FR labels, a first-level slug, a concise localized description, and href generation.
+- Deep routes resolve back to their first-level destination from the URL, so shell context does not depend on page-specific conditionals.
+- Current paths are Profile `/en/profile` ↔ `/fr/profil`, Systems `/en/systems` ↔ `/fr/systems`, Writings `/en/writings` ↔ `/fr/ecrits`, Learning `/en/learning` ↔ `/fr/apprentissage`, and Work with us `/en/work-with-us` ↔ `/fr/travailler-ensemble`.
+- Minimal SSR route surfaces make every first-level destination directly addressable now; richer navigation and Home presentation remain scoped to later L2 tickets.
+
 ## Experience Shell
 
 The public `/:locale` route boundary owns the AkikSystems Experience Shell.
