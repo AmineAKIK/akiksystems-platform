@@ -276,10 +276,13 @@ async function assertAxe(page) {
       'Client-side shell navigation must opt into a View Transition when supported.',
     );
     await page.waitForURL(`${origin}/en/profile`);
+    await page
+      .getByRole('heading', { level: 1, name: 'Profile', exact: true })
+      .waitFor();
     assert.equal(
       await page.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
       '/en/profile',
-      'The destination must remain usable immediately after the enhanced transition.',
+      'The destination must remain usable after the enhanced transition completes.',
     );
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
