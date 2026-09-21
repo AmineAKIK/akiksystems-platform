@@ -15,11 +15,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().defaultTo(sql`now()`),
     )
     .addCheckConstraint(
-      'systems_lifecycle_check',
-      sql`lifecycle in ('active', 'archived')`,
-    )
-    .addCheckConstraint(
-      'systems_archive_state_check',
+      'systems_lifecycle_archive_check',
       sql`(lifecycle = 'active' and archived_at is null) or
           (lifecycle = 'archived' and archived_at is not null)`,
     )
@@ -57,11 +53,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       sql`locale in ('en', 'fr')`,
     )
     .addCheckConstraint(
-      'system_localizations_editorial_state_check',
-      sql`editorial_state in ('draft', 'published')`,
-    )
-    .addCheckConstraint(
-      'system_localizations_publication_state_check',
+      'system_localizations_editorial_publication_check',
       sql`(editorial_state = 'draft' and published_at is null) or
           (editorial_state = 'published' and published_at is not null)`,
     )
