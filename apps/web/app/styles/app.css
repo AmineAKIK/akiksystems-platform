@@ -830,6 +830,22 @@
 }
 
 @media (max-width: 48rem) {
+  .aks-experience-shell[data-destination='home'] .aks-experience-shell-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--aks-space-3);
+  }
+
+  .aks-experience-shell[data-destination='home'] .aks-experience-mobile-menu,
+  .aks-experience-shell[data-destination='home'] .aks-experience-context {
+    display: none;
+  }
+
+  .aks-experience-shell[data-destination='home'] .aks-experience-meta {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: end;
+  }
+
   .aks-home {
     min-height: auto;
     overflow: visible;
@@ -859,6 +875,11 @@
 
   .aks-home-tagline {
     max-width: 24ch;
+    font-size: var(--aks-font-size-md);
+  }
+
+  .aks-home-description {
+    display: none;
   }
 
   .aks-home-orbit {
