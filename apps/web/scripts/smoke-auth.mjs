@@ -154,8 +154,14 @@ try {
     await pool.end();
   }
 
+  assert.equal(
+    stderr.includes('Database schema mismatch'),
+    false,
+    `Runtime auth schema validation emitted a mismatch warning: ${stderr}`,
+  );
+
   process.stdout.write(
-    'Auth smoke passed: signup blocked, admin cache/robots/security headers enforced, cross-origin-less admin mutation rejected, secure session works, single admin enforced, TOTP available.\n',
+    'Auth smoke passed: signup blocked, admin cache/robots/security headers enforced, cross-origin-less admin mutation rejected, secure session works, single admin enforced, TOTP available, no runtime schema mismatch warning.\n',
   );
 } finally {
   server.kill('SIGTERM');
