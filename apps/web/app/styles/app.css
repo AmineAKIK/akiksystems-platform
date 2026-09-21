@@ -946,3 +946,11 @@
     transform: none;
   }
 }
+
+
+/* AKS-048: an unavailable translation is explicit rather than a misleading link. */
+.aks-language-unavailable {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  cursor: not-allowed;
+}

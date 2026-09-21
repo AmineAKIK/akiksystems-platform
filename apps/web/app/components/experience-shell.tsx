@@ -21,18 +21,19 @@ export interface ExperienceShellProps {
 export function ExperienceShell({
   locale,
   pathname,
-  alternateHref = null,
+  alternateHref,
   currentTitle = null,
   children,
 }: ExperienceShellProps) {
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
-  const languageHref =
-    alternateHref ??
-    (destinationId === null
+  const derivedLanguageHref =
+    destinationId === null
       ? `/${alternateLocale}`
-      : destinationHref(destinationId, alternateLocale));
+      : destinationHref(destinationId, alternateLocale);
+  const languageHref =
+    alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
 
   return (
     <>
@@ -119,15 +120,24 @@ export function ExperienceShell({
                 destinationId={destinationId}
                 locale={locale}
               />
-              <RouterLink
-                className="aks-link"
-                hrefLang={alternateLocale}
-                lang={alternateLocale}
-                to={languageHref}
-                viewTransition
-              >
-                {alternateLocale === 'fr' ? 'Français' : 'English'}
-              </RouterLink>
+              {languageHref === null ? (
+                <span
+                  aria-disabled="true"
+                  className="aks-language-unavailable"
+                >
+                  {dictionary.shell.languageUnavailableLabel}
+                </span>
+              ) : (
+                <RouterLink
+                  className="aks-link"
+                  hrefLang={alternateLocale}
+                  lang={alternateLocale}
+                  to={languageHref}
+                  viewTransition
+                >
+                  {alternateLocale === 'fr' ? 'Français' : 'English'}
+                </RouterLink>
+              )}
             </div>
           </div>
         </Container>
