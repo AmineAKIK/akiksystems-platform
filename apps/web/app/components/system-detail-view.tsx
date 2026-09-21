@@ -175,7 +175,6 @@ export function SystemDetailView({
   originSummary,
   links,
   assets,
-  alternateHref: _alternateHref = null,
   preview = false,
 }: SystemDetailViewProps) {
   return (
