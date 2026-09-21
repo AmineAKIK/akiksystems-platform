@@ -51,11 +51,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     create function prevent_admin_audit_event_mutation()
     returns trigger
     language plpgsql
-    as $
+    as $audit$
     begin
       raise exception 'admin audit events are append-only';
     end;
-    $
+    $audit$
   `.execute(db);
 
   await sql`
