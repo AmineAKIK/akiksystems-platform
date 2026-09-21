@@ -1,6 +1,7 @@
 import type {
   PlatformLocale,
   SystemEditorialState,
+  SystemExperienceRelationKind,
   SystemLifecycle,
 } from '@akiksystems/core';
 import type {
@@ -70,6 +71,28 @@ export interface SystemTechnologiesTable {
   created_at: TimestampColumn;
 }
 
+export interface ExperiencesTable {
+  id: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ExperienceLocalizationsTable {
+  experience_id: string;
+  locale: PlatformLocale;
+  title: string;
+  summary: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface SystemExperiencesTable {
+  system_id: string;
+  experience_id: string;
+  relation_kind: SystemExperienceRelationKind;
+  created_at: TimestampColumn;
+}
+
 export type SystemRow = Selectable<SystemsTable>;
 export type NewSystemRow = Insertable<SystemsTable>;
 export type SystemUpdate = Updateable<SystemsTable>;
@@ -86,10 +109,28 @@ export type SystemTechnologyRow = Selectable<SystemTechnologiesTable>;
 export type NewSystemTechnologyRow = Insertable<SystemTechnologiesTable>;
 export type SystemTechnologyUpdate = Updateable<SystemTechnologiesTable>;
 
+export type ExperienceRow = Selectable<ExperiencesTable>;
+export type NewExperienceRow = Insertable<ExperiencesTable>;
+export type ExperienceUpdate = Updateable<ExperiencesTable>;
+
+export type ExperienceLocalizationRow =
+  Selectable<ExperienceLocalizationsTable>;
+export type NewExperienceLocalizationRow =
+  Insertable<ExperienceLocalizationsTable>;
+export type ExperienceLocalizationUpdate =
+  Updateable<ExperienceLocalizationsTable>;
+
+export type SystemExperienceRow = Selectable<SystemExperiencesTable>;
+export type NewSystemExperienceRow = Insertable<SystemExperiencesTable>;
+export type SystemExperienceUpdate = Updateable<SystemExperiencesTable>;
+
 export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
   system_localizations: SystemLocalizationsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
+  experiences: ExperiencesTable;
+  experience_localizations: ExperienceLocalizationsTable;
+  system_experiences: SystemExperiencesTable;
 }
