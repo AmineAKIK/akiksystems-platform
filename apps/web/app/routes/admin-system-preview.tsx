@@ -1,6 +1,6 @@
 import { createDatabase } from '@akiksystems/db';
 import { Link, Text } from '@akiksystems/ui';
-import { useLoaderData } from 'react-router';
+import { data, useLoaderData } from 'react-router';
 
 import { SystemDetailView } from '../components/system-detail-view';
 import { requireAdminSession } from '../lib/admin.server';
@@ -133,7 +133,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
     ]);
 
-    return Response.json(
+    return data(
       {
         systemId,
         locale,
