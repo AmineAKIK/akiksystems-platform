@@ -1,5 +1,5 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
+import { writeAdminAuditEvent } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import {
   Form,
@@ -8,7 +8,7 @@ import {
 } from 'react-router';
 
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 import {
   assetExtensionForMimeType,
   deleteAssetObject,
@@ -41,9 +41,8 @@ function optionalText(value: FormDataEntryValue | null): string | null {
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .select(['id', 'lifecycle'])
@@ -91,9 +90,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       system,
       assets,
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -101,9 +97,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   const systemId = requiredSystemId(params.systemId);
   const form = await request.formData();
   const intent = form.get('_intent');
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     if (intent === 'upload') {
       const file = form.get('file');
 
@@ -258,6 +253,18 @@ export async function action({ request, params }: Route.ActionArgs) {
         };
       }
 
+      try {
+        await deleteAssetObject(asset.storage_key);
+      } catch (error) {
+        return {
+          ok: false,
+          message:
+            error instanceof Error
+              ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
+              : 'Storage deletion failed; metadata was kept so the operation can be retried.',
+        };
+      }
+
       await db.transaction().execute(async (transaction) => {
         await transaction
           .deleteFrom('system_assets')
@@ -278,28 +285,15 @@ export async function action({ request, params }: Route.ActionArgs) {
           entityId: assetId,
           systemId,
           metadata: {
-            storageCleanupPending: true,
+            storageObjectDeleted: true,
           },
         });
       });
-
-      try {
-        await deleteAssetObject(asset.storage_key);
-      } catch {
-        return {
-          ok: true,
-          message:
-            'Asset metadata was removed safely; object-storage cleanup must be retried.',
-        };
-      }
 
       return { ok: true, message: 'Asset removed from this System and storage.' };
     }
 
     return { ok: false, message: 'Unsupported asset operation.' };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export default function AdminSystemAssets() {

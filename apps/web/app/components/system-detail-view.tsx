@@ -228,7 +228,7 @@ export function SystemDetailView({
               <Text>{summary}</Text>
 
               {technologies.length > 0 ? (
-                <ul className="aks-system-detail-tags" aria-label="Technologies">
+                <ul className="aks-system-detail-tags" aria-label={locale === 'fr' ? 'Technologies utilisées' : 'Technologies'}>
                   {technologies.map((technology) => (
                     <li key={technology.id}>{technology.name}</li>
                   ))}

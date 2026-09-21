@@ -1,10 +1,9 @@
-import { createDatabase } from '@akiksystems/db';
 import { Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
 import { SystemDetailView } from '../components/system-detail-view';
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/admin-system-preview';
 
@@ -38,9 +37,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
   const locale = requiredLocale(params.locale);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const localization = await db
       .selectFrom('systems')
       .innerJoin(
@@ -157,9 +155,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         },
       },
     );
-  } finally {
-    await db.destroy();
-  }
 }
 
 export default function AdminSystemPreview() {

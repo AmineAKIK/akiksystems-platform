@@ -7,13 +7,13 @@ import {
   type PresentationBlock,
   type PresentationDocument,
 } from '@akiksystems/core';
-import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
+import { writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { useMemo, useState } from 'react';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/admin-system-presentation';
 
@@ -64,9 +64,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
   const locale = requiredLocale(params.locale);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .leftJoin(
@@ -122,9 +121,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         system.presentation_document ?? emptyDocument(),
       assets,
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -179,9 +175,8 @@ export async function action({ request, params }: Route.ActionArgs) {
     };
   }
 
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .select('id')
@@ -309,9 +304,6 @@ export async function action({ request, params }: Route.ActionArgs) {
       message: `${locale.toUpperCase()} presentation saved.`,
       errors: [],
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 function PresentationBlockEditor({

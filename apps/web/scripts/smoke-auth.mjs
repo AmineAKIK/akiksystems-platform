@@ -83,6 +83,18 @@ try {
   });
   assert.equal(anonymous.status, 302);
   assert.equal(anonymous.headers.get('location'), '/admin/login');
+  assert.match(anonymous.headers.get('cache-control') ?? '', /private/);
+  assert.match(anonymous.headers.get('cache-control') ?? '', /no-store/);
+  assert.match(anonymous.headers.get('x-robots-tag') ?? '', /noindex/);
+  assert.equal(anonymous.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(anonymous.headers.get('x-frame-options'), 'DENY');
+  assert.ok(anonymous.headers.get('content-security-policy'));
+
+  const rejectedAdminMutation = await globalThis.fetch(`${origin}/admin`, {
+    method: 'POST',
+    redirect: 'manual',
+  });
+  assert.equal(rejectedAdminMutation.status, 403);
 
   const signup = await postJson('/api/auth/sign-up/email', {
     email: 'attacker@example.invalid',
@@ -143,7 +155,7 @@ try {
   }
 
   process.stdout.write(
-    'Auth smoke passed: signup blocked, anonymous admin denied, secure session works, single admin enforced, TOTP available.\n',
+    'Auth smoke passed: signup blocked, admin cache/robots/security headers enforced, cross-origin-less admin mutation rejected, secure session works, single admin enforced, TOTP available.\n',
   );
 } finally {
   server.kill('SIGTERM');

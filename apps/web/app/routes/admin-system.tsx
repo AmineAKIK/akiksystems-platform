@@ -4,13 +4,13 @@ import {
   type PlatformLocale,
   type SystemLinkKind,
 } from '@akiksystems/core';
-import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
+import { writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/admin-system';
 
@@ -113,7 +113,7 @@ function parseLinkLines(
 }
 
 async function upsertLocalization(
-  db: ReturnType<typeof createDatabase>,
+  db: typeof appDb,
   systemId: string,
   locale: PlatformLocale,
   values: {
@@ -158,9 +158,8 @@ async function upsertLocalization(
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .select(['id', 'lifecycle', 'archived_at', 'created_at', 'updated_at'])
@@ -311,9 +310,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         created_at: event.created_at.toISOString(),
       })),
     };
-  } finally {
-    await db.destroy();
-  }
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -321,9 +317,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   const systemId = requiredSystemId(params.systemId);
   const form = await request.formData();
   const intent = field(form, '_intent');
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await db
       .selectFrom('systems')
       .select(['id', 'lifecycle'])
@@ -766,9 +761,6 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     return { ok: false, message: 'Unsupported System operation.' };
-  } finally {
-    await db.destroy();
-  }
 }
 
 function auditActionLabel(action: string): string {

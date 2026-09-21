@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 
-import { parseWebServerEnv } from '@akiksystems/config/env';
+import { parseAuthEnv, parseWebServerEnv } from '@akiksystems/config/env';
 import {
   createLogger,
   runWithObservabilityContext,
@@ -11,7 +11,10 @@ import express from 'express';
 
 const BUILD_PATH = './build/server/index.js';
 const env = parseWebServerEnv(process.env);
+const authEnv = parseAuthEnv(process.env);
 const DEVELOPMENT = env.NODE_ENV === 'development';
+const STAGING = process.env.RAILWAY_ENVIRONMENT_NAME === 'staging';
+const ADMIN_ORIGIN = new URL(authEnv.BETTER_AUTH_URL).origin;
 const PORT = env.PORT;
 const logger = createLogger({
   service: 'web',
@@ -29,6 +32,71 @@ const databaseHealth =
 const app = express();
 
 app.disable('x-powered-by');
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline'",
+  "connect-src 'self'",
+].join('; ');
+
+app.use((request, response, next) => {
+  response.setHeader('Content-Security-Policy', contentSecurityPolicy);
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  );
+  response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  response.setHeader('X-Frame-Options', 'DENY');
+
+  if (env.NODE_ENV === 'production') {
+    response.setHeader(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains',
+    );
+  }
+
+  if (STAGING) {
+    response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  }
+
+  if (request.path.startsWith('/admin')) {
+    response.setHeader('Cache-Control', 'private, no-store, max-age=0');
+    response.setHeader('Pragma', 'no-cache');
+    response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  }
+
+  next();
+});
+
+app.use('/admin', (request, response, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+    next();
+    return;
+  }
+
+  const origin = request.get('origin');
+
+  if (origin === undefined || origin !== ADMIN_ORIGIN) {
+    logger.warn('security.csrf_origin_rejected', {
+      method: request.method,
+      path: request.path,
+      origin: origin ?? null,
+    });
+    response.status(403).json({ status: 'forbidden' });
+    return;
+  }
+
+  next();
+});
 
 /**
  * @param {unknown} value

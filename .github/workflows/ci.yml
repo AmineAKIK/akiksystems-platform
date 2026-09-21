@@ -15,7 +15,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: akiksystems
           POSTGRES_USER: postgres
@@ -54,11 +54,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.0
+          node-version: 24
           cache: pnpm
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify configuration contracts
+        run: pnpm config:verify
+
+      - name: Verify observability redaction
+        run: pnpm observability:verify
 
       - name: Lint
         run: pnpm lint
@@ -71,6 +77,15 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Verify client bundle contains no server secrets
+        run: pnpm --filter @akiksystems/web check:client-secrets
+
+      - name: Smoke Web observability
+        run: pnpm smoke:observability
+
+      - name: Smoke asynchronous worker
+        run: pnpm smoke:worker
 
       - name: Migrate L1 qualification database
         run: pnpm deploy:migrate
@@ -104,3 +119,6 @@ jobs:
           NODE_PATH: /tmp/akiksystems-l1-browser/node_modules
           LIGHTHOUSE_BIN: /tmp/akiksystems-l1-browser/node_modules/.bin/lighthouse
         run: node apps/web/scripts/smoke-sentinel-browser.cjs
+
+      - name: Smoke private admin authentication
+        run: pnpm smoke:auth

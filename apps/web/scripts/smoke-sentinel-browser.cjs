@@ -128,6 +128,13 @@ async function assertAxe(page) {
       'Sentinel transforme les signaux opérationnels en un système calme et inspectable.',
     );
 
+    await page.goto(`${origin}${page.systemPath}`);
+    await page.locator('textarea[name="links"]').fill(
+      'live | https://sentinel.akiksystems.fr',
+    );
+    await page.getByRole('button', { name: 'Save links' }).click();
+    await page.getByText('System links updated.').waitFor();
+
     await page.goto(`${origin}${page.systemPath}/preview/en`);
     assert.match(await page.locator('body').innerText(), /private preview/i);
     assert.equal(
@@ -150,12 +157,17 @@ async function assertAxe(page) {
     assert.match(englishHtml, /<h1[^>]*>Sentinel<\/h1>/);
     assert.match(englishHtml, /Operational visibility built from industrial context/);
     assert.match(englishHtml, /Sentinel turns operational signals/);
+    assert.match(englishHtml, /https:\/\/sentinel\.akiksystems\.fr/);
     assert.match(englishHtml, /rel="canonical"/);
     assert.match(englishHtml, /hreflang="fr"/i);
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
     assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+    assert.equal(
+      await page.locator('a[href="https://sentinel.akiksystems.fr"]').getAttribute('href'),
+      'https://sentinel.akiksystems.fr',
+    );
     assert.equal(
       await page.locator('link[rel="canonical"]').getAttribute('href'),
       'https://akiksystems.com/en/systems/sentinel',

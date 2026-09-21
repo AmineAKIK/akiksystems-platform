@@ -1,7 +1,6 @@
-import { createDatabase } from '@akiksystems/db';
 
 import { requireAdminSession } from '../lib/admin.server';
-import { authEnv } from '../lib/auth.server';
+import { appDb } from '../lib/db.server';
 import { getAssetObject } from '../lib/asset-storage.server';
 
 import type { Route } from './+types/admin-system-preview-asset';
@@ -24,9 +23,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response('Asset not found.', { status: 404 });
   }
 
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const asset = await db
       .selectFrom('system_assets')
       .innerJoin('assets', 'assets.id', 'system_assets.asset_id')
@@ -53,7 +51,4 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet',
       },
     });
-  } finally {
-    await db.destroy();
-  }
 }

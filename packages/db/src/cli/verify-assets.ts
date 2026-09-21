@@ -118,7 +118,7 @@ try {
   assert.match(localized.storage_key, /^systems\//);
 
   await expectPostgresError(
-    '23503',
+    '23001',
     'system_assets_asset_id_fkey',
     () => db.deleteFrom('assets').where('id', '=', assetId).execute(),
   );

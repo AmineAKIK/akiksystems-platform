@@ -1,8 +1,7 @@
-import { createDatabase } from '@akiksystems/db';
 
 import { requireLocale } from '../i18n/locales';
-import { authEnv } from '../lib/auth.server';
 import { getAssetObject } from '../lib/asset-storage.server';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/system-detail-asset';
 
@@ -24,9 +23,8 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Asset not found.', { status: 404 });
   }
 
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const asset = await db
       .selectFrom('systems')
       .innerJoin(
@@ -61,7 +59,4 @@ export async function loader({ params }: Route.LoaderArgs) {
         'Content-Disposition': 'inline',
       },
     });
-  } finally {
-    await db.destroy();
-  }
 }
