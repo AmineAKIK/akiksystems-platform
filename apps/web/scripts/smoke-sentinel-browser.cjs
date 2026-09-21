@@ -349,25 +349,25 @@ async function assertIntentPrefetching(browser) {
     await profileDoor.waitFor();
 
     assert.equal(
-      await homeNav.locator('link[rel="prefetch"]').count(),
+      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
       0,
       'Home must not eagerly prefetch destination routes before user intent.',
     );
 
     await profileDoor.hover();
-    await homeNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
+    await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
 
     assert.ok(
-      (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
-      'Hovering an intended Home destination must trigger route prefetching.',
+      (await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
+      'Hovering an intended Home destination must trigger route/module prefetching.',
     );
 
     await page.mouse.move(0, 0);
     await page.waitForTimeout(150);
     assert.equal(
-      await homeNav.locator('link[rel="prefetch"]').count(),
+      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
       0,
-      'Leaving an intended destination must remove transient prefetch descriptors.',
+      'Leaving an intended destination must remove transient prefetch/module-preload descriptors.',
     );
 
     await page.goto(`${origin}/en/systems`);
@@ -376,15 +376,15 @@ async function assertIntentPrefetching(browser) {
     await writingsLink.waitFor();
 
     assert.equal(
-      await shellNav.locator('link[rel="prefetch"]').count(),
+      await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
       0,
       'Global shell navigation must not prefetch every destination on render.',
     );
 
     await writingsLink.focus();
-    await shellNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
+    await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
     assert.ok(
-      (await shellNav.locator('link[rel="prefetch"]').count()) > 0,
+      (await shellNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
       'Keyboard focus must count as navigation intent for shell prefetching.',
     );
   } finally {
@@ -405,16 +405,16 @@ async function assertIntentPrefetching(browser) {
     await systemsDoor.waitFor();
 
     assert.equal(
-      await homeNav.locator('link[rel="prefetch"]').count(),
+      await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count(),
       0,
       'Mobile Home must remain idle until touch intent.',
     );
 
     await systemsDoor.dispatchEvent('touchstart');
-    await homeNav.locator('link[rel="prefetch"]').first().waitFor({ state: 'attached' });
+    await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').first().waitFor({ state: 'attached' });
 
     assert.ok(
-      (await homeNav.locator('link[rel="prefetch"]').count()) > 0,
+      (await homeNav.locator('link[rel="prefetch"], link[rel="modulepreload"]').count()) > 0,
       'Touch intent must trigger prefetching without requiring navigation.',
     );
     assert.equal(
