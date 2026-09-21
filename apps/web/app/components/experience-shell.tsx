@@ -47,7 +47,7 @@ export function ExperienceShell({
         {dictionary.shell.skipToContent}
       </a>
 
-      <header className="aks-experience-shell">
+      <header className="aks-experience-shell" data-destination={destinationId ?? 'home'}>
         <Container width="wide">
           <div className="aks-experience-shell-inner">
             <RouterLink
