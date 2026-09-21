@@ -47,6 +47,7 @@ export function ExperienceShell({
             <RouterLink
               aria-label={locale === 'fr' ? 'AkikSystems, accueil' : 'AkikSystems, home'}
               className="aks-brand-signature"
+              prefetch="intent"
               to={`/${locale}`}
               viewTransition
             >
@@ -63,6 +64,7 @@ export function ExperienceShell({
               <RouterLink
                 aria-current={destinationId === null ? 'page' : undefined}
                 className="aks-link"
+                prefetch="intent"
                 to={`/${locale}`}
                 viewTransition
               >
@@ -73,6 +75,7 @@ export function ExperienceShell({
                   aria-current={destinationId === destination.id ? 'page' : undefined}
                   className="aks-link"
                   key={destination.id}
+                  prefetch="intent"
                   to={destinationHref(destination.id, locale)}
                   viewTransition
                 >
@@ -95,6 +98,7 @@ export function ExperienceShell({
                 <RouterLink
                   aria-current={destinationId === null ? 'page' : undefined}
                   className="aks-link"
+                  prefetch="intent"
                   to={`/${locale}`}
                   viewTransition
                 >
@@ -105,6 +109,7 @@ export function ExperienceShell({
                     aria-current={destinationId === destination.id ? 'page' : undefined}
                     className="aks-link"
                     key={destination.id}
+                    prefetch="intent"
                     to={destinationHref(destination.id, locale)}
                     viewTransition
                   >
@@ -132,6 +137,7 @@ export function ExperienceShell({
                   className="aks-link"
                   hrefLang={alternateLocale}
                   lang={alternateLocale}
+                  prefetch="intent"
                   to={languageHref}
                   viewTransition
                 >
