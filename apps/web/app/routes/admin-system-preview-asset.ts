@@ -49,7 +49,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       headers: {
         'Cache-Control': 'private, no-store, max-age=0',
         'Content-Type': asset.mime_type,
-        'Content-Disposition': `inline; filename="${asset.original_filename.replace(/"/g, '')}"`,
+        'Content-Disposition': 'inline',
         'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet',
       },
     });
