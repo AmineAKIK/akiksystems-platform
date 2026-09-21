@@ -29,7 +29,8 @@
     "db:verify-presentation-documents": "tsx src/cli/verify-presentation-documents.ts",
     "db:verify-publication-readiness": "tsx src/cli/verify-publication-readiness.ts",
     "db:verify-independent-publication": "tsx src/cli/verify-independent-publication.ts",
-    "db:verify-admin-audit": "tsx src/cli/verify-admin-audit.ts"
+    "db:verify-admin-audit": "tsx src/cli/verify-admin-audit.ts",
+    "db:verify-public-system": "tsx src/cli/verify-public-system.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
