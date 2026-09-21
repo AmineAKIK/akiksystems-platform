@@ -31,3 +31,19 @@ export interface SystemLocalization {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type TechnologyId = string;
+
+export interface Technology {
+  id: TechnologyId;
+  slug: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SystemTechnology {
+  systemId: SystemId;
+  technologyId: TechnologyId;
+  position: number;
+}
