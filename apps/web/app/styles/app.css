@@ -691,6 +691,13 @@
   color: var(--aks-text-primary);
 }
 
+.aks-home-intro,
+.aks-home-door {
+  opacity: 1;
+  visibility: visible;
+  animation: none;
+}
+
 .aks-home-door {
   position: relative;
   z-index: 1;
