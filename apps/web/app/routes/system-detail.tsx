@@ -1,4 +1,4 @@
-import { createDatabase, getPublishedSystem } from '@akiksystems/db';
+import { getPublishedSystem } from '@akiksystems/db';
 import {
   data,
   useLoaderData,
@@ -6,8 +6,8 @@ import {
 } from 'react-router';
 
 import { SystemDetailView } from '../components/system-detail-view';
+import { appDb } from '../lib/db.server';
 import { requireLocale } from '../i18n/locales';
-import { authEnv } from '../lib/auth.server';
 
 import type { Route } from './+types/system-detail';
 
@@ -29,9 +29,8 @@ function publicSystemUrl(locale: 'en' | 'fr', slug: string): string {
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
-  const db = createDatabase(authEnv.DATABASE_URL);
+  const db = appDb;
 
-  try {
     const system = await getPublishedSystem(db, { locale, slug });
 
     if (system === null) {
@@ -55,9 +54,6 @@ export async function loader({ params }: Route.LoaderArgs) {
         },
       },
     );
-  } finally {
-    await db.destroy();
-  }
 }
 
 export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
