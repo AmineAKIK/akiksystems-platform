@@ -382,6 +382,7 @@ async function assertGlobalKeyboardNavigation(browser) {
     );
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/fr`);
+    await page.waitForFunction(() => document.documentElement.lang === 'fr');
     assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
 
     await page.goto(`${origin}/en/systems/sentinel`);
@@ -475,6 +476,7 @@ async function assertGlobalKeyboardNavigation(browser) {
     await page.locator('.aks-experience-meta a[hreflang="fr"]').focus();
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/fr/profil`);
+    await page.waitForFunction(() => document.documentElement.lang === 'fr');
     assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
   } finally {
     await mobile.close();
