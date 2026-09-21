@@ -24,7 +24,8 @@
     "db:verify-system-technologies": "tsx src/cli/verify-system-technologies.ts",
     "migrate:down": "tsx src/cli/migrate.ts down",
     "migrate:latest": "tsx src/cli/migrate.ts latest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:verify-system-links": "tsx src/cli/verify-system-links.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
