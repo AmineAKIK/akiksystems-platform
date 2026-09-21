@@ -90,6 +90,7 @@ export function ExperienceShell({
 
             <details
               className="aks-experience-mobile-menu"
+              key={pathname}
               onToggle={(event) => setMobileMenuOpen(event.currentTarget.open)}
               open={mobileMenuOpen}
             >
