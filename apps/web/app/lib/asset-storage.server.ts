@@ -82,11 +82,11 @@ function objectUrl(storageKey: string): URL {
 }
 
 async function signedS3Request(
-  method: 'PUT' | 'DELETE',
+  method: 'GET' | 'PUT' | 'DELETE',
   storageKey: string,
   body?: Uint8Array,
   contentType?: string,
-): Promise<void> {
+): Promise<Response> {
   const env = parseAssetStorageEnv(process.env);
   const url = objectUrl(storageKey);
   const payload = body ?? new Uint8Array();
@@ -145,6 +145,8 @@ async function signedS3Request(
       `Object storage ${method} failed with ${response.status}: ${details}`,
     );
   }
+
+  return response;
 }
 
 export async function putAssetObject(
@@ -158,4 +160,8 @@ export async function putAssetObject(
 
 export async function deleteAssetObject(storageKey: string): Promise<void> {
   await signedS3Request('DELETE', storageKey);
+}
+
+export async function getAssetObject(storageKey: string): Promise<Response> {
+  return signedS3Request('GET', storageKey);
 }

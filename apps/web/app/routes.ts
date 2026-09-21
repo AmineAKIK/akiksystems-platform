@@ -11,6 +11,14 @@ export default [
     'admin/systems/:systemId/presentation/:locale',
     'routes/admin-system-presentation.tsx',
   ),
+  route(
+    'admin/systems/:systemId/preview/:locale',
+    'routes/admin-system-preview.tsx',
+  ),
+  route(
+    'admin/systems/:systemId/preview/:locale/assets/:assetId',
+    'routes/admin-system-preview-asset.ts',
+  ),
   route('admin', 'routes/admin.tsx'),
   index('routes/locale-index.tsx'),
   route(':locale', 'routes/locale-layout.tsx', [
