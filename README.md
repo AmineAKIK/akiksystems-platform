@@ -48,6 +48,19 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 - Primitives stay intentionally semantic and low-opinionated; page-specific composition remains in the web app.
 - The current bilingual walking-skeleton pages consume these primitives directly as proof of integration.
 
+## System domain model
+
+The core System model keeps shared identity separate from localized editorial content.
+
+- `systems` owns the stable UUID identity and technical lifecycle (`active` / `archived`).
+- `system_localizations` owns locale-specific slug, title, summary, editorial state, and publication timestamp.
+- EN and FR publication state is independent for the same System identity.
+- Slugs are unique within a locale, allowing the same slug in different languages.
+- Lifecycle and editorial publication are separate state machines; archiving a System does not rewrite localization publication state.
+- Database constraints enforce supported locales, allowed states, publication/archive timestamp consistency, and cascading localization deletion.
+
+Publication-readiness rules for required localized fields remain intentionally deferred to AKS-022.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
@@ -141,6 +154,6 @@ pnpm format:check
 
 ## Backlog traceability
 
-AKS-001 through AKS-013 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
+AKS-001 through AKS-014 establish the monorepo, strict conventions, SSR runtime, PostgreSQL/Kysely,
 Graphile Worker, typed fail-fast runtime configuration, baseline observability, reproducible separated
-Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, and a secured single-user administration.
+Web/Worker containers, permanent PR/push continuous integration, explicit bilingual routing, shared UI foundations, staging qualification, a secured single-user administration, and the foundational System domain model.
