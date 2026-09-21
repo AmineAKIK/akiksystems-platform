@@ -253,6 +253,18 @@ export async function action({ request, params }: Route.ActionArgs) {
         };
       }
 
+      try {
+        await deleteAssetObject(asset.storage_key);
+      } catch (error) {
+        return {
+          ok: false,
+          message:
+            error instanceof Error
+              ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
+              : 'Storage deletion failed; metadata was kept so the operation can be retried.',
+        };
+      }
+
       await db.transaction().execute(async (transaction) => {
         await transaction
           .deleteFrom('system_assets')
@@ -273,20 +285,10 @@ export async function action({ request, params }: Route.ActionArgs) {
           entityId: assetId,
           systemId,
           metadata: {
-            storageCleanupPending: true,
+            storageObjectDeleted: true,
           },
         });
       });
-
-      try {
-        await deleteAssetObject(asset.storage_key);
-      } catch {
-        return {
-          ok: true,
-          message:
-            'Asset metadata was removed safely; object-storage cleanup must be retried.',
-        };
-      }
 
       return { ok: true, message: 'Asset removed from this System and storage.' };
     }
