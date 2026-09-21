@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Container, Link, Text } from '@akiksystems/ui';
+import { BrandSignature, Container, Link, Text } from '@akiksystems/ui';
 
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
@@ -54,9 +54,10 @@ export function ExperienceShell({
       <header className="aks-experience-shell">
         <Container width="wide">
           <div className="aks-experience-shell-inner">
-            <Link className="aks-experience-brand" href={`/${locale}`}>
-              {dictionary.brand}
-            </Link>
+            <BrandSignature
+              aria-label={locale === 'fr' ? 'AkikSystems, accueil' : 'AkikSystems, home'}
+              href={`/${locale}`}
+            />
 
             <nav
               aria-label={dictionary.shell.navigationLabel}
