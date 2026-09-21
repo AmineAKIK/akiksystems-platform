@@ -457,8 +457,12 @@
     grid-row: 1;
   }
 
-  .aks-experience-meta {
+  .aks-experience-mobile-menu {
     grid-row: 2;
+  }
+
+  .aks-experience-meta {
+    grid-row: 3;
     min-width: 0;
     justify-content: space-between;
     gap: var(--aks-space-3);
@@ -475,7 +479,6 @@
 
   .aks-experience-mobile-menu {
     display: block;
-    grid-row: 3;
     min-width: 0;
   }
 
