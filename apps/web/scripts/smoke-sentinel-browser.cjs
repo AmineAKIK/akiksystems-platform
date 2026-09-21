@@ -1,5 +1,6 @@
 const { strict: assert } = require('node:assert');
 const { spawn } = require('node:child_process');
+const path = require('node:path');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { chromium } = require('playwright');
 const axe = require('axe-core');
@@ -16,7 +17,7 @@ const origin = `http://127.0.0.1:${port}`;
 let stderr = '';
 
 const server = spawn(process.execPath, ['server.js'], {
-  cwd: new URL('..', import.meta.url).pathname,
+  cwd: path.join(process.cwd(), 'apps/web'),
   env: {
     ...process.env,
     NODE_ENV: 'test',
