@@ -51,15 +51,26 @@ async function waitForServer() {
   throw new Error(`Auth smoke server did not become ready. stderr=${stderr}`);
 }
 
+/**
+ * @param {string} path
+ * @param {Record<string, unknown>} body
+ * @param {string | undefined} [cookie]
+ */
 async function postJson(path, body, cookie) {
+  /** @type {Record<string, string>} */
+  const headers = {
+    'content-type': 'application/json',
+    origin,
+  };
+
+  if (cookie) {
+    headers.cookie = cookie;
+  }
+
   return globalThis.fetch(`${origin}${path}`, {
     method: 'POST',
     redirect: 'manual',
-    headers: {
-      'content-type': 'application/json',
-      origin,
-      ...(cookie ? { cookie } : {}),
-    },
+    headers,
     body: JSON.stringify(body),
   });
 }
@@ -93,6 +104,7 @@ try {
   assert.match(setCookie, /SameSite=Lax/i);
 
   const cookie = setCookie.split(';', 1)[0];
+  assert.ok(cookie);
 
   const privateAdmin = await globalThis.fetch(`${origin}/admin`, {
     headers: { cookie },
@@ -111,7 +123,11 @@ try {
     },
     cookie,
   );
-  const twoFactorBody = await twoFactor.json();
+  const twoFactorBody = /** @type {{
+    method: string;
+    totpURI: string;
+    backupCodes: string[];
+  }} */ (await twoFactor.json());
   assert.equal(twoFactor.status, 200);
   assert.equal(twoFactorBody.method, 'totp');
   assert.match(twoFactorBody.totpURI, /^otpauth:\/\/totp\//);
