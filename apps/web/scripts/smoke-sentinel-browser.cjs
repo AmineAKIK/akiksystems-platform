@@ -758,6 +758,7 @@ async function assertGlobalKeyboardNavigation(browser) {
     );
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/en/systems`);
+    await page.getByRole('heading', { level: 1, name: 'Systems', exact: true }).waitFor();
     assert.equal(
       await page.locator('.aks-experience-mobile-menu').getAttribute('open'),
       null,
