@@ -106,6 +106,7 @@ export function ExperienceShell({
                 <RouterLink
                   aria-current={destinationId === null ? 'page' : undefined}
                   className="aks-link"
+                  onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
                   to={`/${locale}`}
                   viewTransition
@@ -117,6 +118,7 @@ export function ExperienceShell({
                     aria-current={destinationId === destination.id ? 'page' : undefined}
                     className="aks-link"
                     key={destination.id}
+                    onClick={() => setMobileMenuOpen(false)}
                     prefetch="intent"
                     to={destinationHref(destination.id, locale)}
                     viewTransition
