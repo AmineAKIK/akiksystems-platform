@@ -494,3 +494,58 @@
     font-weight: 650;
   }
 }
+
+
+/* L2 route transition system: short, composited and progressively enhanced. */
+:root {
+  --aks-transition-route-duration: 160ms;
+  --aks-transition-route-distance: 0.35rem;
+  --aks-transition-route-easing: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.aks-experience-shell {
+  view-transition-name: aks-experience-shell;
+}
+
+.aks-experience-outlet {
+  view-transition-name: aks-experience-content;
+}
+
+::view-transition-group(aks-experience-shell) {
+  animation-duration: 1ms;
+}
+
+::view-transition-old(aks-experience-shell),
+::view-transition-new(aks-experience-shell) {
+  animation: none;
+}
+
+::view-transition-old(aks-experience-content) {
+  animation:
+    var(--aks-transition-route-duration)
+    var(--aks-transition-route-easing)
+    both
+    aks-route-out;
+}
+
+::view-transition-new(aks-experience-content) {
+  animation:
+    var(--aks-transition-route-duration)
+    var(--aks-transition-route-easing)
+    both
+    aks-route-in;
+}
+
+@keyframes aks-route-out {
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--aks-transition-route-distance) * -1));
+  }
+}
+
+@keyframes aks-route-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--aks-transition-route-distance));
+  }
+}

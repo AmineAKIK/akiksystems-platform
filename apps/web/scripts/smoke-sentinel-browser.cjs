@@ -250,6 +250,42 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+    assert.equal(
+      await page.evaluate(() => typeof document.startViewTransition),
+      'function',
+      'Chromium must expose View Transitions for the enhanced route path.',
+    );
+    const transitionProbe = await page.evaluate(async () => {
+      const link = document.querySelector('.aks-experience-nav a[href="/en/profile"]');
+      if (!(link instanceof HTMLAnchorElement)) {
+        return { supported: false, started: 0 };
+      }
+      let started = 0;
+      const original = document.startViewTransition.bind(document);
+      document.startViewTransition = (callback) => {
+        started += 1;
+        return original(callback);
+      };
+      link.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return { supported: true, started };
+    });
+    assert.equal(transitionProbe.supported, true);
+    assert.ok(
+      transitionProbe.started >= 1,
+      'Client-side shell navigation must opt into a View Transition when supported.',
+    );
+    await page.waitForURL(`${origin}/en/profile`);
+    await page
+      .getByRole('heading', { level: 1, name: 'Profile', exact: true })
+      .waitFor();
+    assert.equal(
+      await page.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
+      '/en/profile',
+      'The destination must remain usable after the enhanced transition completes.',
+    );
+    await page.goto(`${origin}/en/systems/sentinel`);
+    await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
     for (const href of [
       '/en/profile',
       '/en/systems',

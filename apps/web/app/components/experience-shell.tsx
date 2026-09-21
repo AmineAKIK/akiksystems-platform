@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { BrandSignature, Container, Link } from '@akiksystems/ui';
+import { Container } from '@akiksystems/ui';
+import { Link as RouterLink } from 'react-router';
 
 import {
   destinationFromPathname,
@@ -42,29 +43,40 @@ export function ExperienceShell({
       <header className="aks-experience-shell">
         <Container width="wide">
           <div className="aks-experience-shell-inner">
-            <BrandSignature
+            <RouterLink
               aria-label={locale === 'fr' ? 'AkikSystems, accueil' : 'AkikSystems, home'}
-              href={`/${locale}`}
-            />
+              className="aks-brand-signature"
+              to={`/${locale}`}
+              viewTransition
+            >
+              <span aria-hidden="true" className="aks-brand-mark">
+                <span className="aks-brand-mark-core" />
+              </span>
+              <span className="aks-brand-wordmark">AkikSystems</span>
+            </RouterLink>
 
             <nav
               aria-label={dictionary.shell.navigationLabel}
               className="aks-experience-nav"
             >
-              <Link
+              <RouterLink
                 aria-current={destinationId === null ? 'page' : undefined}
-                href={`/${locale}`}
+                className="aks-link"
+                to={`/${locale}`}
+                viewTransition
               >
                 {dictionary.shell.homeLabel}
-              </Link>
+              </RouterLink>
               {globalDestinations.map((destination) => (
-                <Link
+                <RouterLink
                   aria-current={destinationId === destination.id ? 'page' : undefined}
-                  href={destinationHref(destination.id, locale)}
+                  className="aks-link"
                   key={destination.id}
+                  to={destinationHref(destination.id, locale)}
+                  viewTransition
                 >
                   {destination.label[locale]}
-                </Link>
+                </RouterLink>
               ))}
             </nav>
 
@@ -79,20 +91,24 @@ export function ExperienceShell({
                 aria-label={dictionary.shell.navigationLabel}
                 className="aks-experience-mobile-nav"
               >
-                <Link
+                <RouterLink
                   aria-current={destinationId === null ? 'page' : undefined}
-                  href={`/${locale}`}
+                  className="aks-link"
+                  to={`/${locale}`}
+                  viewTransition
                 >
                   {dictionary.shell.homeLabel}
-                </Link>
+                </RouterLink>
                 {globalDestinations.map((destination) => (
-                  <Link
+                  <RouterLink
                     aria-current={destinationId === destination.id ? 'page' : undefined}
-                    href={destinationHref(destination.id, locale)}
+                    className="aks-link"
                     key={destination.id}
+                    to={destinationHref(destination.id, locale)}
+                    viewTransition
                   >
                     {destination.label[locale]}
-                  </Link>
+                  </RouterLink>
                 ))}
               </nav>
             </details>
@@ -103,13 +119,15 @@ export function ExperienceShell({
                 destinationId={destinationId}
                 locale={locale}
               />
-              <Link
-                href={languageHref}
+              <RouterLink
+                className="aks-link"
                 hrefLang={alternateLocale}
                 lang={alternateLocale}
+                to={languageHref}
+                viewTransition
               >
                 {alternateLocale === 'fr' ? 'Français' : 'English'}
-              </Link>
+              </RouterLink>
             </div>
           </div>
         </Container>

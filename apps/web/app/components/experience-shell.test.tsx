@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { ExperienceShell } from './experience-shell';
@@ -6,6 +7,7 @@ import { ExperienceShell } from './experience-shell';
 describe('ExperienceShell', () => {
   it('renders public identity, navigation, context, locale and outlet on a deep System link', () => {
     const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/systems/sentinel']}>
       <ExperienceShell
         alternateHref="/fr/systems/sentinelle"
         currentTitle="Sentinel"
@@ -13,7 +15,8 @@ describe('ExperienceShell', () => {
         pathname="/en/systems/sentinel"
       >
         <main><h1>Sentinel</h1></main>
-      </ExperienceShell>,
+      </ExperienceShell>
+      </MemoryRouter>,
     );
 
     expect(html).toContain('class="aks-skip-link" href="#experience-outlet"');
@@ -21,23 +24,23 @@ describe('ExperienceShell', () => {
     expect(html).toContain('class="aks-brand-mark"');
     expect(html).toContain('class="aks-brand-wordmark">AkikSystems</span>');
     expect(html).toContain('aria-label="Primary navigation"');
-    expect(html).toContain('href="/en">Home</a>');
-    expect(html).toContain('href="/en/profile">Profile</a>');
-    expect(html).toContain('href="/en/systems">Systems</a>');
-    expect(html).toContain('href="/en/writings">Writings</a>');
-    expect(html).toContain('href="/en/learning">Learning</a>');
-    expect(html).toContain('href="/en/work-with-us">Work with us</a>');
+    expect(html).toContain('href="/en" data-discover="true">Home</a>');
+    expect(html).toContain('href="/en/profile" data-discover="true">Profile</a>');
+    expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
+    expect(html).toContain('href="/en/writings" data-discover="true">Writings</a>');
+    expect(html).toContain('href="/en/learning" data-discover="true">Learning</a>');
+    expect(html).toContain('href="/en/work-with-us" data-discover="true">Work with us</a>');
     expect(html).toContain('class="aks-experience-mobile-menu"');
     expect(html).toContain('class="aks-experience-mobile-menu-trigger"');
     expect(html).toContain('class="aks-experience-mobile-nav"');
-    expect(html).toContain('aria-current="page" href="/en/systems">Systems</a>');
+    expect(html).toContain('aria-current="page" class="aks-link" href="/en/systems" data-discover="true">Systems</a>');
     expect(html).toContain('aria-label="Current context"');
     expect(html).toContain('class="aks-experience-context-list"');
-    expect(html).toContain('href="/en/systems">Systems</a>');
+    expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
     expect(html).toContain('aria-hidden="true" class="aks-experience-context-separator">/</li>');
     expect(html).toContain('<span aria-current="page">Sentinel</span>');
     expect(html).toContain(
-      'href="/fr/systems/sentinelle" hrefLang="fr" lang="fr">Français</a>',
+      'hrefLang="fr" lang="fr" href="/fr/systems/sentinelle" data-discover="true">Français</a>',
     );
     expect(html).toContain(
       'class="aks-experience-outlet" id="experience-outlet" tabindex="-1"',
@@ -47,15 +50,17 @@ describe('ExperienceShell', () => {
 
   it('marks the current top-level destination and localizes the shell in French', () => {
     const html = renderToStaticMarkup(
-      <ExperienceShell locale="fr" pathname="/fr/about">
-        <main><h1>À propos</h1></main>
-      </ExperienceShell>,
+      <MemoryRouter initialEntries={['/fr/about']}>
+        <ExperienceShell locale="fr" pathname="/fr/about">
+          <main><h1>À propos</h1></main>
+        </ExperienceShell>
+      </MemoryRouter>,
     );
 
     expect(html).toContain('aria-label="Navigation principale"');
-    expect(html).toContain('href="/fr/profil">Profil</a>');
+    expect(html).toContain('href="/fr/profil" data-discover="true">Profil</a>');
     expect(html).toContain('aria-label="Contexte actuel"');
     expect(html).toContain('<span aria-current="page">Accueil</span>');
-    expect(html).toContain('href="/en" hrefLang="en" lang="en">English</a>');
+    expect(html).toContain('hrefLang="en" lang="en" href="/en" data-discover="true">English</a>');
   });
 });

@@ -84,6 +84,17 @@ At narrow viewports, the Experience Shell switches from the persistent desktop r
 - Menu links provide at least 44px touch targets, and the shell preserves the route context and locale control outside the disclosure.
 - The browser qualification exercises the menu at 320px, verifies collapsed/open behavior, touch target size, active deep-route orientation, and no horizontal page overflow.
 
+### Route transition system
+
+Public shell navigation is progressively enhanced with React Router View Transitions.
+
+- Internal Home, destination, locale, and local-context links remain navigable anchors in SSR output and still work without client JavaScript.
+- On supporting browsers, client-side navigation opts into the native View Transition API.
+- The Experience Shell stays visually stable while the experience outlet uses a short 160ms opacity/vertical transition to reduce perceived rupture.
+- Motion is limited to compositor-friendly opacity and transform properties; route completion is never delayed behind an animation.
+- Navigation remains authoritative and interruptible: transition state does not gate input or route completion.
+- Timing and distance are centralized as CSS custom properties so AKS-044 can define the reduced-motion policy without rewriting navigation.
+
 ### Local route context
 
 Deep public routes expose compact semantic context inside the Experience Shell rather than a large breadcrumb trail.
