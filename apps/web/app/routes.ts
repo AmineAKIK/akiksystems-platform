@@ -23,6 +23,16 @@ export default [
   index('routes/locale-index.tsx'),
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
+    route('profile', 'routes/profile.tsx'),
+    route('profil', 'routes/profile.tsx'),
+    route('systems', 'routes/systems.tsx'),
+    route('systemes', 'routes/systems.tsx'),
+    route('writings', 'routes/writings.tsx'),
+    route('ecrits', 'routes/writings.tsx'),
+    route('learning', 'routes/learning.tsx'),
+    route('apprentissage', 'routes/learning.tsx'),
+    route('work-with-us', 'routes/work-with-us.tsx'),
+    route('travailler-ensemble', 'routes/work-with-us.tsx'),
     route('about', 'routes/about.tsx'),
     route('systems/:slug', 'routes/system-detail.tsx'),
     route(
