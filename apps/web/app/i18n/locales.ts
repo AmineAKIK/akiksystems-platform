@@ -6,6 +6,7 @@ export interface UiDictionary {
   shell: {
     skipToContent: string;
     navigationLabel: string;
+    menuLabel: string;
     homeLabel: string;
     profileLabel: string;
     currentContextLabel: string;
@@ -29,6 +30,7 @@ const dictionaries = {
     shell: {
       skipToContent: 'Skip to content',
       navigationLabel: 'Primary navigation',
+      menuLabel: 'Menu',
       homeLabel: 'Home',
       profileLabel: 'Profile',
       currentContextLabel: 'Current context',
@@ -50,6 +52,7 @@ const dictionaries = {
     shell: {
       skipToContent: 'Aller au contenu',
       navigationLabel: 'Navigation principale',
+      menuLabel: 'Menu',
       homeLabel: 'Accueil',
       profileLabel: 'Profil',
       currentContextLabel: 'Contexte actuel',
