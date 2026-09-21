@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const { strict: assert } = require('node:assert');
-const { spawn } = require('node:child_process');
+const { execFileSync, spawn } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { chromium } = require('playwright');
@@ -207,6 +208,38 @@ async function assertAxe(page) {
       await mobile.close();
     }
 
+    const lighthouseBin = process.env.LIGHTHOUSE_BIN;
+    assert.ok(lighthouseBin, 'LIGHTHOUSE_BIN is required for performance qualification.');
+    const lighthouseOutput = '/tmp/akiksystems-l1-lighthouse.json';
+    execFileSync(
+      lighthouseBin,
+      [
+        `${origin}/en/systems/sentinel`,
+        '--only-categories=performance',
+        '--form-factor=mobile',
+        '--throttling-method=simulate',
+        '--chrome-flags=--headless --no-sandbox',
+        '--output=json',
+        `--output-path=${lighthouseOutput}`,
+        '--quiet',
+      ],
+      {
+        env: {
+          ...process.env,
+          CHROME_PATH: chromium.executablePath(),
+        },
+        stdio: 'pipe',
+      },
+    );
+    const lighthouseReport = JSON.parse(fs.readFileSync(lighthouseOutput, 'utf8'));
+    const performanceScore = lighthouseReport.categories?.performance?.score ?? 0;
+    const lcp = lighthouseReport.audits?.['largest-contentful-paint']?.numericValue ?? Infinity;
+    assert.ok(
+      performanceScore >= 0.8,
+      `Mobile Lighthouse performance score regressed below 0.80: ${performanceScore}`,
+    );
+    assert.ok(lcp <= 4000, `Mobile simulated LCP regressed above 4s: ${lcp}ms`);
+
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     try {
       const noJsPage = await noJs.newPage();
@@ -222,7 +255,7 @@ async function assertAxe(page) {
     }
 
     process.stdout.write(
-      'Sentinel L1 browser qualification passed: admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, and no-JS reading are verified.\n',
+      'Sentinel L1 browser qualification passed: admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\n',
     );
   } finally {
     await browser.close();
