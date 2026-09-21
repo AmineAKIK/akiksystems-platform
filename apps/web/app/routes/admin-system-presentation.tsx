@@ -7,7 +7,7 @@ import {
   type PresentationBlock,
   type PresentationDocument,
 } from '@akiksystems/core';
-import { createDatabase } from '@akiksystems/db';
+import { createDatabase, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { useMemo, useState } from 'react';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -128,7 +128,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const systemId = requiredSystemId(params.systemId);
   const locale = requiredLocale(params.locale);
   const form = await request.formData();
@@ -252,24 +252,56 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     if (localization === undefined) {
-      await db
-        .insertInto('system_localizations')
-        .values({
-          system_id: systemId,
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('system_localizations')
+          .values({
+            system_id: systemId,
+            locale,
+            presentation_document: document,
+          })
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.presentation_updated',
+          entityType: 'system_localization',
+          entityId: `${systemId}:${locale}`,
+          systemId,
           locale,
-          presentation_document: document,
-        })
-        .execute();
+          metadata: {
+            blockCount: document.blocks.length,
+            blockTypes: document.blocks.map((block) => block.type),
+          },
+        });
+      });
     } else {
-      await db
-        .updateTable('system_localizations')
-        .set({
-          presentation_document: document,
-          updated_at: new Date(),
-        })
-        .where('system_id', '=', systemId)
-        .where('locale', '=', locale)
-        .execute();
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .updateTable('system_localizations')
+          .set({
+            presentation_document: document,
+            updated_at: new Date(),
+          })
+          .where('system_id', '=', systemId)
+          .where('locale', '=', locale)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.presentation_updated',
+          entityType: 'system_localization',
+          entityId: `${systemId}:${locale}`,
+          systemId,
+          locale,
+          metadata: {
+            blockCount: document.blocks.length,
+            blockTypes: document.blocks.map((block) => block.type),
+          },
+        });
+      });
     }
 
     return {
