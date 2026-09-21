@@ -28,6 +28,37 @@ export function validateAssetUpload(file: File): void {
   }
 }
 
+function hasPrefix(bytes: Uint8Array, signature: number[]): boolean {
+  return signature.every((value, index) => bytes[index] === value);
+}
+
+function ascii(bytes: Uint8Array, start: number, length: number): string {
+  return String.fromCharCode(...bytes.slice(start, start + length));
+}
+
+export function validateAssetSignature(
+  mimeType: string,
+  bytes: Uint8Array,
+): void {
+  const valid =
+    mimeType === 'image/jpeg'
+      ? hasPrefix(bytes, [0xff, 0xd8, 0xff])
+      : mimeType === 'image/png'
+        ? hasPrefix(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+        : mimeType === 'image/webp'
+          ? ascii(bytes, 0, 4) === 'RIFF' && ascii(bytes, 8, 4) === 'WEBP'
+          : mimeType === 'image/avif'
+            ? ascii(bytes, 4, 4) === 'ftyp' &&
+              ['avif', 'avis'].includes(ascii(bytes, 8, 4))
+            : mimeType === 'application/pdf'
+              ? ascii(bytes, 0, 5) === '%PDF-'
+              : false;
+
+  if (!valid) {
+    throw new Error('Asset contents do not match the declared file type.');
+  }
+}
+
 export function assetExtensionForMimeType(mimeType: string): string {
   switch (mimeType) {
     case 'image/jpeg':
@@ -155,6 +186,7 @@ export async function putAssetObject(
 ): Promise<void> {
   validateAssetUpload(file);
   const bytes = new Uint8Array(await file.arrayBuffer());
+  validateAssetSignature(file.type, bytes);
   await signedS3Request('PUT', storageKey, bytes, file.type);
 }
 
