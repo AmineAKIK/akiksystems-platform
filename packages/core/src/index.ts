@@ -137,3 +137,5 @@ export interface SystemLink {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export * from './presentation-document.js';

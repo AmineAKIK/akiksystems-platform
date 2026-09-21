@@ -38,7 +38,8 @@
     "start:worker": "pnpm --filter @akiksystems/worker start",
     "test": "vitest run --passWithNoTests",
     "typecheck": "pnpm -r --if-present typecheck",
-    "db:verify-system-links": "pnpm --filter @akiksystems/db db:verify-system-links"
+    "db:verify-system-links": "pnpm --filter @akiksystems/db db:verify-system-links",
+    "db:verify-presentation-documents": "pnpm --filter @akiksystems/db db:verify-presentation-documents"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
