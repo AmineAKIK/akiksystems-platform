@@ -50,7 +50,8 @@
   font-weight: 620;
 }
 
-.aks-admin-form input {
+.aks-admin-form input,
+.aks-admin-form textarea {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.7rem 0.8rem;
@@ -58,6 +59,23 @@
   border-radius: var(--aks-radius-sm);
   background: var(--aks-surface-canvas);
   color: var(--aks-text-primary);
+  font: inherit;
+}
+
+.aks-admin-form textarea {
+  resize: vertical;
+}
+
+.aks-admin-asset-list {
+  display: grid;
+  gap: var(--aks-space-4);
+}
+
+.aks-admin-asset {
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-sm);
+  background: var(--aks-surface-subtle);
 }
 
 .aks-admin-secret {
