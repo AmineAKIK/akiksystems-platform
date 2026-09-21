@@ -103,6 +103,9 @@ jobs:
           pnpm db:verify-admin-audit
           pnpm db:verify-public-system
 
+      - name: Verify L3 public Profile model
+        run: pnpm db:verify-public-profile
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
