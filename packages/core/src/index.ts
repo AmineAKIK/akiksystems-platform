@@ -116,3 +116,24 @@ export const assetUploadMimeTypes = [
 export type AssetUploadMimeType = (typeof assetUploadMimeTypes)[number];
 
 export const assetUploadMaxBytes = 10 * 1024 * 1024;
+
+export const systemLinkKinds = [
+  'live',
+  'repository',
+  'demo',
+  'documentation',
+] as const;
+
+export type SystemLinkKind = (typeof systemLinkKinds)[number];
+
+export type SystemLinkId = string;
+
+export interface SystemLink {
+  id: SystemLinkId;
+  systemId: SystemId;
+  kind: SystemLinkKind;
+  url: string;
+  position: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
