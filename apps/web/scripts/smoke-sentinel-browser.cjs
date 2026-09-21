@@ -311,6 +311,10 @@ async function assertAxe(page) {
       );
       await mobilePage.locator('.aks-experience-mobile-menu-trigger').click();
       assert.equal(await mobileMenu.getAttribute('open'), null);
+
+      // Reload before the keyboard-only skip-link scenario so focus starts from
+      // the document rather than remaining on the disclosure trigger.
+      await mobilePage.goto(`${origin}/en/systems/sentinel`);
       await mobilePage.keyboard.press('Tab');
       assert.equal(
         await mobilePage.evaluate(() => document.activeElement?.classList.contains('aks-skip-link')),
