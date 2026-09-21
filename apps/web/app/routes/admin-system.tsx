@@ -686,8 +686,14 @@ export default function AdminSystem() {
                 <Link href={`/admin/systems/${data.system.id}/presentation/en`}>
                   EN presentation ({presentationEnBlocks})
                 </Link>
+                <Link href={`/admin/systems/${data.system.id}/preview/en`}>
+                  Preview EN
+                </Link>
                 <Link href={`/admin/systems/${data.system.id}/presentation/fr`}>
                   FR presentation ({presentationFrBlocks})
+                </Link>
+                <Link href={`/admin/systems/${data.system.id}/preview/fr`}>
+                  Preview FR
                 </Link>
                 <Link href={`/admin/systems/${data.system.id}/assets`}>
                   Media ({data.assetCount})
@@ -962,9 +968,14 @@ export default function AdminSystem() {
                     <Text size="sm" tone="muted">
                       {presentationEnBlocks} structured blocks
                     </Text>
-                    <Link href={`/admin/systems/${data.system.id}/presentation/en`}>
-                      Open editor
-                    </Link>
+                    <div className="aks-proof-actions">
+                      <Link href={`/admin/systems/${data.system.id}/presentation/en`}>
+                        Open editor
+                      </Link>
+                      <Link href={`/admin/systems/${data.system.id}/preview/en`}>
+                        Preview
+                      </Link>
+                    </div>
                   </div>
                 </article>
                 <article className="aks-admin-asset">
@@ -973,9 +984,14 @@ export default function AdminSystem() {
                     <Text size="sm" tone="muted">
                       {presentationFrBlocks} structured blocks
                     </Text>
-                    <Link href={`/admin/systems/${data.system.id}/presentation/fr`}>
-                      Open editor
-                    </Link>
+                    <div className="aks-proof-actions">
+                      <Link href={`/admin/systems/${data.system.id}/presentation/fr`}>
+                        Open editor
+                      </Link>
+                      <Link href={`/admin/systems/${data.system.id}/preview/fr`}>
+                        Preview
+                      </Link>
+                    </div>
                   </div>
                 </article>
                 <article className="aks-admin-asset">
