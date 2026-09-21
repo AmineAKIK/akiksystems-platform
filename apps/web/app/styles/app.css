@@ -345,6 +345,13 @@
 
 .aks-experience-nav {
   min-width: 0;
+  justify-content: center;
+  gap: clamp(var(--aks-space-3), 1.6vw, var(--aks-space-5));
+  white-space: nowrap;
+}
+
+.aks-experience-nav .aks-link {
+  padding-block: 0.4rem;
 }
 
 .aks-experience-nav [aria-current='page'] {
@@ -395,7 +402,10 @@
     grid-row: 3;
     min-width: 0;
     max-width: 100%;
+    justify-content: flex-start;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
     padding-block-end: var(--aks-space-1);
+    scrollbar-width: thin;
   }
 }
