@@ -17,6 +17,6 @@
     "./tsconfig": "./tsconfig.base.json"
   },
   "dependencies": {
-    "zod": "4.1.11"
+    "zod": "4.6.5"
   }
 }
