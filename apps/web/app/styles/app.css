@@ -829,6 +829,19 @@
     gap: var(--aks-space-7);
   }
 
+  .aks-home-identity {
+    gap: var(--aks-space-3);
+  }
+
+  .aks-home-identity .aks-heading {
+    font-size: var(--aks-font-size-heading-md);
+  }
+
+  .aks-home-brand-mark {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
   .aks-home-orbit {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
