@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "auth:bootstrap-admin": "tsx scripts/bootstrap-admin.ts",
+    "auth:migrate": "tsx scripts/auth-migrate.ts",
     "build": "react-router build",
     "check:client-secrets": "node scripts/check-client-secrets.mjs",
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
+    "smoke:auth": "node scripts/smoke-auth.mjs",
     "smoke:observability": "node scripts/smoke-observability.mjs",
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
     "start": "node server.js",
@@ -18,8 +21,10 @@
     "@akiksystems/ui": "workspace:*",
     "@react-router/express": "8.4.0",
     "@react-router/node": "8.4.0",
+    "better-auth": "1.7.5",
     "express": "^5.2.1",
     "isbot": "^5.1.36",
+    "pg": "8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "8.4.0"
@@ -27,9 +32,11 @@
   "devDependencies": {
     "@react-router/dev": "8.4.0",
     "@types/express": "^5.0.6",
+    "@types/pg": "8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "cross-env": "^10.0.0",
+    "tsx": "4.23.13",
     "vite": "^8.0.3"
   }
 }

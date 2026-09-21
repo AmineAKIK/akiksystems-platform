@@ -15,6 +15,18 @@ export interface DatabaseCommandEnv {
   DATABASE_URL: string;
 }
 
+export interface AuthEnv {
+  NODE_ENV: NodeEnvironment;
+  DATABASE_URL: string;
+  BETTER_AUTH_SECRET: string;
+  BETTER_AUTH_URL: string;
+  ADMIN_EMAIL: string;
+}
+
+export interface AdminBootstrapEnv extends AuthEnv {
+  ADMIN_PASSWORD: string;
+}
+
 export interface PublicWebEnv {
   readonly environment: NodeEnvironment;
 }
@@ -22,4 +34,6 @@ export interface PublicWebEnv {
 export function parseWebServerEnv(source?: NodeJS.ProcessEnv): WebServerEnv;
 export function parseWorkerEnv(source?: NodeJS.ProcessEnv): WorkerEnv;
 export function parseDatabaseCommandEnv(source?: NodeJS.ProcessEnv): DatabaseCommandEnv;
+export function parseAuthEnv(source?: NodeJS.ProcessEnv): AuthEnv;
+export function parseAdminBootstrapEnv(source?: NodeJS.ProcessEnv): AdminBootstrapEnv;
 export function toPublicWebEnv(env: WebServerEnv): PublicWebEnv;

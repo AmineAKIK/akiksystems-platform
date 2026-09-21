@@ -21,7 +21,7 @@ export default defineRailway((ctx) => {
     source,
     build: 'pnpm --filter @akiksystems/web build',
     start: 'pnpm --filter @akiksystems/web start',
-    preDeploy: 'pnpm db:migrate',
+    preDeploy: 'pnpm auth:migrate && pnpm db:migrate',
     replicas: {
       'europe-west4': 1,
     },

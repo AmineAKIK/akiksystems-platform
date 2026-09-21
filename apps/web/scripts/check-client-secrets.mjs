@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 const clientDirectory = fileURLToPath(new URL('../build/client/', import.meta.url));
 const forbiddenTokens = [
   'DATABASE_URL',
+  'BETTER_AUTH_SECRET',
+  'ADMIN_PASSWORD',
   'postgres://',
   'postgresql://',
   'AKIKSYSTEMS_SECRET_SENTINEL',
