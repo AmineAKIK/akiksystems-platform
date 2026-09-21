@@ -24,23 +24,23 @@ describe('ExperienceShell', () => {
     expect(html).toContain('class="aks-brand-mark"');
     expect(html).toContain('class="aks-brand-wordmark">AkikSystems</span>');
     expect(html).toContain('aria-label="Primary navigation"');
-    expect(html).toContain('href="/en">Home</a>');
-    expect(html).toContain('href="/en/profile">Profile</a>');
-    expect(html).toContain('href="/en/systems">Systems</a>');
-    expect(html).toContain('href="/en/writings">Writings</a>');
-    expect(html).toContain('href="/en/learning">Learning</a>');
-    expect(html).toContain('href="/en/work-with-us">Work with us</a>');
+    expect(html).toContain('href="/en" data-discover="true">Home</a>');
+    expect(html).toContain('href="/en/profile" data-discover="true">Profile</a>');
+    expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
+    expect(html).toContain('href="/en/writings" data-discover="true">Writings</a>');
+    expect(html).toContain('href="/en/learning" data-discover="true">Learning</a>');
+    expect(html).toContain('href="/en/work-with-us" data-discover="true">Work with us</a>');
     expect(html).toContain('class="aks-experience-mobile-menu"');
     expect(html).toContain('class="aks-experience-mobile-menu-trigger"');
     expect(html).toContain('class="aks-experience-mobile-nav"');
-    expect(html).toContain('aria-current="page" href="/en/systems">Systems</a>');
+    expect(html).toContain('aria-current="page" class="aks-link" href="/en/systems" data-discover="true">Systems</a>');
     expect(html).toContain('aria-label="Current context"');
     expect(html).toContain('class="aks-experience-context-list"');
-    expect(html).toContain('href="/en/systems">Systems</a>');
+    expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
     expect(html).toContain('aria-hidden="true" class="aks-experience-context-separator">/</li>');
     expect(html).toContain('<span aria-current="page">Sentinel</span>');
     expect(html).toContain(
-      'href="/fr/systems/sentinelle" hrefLang="fr" lang="fr">Français</a>',
+      'hrefLang="fr" lang="fr" href="/fr/systems/sentinelle" data-discover="true">Français</a>',
     );
     expect(html).toContain(
       'class="aks-experience-outlet" id="experience-outlet" tabindex="-1"',
@@ -58,9 +58,9 @@ describe('ExperienceShell', () => {
     );
 
     expect(html).toContain('aria-label="Navigation principale"');
-    expect(html).toContain('href="/fr/profil">Profil</a>');
+    expect(html).toContain('href="/fr/profil" data-discover="true">Profil</a>');
     expect(html).toContain('aria-label="Contexte actuel"');
     expect(html).toContain('<span aria-current="page">Accueil</span>');
-    expect(html).toContain('href="/en" hrefLang="en" lang="en">English</a>');
+    expect(html).toContain('hrefLang="en" lang="en" href="/en" data-discover="true">English</a>');
   });
 });
