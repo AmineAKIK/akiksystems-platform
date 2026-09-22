@@ -1823,3 +1823,37 @@
     padding: var(--aks-space-4);
   }
 }
+
+
+/* AKS-082: intrinsic media geometry and explicit deferred demo entry protect mobile loading. */
+.aks-system-presentation-figure img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+.aks-deferred-demo {
+  width: min(100%, 32rem);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-deferred-demo summary {
+  padding: var(--aks-space-3) var(--aks-space-4);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.aks-deferred-demo-body {
+  display: grid;
+  gap: var(--aks-space-3);
+  padding: 0 var(--aks-space-4) var(--aks-space-4);
+}
+
+@media (max-width: 40rem) {
+  .aks-deferred-demo {
+    width: 100%;
+  }
+}
