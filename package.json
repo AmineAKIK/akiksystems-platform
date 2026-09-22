@@ -14,6 +14,7 @@
     "content:bootstrap-protocap": "pnpm --filter @akiksystems/web content:bootstrap-protocap",
     "content:bootstrap-oria": "pnpm --filter @akiksystems/web content:bootstrap-oria",
     "content:bootstrap-tugeres": "pnpm --filter @akiksystems/web content:bootstrap-tugeres",
+    "content:bootstrap-l4-reference-systems": "pnpm content:bootstrap-protocap && pnpm content:bootstrap-oria && pnpm content:bootstrap-tugeres",
     "build": "pnpm -r --if-present build",
     "clean": "tsc -b --clean && rimraf \"apps/*/dist\" \"apps/*/build\" \"packages/*/dist\" coverage",
     "config:verify": "node packages/config/env/verify.mjs",
