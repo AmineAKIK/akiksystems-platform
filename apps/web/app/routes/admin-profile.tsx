@@ -1800,6 +1800,69 @@ export default function AdminProfile() {
           ) : null}
 
           <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">
+                Publication
+              </Heading>
+              <Text size="sm" tone="muted">
+                Draft edits stay private. Preview the current draft, then publish
+                EN and FR independently as immutable public snapshots.
+              </Text>
+              <div className="aks-admin-domain-grid">
+                {(['en', 'fr'] as const).map((locale) => {
+                  const publication = data.publications.find(
+                    (candidate) => candidate.locale === locale,
+                  );
+                  const publicHref = locale === 'fr' ? '/fr/profil' : '/en/profile';
+
+                  return (
+                    <div className="aks-admin-card" key={locale}>
+                      <Heading level={3} size="sm">
+                        {locale.toUpperCase()}
+                      </Heading>
+                      <Text size="sm" tone="muted">
+                        {publication === undefined
+                          ? 'Draft only'
+                          : `Published · ${new Date(publication.published_at).toLocaleString()}`}
+                      </Text>
+                      <div className="aks-proof-actions">
+                        <Link href={`/admin/profile/preview/${locale}`}>
+                          Preview draft
+                        </Link>
+                        {publication === undefined ? null : (
+                          <Link href={publicHref}>Open published Profile</Link>
+                        )}
+                      </div>
+                      <div className="aks-proof-actions">
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="profile-publish" />
+                          <input name="locale" type="hidden" value={locale} />
+                          <Button type="submit">
+                            {publication === undefined ? 'Publish' : 'Republish draft'}
+                          </Button>
+                        </Form>
+                        {publication === undefined ? null : (
+                          <Form method="post">
+                            <input
+                              name="_intent"
+                              type="hidden"
+                              value="profile-unpublish"
+                            />
+                            <input name="locale" type="hidden" value={locale} />
+                            <Button emphasis="quiet" type="submit">
+                              Unpublish
+                            </Button>
+                          </Form>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="aks-admin-card">
             <Form className="aks-admin-form" method="post">
               <input name="_intent" type="hidden" value="identity" />
               <Heading level={2} size="sm">
@@ -1809,6 +1872,7 @@ export default function AdminProfile() {
                 <span>Display name</span>
                 <input
                   defaultValue={data.profile.display_name ?? ''}
+                  maxLength={80}
                   name="displayName"
                   type="text"
                 />
@@ -1821,6 +1885,7 @@ export default function AdminProfile() {
                     <span>Professional title</span>
                     <input
                       defaultValue={data.en?.professional_title ?? ''}
+                      maxLength={100}
                       name="professionalTitleEn"
                       type="text"
                     />
@@ -1829,6 +1894,7 @@ export default function AdminProfile() {
                     <span>Introduction</span>
                     <textarea
                       defaultValue={data.en?.introduction ?? ''}
+                      maxLength={320}
                       name="introductionEn"
                       rows={5}
                     />
@@ -1837,6 +1903,7 @@ export default function AdminProfile() {
                     <span>Foundational profile copy</span>
                     <textarea
                       defaultValue={data.en?.foundational_copy ?? ''}
+                      maxLength={600}
                       name="foundationalCopyEn"
                       rows={8}
                     />
@@ -1849,6 +1916,7 @@ export default function AdminProfile() {
                     <span>Titre professionnel</span>
                     <input
                       defaultValue={data.fr?.professional_title ?? ''}
+                      maxLength={100}
                       name="professionalTitleFr"
                       type="text"
                     />
@@ -1857,6 +1925,7 @@ export default function AdminProfile() {
                     <span>Introduction</span>
                     <textarea
                       defaultValue={data.fr?.introduction ?? ''}
+                      maxLength={320}
                       name="introductionFr"
                       rows={5}
                     />
@@ -1865,6 +1934,7 @@ export default function AdminProfile() {
                     <span>Texte fondateur du profil</span>
                     <textarea
                       defaultValue={data.fr?.foundational_copy ?? ''}
+                      maxLength={600}
                       name="foundationalCopyFr"
                       rows={8}
                     />
