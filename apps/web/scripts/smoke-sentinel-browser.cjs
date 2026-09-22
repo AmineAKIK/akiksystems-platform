@@ -645,6 +645,110 @@ async function assertTechnologicalJourney(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertProfileProgressiveDepth(browser, page) {
+  for (const target of [
+    {
+      path: '/en/profile',
+      summaries: [
+        'Explore technical depth',
+        'Explore professional evidence',
+        'Explore how I work',
+      ],
+    },
+    {
+      path: '/fr/profil',
+      summaries: [
+        'Approfondir la technique',
+        'Approfondir les preuves professionnelles',
+        'Approfondir ma manière de travailler',
+      ],
+    },
+  ]) {
+    await page.goto(`${origin}${target.path}`);
+    const depths = page.locator('details.aks-profile-depth');
+    assert.equal(
+      await depths.count(),
+      3,
+      `${target.path} must expose exactly three intentional depth controls.`,
+    );
+    for (const summary of target.summaries) {
+      const details = page.locator('details.aks-profile-depth').filter({
+        has: page.getByText(summary, { exact: true }),
+      });
+      assert.equal(
+        await details.getAttribute('open'),
+        null,
+        `${target.path} depth must be closed on first reading.`,
+      );
+    }
+
+    const firstSummary = depths.first().locator(':scope > summary');
+    await firstSummary.focus();
+    await page.keyboard.press('Enter');
+    assert.notEqual(
+      await depths.first().getAttribute('open'),
+      null,
+      `${target.path} first depth must open from keyboard in one action.`,
+    );
+    await page.keyboard.press('Enter');
+    assert.equal(
+      await depths.first().getAttribute('open'),
+      null,
+      `${target.path} first depth must close from keyboard in one action.`,
+    );
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  try {
+    const mobilePage = await mobile.newPage();
+    for (const path of ['/en/profile', '/fr/profil']) {
+      await mobilePage.goto(`${origin}${path}`);
+      assert.equal(
+        await mobilePage.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} progressive-depth controls must not overflow on mobile.`,
+      );
+      const details = mobilePage.locator('details.aks-profile-depth');
+      for (let index = 0; index < (await details.count()); index += 1) {
+        await details.nth(index).locator(':scope > summary').click();
+      }
+      assert.equal(
+        await mobilePage.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} expanded deep Profile content must not overflow on mobile.`,
+      );
+    }
+  } finally {
+    await mobile.close();
+  }
+
+  const noJs = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const noJsPage = await noJs.newPage();
+    const response = await noJsPage.goto(`${origin}/en/profile`);
+    assert.equal(response?.status(), 200);
+    assert.equal(await noJsPage.locator('details.aks-profile-depth').count(), 3);
+    await noJsPage
+      .locator('details#profile-technical-depth > summary')
+      .click();
+    await noJsPage
+      .getByRole('heading', { level: 2, name: 'Technical Capabilities', exact: true })
+      .waitFor();
+    await noJsPage
+      .locator('details#profile-how-i-work > summary')
+      .click();
+    await noJsPage
+      .getByRole('heading', { level: 2, name: 'How I work', exact: true })
+      .waitFor();
+  } finally {
+    await noJs.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -1927,6 +2031,8 @@ async function assertAxe(page) {
     await assertProfessionalJourneySelection(page);
 
     await assertTechnologicalJourney(page);
+
+    await assertProfileProgressiveDepth(browser, page);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
