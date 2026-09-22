@@ -38,7 +38,7 @@ export default [
     route('learning', 'routes/learning.tsx'),
     route('learning/:slug', 'routes/learning-detail.tsx'),
     route('apprentissage', 'routes/learning-fr.tsx'),
-    route('apprentissage/:slug', 'routes/learning-detail.tsx'),
+    route('apprentissage/:slug', 'routes/learning-detail-fr.tsx'),
     route('work-with-us', 'routes/work-with-us.tsx'),
     route('travailler-ensemble', 'routes/work-with-us-fr.tsx'),
     route('about', 'routes/about.tsx'),
