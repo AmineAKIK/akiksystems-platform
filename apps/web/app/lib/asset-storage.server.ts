@@ -117,6 +117,7 @@ async function signedS3Request(
   storageKey: string,
   body?: Uint8Array,
   contentType?: string,
+  range?: string,
 ): Promise<Response> {
   const env = parseAssetStorageEnv(process.env);
   const url = objectUrl(storageKey);
@@ -164,6 +165,10 @@ async function signedS3Request(
     headers.set('content-type', contentType);
   }
 
+  if (range !== undefined) {
+    headers.set('range', range);
+  }
+
   const response = await fetch(url, {
     method,
     headers,
@@ -196,4 +201,19 @@ export async function deleteAssetObject(storageKey: string): Promise<void> {
 
 export async function getAssetObject(storageKey: string): Promise<Response> {
   return signedS3Request('GET', storageKey);
+}
+
+export async function getAssetObjectRange(
+  storageKey: string,
+  start = 0,
+  end = 65_535,
+): Promise<Uint8Array> {
+  const response = await signedS3Request(
+    'GET',
+    storageKey,
+    undefined,
+    undefined,
+    `bytes=${start}-${end}`,
+  );
+  return new Uint8Array(await response.arrayBuffer());
 }
