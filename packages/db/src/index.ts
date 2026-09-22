@@ -1,4 +1,4 @@
-export { getPublicProfile } from './public-profile.js';
+export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
   PublicProfileCapability,
@@ -70,6 +70,10 @@ export type {
   ProfileLocalizationRow,
   ProfileLocalizationsTable,
   ProfileLocalizationUpdate,
+  ProfilePublicationRow,
+  ProfilePublicationsTable,
+  ProfilePublicationUpdate,
+  NewProfilePublicationRow,
   ProfileCapabilityGroupLocalizationRow,
   ProfileCapabilityGroupLocalizationsTable,
   ProfileCapabilityGroupLocalizationUpdate,
