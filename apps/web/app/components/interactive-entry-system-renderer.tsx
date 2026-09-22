@@ -1,6 +1,7 @@
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
+import { SystemProofTransparency } from './system-proof-transparency';
 import {
   SystemPresentation,
   type SystemDetailViewProps,
@@ -10,6 +11,7 @@ export function InteractiveEntrySystemRenderer({
   locale,
   title,
   summary,
+  proofTransparency,
   presentationDocument,
   technologies,
   links,
@@ -81,6 +83,11 @@ export function InteractiveEntrySystemRenderer({
               </div>
             </aside>
           </header>
+
+          <SystemProofTransparency
+            locale={locale}
+            transparency={proofTransparency}
+          />
 
           <section className="aks-interactive-entry-boundary">
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
