@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 
 import { createDatabase } from '../database.js';
-import { getPublicProfile } from '../public-profile.js';
+import { getDraftProfile, getPublicProfile } from '../public-profile.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -34,13 +34,38 @@ try {
     .execute();
   assert.deepEqual(localizations.map(({ locale }) => locale), ['en', 'fr']);
 
-  const english = await getPublicProfile(db, 'en');
-  const french = await getPublicProfile(db, 'fr');
+  const english = await getDraftProfile(db, 'en');
+  const french = await getDraftProfile(db, 'fr');
   assert.ok(english);
   assert.ok(french);
   assert.equal(english.id, french.id, 'EN/FR must share one Profile identity.');
   assert.equal(english.alternateLocale, 'fr');
   assert.equal(french.alternateLocale, 'en');
+
+  assert.equal(
+    await getPublicProfile(db, 'en'),
+    null,
+    'Draft Profile data must not become public before an explicit publication snapshot exists.',
+  );
+
+  await db
+    .insertInto('profile_publications')
+    .values({
+      profile_id: english.id,
+      locale: 'en',
+      snapshot: english as unknown as Record<string, unknown>,
+      published_at: new Date(),
+      updated_at: new Date(),
+    })
+    .execute();
+
+  const publishedBootstrap = await getPublicProfile(db, 'en');
+  assert.ok(publishedBootstrap);
+  assert.deepEqual(
+    publishedBootstrap,
+    english,
+    'Public Profile reads must come from the stored publication snapshot.',
+  );
 
   const profileId = profiles[0]?.id;
   assert.ok(profileId);
@@ -109,8 +134,8 @@ try {
     .where('locale', '=', 'fr')
     .executeTakeFirstOrThrow();
 
-  const administeredEnglish = await getPublicProfile(db, 'en');
-  const administeredFrench = await getPublicProfile(db, 'fr');
+  const administeredEnglish = await getDraftProfile(db, 'en');
+  const administeredFrench = await getDraftProfile(db, 'fr');
   assert.ok(administeredEnglish);
   assert.ok(administeredFrench);
   assert.equal(administeredEnglish.displayName, 'Qualification Person');
@@ -177,8 +202,8 @@ try {
     ])
     .execute();
 
-  const englishWithPrinciples = await getPublicProfile(db, 'en');
-  const frenchWithPrinciples = await getPublicProfile(db, 'fr');
+  const englishWithPrinciples = await getDraftProfile(db, 'en');
+  const frenchWithPrinciples = await getDraftProfile(db, 'fr');
   assert.ok(englishWithPrinciples);
   assert.ok(frenchWithPrinciples);
   assert.deepEqual(
@@ -294,8 +319,8 @@ try {
     ])
     .execute();
 
-  const englishWithCapabilities = await getPublicProfile(db, 'en');
-  const frenchWithCapabilities = await getPublicProfile(db, 'fr');
+  const englishWithCapabilities = await getDraftProfile(db, 'en');
+  const frenchWithCapabilities = await getDraftProfile(db, 'fr');
   assert.ok(englishWithCapabilities);
   assert.ok(frenchWithCapabilities);
   assert.deepEqual(
@@ -327,7 +352,7 @@ try {
     })
     .execute();
 
-  const afterTechnologyInsert = await getPublicProfile(db, 'en');
+  const afterTechnologyInsert = await getDraftProfile(db, 'en');
   assert.ok(afterTechnologyInsert);
   assert.deepEqual(
     afterTechnologyInsert.capabilityGroups,
@@ -419,8 +444,8 @@ try {
     ])
     .execute();
 
-  const englishWithSystems = await getPublicProfile(db, 'en');
-  const frenchWithSystems = await getPublicProfile(db, 'fr');
+  const englishWithSystems = await getDraftProfile(db, 'en');
+  const frenchWithSystems = await getDraftProfile(db, 'fr');
   assert.ok(englishWithSystems);
   assert.ok(frenchWithSystems);
   assert.deepEqual(
@@ -452,8 +477,8 @@ try {
     .where('stage_key', '=', 'development_akiksystems')
     .executeTakeFirstOrThrow();
 
-  const englishWithTechnologyJourney = await getPublicProfile(db, 'en');
-  const frenchWithTechnologyJourney = await getPublicProfile(db, 'fr');
+  const englishWithTechnologyJourney = await getDraftProfile(db, 'en');
+  const frenchWithTechnologyJourney = await getDraftProfile(db, 'fr');
   assert.ok(englishWithTechnologyJourney);
   assert.ok(frenchWithTechnologyJourney);
   assert.deepEqual(
@@ -521,8 +546,8 @@ try {
     ])
     .execute();
 
-  const englishWithPrincipleEvidence = await getPublicProfile(db, 'en');
-  const frenchWithPrincipleEvidence = await getPublicProfile(db, 'fr');
+  const englishWithPrincipleEvidence = await getDraftProfile(db, 'en');
+  const frenchWithPrincipleEvidence = await getDraftProfile(db, 'fr');
   assert.ok(englishWithPrincipleEvidence);
   assert.ok(frenchWithPrincipleEvidence);
   assert.deepEqual(
@@ -612,7 +637,7 @@ try {
     ])
     .execute();
 
-  const beforeJourneySelection = await getPublicProfile(db, 'en');
+  const beforeJourneySelection = await getDraftProfile(db, 'en');
   assert.ok(beforeJourneySelection);
   assert.deepEqual(
     beforeJourneySelection.professionalJourney,
@@ -629,8 +654,8 @@ try {
     })
     .execute();
 
-  const englishWithJourney = await getPublicProfile(db, 'en');
-  const frenchWithJourney = await getPublicProfile(db, 'fr');
+  const englishWithJourney = await getDraftProfile(db, 'en');
+  const frenchWithJourney = await getDraftProfile(db, 'fr');
   assert.ok(englishWithJourney);
   assert.ok(frenchWithJourney);
   assert.deepEqual(
@@ -678,8 +703,8 @@ try {
     .where('profile_id', '=', profileId)
     .executeTakeFirstOrThrow();
 
-  const englishWithLanguages = await getPublicProfile(db, 'en');
-  const frenchWithLanguages = await getPublicProfile(db, 'fr');
+  const englishWithLanguages = await getDraftProfile(db, 'en');
+  const frenchWithLanguages = await getDraftProfile(db, 'fr');
   assert.ok(englishWithLanguages);
   assert.ok(frenchWithLanguages);
   assert.deepEqual(englishWithLanguages.languages, ['fr', 'en', 'ar']);
@@ -738,8 +763,8 @@ try {
     .where('id', '=', profileId)
     .executeTakeFirstOrThrow();
 
-  const englishWithCv = await getPublicProfile(db, 'en');
-  const frenchWithCv = await getPublicProfile(db, 'fr');
+  const englishWithCv = await getDraftProfile(db, 'en');
+  const frenchWithCv = await getDraftProfile(db, 'fr');
   assert.ok(englishWithCv);
   assert.ok(frenchWithCv);
   assert.equal(englishWithCv.sourceCvAssetId, sourceCvId);
@@ -813,6 +838,10 @@ try {
     .execute();
 
   await db.deleteFrom('assets').where('id', '=', portraitId).execute();
+  await db
+    .deleteFrom('profile_publications')
+    .where('profile_id', '=', profileId)
+    .execute();
 
   let duplicateError: unknown;
   try {
@@ -847,7 +876,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered concise bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, a fixed localized five-step technological journey with publication-aware evidence, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, draft/public snapshot separation, editable shared/localized identity, localized portrait metadata, stable ordered bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, a fixed localized five-step technological journey with publication-aware evidence, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();
