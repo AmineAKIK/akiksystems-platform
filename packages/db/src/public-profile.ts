@@ -76,6 +76,13 @@ export async function getPublicProfile(
       'profiles.id',
     )
     .leftJoin(
+      'assets as source_cv_asset',
+      (join) =>
+        join
+          .onRef('source_cv_asset.id', '=', 'profiles.source_cv_asset_id')
+          .on('source_cv_asset.mime_type', '=', 'application/pdf'),
+    )
+    .leftJoin(
       'asset_localizations as portrait_localization',
       (join) =>
         join
@@ -86,7 +93,7 @@ export async function getPublicProfile(
       'profiles.id',
       'profiles.display_name',
       'profiles.portrait_asset_id',
-      'profiles.source_cv_asset_id',
+      'source_cv_asset.id as source_cv_asset_id',
       'portrait_localization.alt_text as portrait_alt_text',
       'profile_localizations.professional_title',
       'profile_localizations.introduction',
