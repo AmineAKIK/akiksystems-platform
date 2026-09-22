@@ -38,6 +38,11 @@ try {
         title: 'Sentinel',
         summary: 'English summary.',
         presentation_document: enDocument,
+        proof_role: 'Qualification System',
+        proof_maturity: 'Inspectable qualification fixture',
+        proof_demo_nature: 'No separate public demo',
+        proof_data_nature: 'Synthetic qualification data',
+        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
         editorial_state: 'published',
         published_at: new Date(),
       },
@@ -56,6 +61,11 @@ try {
             },
           ],
         },
+        proof_role: 'Qualification System',
+        proof_maturity: 'Inspectable qualification fixture',
+        proof_demo_nature: 'No separate public demo',
+        proof_data_nature: 'Synthetic qualification data',
+        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
         editorial_state: 'draft',
         published_at: null,
       },
@@ -129,6 +139,11 @@ try {
   await db
     .updateTable('system_localizations')
     .set({
+      proof_role: 'Qualification System',
+      proof_maturity: 'Inspectable qualification fixture',
+      proof_demo_nature: 'No separate public demo',
+      proof_data_nature: 'Synthetic qualification data',
+      proof_limits: 'Qualification fixture only; no deployment or impact claim.',
       editorial_state: 'published',
       published_at: new Date(),
       updated_at: new Date(),
@@ -159,6 +174,11 @@ try {
   await db
     .updateTable('system_localizations')
     .set({
+      proof_role: 'Qualification System',
+      proof_maturity: 'Inspectable qualification fixture',
+      proof_demo_nature: 'No separate public demo',
+      proof_data_nature: 'Synthetic qualification data',
+      proof_limits: 'Qualification fixture only; no deployment or impact claim.',
       editorial_state: 'draft',
       published_at: null,
       updated_at: new Date(),

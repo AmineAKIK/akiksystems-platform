@@ -7,6 +7,14 @@ import {
   SystemExperience,
 } from './system-experience-resolver';
 
+const proofTransparency = {
+  role: 'System case study',
+  maturity: 'Inspectable implementation',
+  demoNature: 'No separate public demo',
+  dataNature: 'Real-world context; no customer data exposed',
+  limits: 'No deployment or measured impact is claimed.',
+};
+
 const presentationKinds = [
   'standard',
   'guided_demo',
@@ -33,6 +41,7 @@ describe('System Experience Resolver', () => {
           locale="en"
           originSummary={null}
           originTitle={null}
+          proofTransparency={proofTransparency}
           presentationDocument={{ version: 1, blocks: [] }}
           presentationKind={presentationKind}
           summary="Inspectable System."
@@ -44,6 +53,8 @@ describe('System Experience Resolver', () => {
 
       expect(html).toContain(`data-presentation-kind="${presentationKind}"`);
       expect(html).toContain('data-renderer=');
+      expect(html).toContain('Proof transparency');
+      expect(html).toContain('System case study');
       if (presentationKind === 'guided_demo') {
         expect(html).toContain('<main class="aks-guided-demo"');
         expect(html).toContain('Evidence contract');
@@ -71,6 +82,7 @@ describe('Guided demo System experience', () => {
         locale="en"
         originSummary="Industrial operations context."
         originTitle="L'Oreal / La Roche-Posay"
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [
@@ -119,6 +131,7 @@ describe('Interactive-entry System experience', () => {
         locale="en"
         originSummary={null}
         originTitle={null}
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [

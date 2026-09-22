@@ -107,6 +107,7 @@ jobs:
           pnpm db:verify-protocap-domain
           pnpm db:verify-oria-domain
           pnpm db:verify-tugeres-domain
+          pnpm db:verify-system-proof-transparency
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile

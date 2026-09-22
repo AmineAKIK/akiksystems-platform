@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 
 import { StandardSystemRenderer, SystemDetailView } from './system-detail-view';
 
+const proofTransparency = {
+  role: 'System case study',
+  maturity: 'Inspectable implementation',
+  demoNature: 'No separate public demo',
+  dataNature: 'Real-world context; no customer data exposed',
+  limits: 'No deployment or measured impact is claimed.',
+};
+
 describe('StandardSystemRenderer', () => {
   it('keeps the legacy alias bound to the stable renderer contract', () => {
     expect(SystemDetailView).toBe(StandardSystemRenderer);
@@ -29,6 +37,7 @@ describe('StandardSystemRenderer', () => {
         locale="en"
         originSummary="Industrial origin context."
         originTitle="Marelli"
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [
@@ -112,6 +121,7 @@ describe('StandardSystemRenderer', () => {
         locale="fr"
         originSummary={null}
         originTitle={null}
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [
@@ -142,6 +152,7 @@ describe('StandardSystemRenderer', () => {
         locale="en"
         originSummary={null}
         originTitle={null}
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [{ type: 'image', assetId: 'missing-asset' }],

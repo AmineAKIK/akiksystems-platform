@@ -7,6 +7,11 @@ export interface SystemPublicationCandidate {
   slug: string | null;
   title: string | null;
   summary: string | null;
+  proofRole: string | null;
+  proofMaturity: string | null;
+  proofDemoNature: string | null;
+  proofDataNature: string | null;
+  proofLimits: string | null;
   presentationDocument: PresentationDocument | null;
 }
 
@@ -40,6 +45,26 @@ export function validateSystemPublicationReadiness(
 
   if (!hasText(candidate.summary)) {
     errors.push('Summary is required before publication.');
+  }
+
+  if (!hasText(candidate.proofRole)) {
+    errors.push('Proof role is required before publication.');
+  }
+
+  if (!hasText(candidate.proofMaturity)) {
+    errors.push('Proof maturity is required before publication.');
+  }
+
+  if (!hasText(candidate.proofDemoNature)) {
+    errors.push('Demo nature is required before publication.');
+  }
+
+  if (!hasText(candidate.proofDataNature)) {
+    errors.push('Data nature is required before publication.');
+  }
+
+  if (!hasText(candidate.proofLimits)) {
+    errors.push('Relevant limits are required before publication.');
   }
 
   if (candidate.presentationDocument === null) {

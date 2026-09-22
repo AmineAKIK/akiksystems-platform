@@ -67,11 +67,16 @@ try {
     slug: null,
     title: null,
     summary: null,
+    proofRole: null,
+    proofMaturity: null,
+    proofDemoNature: null,
+    proofDataNature: null,
+    proofLimits: null,
     presentationDocument: null,
   });
 
   assert.equal(incomplete.ready, false);
-  assert.equal(incomplete.errors.length, 4);
+  assert.equal(incomplete.errors.length, 9);
 
   await expectPostgresError(
     '23514',
@@ -104,6 +109,11 @@ try {
       slug: 'sentinel',
       title: 'Sentinel',
       summary: 'Operational visibility system.',
+      proof_role: 'System case study',
+      proof_maturity: 'Inspectable implementation',
+      proof_demo_nature: 'No separate public demo',
+      proof_data_nature: 'Real-world context; no customer data exposed',
+      proof_limits: 'No deployment or measured impact is claimed.',
       presentation_document: validDocument,
     })
     .where('system_id', '=', systemId)
@@ -114,6 +124,11 @@ try {
     slug: 'sentinel',
     title: 'Sentinel',
     summary: 'Operational visibility system.',
+    proofRole: 'System case study',
+    proofMaturity: 'Inspectable implementation',
+    proofDemoNature: 'No separate public demo',
+    proofDataNature: 'Real-world context; no customer data exposed',
+    proofLimits: 'No deployment or measured impact is claimed.',
     presentationDocument: validDocument,
   });
 

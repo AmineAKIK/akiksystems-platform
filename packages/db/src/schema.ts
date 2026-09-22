@@ -66,6 +66,11 @@ export interface SystemLocalizationsTable {
   slug: string | null;
   title: string | null;
   summary: string | null;
+  proof_role: string | null;
+  proof_maturity: string | null;
+  proof_demo_nature: string | null;
+  proof_data_nature: string | null;
+  proof_limits: string | null;
   editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
   presentation_document: PresentationDocument | null;

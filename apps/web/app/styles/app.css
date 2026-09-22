@@ -1701,3 +1701,59 @@
     padding: var(--aks-space-4);
   }
 }
+
+
+/* AKS-080: one shared proof-transparency contract across all System experiences. */
+.aks-system-proof-transparency {
+  display: grid;
+  gap: var(--aks-space-3);
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-system-proof-transparency-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+  margin: 0;
+}
+
+.aks-system-proof-transparency-item {
+  display: grid;
+  align-content: start;
+  gap: var(--aks-space-1);
+  min-width: 0;
+}
+
+.aks-system-proof-transparency-item:last-child {
+  grid-column: 1 / -1;
+}
+
+.aks-system-proof-transparency dt {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--aks-tracking-label);
+  text-transform: uppercase;
+}
+
+.aks-system-proof-transparency dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 40rem) {
+  .aks-system-proof-transparency {
+    padding: var(--aks-space-4);
+  }
+
+  .aks-system-proof-transparency-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-system-proof-transparency-item:last-child {
+    grid-column: auto;
+  }
+}

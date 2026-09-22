@@ -52,6 +52,7 @@
     "db:verify-protocap-domain": "pnpm --filter @akiksystems/db db:verify-protocap-domain",
     "db:verify-oria-domain": "pnpm --filter @akiksystems/db db:verify-oria-domain",
     "db:verify-tugeres-domain": "pnpm --filter @akiksystems/db db:verify-tugeres-domain",
+    "db:verify-system-proof-transparency": "pnpm --filter @akiksystems/db db:verify-system-proof-transparency",
     "db:bootstrap-tugeres-qualification": "pnpm --filter @akiksystems/db db:bootstrap-tugeres-qualification",
     "db:bootstrap-oria-qualification": "pnpm --filter @akiksystems/db db:bootstrap-oria-qualification",
     "db:bootstrap-protocap-qualification": "pnpm --filter @akiksystems/db db:bootstrap-protocap-qualification",
