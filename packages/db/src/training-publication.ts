@@ -3,7 +3,7 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
-export interface TrainingPublicationSnapshot extends Record<string, unknown> {
+export interface TrainingPublicationSnapshot {
   version: 1;
   trainingId: string;
   locale: PlatformLocale;
@@ -81,16 +81,18 @@ export async function publishTrainingLocalization(
     };
     const now = new Date();
 
+    const snapshotJson = snapshot as unknown as Record<string, unknown>;
+
     await transaction.insertInto('training_publications').values({
       training_id: input.trainingId,
       locale: input.locale,
       slug: snapshot.slug,
-      snapshot,
+      snapshot: snapshotJson,
       published_at: now,
       updated_at: now,
     }).onConflict((conflict) => conflict.columns(['training_id', 'locale']).doUpdateSet({
       slug: snapshot.slug,
-      snapshot,
+      snapshot: snapshotJson,
       published_at: now,
       updated_at: now,
     })).execute();
