@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { Kysely, Transaction } from 'kysely';
 
+import { publishSystemLocalization } from './system-publication.js';
 import type { Database } from './schema.js';
 
 export interface TugeresMediaInput {
@@ -359,6 +360,9 @@ export async function bootstrapTugeresDomain(
       })
       .execute();
   });
+
+  await publishSystemLocalization(db, { systemId, locale: 'en', now: publishedAt });
+  await publishSystemLocalization(db, { systemId, locale: 'fr', now: publishedAt });
 
   return { created: true, systemId };
 }
