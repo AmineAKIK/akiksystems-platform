@@ -45,9 +45,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     with ranked as (
       select
         id,
-        row_number() over (
+        (row_number() over (
           order by editorial_position, created_at, id
-        ) - 1 as normalized_position
+        ) - 1)::integer as normalized_position
       from systems
     )
     update systems
