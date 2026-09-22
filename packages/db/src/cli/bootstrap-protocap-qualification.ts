@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { bootstrapProtoCapDomain } from '../protocap-bootstrap.js';
 import { createDatabase } from '../database.js';
@@ -8,10 +10,21 @@ const db = createDatabase(databaseUrlFromEnv());
 
 try {
   const mediaId = randomUUID();
+  const storageKey = `qualification/browser/protocap/${mediaId}.png`;
+  const testRoot = process.env.ASSET_STORAGE_TEST_ROOT?.trim();
+
+  if (!testRoot) {
+    throw new Error('ASSET_STORAGE_TEST_ROOT is required for browser qualification.');
+  }
+
+  const fixture = await readFile(path.resolve(process.cwd(), 'apps/web/scripts/fixtures/protocap-reference-cover.png'));
+  const target = path.resolve(testRoot, storageKey);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, fixture);
   const result = await bootstrapProtoCapDomain(db, {
     media: {
       id: mediaId,
-      storageKey: `qualification/browser/protocap/${mediaId}.png`,
+      storageKey,
       originalFilename: 'protocap-reference-cover.png',
       mimeType: 'image/png',
       width: 1280,
