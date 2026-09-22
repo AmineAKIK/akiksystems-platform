@@ -9,6 +9,11 @@ describe('System publication readiness', () => {
         slug: 'sentinel',
         title: 'Sentinel',
         summary: 'Operational visibility system.',
+        proofRole: 'System case study',
+        proofMaturity: 'Inspectable implementation',
+        proofDemoNature: 'No separate public demo',
+        proofDataNature: 'Real-world context; no customer data exposed',
+        proofLimits: 'No deployment or measured impact is claimed.',
         presentationDocument: {
           version: 1,
           blocks: [
@@ -30,6 +35,11 @@ describe('System publication readiness', () => {
       slug: null,
       title: '   ',
       summary: null,
+      proofRole: null,
+      proofMaturity: null,
+      proofDemoNature: null,
+      proofDataNature: null,
+      proofLimits: null,
       presentationDocument: null,
     });
 
@@ -38,6 +48,11 @@ describe('System publication readiness', () => {
       'Slug is required before publication.',
       'Title is required before publication.',
       'Summary is required before publication.',
+      'Proof role is required before publication.',
+      'Proof maturity is required before publication.',
+      'Demo nature is required before publication.',
+      'Data nature is required before publication.',
+      'Relevant limits are required before publication.',
       'Presentation document is required before publication.',
     ]);
   });
@@ -47,6 +62,11 @@ describe('System publication readiness', () => {
       slug: 'Sentinel Project',
       title: 'Sentinel',
       summary: 'Summary',
+      proofRole: 'System case study',
+      proofMaturity: 'Inspectable implementation',
+      proofDemoNature: 'No separate public demo',
+      proofDataNature: 'Real-world context; no customer data exposed',
+      proofLimits: 'No deployment or measured impact is claimed.',
       presentationDocument: {
         version: 1,
         blocks: [{ type: 'paragraph', text: 'Content' }],
@@ -64,6 +84,11 @@ describe('System publication readiness', () => {
       slug: 'sentinel',
       title: 'Sentinel',
       summary: 'Summary',
+      proofRole: 'System case study',
+      proofMaturity: 'Inspectable implementation',
+      proofDemoNature: 'No separate public demo',
+      proofDataNature: 'Real-world context; no customer data exposed',
+      proofLimits: 'No deployment or measured impact is claimed.',
       presentationDocument: {
         version: 1,
         blocks: [],
