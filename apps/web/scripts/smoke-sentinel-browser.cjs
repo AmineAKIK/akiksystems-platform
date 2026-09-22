@@ -749,6 +749,148 @@ async function assertProfileProgressiveDepth(browser, page) {
   }
 }
 
+async function assertProfileWithoutPriorCv(browser) {
+  const scenarios = [
+    {
+      name: 'desktop EN direct Profile',
+      path: '/en/profile',
+      viewport: { width: 1440, height: 900 },
+      locale: 'en',
+      profileHeading: 'Profile',
+      title: 'Software systems builder',
+      introduction: 'I design and build inspectable software systems.',
+      proofAction: 'Inspect this proof',
+      howSummary: 'Explore how I work',
+      principle: 'Make evidence inspectable',
+      technicalSummary: 'Explore technical depth',
+      capability: 'Design bounded systems',
+    },
+    {
+      name: 'mobile EN direct Profile',
+      path: '/en/profile',
+      viewport: { width: 390, height: 844 },
+      locale: 'en',
+      profileHeading: 'Profile',
+      title: 'Software systems builder',
+      introduction: 'I design and build inspectable software systems.',
+      proofAction: 'Inspect this proof',
+      howSummary: 'Explore how I work',
+      principle: 'Make evidence inspectable',
+      technicalSummary: 'Explore technical depth',
+      capability: 'Design bounded systems',
+    },
+    {
+      name: 'desktop FR direct Profile',
+      path: '/fr/profil',
+      viewport: { width: 1440, height: 900 },
+      locale: 'fr',
+      profileHeading: 'Profil',
+      title: 'Concepteur de systèmes logiciels',
+      introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
+      proofAction: 'Inspecter cette preuve',
+      howSummary: 'Approfondir ma manière de travailler',
+      principle: 'Rendre les preuves inspectables',
+      technicalSummary: 'Approfondir la technique',
+      capability: 'Concevoir des systèmes délimités',
+    },
+    {
+      name: 'mobile FR direct Profile',
+      path: '/fr/profil',
+      viewport: { width: 390, height: 844 },
+      locale: 'fr',
+      profileHeading: 'Profil',
+      title: 'Concepteur de systèmes logiciels',
+      introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
+      proofAction: 'Inspecter cette preuve',
+      howSummary: 'Approfondir ma manière de travailler',
+      principle: 'Rendre les preuves inspectables',
+      technicalSummary: 'Approfondir la technique',
+      capability: 'Concevoir des systèmes délimités',
+    },
+  ];
+
+  const observations = [];
+
+  for (const scenario of scenarios) {
+    // Fresh context: no Home visit, no CV route, no cookies/history from another journey.
+    const context = await browser.newContext({ viewport: scenario.viewport });
+    try {
+      const page = await context.newPage();
+      const response = await page.goto(`${origin}${scenario.path}`);
+      assert.equal(response?.status(), 200, `${scenario.name} must load directly.`);
+      assert.equal(await page.locator('html').getAttribute('lang'), scenario.locale);
+
+      // First-reading proxy: no scroll, click, hover, or prior-CV exposure.
+      await page
+        .getByRole('heading', { level: 1, name: scenario.profileHeading, exact: true })
+        .waitFor();
+      await page.getByText('Amine AKIK', { exact: true }).waitFor();
+      await page.getByText(scenario.title, { exact: true }).waitFor();
+      await page.getByText(scenario.introduction, { exact: true }).waitFor();
+
+      const firstView = page.locator('.aks-profile-first-view');
+      const proof = page.locator('.aks-profile-immediate-proof');
+      await proof
+        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .waitFor();
+      assert.equal(
+        await proof.getByRole('link', { name: scenario.proofAction }).getAttribute('href'),
+        scenario.locale === 'fr'
+          ? '/fr/systems/sentinel'
+          : '/en/systems/sentinel',
+        `${scenario.name} must reveal where inspectable proof lives without prior context.`,
+      );
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${scenario.name} must remain horizontally readable on direct entry.`,
+      );
+
+      const closedDepths = await page
+        .locator('details.aks-profile-depth')
+        .evaluateAll((details) => details.map((detail) => detail.hasAttribute('open')));
+      assert.ok(
+        closedDepths.every((open) => open === false),
+        `${scenario.name} must keep deeper material closed on first reading.`,
+      );
+
+      // "How he works" and deeper technical substance remain one intentional action away.
+      const howDetails = page.locator('details#profile-how-i-work');
+      await howDetails.getByText(scenario.howSummary, { exact: true }).click();
+      await howDetails.getByText(scenario.principle, { exact: true }).waitFor();
+
+      const technicalDetails = page.locator('details#profile-technical-depth');
+      await technicalDetails.getByText(scenario.technicalSummary, { exact: true }).click();
+      await technicalDetails.getByText(scenario.capability, { exact: true }).waitFor();
+
+      observations.push({
+        scenario: scenario.name,
+        directEntry: true,
+        priorCvExposure: false,
+        who: 'Amine AKIK',
+        position: scenario.title,
+        builds: scenario.introduction,
+        immediateProof: 'Sentinel',
+        proofHref:
+          scenario.locale === 'fr'
+            ? '/fr/systems/sentinel'
+            : '/en/systems/sentinel',
+        howHeWorks: scenario.principle,
+        technicalAbility: scenario.capability,
+        firstViewText: (await firstView.innerText()).trim(),
+      });
+    } finally {
+      await context.close();
+    }
+  }
+
+  process.stdout.write(
+    `AKS-067 direct-entry automated comprehension proxy: ${JSON.stringify(observations)}\\n`,
+  );
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2033,6 +2175,8 @@ async function assertAxe(page) {
     await assertTechnologicalJourney(page);
 
     await assertProfileProgressiveDepth(browser, page);
+
+    await assertProfileWithoutPriorCv(browser);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
