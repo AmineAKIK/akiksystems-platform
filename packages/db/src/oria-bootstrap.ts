@@ -227,6 +227,11 @@ export async function bootstrapOriaDomain(
           title: 'Oria Nutrition',
           summary:
             'Accessible nutrition-coaching PWA portfolio for atypical schedules, with fictional product data, practical tools and a simulated client space.',
+          proof_role: "Accessible non-industrial nutrition-coaching portfolio application",
+          proof_maturity: "Public portfolio PWA with simulated product flows",
+          proof_demo_nature: "The public application is itself the portfolio demonstration",
+          proof_data_nature: "Fictional practitioner, pricing, contact and client data; no real client data",
+          proof_limits: "Not an operating nutrition practice, medical service, production booking system, or real authenticated client backend.",
           presentation_document: {
             ...englishPresentation,
             blocks: englishPresentation.blocks.map((block) =>
@@ -245,6 +250,11 @@ export async function bootstrapOriaDomain(
           title: 'Oria Nutrition',
           summary:
             'PWA portfolio accessible autour de la nutrition et des rythmes atypiques, avec donnees fictives, outils pratiques et espace client simule.',
+          proof_role: "Application portfolio accessible et non industrielle autour de la nutrition",
+          proof_maturity: "PWA portfolio publique avec parcours produit simulés",
+          proof_demo_nature: "L application publique constitue elle-même la démonstration portfolio",
+          proof_data_nature: "Identité praticien, tarifs, contacts et données client fictifs ; aucune donnée client réelle",
+          proof_limits: "Ce n est ni un cabinet de nutrition en activité, ni un service médical, ni un système de réservation ou backend client réel.",
           presentation_document: {
             ...frenchPresentation,
             blocks: frenchPresentation.blocks.map((block) =>
