@@ -1,6 +1,7 @@
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
+import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
 import {
   SystemPresentation,
@@ -128,17 +129,23 @@ export function InteractiveEntrySystemRenderer({
                 aria-label={locale === 'fr' ? 'Preuves du système' : 'System evidence'}
                 className="aks-proof-actions"
               >
-                {supportingLinks.map((link) => (
-                  <Link href={link.url} key={link.id}>
-                    {link.kind === 'repository'
-                      ? locale === 'fr'
-                        ? 'Dépôt'
-                        : 'Repository'
-                      : link.kind === 'documentation'
-                        ? 'Documentation'
-                        : 'Demo'}
-                  </Link>
-                ))}
+                {supportingLinks.map((link) =>
+                  link.kind === 'demo' ? (
+                    <DeferredDemoLink
+                      key={link.id}
+                      locale={locale}
+                      url={link.url}
+                    />
+                  ) : (
+                    <Link href={link.url} key={link.id}>
+                      {link.kind === 'repository'
+                        ? locale === 'fr'
+                          ? 'Dépôt'
+                          : 'Repository'
+                        : 'Documentation'}
+                    </Link>
+                  ),
+                )}
               </nav>
             ) : null}
           </footer>
