@@ -8,6 +8,7 @@
     "auth:migrate": "tsx scripts/auth-migrate.ts",
     "content:bootstrap-protocap": "tsx scripts/bootstrap-protocap.ts",
     "content:bootstrap-oria": "tsx scripts/bootstrap-oria.ts",
+    "content:bootstrap-tugeres": "tsx scripts/bootstrap-tugeres.ts",
     "build": "react-router build",
     "check:client-secrets": "node scripts/check-client-secrets.mjs",
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
