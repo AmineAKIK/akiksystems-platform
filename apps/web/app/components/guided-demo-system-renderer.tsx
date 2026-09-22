@@ -1,6 +1,7 @@
 import type { PresentationBlock } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
+import { SystemProofTransparency } from './system-proof-transparency';
 import {
   PresentationBlockView,
   type SystemDetailAsset,
@@ -76,6 +77,7 @@ export function GuidedDemoSystemRenderer({
   locale,
   title,
   summary,
+  proofTransparency,
   presentationDocument,
   technologies,
   originTitle,
@@ -139,6 +141,11 @@ export function GuidedDemoSystemRenderer({
               </Text>
             </aside>
           </header>
+
+          <SystemProofTransparency
+            locale={locale}
+            transparency={proofTransparency}
+          />
 
           {originTitle !== null ? (
             <section className="aks-guided-demo-origin">
