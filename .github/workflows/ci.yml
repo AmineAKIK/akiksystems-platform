@@ -112,6 +112,7 @@ jobs:
           pnpm db:verify-tugeres-domain
           pnpm db:verify-system-proof-transparency
           pnpm db:verify-system-references
+          pnpm db:verify-system-publication-snapshots
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
