@@ -32,6 +32,12 @@ export type DefaultedColumn<Value> = ColumnType<
 >;
 
 export type ProfileLanguageCode = 'fr' | 'en' | 'ar';
+export type ProfileTechnologyJourneyStageKey =
+  | 'programming'
+  | 'networks_telecom'
+  | 'it_support'
+  | 'industry'
+  | 'development_akiksystems';
 
 export interface SystemMetadataTable {
   key: string;
@@ -144,6 +150,26 @@ export interface ProfileMobilityTable {
   worldwide: boolean;
   remote: boolean;
   relocation: boolean;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileTechnologyJourneyStagesTable {
+  profile_id: string;
+  stage_key: ProfileTechnologyJourneyStageKey;
+  position: number;
+  evidence_experience_id: string | null;
+  evidence_system_id: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileTechnologyJourneyStageLocalizationsTable {
+  profile_id: string;
+  stage_key: ProfileTechnologyJourneyStageKey;
+  locale: PlatformLocale;
+  title: string;
+  summary: string | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
@@ -305,6 +331,20 @@ export type ProfileMobilityRow = Selectable<ProfileMobilityTable>;
 export type NewProfileMobilityRow = Insertable<ProfileMobilityTable>;
 export type ProfileMobilityUpdate = Updateable<ProfileMobilityTable>;
 
+export type ProfileTechnologyJourneyStageRow =
+  Selectable<ProfileTechnologyJourneyStagesTable>;
+export type NewProfileTechnologyJourneyStageRow =
+  Insertable<ProfileTechnologyJourneyStagesTable>;
+export type ProfileTechnologyJourneyStageUpdate =
+  Updateable<ProfileTechnologyJourneyStagesTable>;
+
+export type ProfileTechnologyJourneyStageLocalizationRow =
+  Selectable<ProfileTechnologyJourneyStageLocalizationsTable>;
+export type NewProfileTechnologyJourneyStageLocalizationRow =
+  Insertable<ProfileTechnologyJourneyStageLocalizationsTable>;
+export type ProfileTechnologyJourneyStageLocalizationUpdate =
+  Updateable<ProfileTechnologyJourneyStageLocalizationsTable>;
+
 export type ProfileExperienceRow = Selectable<ProfileExperiencesTable>;
 export type NewProfileExperienceRow = Insertable<ProfileExperiencesTable>;
 export type ProfileExperienceUpdate = Updateable<ProfileExperiencesTable>;
@@ -369,6 +409,8 @@ export interface Database {
   profile_capability_localizations: ProfileCapabilityLocalizationsTable;
   profile_languages: ProfileLanguagesTable;
   profile_mobility: ProfileMobilityTable;
+  profile_technology_journey_stages: ProfileTechnologyJourneyStagesTable;
+  profile_technology_journey_stage_localizations: ProfileTechnologyJourneyStageLocalizationsTable;
   profile_experiences: ProfileExperiencesTable;
   profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;
