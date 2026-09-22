@@ -2,9 +2,34 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
-import type { PublicProfile } from '@akiksystems/db';
+import type { PublicProfile, PublicSystemReference } from '@akiksystems/db';
 
 import { PublicProfileView } from './public-profile-view';
+
+
+function reference(
+  id: string,
+  slug: string,
+  title: string,
+  summary: string,
+  locale: 'en' | 'fr' = 'en',
+): PublicSystemReference {
+  return {
+    id,
+    locale,
+    slug,
+    title,
+    summary,
+    href: `/${locale}/systems/${slug}`,
+    proofTransparency: {
+      role: locale === 'fr' ? 'Système logiciel' : 'Software system',
+      maturity: locale === 'fr' ? 'Implémentation inspectable' : 'Inspectable implementation',
+      demoNature: locale === 'fr' ? 'Aucune démo séparée' : 'No separate demo',
+      dataNature: locale === 'fr' ? 'Données de preuve' : 'Evidence data',
+      limits: locale === 'fr' ? 'Limites explicites.' : 'Explicit limits.',
+    },
+  };
+}
 
 function profile(overrides: Partial<PublicProfile> = {}): PublicProfile {
   return {
@@ -37,7 +62,7 @@ describe('PublicProfileView source CV', () => {
   it('does not invent a CV link when no artifact is linked', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
-        <PublicProfileView profile={profile()} />
+        <PublicProfileView profile={profile()} systemReferences={[]} />
       </MemoryRouter>,
     );
 
@@ -52,6 +77,7 @@ describe('PublicProfileView source CV', () => {
           profile={profile({
             sourceCvAssetId: '00000000-0000-4000-8000-000000000061',
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -69,6 +95,7 @@ describe('PublicProfileView source CV', () => {
             alternateLocale: 'en',
             sourceCvAssetId: '00000000-0000-4000-8000-000000000061',
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -107,12 +134,16 @@ describe('PublicProfileView first view', () => {
               'Professional identity connected to inspectable evidence.',
             representativeSystems: [sentinel, second],
           })}
+          systemReferences={[
+            reference(sentinel.id, sentinel.slug, sentinel.title, sentinel.summary),
+            reference(second.id, second.slug, second.title, second.summary),
+          ]}
         />
       </MemoryRouter>,
     );
 
     expect(html).toContain('aria-label="Immediate proof"');
-    expect(html).toContain('Inspect this proof');
+    expect(html).toContain('Inspect System');
     expect(html.match(/>Sentinel</g)).toHaveLength(1);
     expect(html).toContain('Representative Systems');
     expect(html).toContain('Second System');
@@ -127,6 +158,7 @@ describe('PublicProfileView first view', () => {
               'I design and build inspectable software systems.',
             representativeSystems: [],
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -155,12 +187,21 @@ describe('PublicProfileView first view', () => {
               },
             ],
           })}
+          systemReferences={[
+            reference(
+              sentinel.id,
+              sentinel.slug,
+              sentinel.title,
+              'Visibilité opérationnelle et preuves inspectables.',
+              'fr',
+            ),
+          ]}
         />
       </MemoryRouter>,
     );
 
     expect(html).toContain('aria-label="Preuve immédiate"');
-    expect(html).toContain('Inspecter cette preuve');
+    expect(html).toContain('Inspecter le système');
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
@@ -186,13 +227,21 @@ describe('PublicProfileView How I work evidence', () => {
               },
             ],
           })}
+          systemReferences={[
+            reference(
+              '00000000-0000-4000-8000-000000000028',
+              'sentinel',
+              'Sentinel',
+              'Operational visibility built from inspectable evidence.',
+            ),
+          ]}
         />
       </MemoryRouter>,
     );
 
     expect(html).toContain('How I work');
     expect(html).toContain('Make evidence inspectable');
-    expect(html).toContain('Example: Sentinel');
+    expect(html).toContain('Example');
     expect(html).toContain('href="/en/systems/sentinel"');
     expect(html).not.toContain('Operational visibility built');
   });
@@ -212,6 +261,7 @@ describe('PublicProfileView How I work evidence', () => {
               },
             ],
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -241,11 +291,21 @@ describe('PublicProfileView How I work evidence', () => {
               },
             ],
           })}
+          systemReferences={[
+            reference(
+              '00000000-0000-4000-8000-000000000028',
+              'sentinel',
+              'Sentinel',
+              'Visibilité opérationnelle.',
+              'fr',
+            ),
+          ]}
         />
       </MemoryRouter>,
     );
 
-    expect(html).toContain('Exemple : Sentinel');
+    expect(html).toContain('Exemple');
+    expect(html).toContain('Sentinel');
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
@@ -303,7 +363,17 @@ describe('PublicProfileView technological journey', () => {
   it('renders the fixed technological journey without turning it into a tool list', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
-        <PublicProfileView profile={profile({ technologyJourney: stages })} />
+        <PublicProfileView
+          profile={profile({ technologyJourney: stages })}
+          systemReferences={[
+            reference(
+              '00000000-0000-4000-8000-000000000028',
+              'sentinel',
+              'Sentinel',
+              'Operational visibility built from inspectable evidence.',
+            ),
+          ]}
+        />
       </MemoryRouter>,
     );
 
@@ -314,7 +384,7 @@ describe('PublicProfileView technological journey', () => {
     expect(html).toContain('Relevant industry');
     expect(html).toContain('Development and AkikSystems');
     expect(html).toContain('Context: Marelli');
-    expect(html).toContain('Evidence: Sentinel');
+    expect(html).toContain('Evidence');
     expect(html).toContain('href="/en/systems/sentinel"');
     expect(html).not.toContain('React');
     expect(html).not.toContain('Docker');
@@ -344,6 +414,7 @@ describe('PublicProfileView technological journey', () => {
             alternateLocale: 'en',
             technologyJourney: frenchStages,
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -440,6 +511,7 @@ describe('PublicProfileView Technical Capabilities', () => {
               },
             ],
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -500,6 +572,7 @@ describe('PublicProfileView progressive depth', () => {
               },
             ],
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
@@ -556,6 +629,7 @@ describe('PublicProfileView progressive depth', () => {
               },
             ],
           })}
+          systemReferences={[]}
         />
       </MemoryRouter>,
     );
