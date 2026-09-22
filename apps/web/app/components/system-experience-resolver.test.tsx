@@ -41,8 +41,60 @@ describe('System Experience Resolver', () => {
 
       expect(html).toContain(`data-presentation-kind="${presentationKind}"`);
       expect(html).toContain('data-renderer=');
-      expect(html).toContain('<main class="aks-system-detail"');
+      if (presentationKind === 'guided_demo') {
+        expect(html).toContain('<main class="aks-guided-demo"');
+        expect(html).toContain('Evidence contract');
+      } else {
+        expect(html).toContain('<main class="aks-system-detail"');
+      }
       expect(html).toContain('>Sentinel</h1>');
     },
   );
+});
+
+
+describe('Guided demo System experience', () => {
+  it('separates implemented behavior, boundaries, hypotheses, and future integrations', () => {
+    const html = renderToStaticMarkup(
+      <SystemExperience
+        assets={[]}
+        links={[
+          { id: 'demo', kind: 'demo', url: 'https://demo.example.test' },
+          { id: 'repository', kind: 'repository', url: 'https://repo.example.test' },
+        ]}
+        locale="en"
+        originSummary="Industrial operations context."
+        originTitle="L'Oreal / La Roche-Posay"
+        presentationDocument={{
+          version: 1,
+          blocks: [
+            { type: 'paragraph', text: 'ProtoCap introduction.' },
+            { type: 'heading', level: 2, text: 'What is implemented' },
+            { type: 'list', style: 'unordered', items: ['ShiftGuide works.'] },
+            { type: 'heading', level: 2, text: 'Evidence boundaries' },
+            { type: 'list', style: 'unordered', items: ['Demo data is fictitious.'] },
+            { type: 'heading', level: 2, text: 'Hypotheses' },
+            { type: 'paragraph', text: 'Productivity gains remain hypotheses.' },
+            { type: 'heading', level: 2, text: 'Future integrations' },
+            { type: 'paragraph', text: 'Live plant feeds remain future work.' },
+          ],
+        }}
+        presentationKind="guided_demo"
+        summary="Interactive engineering demonstrator."
+        technologies={[{ id: 'typescript', name: 'TypeScript' }]}
+        title="ProtoCap"
+      />,
+    );
+
+    expect(html).toContain('Try the public demo');
+    expect(html).toContain('Implemented');
+    expect(html).toContain('Explicit boundary');
+    expect(html).toContain('Hypothesis');
+    expect(html).toContain('Future integration');
+    expect(html).toContain('Demo data is fictitious.');
+    expect(html).toContain('Productivity gains remain hypotheses.');
+    expect(html).toContain('Live plant feeds remain future work.');
+    expect(html).toContain("L&#x27;Oreal / La Roche-Posay");
+    expect(html).toContain('Inspectable technologies');
+  });
 });
