@@ -250,8 +250,8 @@ export interface AssetsTable {
   original_filename: string;
   mime_type: string;
   byte_size: number;
-  width: number | null;
-  height: number | null;
+  width: ColumnType<number | null, number | null | undefined, number | null>;
+  height: ColumnType<number | null, number | null | undefined, number | null>;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
