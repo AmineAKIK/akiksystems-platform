@@ -448,3 +448,118 @@ describe('PublicProfileView Technical Capabilities', () => {
     expect(html).toContain('Qualifier les parcours de livraison');
   });
 });
+
+
+describe('PublicProfileView progressive depth', () => {
+  it('renders deeper Profile evidence in closed native disclosures', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          profile={profile({
+            technologyJourney: [
+              {
+                key: 'programming',
+                position: 0,
+                title: 'Programming foundations',
+                summary: 'Understand software construction.',
+                evidence: null,
+              },
+            ],
+            capabilityGroups: [
+              {
+                id: '00000000-0000-4000-8000-000000000081',
+                position: 0,
+                title: 'Architecture',
+                capabilities: [
+                  {
+                    id: '00000000-0000-4000-8000-000000000082',
+                    position: 0,
+                    title: 'Design bounded systems',
+                    summary: null,
+                  },
+                ],
+              },
+            ],
+            professionalJourney: [
+              {
+                id: '00000000-0000-4000-8000-000000000083',
+                position: 0,
+                title: 'Marelli',
+                summary: 'Industrial context.',
+              },
+            ],
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000084',
+                position: 0,
+                title: 'Make evidence inspectable',
+                detail: null,
+                evidenceSystem: null,
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('id="profile-technical-depth"');
+    expect(html).toContain('Explore technical depth');
+    expect(html).toContain('id="profile-professional-evidence"');
+    expect(html).toContain('Explore professional evidence');
+    expect(html).toContain('id="profile-how-i-work"');
+    expect(html).toContain('Explore how I work');
+    expect(html).not.toMatch(/<details[^>]*\sopen(?:=|\s|>)/);
+    expect(html).toContain('Programming foundations');
+    expect(html).toContain('Marelli');
+    expect(html).toContain('Make evidence inspectable');
+  });
+
+  it('localizes progressive-depth controls in French', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/profil']}>
+        <PublicProfileView
+          profile={profile({
+            locale: 'fr',
+            alternateLocale: 'en',
+            capabilityGroups: [
+              {
+                id: '00000000-0000-4000-8000-000000000085',
+                position: 0,
+                title: 'Architecture',
+                capabilities: [
+                  {
+                    id: '00000000-0000-4000-8000-000000000086',
+                    position: 0,
+                    title: 'Concevoir des systèmes délimités',
+                    summary: null,
+                  },
+                ],
+              },
+            ],
+            professionalJourney: [
+              {
+                id: '00000000-0000-4000-8000-000000000087',
+                position: 0,
+                title: 'Marelli',
+                summary: null,
+              },
+            ],
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000088',
+                position: 0,
+                title: 'Rendre les preuves inspectables',
+                detail: null,
+                evidenceSystem: null,
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Approfondir la technique');
+    expect(html).toContain('Approfondir les preuves professionnelles');
+    expect(html).toContain('Approfondir ma manière de travailler');
+  });
+});
