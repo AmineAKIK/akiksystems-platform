@@ -1,5 +1,5 @@
 import { listPublishedSystemReferences } from '@akiksystems/db';
-import { useLoaderData } from 'react-router';
+import { type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { GlobalDestinationView } from '../components/global-destination-view';
 import { requireExactLocale } from '../i18n/locales';
@@ -14,6 +14,10 @@ export async function loader({ params }: Route.LoaderArgs) {
     limit: 2,
   });
   return { systemReferences };
+}
+
+export function meta(): MetaDescriptor[] {
+  return [{ title: 'Writings · AkikSystems' }];
 }
 
 export default function GlobalDestinationRoute() {
