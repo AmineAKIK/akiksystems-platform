@@ -32,11 +32,11 @@ function StandardSystemExperience(props: SystemDetailViewProps) {
 }
 
 function GuidedDemoSystemExperience(props: SystemDetailViewProps) {
-  return <SystemDetailView {...props} />;
+  return <StandardSystemRenderer {...props} />;
 }
 
 function InteractiveEntrySystemExperience(props: SystemDetailViewProps) {
-  return <SystemDetailView {...props} />;
+  return <StandardSystemRenderer {...props} />;
 }
 
 const rendererById = {
