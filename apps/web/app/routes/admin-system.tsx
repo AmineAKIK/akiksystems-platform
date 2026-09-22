@@ -946,6 +946,33 @@ export default function AdminSystem() {
                     <option value="archived">Archived</option>
                   </select>
                 </label>
+                <label>
+                  <span>Presentation kind</span>
+                  <select
+                    defaultValue={data.system.presentation_kind}
+                    name="presentationKind"
+                  >
+                    {systemPresentationKinds.map((kind) => (
+                      <option key={kind} value={kind}>{kind}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Evidence policy</span>
+                  <select
+                    defaultValue={data.system.evidence_policy}
+                    name="evidencePolicy"
+                  >
+                    {systemEvidencePolicies.map((policy) => (
+                      <option key={policy} value={policy}>{policy}</option>
+                    ))}
+                  </select>
+                </label>
+                <Text size="sm" tone="muted">
+                  Changing presentation or evidence policy creates unpublished
+                  draft changes. Existing public snapshots stay unchanged until
+                  each locale is republished.
+                </Text>
                 <Button type="submit">Save identity</Button>
               </Form>
             </section>
@@ -956,7 +983,8 @@ export default function AdminSystem() {
 
                 <div className="aks-admin-readiness">
                   <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
-                    EN · {data.en?.editorial_state ?? 'draft'} ·{' '}
+                    EN · draft {data.en?.editorial_state ?? 'draft'} · public{' '}
+                    {data.publicationState.en ? 'published' : 'not published'} ·{' '}
                     {data.enReadiness.ready ? 'ready to publish' : 'not ready'}
                   </Text>
                   {!data.enReadiness.ready ? (
@@ -972,7 +1000,8 @@ export default function AdminSystem() {
 
                 <div className="aks-admin-readiness">
                   <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
-                    FR · {data.fr?.editorial_state ?? 'draft'} ·{' '}
+                    FR · draft {data.fr?.editorial_state ?? 'draft'} · public{' '}
+                    {data.publicationState.fr ? 'published' : 'not published'} ·{' '}
                     {data.frReadiness.ready ? 'ready to publish' : 'not ready'}
                   </Text>
                   {!data.frReadiness.ready ? (
@@ -987,7 +1016,9 @@ export default function AdminSystem() {
                 </div>
 
                 <Text size="sm" tone="muted">
-                  Publication is locale-scoped. EN and FR can independently be draft or published.
+                  Publication is locale-scoped and snapshot-based. Draft edits
+                  never change the public version until Publish replaces that
+                  locale's snapshot.
                 </Text>
               </div>
             </section>
@@ -1050,26 +1081,30 @@ export default function AdminSystem() {
                       {data.en?.editorial_state ?? 'draft'} ·{' '}
                       {data.enReadiness.ready ? 'ready' : 'not ready'}
                     </Text>
-                    <Form method="post">
-                      <input
-                        name="_intent"
-                        type="hidden"
-                        value={data.en?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                      />
-                      <input name="locale" type="hidden" value="en" />
-                      <Button
-                        disabled={
-                          data.en?.editorial_state !== 'published' &&
-                          !data.enReadiness.ready
-                        }
-                        emphasis="quiet"
-                        type="submit"
-                      >
-                        {data.en?.editorial_state === 'published'
-                          ? 'Unpublish EN'
-                          : 'Publish EN'}
-                      </Button>
-                    </Form>
+                    <div className="aks-proof-actions">
+                      <Form method="post">
+                        <input name="_intent" type="hidden" value="publish" />
+                        <input name="locale" type="hidden" value="en" />
+                        <Button
+                          disabled={!data.enReadiness.ready}
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          {data.publicationState.en
+                            ? 'Publish EN update'
+                            : 'Publish EN'}
+                        </Button>
+                      </Form>
+                      {data.publicationState.en ? (
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="unpublish" />
+                          <input name="locale" type="hidden" value="en" />
+                          <Button emphasis="quiet" type="submit">
+                            Unpublish EN
+                          </Button>
+                        </Form>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -1121,26 +1156,30 @@ export default function AdminSystem() {
                       {data.fr?.editorial_state ?? 'draft'} ·{' '}
                       {data.frReadiness.ready ? 'ready' : 'not ready'}
                     </Text>
-                    <Form method="post">
-                      <input
-                        name="_intent"
-                        type="hidden"
-                        value={data.fr?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                      />
-                      <input name="locale" type="hidden" value="fr" />
-                      <Button
-                        disabled={
-                          data.fr?.editorial_state !== 'published' &&
-                          !data.frReadiness.ready
-                        }
-                        emphasis="quiet"
-                        type="submit"
-                      >
-                        {data.fr?.editorial_state === 'published'
-                          ? 'Unpublish FR'
-                          : 'Publish FR'}
-                      </Button>
-                    </Form>
+                    <div className="aks-proof-actions">
+                      <Form method="post">
+                        <input name="_intent" type="hidden" value="publish" />
+                        <input name="locale" type="hidden" value="fr" />
+                        <Button
+                          disabled={!data.frReadiness.ready}
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          {data.publicationState.fr
+                            ? 'Publish FR update'
+                            : 'Publish FR'}
+                        </Button>
+                      </Form>
+                      {data.publicationState.fr ? (
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="unpublish" />
+                          <input name="locale" type="hidden" value="fr" />
+                          <Button emphasis="quiet" type="submit">
+                            Unpublish FR
+                          </Button>
+                        </Form>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>
