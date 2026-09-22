@@ -306,6 +306,8 @@ export async function bootstrapTugeresDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+          label_en: 'Operations runbook',
+          label_fr: 'Runbook d exploitation',
           position: 1,
         },
         {
@@ -313,6 +315,8 @@ export async function bootstrapTugeresDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/guide-installation.md',
+          label_en: 'Installation guide',
+          label_fr: 'Guide d installation',
           position: 2,
         },
       ])
