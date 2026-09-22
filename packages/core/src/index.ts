@@ -16,6 +16,13 @@ export const systemPresentationKinds = [
 
 export type SystemPresentationKind = (typeof systemPresentationKinds)[number];
 
+export const systemEvidencePolicies = [
+  'all_supported',
+  'documented_only',
+] as const;
+
+export type SystemEvidencePolicy = (typeof systemEvidencePolicies)[number];
+
 export const systemEditorialStates = ['draft', 'published'] as const;
 
 export type SystemEditorialState = (typeof systemEditorialStates)[number];
@@ -26,6 +33,7 @@ export interface SystemIdentity {
   id: SystemId;
   lifecycle: SystemLifecycle;
   presentationKind: SystemPresentationKind;
+  evidencePolicy: SystemEvidencePolicy;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

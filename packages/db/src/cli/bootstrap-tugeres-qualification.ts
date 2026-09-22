@@ -18,8 +18,29 @@ try {
     },
   });
 
+  await db
+    .insertInto('system_links')
+    .values([
+      {
+        id: randomUUID(),
+        system_id: result.systemId,
+        kind: 'live',
+        url: 'https://unsupported.example.test/live',
+        position: 90,
+      },
+      {
+        id: randomUUID(),
+        system_id: result.systemId,
+        kind: 'demo',
+        url: 'https://unsupported.example.test/demo',
+        position: 91,
+      },
+    ])
+    .onConflict((conflict) => conflict.column('id').doNothing())
+    .execute();
+
   process.stdout.write(
-    `Tugeres browser qualification bootstrap ${result.created ? 'created' : 'reused'} System ${result.systemId}.\n`,
+    `Tugeres browser qualification bootstrap ${result.created ? 'created' : 'reused'} System ${result.systemId}, including unsupported stored links for public-filter qualification.\n`,
   );
 } finally {
   await db.destroy();

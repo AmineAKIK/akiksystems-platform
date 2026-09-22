@@ -2,6 +2,7 @@ import type {
   PlatformLocale,
   PresentationDocument,
   SystemEditorialState,
+  SystemEvidencePolicy,
   SystemExperienceRelationKind,
   SystemLifecycle,
   SystemLinkKind,
@@ -51,6 +52,7 @@ export interface SystemsTable {
   id: string;
   lifecycle: DefaultedColumn<SystemLifecycle>;
   presentation_kind: DefaultedColumn<SystemPresentationKind>;
+  evidence_policy: DefaultedColumn<SystemEvidencePolicy>;
   editorial_position: DefaultedColumn<number>;
   featured: DefaultedColumn<boolean>;
   archived_at: NullableTimestampColumn;

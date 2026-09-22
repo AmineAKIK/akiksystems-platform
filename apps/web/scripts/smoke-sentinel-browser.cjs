@@ -1373,12 +1373,17 @@ async function assertTugeresStandardSystem(browser) {
       assert.equal(
         await page.locator('a[href*="tugeres.fr"]').count(),
         0,
-        'AKS-078 must not invent a live Tugeres deployment link.',
+        'Tugeres must not invent a live deployment link.',
       );
       assert.equal(
-        await page.getByText(/demo/i).count(),
+        await page.locator('a[href="https://unsupported.example.test/live"]').count(),
         0,
-        'AKS-078 must not expose an unsupported demo claim.',
+        'documented_only must suppress an unsupported stored live link.',
+      );
+      assert.equal(
+        await page.locator('a[href="https://unsupported.example.test/demo"]').count(),
+        0,
+        'documented_only must suppress an unsupported stored demo link.',
       );
       await assertAxe(page);
     }
