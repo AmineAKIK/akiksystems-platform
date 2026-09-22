@@ -92,7 +92,7 @@ export interface PublicProfile {
   alternateLocale: PlatformLocale;
 }
 
-export async function getPublicProfile(
+export async function getDraftProfile(
   db: Kysely<Database>,
   locale: PlatformLocale,
 ): Promise<PublicProfile | null> {
@@ -447,4 +447,34 @@ export async function getPublicProfile(
     })),
     alternateLocale: locale === 'en' ? 'fr' : 'en',
   };
+}
+
+
+function isPublicProfileSnapshot(value: unknown): value is PublicProfile {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'locale' in value &&
+    'displayName' in value &&
+    'workPrinciples' in value &&
+    'representativeSystems' in value
+  );
+}
+
+export async function getPublicProfile(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+): Promise<PublicProfile | null> {
+  const publication = await db
+    .selectFrom('profile_publications')
+    .select('snapshot')
+    .where('locale', '=', locale)
+    .executeTakeFirst();
+
+  if (publication === undefined || !isPublicProfileSnapshot(publication.snapshot)) {
+    return null;
+  }
+
+  return publication.snapshot;
 }
