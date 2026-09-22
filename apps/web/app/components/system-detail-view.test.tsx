@@ -25,6 +25,8 @@ describe('StandardSystemRenderer', () => {
             altText: 'Sentinel dashboard',
             caption: 'Operational dashboard',
             mimeType: 'image/png',
+            width: 1280,
+            height: 720,
           },
         ]}
         links={[
@@ -99,7 +101,7 @@ describe('StandardSystemRenderer', () => {
     expect(html).toContain('<li>Observe</li>');
     expect(html).toContain('<code data-language="bash">pnpm build</code>');
     expect(html).toContain(
-      '<img alt="Sentinel dashboard" decoding="async" loading="lazy" sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem" src="/private-preview/image"/>',
+      '<img alt="Sentinel dashboard" decoding="async" height="720" loading="lazy" sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem" src="/private-preview/image" width="1280"/>',
     );
     expect(html).toContain('<figcaption>Operational dashboard</figcaption>');
     expect(html).toContain('<footer>— AkikSystems</footer>');
@@ -115,6 +117,8 @@ describe('StandardSystemRenderer', () => {
             altText: null,
             caption: null,
             mimeType: 'application/pdf',
+            width: null,
+            height: null,
           },
         ]}
         links={[]}
