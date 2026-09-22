@@ -1121,6 +1121,73 @@ async function assertProfileAfterPriorCvExposure(browser) {
   );
 }
 
+async function assertSystemsOverview(browser) {
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+
+    for (const target of [
+      {
+        path: '/en/systems',
+        heading: 'Systems',
+        summary: 'Operational visibility built from industrial context and inspectable evidence.',
+        inspect: 'Inspect system',
+      },
+      {
+        path: '/fr/systems',
+        heading: 'Systèmes',
+        summary: 'Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables.',
+        inspect: 'Inspecter le système',
+      },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
+      const sentinel = page.locator('.aks-systems-entry').filter({
+        has: page.getByText('Sentinel', { exact: true }),
+      });
+      await sentinel.waitFor();
+      await sentinel.getByText(target.summary, { exact: true }).waitFor();
+      await sentinel.getByText(target.inspect, { exact: true }).waitFor();
+      assert.equal(
+        await sentinel.getAttribute('href'),
+        `${target.path}/sentinel`,
+        'Systems overview must deep-link to the localized published System.',
+      );
+      assert.equal(
+        /React|Docker/.test(await sentinel.innerText()),
+        false,
+        'Systems overview must not collapse into a dense technology grid.',
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        `https://akiksystems.com${target.path}`,
+      );
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/systems', '/fr/systems']) {
+      await page.goto(`${origin}${path}`);
+      await page.locator('.aks-systems-entry').first().waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} Systems overview must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2397,6 +2464,8 @@ async function assertAxe(page) {
     await page.goto(`${origin}${page.systemPath}`);
     await page.getByRole('button', { name: 'Publish FR' }).click();
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
+
+    await assertSystemsOverview(browser);
 
     await assertRepresentativeSystemSelection(page);
 
