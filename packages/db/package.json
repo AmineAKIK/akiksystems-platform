@@ -34,6 +34,7 @@
     "db:verify-published-systems-list": "tsx src/cli/verify-published-systems-list.ts",
     "db:verify-system-editorial-controls": "tsx src/cli/verify-system-editorial-controls.ts",
     "db:verify-protocap-domain": "tsx src/cli/verify-protocap-domain.ts",
+    "db:bootstrap-protocap-qualification": "tsx src/cli/bootstrap-protocap-qualification.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts"
   },
