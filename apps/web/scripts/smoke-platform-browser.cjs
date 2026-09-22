@@ -7,7 +7,6 @@ const { setTimeout: sleep } = require('node:timers/promises');
 const { chromium } = require('playwright');
 const axe = require('axe-core');
 
-const chromePath = process.env.CHROME_PATH?.trim() || undefined;
 
 const adminEmail = process.env.ADMIN_EMAIL;
 const adminPassword = process.env.ADMIN_PASSWORD;
@@ -2852,10 +2851,7 @@ async function assertAxe(page) {
 (async () => {
   await waitForServer();
 
-  const browser = await chromium.launch({
-    headless: true,
-    ...(chromePath ? { executablePath: chromePath } : {}),
-  });
+  const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -3291,7 +3287,7 @@ async function assertAxe(page) {
       {
         env: {
           ...process.env,
-          CHROME_PATH: chromePath ?? chromium.executablePath(),
+          CHROME_PATH: chromium.executablePath(),
         },
         stdio: 'pipe',
       },
