@@ -1458,6 +1458,65 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+async function assertReusableSystemReferences(browser) {
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    for (const target of [
+      { path: '/en/writings', locale: 'en', heading: 'Writings' },
+      { path: '/fr/ecrits', locale: 'fr', heading: 'Écrits' },
+      { path: '/en/learning', locale: 'en', heading: 'Learning' },
+      { path: '/fr/apprentissage', locale: 'fr', heading: 'Apprentissage' },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
+
+      const references = page.locator('.aks-system-reference');
+      assert.ok(
+        (await references.count()) >= 2,
+        `${target.path} must demonstrate at least two published reusable System references.`,
+      );
+      const first = references.first();
+      assert.match(await first.innerText(), /Role|Rôle/i);
+      assert.match(await first.innerText(), /Maturity|Maturité/i);
+
+      const hrefs = await references.locator('a').evaluateAll((links) =>
+        links.map((link) => link.getAttribute('href')),
+      );
+      for (const href of hrefs) {
+        assert.ok(
+          typeof href === 'string' && href.startsWith(`/${target.locale}/systems/`),
+          `${target.path} must use locale-safe System deep links, received ${href}.`,
+        );
+      }
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/writings', '/fr/ecrits', '/en/learning', '/fr/apprentissage']) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      await page.locator('.aks-system-reference').first().waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} reusable System references must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2761,6 +2820,8 @@ async function assertAxe(page) {
     await assertOriaInteractiveEntry(browser);
 
     await assertTugeresStandardSystem(browser);
+
+    await assertReusableSystemReferences(browser);
 
     await assertRepresentativeSystemSelection(page);
 
