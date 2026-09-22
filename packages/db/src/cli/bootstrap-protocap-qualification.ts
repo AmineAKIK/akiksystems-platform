@@ -17,7 +17,9 @@ try {
     throw new Error('ASSET_STORAGE_TEST_ROOT is required for browser qualification.');
   }
 
-  const fixture = await readFile(path.resolve(process.cwd(), 'apps/web/scripts/fixtures/protocap-reference-cover.png'));
+  const fixture = await readFile(
+    new URL('../../../../apps/web/scripts/fixtures/protocap-reference-cover.png', import.meta.url),
+  );
   const target = path.resolve(testRoot, storageKey);
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, fixture);
