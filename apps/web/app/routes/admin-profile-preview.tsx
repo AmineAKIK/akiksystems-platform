@@ -22,8 +22,25 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response('Profile preview not found.', { status: 404 });
   }
 
+  const referenceIds = [
+    ...new Set([
+      ...profile.representativeSystems.map(({ id }) => id),
+      ...profile.workPrinciples.flatMap(({ evidenceSystem }) =>
+        evidenceSystem === null ? [] : [evidenceSystem.id],
+      ),
+      ...profile.technologyJourney.flatMap(({ evidence }) =>
+        evidence?.kind === 'system' ? [evidence.id] : [],
+      ),
+    ]),
+  ];
+  const systemReferences = await listPublishedSystemReferences(appDb, {
+    locale,
+    ids: referenceIds,
+  });
+
   return {
     profile,
+    systemReferences,
   };
 }
 
