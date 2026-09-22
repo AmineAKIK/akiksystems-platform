@@ -310,6 +310,8 @@ export async function bootstrapOriaDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+          label_en: 'Case study',
+          label_fr: 'Étude de cas',
           position: 2,
         },
         {
@@ -317,6 +319,8 @@ export async function bootstrapOriaDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/content-provenance.md',
+          label_en: 'Content provenance',
+          label_fr: 'Provenance du contenu',
           position: 3,
         },
       ])
