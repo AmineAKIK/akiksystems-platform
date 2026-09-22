@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 import { listPublishedSystems } from '../public-system.js';
 import { createDatabase } from '../database.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -85,6 +86,8 @@ try {
       ])
       .execute();
   });
+
+  await bootstrapSystemPublications(db);
 
   const initial = await listPublishedSystems(db, { locale: 'en' });
   const relevantInitial = initial.filter(({ id }) => ids.includes(id));
