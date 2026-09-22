@@ -1537,7 +1537,7 @@ async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/en/profile`);
   const englishProof = page.locator('.aks-profile-immediate-proof');
   await englishProof
-    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+    .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
     .waitFor();
   await englishProof
     .getByText(
@@ -1565,7 +1565,7 @@ async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/fr/profil`);
   const frenchProof = page.locator('.aks-profile-immediate-proof');
   await frenchProof
-    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+    .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
     .waitFor();
   await frenchProof
     .getByText(
