@@ -1,4 +1,7 @@
-import type { PresentationBlock } from '@akiksystems/core';
+import type {
+  PresentationBlock,
+  PresentationEvidenceStatus,
+} from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import { DeferredDemoLink } from './deferred-demo-link';
@@ -11,6 +14,7 @@ import {
 
 interface GuidedSection {
   heading: string;
+  evidenceStatus: PresentationEvidenceStatus | null;
   blocks: PresentationBlock[];
 }
 
@@ -24,7 +28,11 @@ function splitPresentation(blocks: PresentationBlock[]): {
 
   for (const block of blocks) {
     if (block.type === 'heading' && block.level === 2) {
-      current = { heading: block.text, blocks: [] };
+      current = {
+        heading: block.text,
+        evidenceStatus: block.evidenceStatus ?? null,
+        blocks: [],
+      };
       sections.push(current);
       continue;
     }
@@ -40,34 +48,20 @@ function splitPresentation(blocks: PresentationBlock[]): {
 }
 
 function statusForSection(
-  heading: string,
+  status: PresentationEvidenceStatus | null,
   locale: SystemDetailViewProps['locale'],
 ): string {
-  const normalized = heading.toLocaleLowerCase(locale);
-
-  if (
-    normalized.includes('implemented') ||
-    normalized.includes('implément') ||
-    normalized.includes('implemente')
-  ) {
-    return locale === 'fr' ? 'Implémenté' : 'Implemented';
+  switch (status) {
+    case 'implemented':
+      return locale === 'fr' ? 'Implémenté' : 'Implemented';
+    case 'hypothesis':
+      return locale === 'fr' ? 'Hypothèse' : 'Hypothesis';
+    case 'future_integration':
+      return locale === 'fr' ? 'Intégration future' : 'Future integration';
+    case 'boundary':
+    case null:
+      return locale === 'fr' ? 'Limite explicite' : 'Explicit boundary';
   }
-
-  if (
-    normalized.includes('hypoth') ||
-    normalized.includes('future') ||
-    normalized.includes('futur')
-  ) {
-    return normalized.includes('hypoth')
-      ? locale === 'fr'
-        ? 'Hypothèse'
-        : 'Hypothesis'
-      : locale === 'fr'
-        ? 'Intégration future'
-        : 'Future integration';
-  }
-
-  return locale === 'fr' ? 'Limite explicite' : 'Explicit boundary';
 }
 
 function assetMap(assets: SystemDetailAsset[]) {
@@ -177,7 +171,7 @@ export function GuidedDemoSystemRenderer({
               <section className="aks-guided-demo-card" key={section.heading}>
                 <div className="aks-guided-demo-card-header">
                   <span className="aks-guided-demo-status">
-                    {statusForSection(section.heading, locale)}
+                    {statusForSection(section.evidenceStatus, locale)}
                   </span>
                   <Heading level={2} size="sm">
                     {section.heading}
@@ -220,7 +214,7 @@ export function GuidedDemoSystemRenderer({
                       ? locale === 'fr'
                         ? 'Dépôt'
                         : 'Repository'
-                      : 'Documentation'}
+                      : link.label ?? 'Documentation'}
                   </Link>
                 ))}
               </nav>
