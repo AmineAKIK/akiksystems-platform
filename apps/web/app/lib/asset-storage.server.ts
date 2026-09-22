@@ -1,4 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { parseAssetStorageEnv } from '@akiksystems/config/env';
 
@@ -100,6 +102,26 @@ function encodedObjectKey(storageKey: string): string {
     .join('/');
 }
 
+function testStoragePath(storageKey: string): string | null {
+  const root = process.env.ASSET_STORAGE_TEST_ROOT?.trim();
+
+  if (process.env.NODE_ENV !== 'test' || !root) {
+    return null;
+  }
+
+  const resolvedRoot = path.resolve(root);
+  const resolvedPath = path.resolve(resolvedRoot, storageKey);
+
+  if (
+    resolvedPath !== resolvedRoot &&
+    !resolvedPath.startsWith(`${resolvedRoot}${path.sep}`)
+  ) {
+    throw new Error('Asset storage key escapes the qualification root.');
+  }
+
+  return resolvedPath;
+}
+
 function objectUrl(storageKey: string): URL {
   const env = parseAssetStorageEnv(process.env);
   const endpoint = new URL(env.ENDPOINT);
@@ -192,14 +214,34 @@ export async function putAssetObject(
   validateAssetUpload(file);
   const bytes = new Uint8Array(await file.arrayBuffer());
   validateAssetSignature(file.type, bytes);
+
+  const localPath = testStoragePath(storageKey);
+  if (localPath !== null) {
+    await mkdir(path.dirname(localPath), { recursive: true });
+    await writeFile(localPath, bytes);
+    return;
+  }
+
   await signedS3Request('PUT', storageKey, bytes, file.type);
 }
 
 export async function deleteAssetObject(storageKey: string): Promise<void> {
+  const localPath = testStoragePath(storageKey);
+  if (localPath !== null) {
+    await rm(localPath, { force: true });
+    return;
+  }
+
   await signedS3Request('DELETE', storageKey);
 }
 
 export async function getAssetObject(storageKey: string): Promise<Response> {
+  const localPath = testStoragePath(storageKey);
+  if (localPath !== null) {
+    const bytes = await readFile(localPath);
+    return new Response(bytes);
+  }
+
   return signedS3Request('GET', storageKey);
 }
 
@@ -208,6 +250,12 @@ export async function getAssetObjectRange(
   start = 0,
   end = 65_535,
 ): Promise<Uint8Array> {
+  const localPath = testStoragePath(storageKey);
+  if (localPath !== null) {
+    const bytes = await readFile(localPath);
+    return new Uint8Array(bytes.subarray(start, Math.min(end + 1, bytes.length)));
+  }
+
   const response = await signedS3Request(
     'GET',
     storageKey,
