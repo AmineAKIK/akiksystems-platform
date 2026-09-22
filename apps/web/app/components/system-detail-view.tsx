@@ -21,6 +21,7 @@ export interface SystemDetailLink {
   id: string;
   kind: SystemLinkKind;
   url: string;
+  label?: string | null;
 }
 
 export interface SystemDetailAsset {
@@ -228,7 +229,7 @@ export function StandardSystemRenderer({
                       />
                     ) : (
                       <Link href={link.url} key={link.id}>
-                        {linkLabel(link.kind, locale)}
+                        {link.label ?? linkLabel(link.kind, locale)}
                       </Link>
                     ),
                   )}
