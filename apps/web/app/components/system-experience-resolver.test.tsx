@@ -109,7 +109,8 @@ describe('Guided demo System experience', () => {
 describe('Interactive-entry System experience', () => {
   it('keeps the passage to the live application explicit and reversible', () => {
     const html = renderToStaticMarkup(
-      <SystemExperience
+      <MemoryRouter>
+        <SystemExperience
         assets={[]}
         links={[
           { id: 'live', kind: 'live', url: 'https://example.test/live' },
@@ -129,7 +130,8 @@ describe('Interactive-entry System experience', () => {
         summary="A fictional portfolio application."
         technologies={[{ id: 'react', name: 'React' }]}
         title="Oria Nutrition"
-      />,
+        />
+      </MemoryRouter>,
     );
 
     expect(html).toContain('Open Oria in a new tab');
