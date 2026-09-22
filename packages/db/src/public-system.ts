@@ -48,6 +48,13 @@ export interface PublishedSystemListItem {
   slug: string;
   title: string;
   summary: string;
+  proofTransparency: {
+    role: string;
+    maturity: string;
+    demoNature: string;
+    dataNature: string;
+    limits: string;
+  };
   publishedAt: Date;
   position: number;
   featured: boolean;
@@ -97,6 +104,11 @@ export async function listPublishedSystems(
       'system_localizations.slug',
       'system_localizations.title',
       'system_localizations.summary',
+      'system_localizations.proof_role',
+      'system_localizations.proof_maturity',
+      'system_localizations.proof_demo_nature',
+      'system_localizations.proof_data_nature',
+      'system_localizations.proof_limits',
       'system_localizations.published_at',
     ])
     .where('systems.lifecycle', '=', 'active')
@@ -164,6 +176,11 @@ export async function getPublishedSystem(
     localization.slug === null ||
     localization.title === null ||
     localization.summary === null ||
+    localization.proof_role === null ||
+    localization.proof_maturity === null ||
+    localization.proof_demo_nature === null ||
+    localization.proof_data_nature === null ||
+    localization.proof_limits === null ||
     localization.published_at === null ||
     localization.presentation_document === null
   ) {
@@ -250,6 +267,13 @@ export async function getPublishedSystem(
     slug: localization.slug,
     title: localization.title,
     summary: localization.summary,
+    proofTransparency: {
+      role: localization.proof_role,
+      maturity: localization.proof_maturity,
+      demoNature: localization.proof_demo_nature,
+      dataNature: localization.proof_data_nature,
+      limits: localization.proof_limits,
+    },
     publishedAt: localization.published_at,
     presentationDocument: localization.presentation_document,
     technologies,
