@@ -6,6 +6,11 @@ import type {
 } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
+import {
+  SystemProofTransparency,
+  type SystemProofTransparencyData,
+} from './system-proof-transparency';
+
 export interface SystemDetailTechnology {
   id: string;
   name: string;
@@ -29,6 +34,7 @@ export interface SystemDetailViewProps {
   locale: PlatformLocale;
   title: string;
   summary: string;
+  proofTransparency: SystemProofTransparencyData;
   presentationDocument: PresentationDocument;
   technologies: SystemDetailTechnology[];
   originTitle: string | null;
@@ -168,6 +174,7 @@ export function StandardSystemRenderer({
   locale,
   title,
   summary,
+  proofTransparency,
   presentationDocument,
   technologies,
   originTitle,
@@ -215,6 +222,11 @@ export function StandardSystemRenderer({
                 </nav>
               ) : null}
             </header>
+
+            <SystemProofTransparency
+              locale={locale}
+              transparency={proofTransparency}
+            />
 
             {originTitle !== null ? (
               <aside className="aks-system-detail-context">
