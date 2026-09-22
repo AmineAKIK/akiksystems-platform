@@ -413,6 +413,7 @@ Assets are stored once, related to domain context, and localized independently.
 - Private object bytes live in S3-compatible storage. The web server signs PUT/DELETE requests with AWS Signature Version 4; storage credentials remain server-only.
 - Deleting an asset that is still referenced is blocked by database constraints. The admin removal path verifies references before unlinking metadata and deleting the object.
 - Staging uses an isolated Railway Storage Bucket, so staging assets do not share credentials or objects with other environments.
+- Browser qualification uses an isolated filesystem object root only under `NODE_ENV=test`, so responsive variants exercise real image bytes without requiring external object storage.
 
 ### Sentinel System workspace
 
