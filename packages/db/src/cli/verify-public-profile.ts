@@ -404,8 +404,8 @@ try {
   await db
     .insertInto('systems')
     .values([
-      { id: firstSystemId, lifecycle: 'active' },
-      { id: secondSystemId, lifecycle: 'active' },
+      { id: firstSystemId, lifecycle: 'active', editorial_position: 0 },
+      { id: secondSystemId, lifecycle: 'active', editorial_position: 1 },
     ])
     .execute();
 
