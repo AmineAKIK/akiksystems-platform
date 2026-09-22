@@ -3,7 +3,7 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
-export interface TrainingPublicationSnapshot {
+export interface TrainingPublicationSnapshot extends Record<string, unknown> {
   version: 1;
   trainingId: string;
   locale: PlatformLocale;
