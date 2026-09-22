@@ -1,4 +1,4 @@
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import { getDraftProfile, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -226,6 +226,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedSystems,
     selectableExperiences,
     selectedExperiences,
+    publications,
   ] = await Promise.all([
     appDb
       .selectFrom('profiles')
@@ -356,6 +357,11 @@ export async function loader({ request }: Route.LoaderArgs) {
       .select(['experience_id', 'position'])
       .where('profile_id', '=', profileId)
       .orderBy('position')
+      .execute(),
+    appDb
+      .selectFrom('profile_publications')
+      .select(['locale', 'published_at', 'updated_at'])
+      .where('profile_id', '=', profileId)
       .execute(),
   ]);
 
@@ -541,6 +547,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedSystems,
     selectableExperiences,
     selectedExperiences,
+    publications: publications.map((publication) => ({
+      ...publication,
+      published_at: publication.published_at.toISOString(),
+      updated_at: publication.updated_at.toISOString(),
+    })),
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
@@ -554,8 +565,104 @@ export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const intent = textField(form, '_intent');
 
+  if (intent === 'profile-publish' || intent === 'profile-unpublish') {
+    const localeValue = textField(form, 'locale');
+    if (localeValue !== 'en' && localeValue !== 'fr') {
+      return { ok: false, message: 'Profile locale must be EN or FR.' };
+    }
+    const locale = localeValue;
+
+    if (intent === 'profile-unpublish') {
+      for (const [locale, values] of Object.entries(localized)) {
+      if ((values.professional_title?.length ?? 0) > 100) {
+        return { ok: false, message: `${locale.toUpperCase()} professional title must stay within 100 characters.` };
+      }
+      if ((values.introduction?.length ?? 0) > 320) {
+        return { ok: false, message: `${locale.toUpperCase()} introduction must stay within 320 characters.` };
+      }
+      if ((values.foundational_copy?.length ?? 0) > 600) {
+        return { ok: false, message: `${locale.toUpperCase()} foundational copy must stay within 600 characters.` };
+      }
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+        await transaction
+          .deleteFrom('profile_publications')
+          .where('profile_id', '=', profileId)
+          .where('locale', '=', locale)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.localization_unpublished',
+          entityType: 'profile',
+          entityId: profileId,
+          locale,
+          metadata: {},
+        });
+      });
+
+      return { ok: true, message: `${locale.toUpperCase()} Profile unpublished.` };
+    }
+
+    const draft = await getDraftProfile(appDb, locale);
+    if (
+      draft === null ||
+      draft.displayName === null ||
+      draft.professionalTitle === null ||
+      draft.introduction === null
+    ) {
+      return {
+        ok: false,
+        message: `${locale.toUpperCase()} Profile cannot publish until display name, professional title, and introduction are complete.`,
+      };
+    }
+
+    const now = new Date();
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('profile_publications')
+        .values({
+          profile_id: profileId,
+          locale,
+          snapshot: draft as unknown as Record<string, unknown>,
+          published_at: now,
+          updated_at: now,
+        })
+        .onConflict((conflict) =>
+          conflict.columns(['profile_id', 'locale']).doUpdateSet({
+            snapshot: draft as unknown as Record<string, unknown>,
+            published_at: now,
+            updated_at: now,
+          }),
+        )
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.localization_published',
+        entityType: 'profile',
+        entityId: profileId,
+        locale,
+        metadata: {
+          snapshotVersion: 1,
+          representativeSystemCount: draft.representativeSystems.length,
+          workPrincipleCount: draft.workPrinciples.length,
+        },
+      });
+    });
+
+    return { ok: true, message: `${locale.toUpperCase()} Profile published from current draft.` };
+  }
+
   if (intent === 'identity') {
     const displayName = optionalText(form, 'displayName');
+    if (displayName !== null && displayName.length > 80) {
+      return { ok: false, message: 'Display name must stay within 80 characters.' };
+    }
+
     const localized = {
       en: {
         professional_title: optionalText(form, 'professionalTitleEn'),
@@ -863,6 +970,9 @@ export async function action({ request }: Route.ActionArgs) {
 
     for (const group of groups) {
       for (const title of [group.enTitle, group.frTitle]) {
+        if (title.length > 80) {
+          return { ok: false, message: 'Capability group titles must stay within 80 characters.' };
+        }
         if (technologyTerms.has(title.toLocaleLowerCase())) {
           return {
             ok: false,
@@ -873,6 +983,17 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       for (const capability of group.capabilities) {
+        if (
+          capability.enTitle.length > 100 ||
+          capability.frTitle.length > 100 ||
+          (capability.enSummary?.length ?? 0) > 280 ||
+          (capability.frSummary?.length ?? 0) > 280
+        ) {
+          return {
+            ok: false,
+            message: 'Capability titles must stay within 100 characters and summaries within 280 characters.',
+          };
+        }
         for (const title of [capability.enTitle, capability.frTitle]) {
           if (technologyTerms.has(title.toLocaleLowerCase())) {
             return {
