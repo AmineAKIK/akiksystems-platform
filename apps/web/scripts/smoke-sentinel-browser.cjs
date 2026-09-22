@@ -1886,31 +1886,48 @@ async function assertTechnicalEvaluatorPaths(browser) {
       {
         path: '/en/systems/sentinel',
         heading: 'Sentinel',
-        evidence: ['https://sentinel.akiksystems.fr'],
+        evidence: [{ href: 'https://sentinel.akiksystems.fr' }],
       },
       {
         path: '/en/systems/protocap',
         heading: 'ProtoCap',
         evidence: [
-          'https://github.com/AmineAKIK/protocap',
-          'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+          { href: 'https://github.com/AmineAKIK/protocap' },
+          {
+            href: 'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+            label: 'Product boundaries',
+          },
         ],
       },
       {
         path: '/en/systems/oria-nutrition',
         heading: 'Oria Nutrition',
         evidence: [
-          'https://amineakik.github.io/orianutrition/',
-          'https://github.com/AmineAKIK/orianutrition',
-          'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+          { href: 'https://amineakik.github.io/orianutrition/' },
+          { href: 'https://github.com/AmineAKIK/orianutrition' },
+          {
+            href: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+            label: 'Case study',
+          },
+          {
+            href: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/content-provenance.md',
+            label: 'Content provenance',
+          },
         ],
       },
       {
         path: '/en/systems/tugeres',
         heading: 'Tugères',
         evidence: [
-          'https://github.com/AmineAKIK/tugeres',
-          'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+          { href: 'https://github.com/AmineAKIK/tugeres' },
+          {
+            href: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+            label: 'Operations runbook',
+          },
+          {
+            href: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/guide-installation.md',
+            label: 'Installation guide',
+          },
         ],
       },
     ];
@@ -1921,11 +1938,19 @@ async function assertTechnicalEvaluatorPaths(browser) {
       await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
       await assertSystemProofTransparency(page, 'en');
 
-      for (const href of target.evidence) {
+      for (const item of target.evidence) {
+        const link = page.locator(`a[href="${item.href}"]`).first();
         assert.ok(
-          (await page.locator(`a[href="${href}"]`).count()) >= 1,
-          `${target.path} must expose the available technical evidence link ${href}.`,
+          (await link.count()) >= 1,
+          `${target.path} must expose the available technical evidence link ${item.href}.`,
         );
+        if (item.label) {
+          assert.equal(
+            (await link.innerText()).trim(),
+            item.label,
+            `${target.path} must give technical documentation a descriptive label.`,
+          );
+        }
       }
     }
   } finally {
