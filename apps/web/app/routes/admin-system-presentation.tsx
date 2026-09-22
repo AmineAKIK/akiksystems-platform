@@ -261,6 +261,8 @@ export async function action({ request, params }: Route.ActionArgs) {
       });
     } else {
       await db.transaction().execute(async (transaction) => {
+        await markSystemDraft(transaction, { systemId, locale });
+
         await transaction
           .updateTable('system_localizations')
           .set({
@@ -270,8 +272,6 @@ export async function action({ request, params }: Route.ActionArgs) {
           .where('system_id', '=', systemId)
           .where('locale', '=', locale)
           .execute();
-
-        await markSystemDraft(transaction, { systemId, locale });
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
