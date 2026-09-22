@@ -40,6 +40,19 @@ export interface PublicSystemAlternate {
   slug: string;
 }
 
+export interface PublishedSystemListItem {
+  id: string;
+  locale: PlatformLocale;
+  slug: string;
+  title: string;
+  summary: string;
+  publishedAt: Date;
+}
+
+export interface ListPublishedSystemsInput {
+  locale: PlatformLocale;
+}
+
 export interface PublishedSystem {
   id: string;
   locale: PlatformLocale;
@@ -58,6 +71,54 @@ export interface PublishedSystem {
 export interface GetPublishedSystemInput {
   locale: PlatformLocale;
   slug: string;
+}
+
+export async function listPublishedSystems(
+  db: Kysely<Database>,
+  input: ListPublishedSystemsInput,
+): Promise<PublishedSystemListItem[]> {
+  const rows = await db
+    .selectFrom('systems')
+    .innerJoin(
+      'system_localizations',
+      'system_localizations.system_id',
+      'systems.id',
+    )
+    .select([
+      'systems.id',
+      'system_localizations.slug',
+      'system_localizations.title',
+      'system_localizations.summary',
+      'system_localizations.published_at',
+    ])
+    .where('systems.lifecycle', '=', 'active')
+    .where('system_localizations.locale', '=', input.locale)
+    .where('system_localizations.editorial_state', '=', 'published')
+    .where('system_localizations.slug', 'is not', null)
+    .where('system_localizations.title', 'is not', null)
+    .where('system_localizations.summary', 'is not', null)
+    .where('system_localizations.published_at', 'is not', null)
+    .orderBy('systems.created_at')
+    .orderBy('systems.id')
+    .execute();
+
+  return rows.flatMap((row) =>
+    row.slug === null ||
+    row.title === null ||
+    row.summary === null ||
+    row.published_at === null
+      ? []
+      : [
+          {
+            id: row.id,
+            locale: input.locale,
+            slug: row.slug,
+            title: row.title,
+            summary: row.summary,
+            publishedAt: row.published_at,
+          },
+        ],
+  );
 }
 
 export async function getPublishedSystem(
