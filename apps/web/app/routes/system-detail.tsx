@@ -145,6 +145,7 @@ export default function SystemDetailRoute() {
       originSummary={system.origin?.summary ?? null}
       originTitle={system.origin?.title ?? null}
       presentationDocument={system.presentationDocument}
+      proofTransparency={system.proofTransparency}
       presentationKind={system.presentationKind}
       summary={system.summary}
       technologies={system.technologies}
