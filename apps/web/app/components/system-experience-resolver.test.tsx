@@ -44,6 +44,9 @@ describe('System Experience Resolver', () => {
       if (presentationKind === 'guided_demo') {
         expect(html).toContain('<main class="aks-guided-demo"');
         expect(html).toContain('Evidence contract');
+      } else if (presentationKind === 'interactive_entry') {
+        expect(html).toContain('<main class="aks-interactive-entry"');
+        expect(html).toContain('AkikSystems remains your return point');
       } else {
         expect(html).toContain('<main class="aks-system-detail"');
       }
@@ -96,5 +99,43 @@ describe('Guided demo System experience', () => {
     expect(html).toContain('Live plant feeds remain future work.');
     expect(html).toContain("L&#x27;Oreal / La Roche-Posay");
     expect(html).toContain('Inspectable technologies');
+  });
+});
+
+
+describe('Interactive-entry System experience', () => {
+  it('keeps the passage to the live application explicit and reversible', () => {
+    const html = renderToStaticMarkup(
+      <SystemExperience
+        assets={[]}
+        links={[
+          { id: 'live', kind: 'live', url: 'https://example.test/live' },
+          { id: 'repository', kind: 'repository', url: 'https://example.test/repo' },
+        ]}
+        locale="en"
+        originSummary={null}
+        originTitle={null}
+        presentationDocument={{
+          version: 1,
+          blocks: [
+            { type: 'heading', level: 2, text: 'Evidence boundaries' },
+            { type: 'paragraph', text: 'No real client data is processed.' },
+          ],
+        }}
+        presentationKind="interactive_entry"
+        summary="A fictional portfolio application."
+        technologies={[{ id: 'react', name: 'React' }]}
+        title="Oria Nutrition"
+      />,
+    );
+
+    expect(html).toContain('Open Oria in a new tab');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('Back to Systems');
+    expect(html).toContain('href="/en/systems"');
+    expect(html).toContain('fictional, non-industrial portfolio demonstration');
+    expect(html).toContain('No real client data is processed.');
+    expect(html).toContain('Repository');
   });
 });
