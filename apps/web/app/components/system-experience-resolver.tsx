@@ -2,7 +2,7 @@ import type { SystemPresentationKind } from '@akiksystems/core';
 import type { ComponentType } from 'react';
 
 import {
-  SystemDetailView,
+  StandardSystemRenderer,
   type SystemDetailViewProps,
 } from './system-detail-view';
 
@@ -28,7 +28,7 @@ export interface SystemExperienceProps extends SystemDetailViewProps {
 }
 
 function StandardSystemExperience(props: SystemDetailViewProps) {
-  return <SystemDetailView {...props} />;
+  return <StandardSystemRenderer {...props} />;
 }
 
 function GuidedDemoSystemExperience(props: SystemDetailViewProps) {
