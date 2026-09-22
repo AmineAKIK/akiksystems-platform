@@ -6,7 +6,9 @@ import {
 } from 'react-router';
 
 import { SystemExperience } from '../components/system-experience-resolver';
+import { getAssetObjectRange } from '../lib/asset-storage.server';
 import { appDb } from '../lib/db.server';
+import { imageDimensions } from '../lib/image-dimensions.server';
 import { requireLocale } from '../i18n/locales';
 
 import type { Route } from './+types/system-detail';
@@ -20,6 +22,72 @@ function requiredSlug(value: string | undefined): string {
   }
 
   return value;
+}
+
+
+async function ensureMediaDimensions<
+  T extends {
+    id: string;
+    mimeType: string;
+    width: number | null;
+    height: number | null;
+  },
+>(media: T[]): Promise<T[]> {
+  const missing = media.filter(
+    (asset) =>
+      asset.mimeType.startsWith('image/') &&
+      (asset.width === null || asset.height === null),
+  );
+
+  if (missing.length === 0) {
+    return media;
+  }
+
+  const rows = await appDb
+    .selectFrom('assets')
+    .select(['id', 'storage_key', 'mime_type', 'width', 'height'])
+    .where(
+      'id',
+      'in',
+      missing.map(({ id }) => id),
+    )
+    .execute();
+
+  const discovered = new Map<string, { width: number; height: number }>();
+
+  await Promise.all(
+    rows.map(async (asset) => {
+      if (asset.width !== null && asset.height !== null) {
+        discovered.set(asset.id, {
+          width: asset.width,
+          height: asset.height,
+        });
+        return;
+      }
+
+      try {
+        const bytes = await getAssetObjectRange(asset.storage_key);
+        const dimensions = imageDimensions(asset.mime_type, bytes);
+        if (dimensions === null) return;
+
+        discovered.set(asset.id, dimensions);
+        await appDb
+          .updateTable('assets')
+          .set(dimensions)
+          .where('id', '=', asset.id)
+          .where('width', 'is', null)
+          .where('height', 'is', null)
+          .execute();
+      } catch {
+        // Historical dimension discovery must never make a published System unavailable.
+      }
+    }),
+  );
+
+  return media.map((asset) => {
+    const dimensions = discovered.get(asset.id);
+    return dimensions === undefined ? asset : { ...asset, ...dimensions };
+  });
 }
 
 function publicSystemUrl(locale: 'en' | 'fr', slug: string): string {
@@ -37,12 +105,14 @@ export async function loader({ params }: Route.LoaderArgs) {
       throw new Response('System not found.', { status: 404 });
     }
 
+    const media = await ensureMediaDimensions(system.media);
+
     return data(
       {
         system: {
           ...system,
           publishedAt: system.publishedAt.toISOString(),
-          media: system.media.map((asset) => ({
+          media: media.map((asset) => ({
             ...asset,
             url: `/${locale}/systems/${slug}/assets/${asset.id}`,
           })),
