@@ -1194,6 +1194,28 @@ async function assertSystemsOverview(browser) {
   }
 }
 
+async function assertSystemProofTransparency(page, locale, expectations = []) {
+  const panel = page.locator('.aks-system-proof-transparency');
+  await panel
+    .getByRole('heading', {
+      level: 2,
+      name: locale === 'fr' ? 'Transparence de preuve' : 'Proof transparency',
+      exact: true,
+    })
+    .waitFor();
+
+  const text = await panel.innerText();
+  for (const label of locale === 'fr'
+    ? ['Rôle', 'Maturité', 'Nature de la démo', 'Nature des données', 'Limites']
+    : ['Role', 'Maturity', 'Demo nature', 'Data nature', 'Limits']) {
+    assert.match(text, new RegExp(label, 'i'));
+  }
+
+  for (const expectation of expectations) {
+    assert.match(text, expectation);
+  }
+}
+
 async function assertProtoCapGuidedDemo(browser) {
   execFileSync('pnpm', ['db:bootstrap-protocap-qualification'], {
     cwd: process.cwd(),
@@ -1226,6 +1248,13 @@ async function assertProtoCapGuidedDemo(browser) {
       );
       assert.match(await page.locator('body').innerText(), /fictitious|fictives/i);
       assert.match(await page.locator('body').innerText(), /L'Oreal \/ La Roche-Posay/);
+      await assertSystemProofTransparency(
+        page,
+        target.path.startsWith('/fr/') ? 'fr' : 'en',
+        target.path.startsWith('/fr/')
+          ? [/démonstrateur/i, /synthétiques/i, /déploiement industriel/i]
+          : [/engineering portfolio/i, /synthetic demonstration data/i, /industrial deployment/i],
+      );
       await assertAxe(page);
     }
   } finally {
@@ -1315,6 +1344,13 @@ async function assertOriaInteractiveEntry(browser) {
 
       assert.match(await page.locator('body').innerText(), /non-industrial|non industriel/i);
       assert.match(await page.locator('body').innerText(), /No real client data|Aucune donnee de client reel/i);
+      await assertSystemProofTransparency(
+        page,
+        target.path.startsWith('/fr/') ? 'fr' : 'en',
+        target.path.startsWith('/fr/')
+          ? [/non industrielle/i, /fictif/i, /cabinet de nutrition/i]
+          : [/non-industrial/i, /fictional/i, /operating nutrition practice/i],
+      );
       await assertAxe(page);
     }
   } finally {
@@ -1384,6 +1420,13 @@ async function assertTugeresStandardSystem(browser) {
         await page.locator('a[href="https://unsupported.example.test/demo"]').count(),
         0,
         'documented_only must suppress an unsupported stored demo link.',
+      );
+      await assertSystemProofTransparency(
+        page,
+        target.path.startsWith('/fr/') ? 'fr' : 'en',
+        target.path.startsWith('/fr/')
+          ? [/white-label/i, /déploiement client actif non prouvé/i, /Aucune démo publique/i]
+          : [/White-label catering/i, /customer deployment not evidenced/i, /No supportable public demo/i],
       );
       await assertAxe(page);
     }
@@ -2678,7 +2721,12 @@ async function assertAxe(page) {
       'standard',
       'Sentinel must render through the stable standard System renderer.',
     );
-    const unavailableLanguage = page.locator('.aks-language-unavailable');
+    await assertSystemProofTransparency(page, 'en', [
+      /Industrial-context software system/i,
+      /Inspectable implementation/i,
+      /no customer data exposed/i,
+    ]);
+        const unavailableLanguage = page.locator('.aks-language-unavailable');
     await unavailableLanguage.waitFor();
     assert.equal(
       (await unavailableLanguage.innerText()).trim(),
