@@ -14,6 +14,14 @@ import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/admin-profile';
 
+const technologyJourneyStages = [
+  { key: 'programming', position: 0, label: 'Programming' },
+  { key: 'networks_telecom', position: 1, label: 'Networks / telecom' },
+  { key: 'it_support', position: 2, label: 'IT support' },
+  { key: 'industry', position: 3, label: 'Relevant industry' },
+  { key: 'development_akiksystems', position: 4, label: 'Development / AkikSystems' },
+] as const;
+
 const imageMimeTypes = new Set([
   'image/jpeg',
   'image/png',
@@ -470,6 +478,54 @@ export async function loader({ request }: Route.LoaderArgs) {
       relocation: false,
     };
 
+  const technologyJourneyRows = await appDb
+    .selectFrom('profile_technology_journey_stages')
+    .leftJoin(
+      'profile_technology_journey_stage_localizations as journey_en',
+      (join) =>
+        join
+          .onRef(
+            'journey_en.profile_id',
+            '=',
+            'profile_technology_journey_stages.profile_id',
+          )
+          .onRef(
+            'journey_en.stage_key',
+            '=',
+            'profile_technology_journey_stages.stage_key',
+          )
+          .on('journey_en.locale', '=', 'en'),
+    )
+    .leftJoin(
+      'profile_technology_journey_stage_localizations as journey_fr',
+      (join) =>
+        join
+          .onRef(
+            'journey_fr.profile_id',
+            '=',
+            'profile_technology_journey_stages.profile_id',
+          )
+          .onRef(
+            'journey_fr.stage_key',
+            '=',
+            'profile_technology_journey_stages.stage_key',
+          )
+          .on('journey_fr.locale', '=', 'fr'),
+    )
+    .select([
+      'profile_technology_journey_stages.stage_key',
+      'profile_technology_journey_stages.position',
+      'profile_technology_journey_stages.evidence_experience_id',
+      'profile_technology_journey_stages.evidence_system_id',
+      'journey_en.title as title_en',
+      'journey_en.summary as summary_en',
+      'journey_fr.title as title_fr',
+      'journey_fr.summary as summary_fr',
+    ])
+    .where('profile_technology_journey_stages.profile_id', '=', profileId)
+    .orderBy('profile_technology_journey_stages.position')
+    .execute();
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
@@ -480,6 +536,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     capabilityRows,
     profileLanguages,
     profileMobility,
+    technologyJourneyRows,
     selectableSystems,
     selectedSystems,
     selectableExperiences,
@@ -903,6 +960,152 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'Capabilities updated.' };
+  }
+
+  if (intent === 'technology-journey') {
+    const selectedProfileExperiences = await appDb
+      .selectFrom('profile_experiences')
+      .select('experience_id')
+      .where('profile_id', '=', profileId)
+      .execute();
+    const selectedProfileSystems = await appDb
+      .selectFrom('profile_systems')
+      .innerJoin('systems', 'systems.id', 'profile_systems.system_id')
+      .select('profile_systems.system_id')
+      .where('profile_systems.profile_id', '=', profileId)
+      .where('systems.lifecycle', '=', 'active')
+      .execute();
+    const allowedExperienceIds = new Set(
+      selectedProfileExperiences.map(({ experience_id }) => experience_id),
+    );
+    const allowedSystemIds = new Set(
+      selectedProfileSystems.map(({ system_id }) => system_id),
+    );
+
+    const updates = technologyJourneyStages.map((stage) => {
+      const titleEn = textField(form, `journey-${stage.key}-title-en`);
+      const titleFr = textField(form, `journey-${stage.key}-title-fr`);
+      const summaryEn = optionalText(form, `journey-${stage.key}-summary-en`);
+      const summaryFr = optionalText(form, `journey-${stage.key}-summary-fr`);
+      const evidence = textField(form, `journey-${stage.key}-evidence`);
+
+      if (titleEn === '' || titleFr === '') {
+        throw new Response('Technological journey titles are required in EN and FR.', {
+          status: 400,
+        });
+      }
+      if (titleEn.length > 80 || titleFr.length > 80) {
+        throw new Response('Technological journey titles must stay within 80 characters.', {
+          status: 400,
+        });
+      }
+      if ((summaryEn?.length ?? 0) > 280 || (summaryFr?.length ?? 0) > 280) {
+        throw new Response('Technological journey summaries must stay within 280 characters.', {
+          status: 400,
+        });
+      }
+
+      let evidenceExperienceId: string | null = null;
+      let evidenceSystemId: string | null = null;
+      if (evidence.startsWith('experience:')) {
+        const id = evidence.slice('experience:'.length);
+        if (!allowedExperienceIds.has(id)) {
+          throw new Response(
+            'Technological journey Experience evidence must already be selected on Profile.',
+            { status: 400 },
+          );
+        }
+        evidenceExperienceId = id;
+      } else if (evidence.startsWith('system:')) {
+        const id = evidence.slice('system:'.length);
+        if (!allowedSystemIds.has(id)) {
+          throw new Response(
+            'Technological journey System evidence must already be selected on Profile.',
+            { status: 400 },
+          );
+        }
+        evidenceSystemId = id;
+      }
+
+      return {
+        ...stage,
+        titleEn,
+        titleFr,
+        summaryEn,
+        summaryFr,
+        evidenceExperienceId,
+        evidenceSystemId,
+      };
+    });
+
+    await appDb.transaction().execute(async (transaction) => {
+      for (const stage of updates) {
+        await transaction
+          .updateTable('profile_technology_journey_stages')
+          .set({
+            evidence_experience_id: stage.evidenceExperienceId,
+            evidence_system_id: stage.evidenceSystemId,
+            updated_at: new Date(),
+          })
+          .where('profile_id', '=', profileId)
+          .where('stage_key', '=', stage.key)
+          .executeTakeFirstOrThrow();
+
+        for (const localization of [
+          {
+            locale: 'en' as const,
+            title: stage.titleEn,
+            summary: stage.summaryEn,
+          },
+          {
+            locale: 'fr' as const,
+            title: stage.titleFr,
+            summary: stage.summaryFr,
+          },
+        ]) {
+          await transaction
+            .insertInto('profile_technology_journey_stage_localizations')
+            .values({
+              profile_id: profileId,
+              stage_key: stage.key,
+              locale: localization.locale,
+              title: localization.title,
+              summary: localization.summary,
+              updated_at: new Date(),
+            })
+            .onConflict((conflict) =>
+              conflict
+                .columns(['profile_id', 'stage_key', 'locale'])
+                .doUpdateSet({
+                  title: localization.title,
+                  summary: localization.summary,
+                  updated_at: new Date(),
+                }),
+            )
+            .execute();
+        }
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.technology_journey_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          stageCount: updates.length,
+          experienceEvidenceCount: updates.filter(
+            ({ evidenceExperienceId }) => evidenceExperienceId !== null,
+          ).length,
+          systemEvidenceCount: updates.filter(
+            ({ evidenceSystemId }) => evidenceSystemId !== null,
+          ).length,
+          stageOrder: technologyJourneyStages.map(({ key }) => key),
+        },
+      });
+    });
+
+    return { ok: true, message: 'Technological journey updated.' };
   }
 
   if (intent === 'professional-journey') {
@@ -1647,6 +1850,114 @@ export default function AdminProfile() {
                 rows={14}
               />
               <Button type="submit">Save capabilities</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="technology-journey" />
+              <Heading level={2} size="sm">
+                Technological journey
+              </Heading>
+              <Text size="sm" tone="muted">
+                Keep the five-step path coherent and technical rather than autobiographical.
+                Evidence can only reuse Experiences or Systems already selected on Profile.
+              </Text>
+              <div className="aks-proof-stack">
+                {technologyJourneyStages.map((stage) => {
+                  const row = data.technologyJourneyRows.find(
+                    (candidate) => candidate.stage_key === stage.key,
+                  );
+                  const evidenceValue =
+                    row?.evidence_experience_id !== null &&
+                    row?.evidence_experience_id !== undefined
+                      ? `experience:${row.evidence_experience_id}`
+                      : row?.evidence_system_id !== null &&
+                          row?.evidence_system_id !== undefined
+                        ? `system:${row.evidence_system_id}`
+                        : '';
+
+                  return (
+                    <fieldset className="aks-admin-fieldset" key={stage.key}>
+                      <legend>
+                        {stage.position + 1}. {stage.label}
+                      </legend>
+                      <div className="aks-admin-domain-grid">
+                        <label>
+                          <span>English title</span>
+                          <input
+                            defaultValue={row?.title_en ?? ''}
+                            name={`journey-${stage.key}-title-en`}
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>French title</span>
+                          <input
+                            defaultValue={row?.title_fr ?? ''}
+                            name={`journey-${stage.key}-title-fr`}
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>English summary</span>
+                          <textarea
+                            defaultValue={row?.summary_en ?? ''}
+                            name={`journey-${stage.key}-summary-en`}
+                            rows={3}
+                          />
+                        </label>
+                        <label>
+                          <span>French summary</span>
+                          <textarea
+                            defaultValue={row?.summary_fr ?? ''}
+                            name={`journey-${stage.key}-summary-fr`}
+                            rows={3}
+                          />
+                        </label>
+                      </div>
+                      <label>
+                        <span>Optional Profile evidence</span>
+                        <select
+                          defaultValue={evidenceValue}
+                          name={`journey-${stage.key}-evidence`}
+                        >
+                          <option value="">No evidence</option>
+                          {data.selectedExperiences.map((selected) => {
+                            const experience = data.selectableExperiences.find(
+                              (candidate) => candidate.id === selected.experience_id,
+                            );
+                            return experience === undefined ? null : (
+                              <option
+                                key={selected.experience_id}
+                                value={`experience:${selected.experience_id}`}
+                              >
+                                Experience · {experience.title_en ?? experience.title_fr ?? experience.id}
+                              </option>
+                            );
+                          })}
+                          {data.selectedSystems.map((selected) => {
+                            const system = data.selectableSystems.find(
+                              (candidate) => candidate.id === selected.system_id,
+                            );
+                            return system === undefined ? null : (
+                              <option
+                                key={selected.system_id}
+                                value={`system:${selected.system_id}`}
+                              >
+                                System · {system.title_en ?? system.title_fr ?? system.id}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                    </fieldset>
+                  );
+                })}
+              </div>
+              <Button type="submit">Save technological journey</Button>
             </Form>
           </section>
 

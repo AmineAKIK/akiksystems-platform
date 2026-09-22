@@ -31,6 +31,26 @@ export interface PublicProfileCapabilityGroup {
   capabilities: PublicProfileCapability[];
 }
 
+export interface PublicProfileTechnologyJourneyStageEvidence {
+  kind: 'experience' | 'system';
+  id: string;
+  title: string;
+  href: string | null;
+}
+
+export interface PublicProfileTechnologyJourneyStage {
+  key:
+    | 'programming'
+    | 'networks_telecom'
+    | 'it_support'
+    | 'industry'
+    | 'development_akiksystems';
+  position: number;
+  title: string;
+  summary: string | null;
+  evidence: PublicProfileTechnologyJourneyStageEvidence | null;
+}
+
 export interface PublicProfileExperience {
   id: string;
   position: number;
@@ -65,6 +85,7 @@ export interface PublicProfile {
   workPrinciples: PublicProfileWorkPrinciple[];
   representativeSystems: PublicProfileSystem[];
   professionalJourney: PublicProfileExperience[];
+  technologyJourney: PublicProfileTechnologyJourneyStage[];
   capabilityGroups: PublicProfileCapabilityGroup[];
   languages: Array<'fr' | 'en' | 'ar'>;
   mobility: PublicProfileMobility;
@@ -180,6 +201,112 @@ export async function getPublicProfile(
       summary: row.capability_summary,
     });
   }
+
+  const technologyJourneyRows = await db
+    .selectFrom('profile_technology_journey_stages')
+    .innerJoin(
+      'profile_technology_journey_stage_localizations',
+      (join) =>
+        join
+          .onRef(
+            'profile_technology_journey_stage_localizations.profile_id',
+            '=',
+            'profile_technology_journey_stages.profile_id',
+          )
+          .onRef(
+            'profile_technology_journey_stage_localizations.stage_key',
+            '=',
+            'profile_technology_journey_stages.stage_key',
+          )
+          .on('profile_technology_journey_stage_localizations.locale', '=', locale),
+    )
+    .leftJoin(
+      'experience_localizations as journey_experience',
+      (join) =>
+        join
+          .onRef(
+            'journey_experience.experience_id',
+            '=',
+            'profile_technology_journey_stages.evidence_experience_id',
+          )
+          .on('journey_experience.locale', '=', locale),
+    )
+    .leftJoin(
+      'systems as journey_system',
+      (join) =>
+        join
+          .onRef(
+            'journey_system.id',
+            '=',
+            'profile_technology_journey_stages.evidence_system_id',
+          )
+          .on('journey_system.lifecycle', '=', 'active'),
+    )
+    .leftJoin(
+      'system_localizations as journey_system_localization',
+      (join) =>
+        join
+          .onRef(
+            'journey_system_localization.system_id',
+            '=',
+            'journey_system.id',
+          )
+          .on('journey_system_localization.locale', '=', locale)
+          .on('journey_system_localization.editorial_state', '=', 'published')
+          .on('journey_system_localization.published_at', 'is not', null)
+          .on('journey_system_localization.presentation_document', 'is not', null),
+    )
+    .select([
+      'profile_technology_journey_stages.stage_key',
+      'profile_technology_journey_stages.position',
+      'profile_technology_journey_stages.evidence_experience_id',
+      'profile_technology_journey_stages.evidence_system_id',
+      'profile_technology_journey_stage_localizations.title',
+      'profile_technology_journey_stage_localizations.summary',
+      'journey_experience.title as evidence_experience_title',
+      'journey_system.id as published_evidence_system_id',
+      'journey_system_localization.slug as evidence_system_slug',
+      'journey_system_localization.title as evidence_system_title',
+    ])
+    .where('profile_technology_journey_stages.profile_id', '=', profile.id)
+    .orderBy('profile_technology_journey_stages.position')
+    .execute();
+
+  const technologyJourney: PublicProfileTechnologyJourneyStage[] =
+    technologyJourneyRows.map((stage) => {
+      const systemEvidence =
+        stage.published_evidence_system_id !== null &&
+        stage.evidence_system_slug !== null &&
+        stage.evidence_system_title !== null
+          ? {
+              kind: 'system' as const,
+              id: stage.published_evidence_system_id,
+              title: stage.evidence_system_title,
+              href:
+                locale === 'fr'
+                  ? `/fr/systems/${stage.evidence_system_slug}`
+                  : `/en/systems/${stage.evidence_system_slug}`,
+            }
+          : null;
+      const experienceEvidence =
+        stage.evidence_experience_id !== null &&
+        stage.evidence_experience_title !== null
+          ? {
+              kind: 'experience' as const,
+              id: stage.evidence_experience_id,
+              title: stage.evidence_experience_title,
+              href: null,
+            }
+          : null;
+
+      return {
+        key: stage.stage_key,
+        position: stage.position,
+        title: stage.title,
+        summary: stage.summary,
+        evidence: systemEvidence ?? experienceEvidence,
+      };
+    });
 
   const professionalJourney = await db
     .selectFrom('profile_experiences')
@@ -303,6 +430,7 @@ export async function getPublicProfile(
     foundationalCopy: profile.foundational_copy,
     workPrinciples,
     professionalJourney,
+    technologyJourney,
     capabilityGroups,
     languages: languages.map(({ language_code }) => language_code),
     mobility: mobility ?? {

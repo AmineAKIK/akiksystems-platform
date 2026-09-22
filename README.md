@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile technological journey
+
+The Profile technological journey is a fixed five-step technical progression, not a complete autobiography or a tool inventory.
+
+- The stage order is structural: programming → networks/telecom → IT support → relevant industry → development/AkikSystems.
+- Each stage has concise EN/FR title and summary copy, constrained in PostgreSQL.
+- Admin can edit the localized copy but cannot reorder or invent extra stages.
+- A stage can reuse at most one Profile-selected evidence object: an Experience for context or a System for inspectable proof.
+- Experience evidence is shown as context; System evidence links to its real localized deep route only when that locale is published.
+- Concrete technologies such as React or Docker remain outside this narrative and are handled separately from capabilities.
+- The public timeline is responsive and preserves the same five-step order in EN/FR.
+
 ### Profile How I work
 
 Working principles stay deliberately short and practice-oriented, with optional links to inspectable System evidence.

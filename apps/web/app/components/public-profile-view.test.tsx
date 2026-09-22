@@ -20,6 +20,7 @@ function profile(overrides: Partial<PublicProfile> = {}): PublicProfile {
     workPrinciples: [],
     representativeSystems: [],
     professionalJourney: [],
+    technologyJourney: [],
     capabilityGroups: [],
     languages: [],
     mobility: {
@@ -243,6 +244,111 @@ describe('PublicProfileView How I work evidence', () => {
     );
 
     expect(html).toContain('Exemple : Sentinel');
+    expect(html).toContain('href="/fr/systems/sentinel"');
+  });
+});
+
+
+describe('PublicProfileView technological journey', () => {
+  const stages = [
+    {
+      key: 'programming' as const,
+      position: 0,
+      title: 'Programming foundations',
+      summary: 'Understand how software is built and controlled.',
+      evidence: null,
+    },
+    {
+      key: 'networks_telecom' as const,
+      position: 1,
+      title: 'Networks and telecom',
+      summary: 'Connectivity, protocols, and distributed behavior.',
+      evidence: null,
+    },
+    {
+      key: 'it_support' as const,
+      position: 2,
+      title: 'IT support',
+      summary: 'Diagnose real user and infrastructure problems.',
+      evidence: null,
+    },
+    {
+      key: 'industry' as const,
+      position: 3,
+      title: 'Relevant industry',
+      summary: 'Connect software decisions to operations and reliability.',
+      evidence: {
+        kind: 'experience' as const,
+        id: '00000000-0000-4000-8000-000000000031',
+        title: 'Marelli',
+        href: null,
+      },
+    },
+    {
+      key: 'development_akiksystems' as const,
+      position: 4,
+      title: 'Development and AkikSystems',
+      summary: 'Build inspectable software systems.',
+      evidence: {
+        kind: 'system' as const,
+        id: '00000000-0000-4000-8000-000000000028',
+        title: 'Sentinel',
+        href: '/en/systems/sentinel',
+      },
+    },
+  ];
+
+  it('renders the fixed technological journey without turning it into a tool list', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView profile={profile({ technologyJourney: stages })} />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Technological journey');
+    expect(html).toContain('Programming foundations');
+    expect(html).toContain('Networks and telecom');
+    expect(html).toContain('IT support');
+    expect(html).toContain('Relevant industry');
+    expect(html).toContain('Development and AkikSystems');
+    expect(html).toContain('Context: Marelli');
+    expect(html).toContain('Evidence: Sentinel');
+    expect(html).toContain('href="/en/systems/sentinel"');
+    expect(html).not.toContain('React');
+    expect(html).not.toContain('Docker');
+  });
+
+  it('localizes journey evidence affordances in French', () => {
+    const frenchStages = stages.map((stage) =>
+      stage.key === 'development_akiksystems'
+        ? {
+            ...stage,
+            title: 'Développement et AkikSystems',
+            evidence: {
+              ...stage.evidence!,
+              href: '/fr/systems/sentinel',
+            },
+          }
+        : stage.key === 'industry'
+          ? { ...stage, title: 'Industrie pertinente' }
+          : stage,
+    );
+
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/profil']}>
+        <PublicProfileView
+          profile={profile({
+            locale: 'fr',
+            alternateLocale: 'en',
+            technologyJourney: frenchStages,
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Parcours technologique');
+    expect(html).toContain('Contexte : Marelli');
+    expect(html).toContain('Preuve : Sentinel');
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
