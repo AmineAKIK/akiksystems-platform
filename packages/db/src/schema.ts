@@ -7,6 +7,7 @@ import type {
   SystemLifecycle,
   SystemLinkKind,
   SystemPresentationKind,
+  TrainingState,
 } from '@akiksystems/core';
 import type {
   ColumnType,
@@ -231,6 +232,39 @@ export interface SystemTechnologiesTable {
   created_at: TimestampColumn;
 }
 
+export interface TrainingsTable {
+  id: string;
+  provider: string;
+  state: TrainingState;
+  start_date: ColumnType<string | null, string | null | undefined, string | null>;
+  end_date: ColumnType<string | null, string | null | undefined, string | null>;
+  editorial_position: DefaultedColumn<number>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface TrainingLocalizationsTable {
+  training_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface TrainingPublicationsTable {
+  training_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -401,6 +435,18 @@ export type SystemTechnologyRow = Selectable<SystemTechnologiesTable>;
 export type NewSystemTechnologyRow = Insertable<SystemTechnologiesTable>;
 export type SystemTechnologyUpdate = Updateable<SystemTechnologiesTable>;
 
+export type TrainingRow = Selectable<TrainingsTable>;
+export type NewTrainingRow = Insertable<TrainingsTable>;
+export type TrainingUpdate = Updateable<TrainingsTable>;
+
+export type TrainingLocalizationRow = Selectable<TrainingLocalizationsTable>;
+export type NewTrainingLocalizationRow = Insertable<TrainingLocalizationsTable>;
+export type TrainingLocalizationUpdate = Updateable<TrainingLocalizationsTable>;
+
+export type TrainingPublicationRow = Selectable<TrainingPublicationsTable>;
+export type NewTrainingPublicationRow = Insertable<TrainingPublicationsTable>;
+export type TrainingPublicationUpdate = Updateable<TrainingPublicationsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -457,6 +503,9 @@ export interface Database {
   profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
+  trainings: TrainingsTable;
+  training_localizations: TrainingLocalizationsTable;
+  training_publications: TrainingPublicationsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;
