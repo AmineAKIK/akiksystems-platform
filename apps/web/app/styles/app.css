@@ -1757,3 +1757,69 @@
     grid-column: auto;
   }
 }
+
+
+/* AKS-081: reusable System references across Profile and related-content surfaces. */
+.aks-related-system-references {
+  display: grid;
+  gap: var(--aks-space-4);
+  padding-block-start: var(--aks-space-5);
+}
+
+.aks-system-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-system-reference {
+  display: grid;
+  align-content: start;
+  gap: var(--aks-space-3);
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-system-reference-meta {
+  display: grid;
+  gap: var(--aks-space-2);
+  margin: 0;
+}
+
+.aks-system-reference-meta > div {
+  display: grid;
+  gap: var(--aks-space-1);
+}
+
+.aks-system-reference-meta dt,
+.aks-system-reference-inline-label {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--aks-tracking-label);
+  text-transform: uppercase;
+}
+
+.aks-system-reference-meta dd {
+  margin: 0;
+}
+
+.aks-system-reference-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2);
+  align-items: baseline;
+}
+
+@media (max-width: 40rem) {
+  .aks-system-reference-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-system-reference {
+    padding: var(--aks-space-4);
+  }
+}
