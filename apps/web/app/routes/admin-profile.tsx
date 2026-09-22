@@ -70,6 +70,18 @@ function parseWorkPrinciples(value: string): ParsedWorkPrinciple[] {
       );
     }
 
+    if (enTitle.length > 80 || frTitle.length > 80) {
+      throw new Error(
+        `Principle line ${index + 1} titles must stay within 80 characters.`,
+      );
+    }
+
+    if ((enDetail?.length ?? 0) > 240 || (frDetail?.length ?? 0) > 240) {
+      throw new Error(
+        `Principle line ${index + 1} details must stay within 240 characters.`,
+      );
+    }
+
     const publicCopy = [enTitle, enDetail, frTitle, frDetail]
       .filter((part): part is string => part !== null)
       .join(' ');
