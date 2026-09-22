@@ -66,6 +66,7 @@ export interface ProfilesTable {
   singleton_key: DefaultedColumn<'public'>;
   display_name: string | null;
   portrait_asset_id: string | null;
+  source_cv_asset_id: string | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
