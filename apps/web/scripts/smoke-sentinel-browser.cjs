@@ -214,6 +214,28 @@ async function assertProfileAdministration(page) {
       .getByText(label, { exact: true })
       .waitFor();
   }
+  const englishCapabilities = page.locator('.aks-profile-capabilities');
+  await englishCapabilities
+    .getByRole('heading', { level: 2, name: 'Technical Capabilities', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await englishCapabilities.locator('h3').allInnerTexts(),
+    ['Architecture', 'Delivery'],
+  );
+  assert.deepEqual(
+    await englishCapabilities.locator('.aks-profile-capability .aks-text').allInnerTexts(),
+    [
+      'Design bounded systems',
+      'Shape explicit boundaries and contracts.',
+      'Qualify delivery paths',
+      'Build observable paths from change to production.',
+    ],
+  );
+  assert.equal(
+    /\bReact\b|\bDocker\b/.test(await englishCapabilities.innerText()),
+    false,
+    'Technical Capabilities must not render concrete Technology names.',
+  );
   assert.equal(
     await page.locator('.aks-experience-meta a[hreflang="fr"]').getAttribute('href'),
     '/fr/profil',
@@ -261,6 +283,23 @@ async function assertProfileAdministration(page) {
       .getByText(label, { exact: true })
       .waitFor();
   }
+  const frenchCapabilities = page.locator('.aks-profile-capabilities');
+  await frenchCapabilities
+    .getByRole('heading', { level: 2, name: 'Capacités techniques', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await frenchCapabilities.locator('h3').allInnerTexts(),
+    ['Architecture', 'Livraison'],
+  );
+  assert.deepEqual(
+    await frenchCapabilities.locator('.aks-profile-capability .aks-text').allInnerTexts(),
+    [
+      'Concevoir des systèmes délimités',
+      'Structurer des frontières et des contrats explicites.',
+      'Qualifier les parcours de livraison',
+      'Construire des parcours observables du changement à la production.',
+    ],
+  );
 
   await page.setViewportSize({ width: 390, height: 844 });
   for (const target of [
@@ -288,6 +327,11 @@ async function assertProfileAdministration(page) {
       await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').count(),
       2,
       `${target.path} must preserve structured language and mobility facts on mobile.`,
+    );
+    assert.equal(
+      await page.locator('.aks-profile-capability-group').count(),
+      2,
+      `${target.path} must preserve grouped Technical Capabilities on mobile.`,
     );
   }
 

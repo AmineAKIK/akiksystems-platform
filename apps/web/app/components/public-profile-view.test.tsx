@@ -352,3 +352,99 @@ describe('PublicProfileView technological journey', () => {
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
+
+
+describe('PublicProfileView Technical Capabilities', () => {
+  const capabilityGroups = [
+    {
+      id: '00000000-0000-4000-8000-000000000071',
+      position: 0,
+      title: 'Architecture',
+      capabilities: [
+        {
+          id: '00000000-0000-4000-8000-000000000072',
+          position: 0,
+          title: 'Design bounded systems',
+          summary: 'Shape explicit boundaries and contracts.',
+        },
+      ],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000073',
+      position: 1,
+      title: 'Delivery',
+      capabilities: [
+        {
+          id: '00000000-0000-4000-8000-000000000074',
+          position: 0,
+          title: 'Qualify delivery paths',
+          summary: 'Build observable paths from change to production.',
+        },
+      ],
+    },
+  ];
+
+  it('renders grouped capabilities as abilities rather than a technology stack', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView profile={profile({ capabilityGroups })} />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Technical Capabilities');
+    expect(html).toContain('Architecture');
+    expect(html).toContain('Design bounded systems');
+    expect(html).toContain('Delivery');
+    expect(html).toContain('Qualify delivery paths');
+    expect(html).not.toContain('React');
+    expect(html).not.toContain('Docker');
+    expect(html).not.toContain('aks-system-detail-tags');
+  });
+
+  it('localizes capability groups and summaries in French', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/profil']}>
+        <PublicProfileView
+          profile={profile({
+            locale: 'fr',
+            alternateLocale: 'en',
+            capabilityGroups: [
+              {
+                id: '00000000-0000-4000-8000-000000000071',
+                position: 0,
+                title: 'Architecture',
+                capabilities: [
+                  {
+                    id: '00000000-0000-4000-8000-000000000072',
+                    position: 0,
+                    title: 'Concevoir des systèmes délimités',
+                    summary: 'Structurer des frontières et des contrats explicites.',
+                  },
+                ],
+              },
+              {
+                id: '00000000-0000-4000-8000-000000000073',
+                position: 1,
+                title: 'Livraison',
+                capabilities: [
+                  {
+                    id: '00000000-0000-4000-8000-000000000074',
+                    position: 0,
+                    title: 'Qualifier les parcours de livraison',
+                    summary:
+                      'Construire des parcours observables du changement à la production.',
+                  },
+                ],
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Capacités techniques');
+    expect(html).toContain('Concevoir des systèmes délimités');
+    expect(html).toContain('Livraison');
+    expect(html).toContain('Qualifier les parcours de livraison');
+  });
+});

@@ -232,6 +232,54 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               </ol>
             </section>
           ) : null}
+          {profile.capabilityGroups.length > 0 ? (
+            <section className="aks-profile-capabilities">
+              <div className="aks-profile-section-heading">
+                <Heading level={2} size="sm">
+                  {profile.locale === 'fr'
+                    ? 'Capacités techniques'
+                    : 'Technical Capabilities'}
+                </Heading>
+                <Text size="sm" tone="muted">
+                  {profile.locale === 'fr'
+                    ? 'Des aptitudes d’ingénierie regroupées par domaine — distinctes des outils utilisés pour les exercer.'
+                    : 'Engineering abilities grouped by domain — distinct from the tools used to exercise them.'}
+                </Text>
+              </div>
+              <div className="aks-profile-capability-groups">
+                {profile.capabilityGroups.map((group) => (
+                  <section
+                    aria-labelledby={`capability-group-${group.id}`}
+                    className="aks-profile-capability-group"
+                    key={group.id}
+                  >
+                    <Heading
+                      id={`capability-group-${group.id}`}
+                      level={3}
+                      size="sm"
+                    >
+                      {group.title}
+                    </Heading>
+                    <ul className="aks-profile-capability-list">
+                      {group.capabilities.map((capability) => (
+                        <li
+                          className="aks-profile-capability"
+                          key={capability.id}
+                        >
+                          <Text tone="strong">{capability.title}</Text>
+                          {capability.summary !== null ? (
+                            <Text size="sm" tone="muted">
+                              {capability.summary}
+                            </Text>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            </section>
+          ) : null}
           {profile.professionalJourney.length > 0 ? (
             <section className="aks-profile-professional-journey">
               <Heading level={2} size="sm">

@@ -1272,3 +1272,58 @@
     inset-inline-start: 1.2rem;
   }
 }
+
+/* AKS-065: semantic engineering capabilities, visually distinct from technology tags. */
+.aks-profile-capabilities {
+  display: grid;
+  gap: var(--aks-space-5);
+  padding-block-start: var(--aks-space-5);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-capability-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-5);
+}
+
+.aks-profile-capability-group {
+  display: grid;
+  align-content: start;
+  gap: var(--aks-space-4);
+  min-width: 0;
+  padding-block: var(--aks-space-4);
+  border-top: 2px solid var(--aks-text-primary);
+}
+
+.aks-profile-capability-list {
+  display: grid;
+  gap: var(--aks-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aks-profile-capability {
+  display: grid;
+  gap: var(--aks-space-1);
+  min-width: 0;
+}
+
+.aks-profile-capability .aks-text:first-child {
+  max-width: 28ch;
+}
+
+.aks-profile-capability .aks-text:last-child {
+  max-width: 48ch;
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-capability-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-profile-capability-group {
+    padding-block: var(--aks-space-3);
+  }
+}
