@@ -271,6 +271,8 @@ export async function action({ request, params }: Route.ActionArgs) {
           .where('locale', '=', locale)
           .execute();
 
+        await markSystemDraft(transaction, { systemId, locale });
+
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
           actorEmail: session.user.email,
@@ -359,6 +361,10 @@ function PresentationBlockEditor({
                   onChange(index, {
                     ...block,
                     level: Number(event.target.value) as 2 | 3,
+                    evidenceStatus:
+                      Number(event.target.value) === 2
+                        ? block.evidenceStatus ?? null
+                        : null,
                   })
                 }
               >
