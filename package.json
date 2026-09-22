@@ -50,6 +50,7 @@
     "db:verify-system-editorial-controls": "pnpm --filter @akiksystems/db db:verify-system-editorial-controls",
     "db:verify-protocap-domain": "pnpm --filter @akiksystems/db db:verify-protocap-domain",
     "db:verify-oria-domain": "pnpm --filter @akiksystems/db db:verify-oria-domain",
+    "db:bootstrap-oria-qualification": "pnpm --filter @akiksystems/db db:bootstrap-oria-qualification",
     "db:bootstrap-protocap-qualification": "pnpm --filter @akiksystems/db db:bootstrap-protocap-qualification",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
