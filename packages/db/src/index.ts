@@ -19,6 +19,20 @@ export type {
 } from './public-profile.js';
 export { getPublishedSystem, listPublishedSystems } from './public-system.js';
 export {
+  buildSystemPublicationSnapshot,
+  markSystemDraft,
+  parseSystemPublicationSnapshot,
+  publishSystemLocalization,
+  unpublishSystemLocalization,
+} from './system-publication.js';
+export type {
+  SystemPublicationLink,
+  SystemPublicationMedia,
+  SystemPublicationOrigin,
+  SystemPublicationSnapshot,
+  SystemPublicationTechnology,
+} from './system-publication.js';
+export {
   getPublishedSystemReferenceById,
   listPublishedSystemReferences,
   systemReferenceHref,
