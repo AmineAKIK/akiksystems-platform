@@ -31,6 +31,12 @@ export interface PublicProfileExperience {
   summary: string | null;
 }
 
+export interface PublicProfileMobility {
+  worldwide: boolean;
+  remote: boolean;
+  relocation: boolean;
+}
+
 export interface PublicProfileSystem {
   id: string;
   position: number;
@@ -52,6 +58,8 @@ export interface PublicProfile {
   representativeSystems: PublicProfileSystem[];
   professionalJourney: PublicProfileExperience[];
   capabilityGroups: PublicProfileCapabilityGroup[];
+  languages: Array<'fr' | 'en' | 'ar'>;
+  mobility: PublicProfileMobility;
   alternateLocale: PlatformLocale;
 }
 
@@ -89,6 +97,19 @@ export async function getPublicProfile(
   if (profile === undefined) {
     return null;
   }
+
+  const languages = await db
+    .selectFrom('profile_languages')
+    .select(['language_code'])
+    .where('profile_id', '=', profile.id)
+    .orderBy('position')
+    .execute();
+
+  const mobility = await db
+    .selectFrom('profile_mobility')
+    .select(['worldwide', 'remote', 'relocation'])
+    .where('profile_id', '=', profile.id)
+    .executeTakeFirst();
 
   const capabilityRows = await db
     .selectFrom('profile_capability_groups')
@@ -219,6 +240,12 @@ export async function getPublicProfile(
     workPrinciples,
     professionalJourney,
     capabilityGroups,
+    languages: languages.map(({ language_code }) => language_code),
+    mobility: mobility ?? {
+      worldwide: false,
+      remote: false,
+      relocation: false,
+    },
     representativeSystems: representativeSystems.map((system) => ({
       id: system.id,
       position: system.position,
