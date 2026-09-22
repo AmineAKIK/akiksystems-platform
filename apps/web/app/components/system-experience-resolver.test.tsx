@@ -104,7 +104,10 @@ describe('Guided demo System experience', () => {
       />,
     );
 
-    expect(html).toContain('Try the public demo');
+    expect(html).toContain('Prepare demo');
+    expect(html).toContain('Open demo');
+    expect(html).toContain('data-demo-loading="deferred"');
+    expect(html).not.toContain('<iframe');
     expect(html).toContain('Implemented');
     expect(html).toContain('Explicit boundary');
     expect(html).toContain('Hypothesis');
