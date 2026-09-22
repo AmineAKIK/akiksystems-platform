@@ -1,4 +1,7 @@
-import { getPublicProfile } from '@akiksystems/db';
+import {
+  getPublicProfile,
+  listPublishedSystemReferences,
+} from '@akiksystems/db';
 import { data, useLoaderData, type MetaDescriptor } from 'react-router';
 
 import { PublicProfileView } from '../components/public-profile-view';
@@ -15,6 +18,22 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Profile not found.', { status: 404 });
   }
 
+  const referenceIds = [
+    ...new Set([
+      ...profile.representativeSystems.map(({ id }) => id),
+      ...profile.workPrinciples.flatMap(({ evidenceSystem }) =>
+        evidenceSystem === null ? [] : [evidenceSystem.id],
+      ),
+      ...profile.technologyJourney.flatMap(({ evidence }) =>
+        evidence?.kind === 'system' ? [evidence.id] : [],
+      ),
+    ]),
+  ];
+  const systemReferences = await listPublishedSystemReferences(appDb, {
+    locale,
+    ids: referenceIds,
+  });
+
   const alternate = await appDb
     .selectFrom('profile_publications')
     .select('locale')
@@ -25,6 +44,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   return data(
     {
       profile,
+      systemReferences,
       localContext: {
         title: null,
         alternateHref: alternate === undefined ? null : '/en/profile',
@@ -108,6 +128,11 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 }
 
 export default function ProfileRoute() {
-  const { profile } = useLoaderData<typeof loader>();
-  return <PublicProfileView profile={profile} />;
+  const { profile, systemReferences } = useLoaderData<typeof loader>();
+  return (
+    <PublicProfileView
+      profile={profile}
+      systemReferences={systemReferences}
+    />
+  );
 }
