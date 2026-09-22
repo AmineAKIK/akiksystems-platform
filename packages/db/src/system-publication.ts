@@ -358,3 +358,52 @@ export async function markSystemDraft(
 
   await query.execute();
 }
+
+
+export async function bootstrapSystemPublications(
+  db: Kysely<Database>,
+): Promise<{ created: number; refreshed: number }> {
+  const candidates = await db
+    .selectFrom('system_localizations')
+    .select(['system_id', 'locale', 'published_at'])
+    .where('editorial_state', '=', 'published')
+    .where('published_at', 'is not', null)
+    .execute();
+
+  let created = 0;
+  let refreshed = 0;
+
+  for (const candidate of candidates) {
+    const existing = await db
+      .selectFrom('system_publications')
+      .select('system_id')
+      .where('system_id', '=', candidate.system_id)
+      .where('locale', '=', candidate.locale)
+      .executeTakeFirst();
+
+    if (existing !== undefined) {
+      continue;
+    }
+
+    const snapshot = await publicationSource(
+      db,
+      candidate.system_id,
+      candidate.locale,
+    );
+    await db
+      .insertInto('system_publications')
+      .values({
+        system_id: candidate.system_id,
+        locale: candidate.locale,
+        slug: snapshot.slug,
+        snapshot: snapshot as unknown as Record<string, unknown>,
+        published_at: candidate.published_at!,
+        updated_at: new Date(),
+      })
+      .execute();
+
+    created += 1;
+  }
+
+  return { created, refreshed };
+}
