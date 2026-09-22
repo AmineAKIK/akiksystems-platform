@@ -359,7 +359,7 @@ export async function markSystemDraft(
 
 export async function bootstrapSystemPublications(
   db: Kysely<Database>,
-): Promise<{ created: number; refreshed: number }> {
+): Promise<{ created: number }> {
   const candidates = await db
     .selectFrom('system_localizations')
     .select(['system_id', 'locale', 'published_at'])
@@ -368,8 +368,6 @@ export async function bootstrapSystemPublications(
     .execute();
 
   let created = 0;
-  const refreshed = 0;
-
   for (const candidate of candidates) {
     const existing = await db
       .selectFrom('system_publications')
@@ -402,5 +400,5 @@ export async function bootstrapSystemPublications(
     created += 1;
   }
 
-  return { created, refreshed };
+  return { created };
 }
