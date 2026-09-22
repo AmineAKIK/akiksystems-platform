@@ -441,6 +441,56 @@ try {
     'preuve-profil-un',
   );
 
+  await db
+    .updateTable('profile_technology_journey_stages')
+    .set({
+      evidence_system_id: secondSystemId,
+      evidence_experience_id: null,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .where('stage_key', '=', 'development_akiksystems')
+    .executeTakeFirstOrThrow();
+
+  const englishWithTechnologyJourney = await getPublicProfile(db, 'en');
+  const frenchWithTechnologyJourney = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithTechnologyJourney);
+  assert.ok(frenchWithTechnologyJourney);
+  assert.deepEqual(
+    englishWithTechnologyJourney.technologyJourney.map(({ key }) => key),
+    [
+      'programming',
+      'networks_telecom',
+      'it_support',
+      'industry',
+      'development_akiksystems',
+    ],
+    'The technological journey must preserve the fixed five-step technical progression.',
+  );
+  assert.equal(
+    englishWithTechnologyJourney.technologyJourney[4]?.evidence?.title,
+    'Profile Proof Two',
+  );
+  assert.equal(
+    englishWithTechnologyJourney.technologyJourney[4]?.evidence?.href,
+    '/en/systems/profile-proof-two',
+  );
+  assert.equal(
+    frenchWithTechnologyJourney.technologyJourney[4]?.evidence,
+    null,
+    'Unpublished localized System evidence must disappear from the technological journey.',
+  );
+
+  await db
+    .updateTable('profile_technology_journey_stages')
+    .set({
+      evidence_system_id: null,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .where('stage_key', '=', 'development_akiksystems')
+    .executeTakeFirstOrThrow();
+
   const evidencePrincipleId = randomUUID();
 
   await db
@@ -797,7 +847,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered concise bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered concise bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, a fixed localized five-step technological journey with publication-aware evidence, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();
