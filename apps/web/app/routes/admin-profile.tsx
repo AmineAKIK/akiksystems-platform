@@ -427,6 +427,24 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('profile_capabilities.position')
     .execute();
 
+  const profileLanguages = await appDb
+    .selectFrom('profile_languages')
+    .select(['language_code', 'position'])
+    .where('profile_id', '=', profileId)
+    .orderBy('position')
+    .execute();
+
+  const profileMobility =
+    (await appDb
+      .selectFrom('profile_mobility')
+      .select(['worldwide', 'remote', 'relocation'])
+      .where('profile_id', '=', profileId)
+      .executeTakeFirst()) ?? {
+      worldwide: false,
+      remote: false,
+      relocation: false,
+    };
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
@@ -434,6 +452,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     portrait: portrait ?? null,
     principles,
     capabilityRows,
+    profileLanguages,
+    profileMobility,
     selectableSystems,
     selectedSystems,
     selectableExperiences,
@@ -576,6 +596,79 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'How I work updated.' };
+  }
+
+  if (intent === 'languages-mobility') {
+    const allowedLanguages = new Set(['fr', 'en', 'ar']);
+    const languageCodes = form
+      .getAll('language')
+      .filter((value): value is string => typeof value === 'string')
+      .filter((value) => allowedLanguages.has(value));
+
+    const orderedLanguages = [...new Set(languageCodes)].sort((left, right) => {
+      const leftPosition = Number(textField(form, `language-position-${left}`));
+      const rightPosition = Number(textField(form, `language-position-${right}`));
+      return leftPosition - rightPosition;
+    }) as Array<'fr' | 'en' | 'ar'>;
+
+    const worldwide = form.get('mobility-worldwide') === 'on';
+    const remote = form.get('mobility-remote') === 'on';
+    const relocation = form.get('mobility-relocation') === 'on';
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('profile_languages')
+        .where('profile_id', '=', profileId)
+        .execute();
+
+      if (orderedLanguages.length > 0) {
+        await transaction
+          .insertInto('profile_languages')
+          .values(
+            orderedLanguages.map((languageCode, position) => ({
+              profile_id: profileId,
+              language_code: languageCode,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await transaction
+        .insertInto('profile_mobility')
+        .values({
+          profile_id: profileId,
+          worldwide,
+          remote,
+          relocation,
+          updated_at: new Date(),
+        })
+        .onConflict((conflict) =>
+          conflict.column('profile_id').doUpdateSet({
+            worldwide,
+            remote,
+            relocation,
+            updated_at: new Date(),
+          }),
+        )
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.languages_mobility_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          languages: orderedLanguages,
+          worldwide,
+          remote,
+          relocation,
+        },
+      });
+    });
+
+    return { ok: true, message: 'Languages and mobility updated.' };
   }
 
   if (intent === 'capabilities') {
@@ -1141,6 +1234,84 @@ export default function AdminProfile() {
                 rows={10}
               />
               <Button type="submit">Save How I work</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="languages-mobility" />
+              <Heading level={2} size="sm">
+                Languages and mobility
+              </Heading>
+              <Text size="sm" tone="muted">
+                Keep spoken languages and mobility as structured Profile facts,
+                not editorial prose.
+              </Text>
+              <div className="aks-admin-domain-grid">
+                <fieldset className="aks-admin-fieldset">
+                  <legend>Languages</legend>
+                  {[
+                    { code: 'fr', label: 'French' },
+                    { code: 'en', label: 'English' },
+                    { code: 'ar', label: 'Arabic' },
+                  ].map(({ code, label }) => {
+                    const selected = data.profileLanguages.find(
+                      (language) => language.language_code === code,
+                    );
+
+                    return (
+                      <div className="aks-admin-card" key={code}>
+                        <label>
+                          <input
+                            defaultChecked={selected !== undefined}
+                            name="language"
+                            type="checkbox"
+                            value={code}
+                          />
+                          <span>{label}</span>
+                        </label>
+                        <label>
+                          <span>Order</span>
+                          <input
+                            defaultValue={selected?.position ?? 999}
+                            min={0}
+                            name={`language-position-${code}`}
+                            type="number"
+                          />
+                        </label>
+                      </div>
+                    );
+                  })}
+                </fieldset>
+                <fieldset className="aks-admin-fieldset">
+                  <legend>Mobility</legend>
+                  <label>
+                    <input
+                      defaultChecked={data.profileMobility.worldwide}
+                      name="mobility-worldwide"
+                      type="checkbox"
+                    />
+                    <span>Worldwide</span>
+                  </label>
+                  <label>
+                    <input
+                      defaultChecked={data.profileMobility.remote}
+                      name="mobility-remote"
+                      type="checkbox"
+                    />
+                    <span>Remote</span>
+                  </label>
+                  <label>
+                    <input
+                      defaultChecked={data.profileMobility.relocation}
+                      name="mobility-relocation"
+                      type="checkbox"
+                    />
+                    <span>Relocation</span>
+                  </label>
+                </fieldset>
+              </div>
+              <Button type="submit">Save languages and mobility</Button>
             </Form>
           </section>
 

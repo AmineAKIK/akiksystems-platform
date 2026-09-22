@@ -31,6 +31,8 @@ export type DefaultedColumn<Value> = ColumnType<
   Value
 >;
 
+export type ProfileLanguageCode = 'fr' | 'en' | 'ar';
+
 export interface SystemMetadataTable {
   key: string;
   value: unknown;
@@ -124,6 +126,22 @@ export interface ProfileCapabilityLocalizationsTable {
   locale: PlatformLocale;
   title: string;
   summary: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileLanguagesTable {
+  profile_id: string;
+  language_code: ProfileLanguageCode;
+  position: number;
+  created_at: TimestampColumn;
+}
+
+export interface ProfileMobilityTable {
+  profile_id: string;
+  worldwide: boolean;
+  remote: boolean;
+  relocation: boolean;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
@@ -277,6 +295,14 @@ export type NewProfileCapabilityLocalizationRow =
 export type ProfileCapabilityLocalizationUpdate =
   Updateable<ProfileCapabilityLocalizationsTable>;
 
+export type ProfileLanguageRow = Selectable<ProfileLanguagesTable>;
+export type NewProfileLanguageRow = Insertable<ProfileLanguagesTable>;
+export type ProfileLanguageUpdate = Updateable<ProfileLanguagesTable>;
+
+export type ProfileMobilityRow = Selectable<ProfileMobilityTable>;
+export type NewProfileMobilityRow = Insertable<ProfileMobilityTable>;
+export type ProfileMobilityUpdate = Updateable<ProfileMobilityTable>;
+
 export type ProfileExperienceRow = Selectable<ProfileExperiencesTable>;
 export type NewProfileExperienceRow = Insertable<ProfileExperiencesTable>;
 export type ProfileExperienceUpdate = Updateable<ProfileExperiencesTable>;
@@ -339,6 +365,8 @@ export interface Database {
   profile_capability_group_localizations: ProfileCapabilityGroupLocalizationsTable;
   profile_capabilities: ProfileCapabilitiesTable;
   profile_capability_localizations: ProfileCapabilityLocalizationsTable;
+  profile_languages: ProfileLanguagesTable;
+  profile_mobility: ProfileMobilityTable;
   profile_experiences: ProfileExperiencesTable;
   profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;

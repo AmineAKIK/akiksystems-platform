@@ -530,6 +530,75 @@ try {
     .execute();
 
   await db
+    .insertInto('profile_languages')
+    .values([
+      { profile_id: profileId, language_code: 'fr', position: 0 },
+      { profile_id: profileId, language_code: 'en', position: 1 },
+      { profile_id: profileId, language_code: 'ar', position: 2 },
+    ])
+    .execute();
+
+  await db
+    .updateTable('profile_mobility')
+    .set({
+      worldwide: true,
+      remote: true,
+      relocation: true,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  const englishWithLanguages = await getPublicProfile(db, 'en');
+  const frenchWithLanguages = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithLanguages);
+  assert.ok(frenchWithLanguages);
+  assert.deepEqual(englishWithLanguages.languages, ['fr', 'en', 'ar']);
+  assert.deepEqual(frenchWithLanguages.languages, ['fr', 'en', 'ar']);
+  assert.deepEqual(englishWithLanguages.mobility, {
+    worldwide: true,
+    remote: true,
+    relocation: true,
+  });
+  assert.deepEqual(frenchWithLanguages.mobility, {
+    worldwide: true,
+    remote: true,
+    relocation: true,
+  });
+
+  let languageCodeError: unknown;
+  try {
+    await sql`
+      insert into profile_languages (profile_id, language_code, position)
+      values (${profileId}::uuid, 'de', 3)
+    `.execute(db);
+  } catch (error) {
+    languageCodeError = error;
+  }
+  assert.ok(languageCodeError && typeof languageCodeError === 'object');
+  assert.equal((languageCodeError as PostgreSqlError).code, '23514');
+  assert.equal(
+    (languageCodeError as PostgreSqlError).constraint,
+    'profile_languages_language_code_check',
+  );
+
+  await db
+    .deleteFrom('profile_languages')
+    .where('profile_id', '=', profileId)
+    .execute();
+
+  await db
+    .updateTable('profile_mobility')
+    .set({
+      worldwide: false,
+      remote: false,
+      relocation: false,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  await db
     .updateTable('profiles')
     .set({
       display_name: null,
@@ -585,7 +654,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();
