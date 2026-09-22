@@ -2285,7 +2285,6 @@ async function assertAxe(page) {
     await assertHomePortal(page, 'fr');
 
     await assertIntentPrefetching(browser);
-    await assertRealDeviceClasses(browser);
 
     await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
     await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
@@ -2301,6 +2300,7 @@ async function assertAxe(page) {
     await assertProfileAdministration(page);
 
     await assertGlobalDestinations(page);
+    await assertRealDeviceClasses(browser);
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
