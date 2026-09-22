@@ -1,5 +1,9 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import {
+  markSystemDraft,
+  parseSystemPublicationSnapshot,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
 import {
   Form,
@@ -184,6 +188,8 @@ export async function action({ request, params }: Route.ActionArgs) {
             })
             .execute();
 
+          await markSystemDraft(transaction, { systemId });
+
           await writeAdminAuditEvent(transaction, {
             actorUserId: session.user.id,
             actorEmail: session.user.email,
@@ -237,6 +243,26 @@ export async function action({ request, params }: Route.ActionArgs) {
         return { ok: false, message: 'Asset no longer exists.' };
       }
 
+      const publications = await db
+        .selectFrom('system_publications')
+        .select(['locale', 'snapshot'])
+        .where('system_id', '=', systemId)
+        .execute();
+      const publishedLocales = publications.flatMap((publication) => {
+        const snapshot = parseSystemPublicationSnapshot(publication.snapshot);
+        return snapshot?.media.some((media) => media.id === assetId)
+          ? [publication.locale]
+          : [];
+      });
+
+      if (publishedLocales.length > 0) {
+        return {
+          ok: false,
+          message:
+            `Deletion blocked: this asset is present in public snapshot(s) ${publishedLocales.join(', ')}. Remove it from the draft and republish those locales first.`,
+        };
+      }
+
       const references = await db
         .selectFrom('system_assets')
         .select('system_id')
@@ -285,6 +311,8 @@ export async function action({ request, params }: Route.ActionArgs) {
           .deleteFrom('assets')
           .where('id', '=', assetId)
           .executeTakeFirstOrThrow();
+
+        await markSystemDraft(transaction, { systemId });
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
