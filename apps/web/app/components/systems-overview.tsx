@@ -1,13 +1,20 @@
-import type { PublishedSystemListItem } from '@akiksystems/db';
 import { Container, Heading, Text } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
 
 import { destinationById } from '../i18n/global-destinations';
 import type { Locale } from '../i18n/locales';
 
+export interface SystemsOverviewItem {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  featured: boolean;
+}
+
 export interface SystemsOverviewProps {
   locale: Locale;
-  systems: PublishedSystemListItem[];
+  systems: SystemsOverviewItem[];
 }
 
 const copy = {
