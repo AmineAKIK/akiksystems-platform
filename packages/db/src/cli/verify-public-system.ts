@@ -152,9 +152,9 @@ try {
       .execute();
   });
 
-  assert.equal(
   await bootstrapSystemPublications(db);
 
+  assert.equal(
     await getPublishedSystem(db, { locale: 'en', slug: 'public-sentinel-proof' }),
     null,
     'draft localization must not be public',
@@ -175,6 +175,8 @@ try {
     .where('system_id', '=', systemId)
     .where('locale', '=', 'en')
     .execute();
+
+  await bootstrapSystemPublications(db);
 
   const published = await getPublishedSystem(db, {
     locale: 'en',
