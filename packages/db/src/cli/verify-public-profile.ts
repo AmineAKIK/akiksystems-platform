@@ -67,6 +67,33 @@ try {
     'Public Profile reads must come from the stored publication snapshot.',
   );
 
+  await db
+    .updateTable('profile_localizations')
+    .set({
+      introduction: 'Draft changed after publication.',
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', english.id)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+
+  const publishedAfterDraftMutation = await getPublicProfile(db, 'en');
+  assert.deepEqual(
+    publishedAfterDraftMutation,
+    english,
+    'Editing the normalized draft must not mutate the published Profile snapshot.',
+  );
+
+  await db
+    .updateTable('profile_localizations')
+    .set({
+      introduction: english.introduction,
+      updated_at: new Date(),
+    })
+    .where('profile_id', '=', english.id)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+
   const profileId = profiles[0]?.id;
   assert.ok(profileId);
 
