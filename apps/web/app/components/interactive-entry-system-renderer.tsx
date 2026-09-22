@@ -68,8 +68,8 @@ export function InteractiveEntrySystemRenderer({
                     target="_blank"
                   >
                     {locale === 'fr'
-                      ? 'Ouvrir Oria dans un nouvel onglet'
-                      : 'Open Oria in a new tab'}
+                      ? 'Ouvrir l’application dans un nouvel onglet'
+                      : 'Open the live application in a new tab'}
                   </Link>
                 ) : null}
 
@@ -96,8 +96,8 @@ export function InteractiveEntrySystemRenderer({
             </Text>
             <Text>
               {locale === 'fr'
-                ? 'Oria est une démonstration portfolio fictive et non industrielle. Elle ne traite aucune donnée de client réel et ne constitue pas un service médical ou un cabinet de nutrition en activité.'
-                : 'Oria is a fictional, non-industrial portfolio demonstration. It processes no real client data and is not a medical service or an operating nutrition practice.'}
+                ? 'Cette application s’ouvre en dehors d’AkikSystems. Consultez la transparence de preuve ci-dessus pour distinguer ce qui est implémenté, simulé ou non revendiqué avant de continuer.'
+                : 'This application opens outside AkikSystems. Review the proof-transparency summary above to distinguish what is implemented, simulated, or not claimed before continuing.'}
             </Text>
           </section>
 
