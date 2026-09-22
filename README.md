@@ -13,6 +13,26 @@ This repository is a pnpm monorepo with two applications and four shared package
 - `packages/ui` — shared UI boundary.
 - `packages/config` — shared TypeScript, linting, runtime config, and observability contracts.
 
+## System content provisioning and recovery
+
+Database migrations own schema evolution, not editorial content. `deploy:migrate`
+therefore migrates the schema and backfills publication snapshots for content
+that already exists; it does not silently recreate portfolio evidence.
+
+For development or a deliberately empty staging environment, the three
+code-backed L4 reference Systems can be provisioned explicitly and
+idempotently with:
+
+```sh
+pnpm content:bootstrap-l4-reference-systems
+```
+
+That command provisions ProtoCap, Oria Nutrition, and Tugères and publishes
+their EN/FR snapshots. Sentinel remains domain/admin content rather than a
+migration fixture. A production recovery is expected to restore PostgreSQL and
+object storage together; bootstrap scripts are not a substitute for a content
+backup or restore procedure.
+
 ## Continuous integration
 
 GitHub Actions runs the permanent CI pipeline on every push and pull request.
