@@ -1,4 +1,4 @@
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import { getDraftProfile, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -226,6 +226,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedSystems,
     selectableExperiences,
     selectedExperiences,
+    publications,
   ] = await Promise.all([
     appDb
       .selectFrom('profiles')
@@ -356,6 +357,11 @@ export async function loader({ request }: Route.LoaderArgs) {
       .select(['experience_id', 'position'])
       .where('profile_id', '=', profileId)
       .orderBy('position')
+      .execute(),
+    appDb
+      .selectFrom('profile_publications')
+      .select(['locale', 'published_at', 'updated_at'])
+      .where('profile_id', '=', profileId)
       .execute(),
   ]);
 
@@ -541,6 +547,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     selectedSystems,
     selectableExperiences,
     selectedExperiences,
+    publications: publications.map((publication) => ({
+      ...publication,
+      published_at: publication.published_at.toISOString(),
+      updated_at: publication.updated_at.toISOString(),
+    })),
     auditEvents: auditEvents.map((event) => ({
       ...event,
       created_at: event.created_at.toISOString(),
@@ -554,8 +565,92 @@ export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const intent = textField(form, '_intent');
 
+  if (intent === 'profile-publish' || intent === 'profile-unpublish') {
+    const localeValue = textField(form, 'locale');
+    if (localeValue !== 'en' && localeValue !== 'fr') {
+      return { ok: false, message: 'Profile locale must be EN or FR.' };
+    }
+    const locale = localeValue;
+
+    if (intent === 'profile-unpublish') {
+      await appDb.transaction().execute(async (transaction) => {
+        await transaction
+          .deleteFrom('profile_publications')
+          .where('profile_id', '=', profileId)
+          .where('locale', '=', locale)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.localization_unpublished',
+          entityType: 'profile',
+          entityId: profileId,
+          locale,
+          metadata: {},
+        });
+      });
+
+      return { ok: true, message: `${locale.toUpperCase()} Profile unpublished.` };
+    }
+
+    const draft = await getDraftProfile(appDb, locale);
+    if (
+      draft === null ||
+      draft.displayName === null ||
+      draft.professionalTitle === null ||
+      draft.introduction === null
+    ) {
+      return {
+        ok: false,
+        message: `${locale.toUpperCase()} Profile cannot publish until display name, professional title, and introduction are complete.`,
+      };
+    }
+
+    const now = new Date();
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('profile_publications')
+        .values({
+          profile_id: profileId,
+          locale,
+          snapshot: draft as unknown as Record<string, unknown>,
+          published_at: now,
+          updated_at: now,
+        })
+        .onConflict((conflict) =>
+          conflict.columns(['profile_id', 'locale']).doUpdateSet({
+            snapshot: draft as unknown as Record<string, unknown>,
+            published_at: now,
+            updated_at: now,
+          }),
+        )
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.localization_published',
+        entityType: 'profile',
+        entityId: profileId,
+        locale,
+        metadata: {
+          snapshotVersion: 1,
+          representativeSystemCount: draft.representativeSystems.length,
+          workPrincipleCount: draft.workPrinciples.length,
+        },
+      });
+    });
+
+    return { ok: true, message: `${locale.toUpperCase()} Profile published from current draft.` };
+  }
+
   if (intent === 'identity') {
     const displayName = optionalText(form, 'displayName');
+    if (displayName !== null && displayName.length > 80) {
+      return { ok: false, message: 'Display name must stay within 80 characters.' };
+    }
+
     const localized = {
       en: {
         professional_title: optionalText(form, 'professionalTitleEn'),
@@ -568,6 +663,27 @@ export async function action({ request }: Route.ActionArgs) {
         foundational_copy: optionalText(form, 'foundationalCopyFr'),
       },
     };
+
+    for (const [locale, values] of Object.entries(localized)) {
+      if ((values.professional_title?.length ?? 0) > 100) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} professional title must stay within 100 characters.`,
+        };
+      }
+      if ((values.introduction?.length ?? 0) > 320) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} introduction must stay within 320 characters.`,
+        };
+      }
+      if ((values.foundational_copy?.length ?? 0) > 600) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} foundational copy must stay within 600 characters.`,
+        };
+      }
+    }
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
@@ -699,51 +815,126 @@ export async function action({ request }: Route.ActionArgs) {
 
     const existingPrinciples = await appDb
       .selectFrom('profile_work_principles')
-      .select(['position', 'evidence_system_id'])
-      .where('profile_id', '=', profileId)
+      .leftJoin(
+        'profile_work_principle_localizations as existing_en',
+        (join) =>
+          join
+            .onRef('existing_en.principle_id', '=', 'profile_work_principles.id')
+            .on('existing_en.locale', '=', 'en'),
+      )
+      .leftJoin(
+        'profile_work_principle_localizations as existing_fr',
+        (join) =>
+          join
+            .onRef('existing_fr.principle_id', '=', 'profile_work_principles.id')
+            .on('existing_fr.locale', '=', 'fr'),
+      )
+      .select([
+        'profile_work_principles.id',
+        'profile_work_principles.evidence_system_id',
+        'existing_en.title as title_en',
+        'existing_fr.title as title_fr',
+      ])
+      .where('profile_work_principles.profile_id', '=', profileId)
       .execute();
-    const evidenceByPosition = new Map(
-      existingPrinciples.map((principle) => [
-        principle.position,
-        principle.evidence_system_id,
-      ]),
+
+    const principleKey = (enTitle: string, frTitle: string) =>
+      `${enTitle.trim().toLocaleLowerCase()}\u0000${frTitle.trim().toLocaleLowerCase()}`;
+    const existingByKey = new Map(
+      existingPrinciples
+        .filter(
+          (principle) =>
+            principle.title_en !== null && principle.title_fr !== null,
+        )
+        .map((principle) => [
+          principleKey(principle.title_en!, principle.title_fr!),
+          principle,
+        ]),
     );
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
-        .deleteFrom('profile_work_principles')
+        .updateTable('profile_work_principles')
+        .set((expression) => ({
+          position: expression('position', '+', 1000),
+          updated_at: new Date(),
+        }))
         .where('profile_id', '=', profileId)
         .execute();
 
+      const retainedIds: string[] = [];
+
       for (const [position, principle] of principles.entries()) {
-        const principleId = randomUUID();
+        const existing = existingByKey.get(
+          principleKey(principle.enTitle, principle.frTitle),
+        );
+        const principleId = existing?.id ?? randomUUID();
+        retainedIds.push(principleId);
 
+        if (existing === undefined) {
+          await transaction
+            .insertInto('profile_work_principles')
+            .values({
+              id: principleId,
+              profile_id: profileId,
+              position,
+              evidence_system_id: null,
+            })
+            .execute();
+        } else {
+          await transaction
+            .updateTable('profile_work_principles')
+            .set({
+              position,
+              updated_at: new Date(),
+            })
+            .where('id', '=', principleId)
+            .where('profile_id', '=', profileId)
+            .executeTakeFirstOrThrow();
+        }
+
+        for (const localization of [
+          {
+            locale: 'en' as const,
+            title: principle.enTitle,
+            detail: principle.enDetail,
+          },
+          {
+            locale: 'fr' as const,
+            title: principle.frTitle,
+            detail: principle.frDetail,
+          },
+        ]) {
+          await transaction
+            .insertInto('profile_work_principle_localizations')
+            .values({
+              principle_id: principleId,
+              locale: localization.locale,
+              title: localization.title,
+              detail: localization.detail,
+              updated_at: new Date(),
+            })
+            .onConflict((conflict) =>
+              conflict.columns(['principle_id', 'locale']).doUpdateSet({
+                title: localization.title,
+                detail: localization.detail,
+                updated_at: new Date(),
+              }),
+            )
+            .execute();
+        }
+      }
+
+      if (retainedIds.length === 0) {
         await transaction
-          .insertInto('profile_work_principles')
-          .values({
-            id: principleId,
-            profile_id: profileId,
-            position,
-            evidence_system_id: evidenceByPosition.get(position) ?? null,
-          })
+          .deleteFrom('profile_work_principles')
+          .where('profile_id', '=', profileId)
           .execute();
-
+      } else {
         await transaction
-          .insertInto('profile_work_principle_localizations')
-          .values([
-            {
-              principle_id: principleId,
-              locale: 'en',
-              title: principle.enTitle,
-              detail: principle.enDetail,
-            },
-            {
-              principle_id: principleId,
-              locale: 'fr',
-              title: principle.frTitle,
-              detail: principle.frDetail,
-            },
-          ])
+          .deleteFrom('profile_work_principles')
+          .where('profile_id', '=', profileId)
+          .where('id', 'not in', retainedIds)
           .execute();
       }
 
@@ -757,6 +948,7 @@ export async function action({ request }: Route.ActionArgs) {
           principleCount: principles.length,
           locales: ['en', 'fr'],
           ordering: 'explicit',
+          identityPreservation: 'bilingual-title-match',
         },
       });
     });
@@ -863,6 +1055,9 @@ export async function action({ request }: Route.ActionArgs) {
 
     for (const group of groups) {
       for (const title of [group.enTitle, group.frTitle]) {
+        if (title.length > 80) {
+          return { ok: false, message: 'Capability group titles must stay within 80 characters.' };
+        }
         if (technologyTerms.has(title.toLocaleLowerCase())) {
           return {
             ok: false,
@@ -873,6 +1068,17 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       for (const capability of group.capabilities) {
+        if (
+          capability.enTitle.length > 100 ||
+          capability.frTitle.length > 100 ||
+          (capability.enSummary?.length ?? 0) > 280 ||
+          (capability.frSummary?.length ?? 0) > 280
+        ) {
+          return {
+            ok: false,
+            message: 'Capability titles must stay within 100 characters and summaries within 280 characters.',
+          };
+        }
         for (const title of [capability.enTitle, capability.frTitle]) {
           if (technologyTerms.has(title.toLocaleLowerCase())) {
             return {
@@ -1318,22 +1524,13 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    if (
-      current.source_cv_asset_id !== null &&
-      current.source_cv_storage_key !== null
-    ) {
-      try {
-        await deleteAssetObject(current.source_cv_storage_key);
-        await appDb
-          .deleteFrom('assets')
-          .where('id', '=', current.source_cv_asset_id)
-          .execute();
-      } catch {
-        // New CV is already committed; leave stale object/metadata for retry.
-      }
-    }
-
-    return { ok: true, message: 'Source CV updated.' };
+    return {
+      ok: true,
+      message:
+        current.source_cv_asset_id === null
+          ? 'Source CV updated.'
+          : 'Source CV updated. Previous asset preserved for any published Profile snapshot.',
+    };
   }
 
   if (intent === 'remove-source-cv') {
@@ -1348,8 +1545,6 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: true, message: 'No source CV is currently set.' };
     }
 
-    await deleteAssetObject(current.storage_key);
-
     await appDb.transaction().execute(async (transaction) => {
       await transaction
         .updateTable('profiles')
@@ -1360,8 +1555,6 @@ export async function action({ request }: Route.ActionArgs) {
         .where('id', '=', profileId)
         .executeTakeFirstOrThrow();
 
-      await transaction.deleteFrom('assets').where('id', '=', current.id).execute();
-
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
@@ -1369,7 +1562,9 @@ export async function action({ request }: Route.ActionArgs) {
         entityType: 'profile',
         entityId: profileId,
         metadata: {
-          storageObjectDeleted: true,
+          assetId: current.id,
+          storageObjectPreserved: true,
+          reason: 'published_snapshot_safety',
         },
       });
     });
@@ -1495,23 +1690,13 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    if (
-      current.portrait_asset_id !== null &&
-      current.portrait_storage_key !== null
-    ) {
-      try {
-        await deleteAssetObject(current.portrait_storage_key);
-        await appDb
-          .deleteFrom('assets')
-          .where('id', '=', current.portrait_asset_id)
-          .execute();
-      } catch {
-        // The new portrait is already committed. Keep stale metadata/object for
-        // retry rather than rolling back a valid public portrait.
-      }
-    }
-
-    return { ok: true, message: 'Portrait updated.' };
+    return {
+      ok: true,
+      message:
+        current.portrait_asset_id === null
+          ? 'Portrait updated.'
+          : 'Portrait updated. Previous asset preserved for any published Profile snapshot.',
+    };
   }
 
   if (intent === 'remove-portrait') {
@@ -1526,8 +1711,6 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: true, message: 'No portrait is currently set.' };
     }
 
-    await deleteAssetObject(current.storage_key);
-
     await appDb.transaction().execute(async (transaction) => {
       await transaction
         .updateTable('profiles')
@@ -1538,8 +1721,6 @@ export async function action({ request }: Route.ActionArgs) {
         .where('id', '=', profileId)
         .executeTakeFirstOrThrow();
 
-      await transaction.deleteFrom('assets').where('id', '=', current.id).execute();
-
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
@@ -1547,7 +1728,9 @@ export async function action({ request }: Route.ActionArgs) {
         entityType: 'profile',
         entityId: profileId,
         metadata: {
-          storageObjectDeleted: true,
+          assetId: current.id,
+          storageObjectPreserved: true,
+          reason: 'published_snapshot_safety',
         },
       });
     });
@@ -1594,6 +1777,73 @@ export default function AdminProfile() {
           ) : null}
 
           <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">
+                Publication
+              </Heading>
+              <Text size="sm" tone="muted">
+                Draft edits stay private. Preview the current draft, then publish
+                EN and FR independently as immutable public snapshots.
+              </Text>
+              <div className="aks-admin-domain-grid">
+                {(['en', 'fr'] as const).map((locale) => {
+                  const publication = data.publications.find(
+                    (candidate) => candidate.locale === locale,
+                  );
+                  const publicHref = locale === 'fr' ? '/fr/profil' : '/en/profile';
+
+                  return (
+                    <div
+                      className="aks-admin-card"
+                      data-profile-publication={locale}
+                      key={locale}
+                    >
+                      <Heading level={3} size="sm">
+                        {locale.toUpperCase()}
+                      </Heading>
+                      <Text size="sm" tone="muted">
+                        {publication === undefined
+                          ? 'Draft only'
+                          : `Published · ${new Date(publication.published_at).toLocaleString()}`}
+                      </Text>
+                      <div className="aks-proof-actions">
+                        <Link href={`/admin/profile/preview/${locale}`}>
+                          Preview draft
+                        </Link>
+                        {publication === undefined ? null : (
+                          <Link href={publicHref}>Open published Profile</Link>
+                        )}
+                      </div>
+                      <div className="aks-proof-actions">
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="profile-publish" />
+                          <input name="locale" type="hidden" value={locale} />
+                          <Button type="submit">
+                            {publication === undefined ? 'Publish' : 'Republish draft'}
+                          </Button>
+                        </Form>
+                        {publication === undefined ? null : (
+                          <Form method="post">
+                            <input
+                              name="_intent"
+                              type="hidden"
+                              value="profile-unpublish"
+                            />
+                            <input name="locale" type="hidden" value={locale} />
+                            <Button emphasis="quiet" type="submit">
+                              Unpublish
+                            </Button>
+                          </Form>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="aks-admin-card">
             <Form className="aks-admin-form" method="post">
               <input name="_intent" type="hidden" value="identity" />
               <Heading level={2} size="sm">
@@ -1603,6 +1853,7 @@ export default function AdminProfile() {
                 <span>Display name</span>
                 <input
                   defaultValue={data.profile.display_name ?? ''}
+                  maxLength={80}
                   name="displayName"
                   type="text"
                 />
@@ -1615,6 +1866,7 @@ export default function AdminProfile() {
                     <span>Professional title</span>
                     <input
                       defaultValue={data.en?.professional_title ?? ''}
+                      maxLength={100}
                       name="professionalTitleEn"
                       type="text"
                     />
@@ -1623,6 +1875,7 @@ export default function AdminProfile() {
                     <span>Introduction</span>
                     <textarea
                       defaultValue={data.en?.introduction ?? ''}
+                      maxLength={320}
                       name="introductionEn"
                       rows={5}
                     />
@@ -1631,6 +1884,7 @@ export default function AdminProfile() {
                     <span>Foundational profile copy</span>
                     <textarea
                       defaultValue={data.en?.foundational_copy ?? ''}
+                      maxLength={600}
                       name="foundationalCopyEn"
                       rows={8}
                     />
@@ -1643,6 +1897,7 @@ export default function AdminProfile() {
                     <span>Titre professionnel</span>
                     <input
                       defaultValue={data.fr?.professional_title ?? ''}
+                      maxLength={100}
                       name="professionalTitleFr"
                       type="text"
                     />
@@ -1651,6 +1906,7 @@ export default function AdminProfile() {
                     <span>Introduction</span>
                     <textarea
                       defaultValue={data.fr?.introduction ?? ''}
+                      maxLength={320}
                       name="introductionFr"
                       rows={5}
                     />
@@ -1659,6 +1915,7 @@ export default function AdminProfile() {
                     <span>Texte fondateur du profil</span>
                     <textarea
                       defaultValue={data.fr?.foundational_copy ?? ''}
+                      maxLength={600}
                       name="foundationalCopyFr"
                       rows={8}
                     />

@@ -92,7 +92,7 @@ export interface PublicProfile {
   alternateLocale: PlatformLocale;
 }
 
-export async function getPublicProfile(
+export async function getDraftProfile(
   db: Kysely<Database>,
   locale: PlatformLocale,
 ): Promise<PublicProfile | null> {
@@ -446,5 +446,144 @@ export async function getPublicProfile(
       summary: system.summary!,
     })),
     alternateLocale: locale === 'en' ? 'fr' : 'en',
+  };
+}
+
+
+function isPublicProfileSnapshot(value: unknown): value is PublicProfile {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'locale' in value &&
+    'displayName' in value &&
+    'workPrinciples' in value &&
+    'representativeSystems' in value
+  );
+}
+
+export async function getPublicProfile(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+): Promise<PublicProfile | null> {
+  const publication = await db
+    .selectFrom('profile_publications')
+    .select('snapshot')
+    .where('locale', '=', locale)
+    .executeTakeFirst();
+
+  if (publication === undefined || !isPublicProfileSnapshot(publication.snapshot)) {
+    return null;
+  }
+
+  const snapshot = publication.snapshot;
+  const systemIds = [
+    ...new Set([
+      ...snapshot.representativeSystems.map(({ id }) => id),
+      ...snapshot.workPrinciples
+        .map(({ evidenceSystem }) => evidenceSystem?.id ?? null)
+        .filter((id): id is string => id !== null),
+      ...snapshot.technologyJourney
+        .filter(
+          (stage) =>
+            stage.evidence?.kind === 'system' && stage.evidence.id !== null,
+        )
+        .map((stage) => stage.evidence!.id),
+    ]),
+  ];
+
+  if (systemIds.length === 0) {
+    return snapshot;
+  }
+
+  const publishedSystems = await db
+    .selectFrom('systems')
+    .innerJoin(
+      'system_localizations',
+      'system_localizations.system_id',
+      'systems.id',
+    )
+    .select([
+      'systems.id',
+      'system_localizations.slug',
+      'system_localizations.title',
+      'system_localizations.summary',
+    ])
+    .where('systems.id', 'in', systemIds)
+    .where('systems.lifecycle', '=', 'active')
+    .where('system_localizations.locale', '=', locale)
+    .where('system_localizations.editorial_state', '=', 'published')
+    .where('system_localizations.published_at', 'is not', null)
+    .where('system_localizations.presentation_document', 'is not', null)
+    .where('system_localizations.slug', 'is not', null)
+    .where('system_localizations.title', 'is not', null)
+    .where('system_localizations.summary', 'is not', null)
+    .execute();
+
+  const systemById = new Map(
+    publishedSystems.map((system) => [
+      system.id,
+      {
+        id: system.id,
+        slug: system.slug!,
+        title: system.title!,
+        summary: system.summary!,
+      },
+    ]),
+  );
+
+  return {
+    ...snapshot,
+    representativeSystems: snapshot.representativeSystems.flatMap(
+      (system) => {
+        const current = systemById.get(system.id);
+        return current === undefined
+          ? []
+          : [
+              {
+                ...current,
+                position: system.position,
+              },
+            ];
+      },
+    ),
+    workPrinciples: snapshot.workPrinciples.map((principle) => ({
+      ...principle,
+      evidenceSystem:
+        principle.evidenceSystem === null
+          ? null
+          : (() => {
+              const current = systemById.get(principle.evidenceSystem.id);
+              return current === undefined
+                ? null
+                : {
+                    id: current.id,
+                    slug: current.slug,
+                    title: current.title,
+                  };
+            })(),
+    })),
+    technologyJourney: snapshot.technologyJourney.map((stage) => {
+      if (stage.evidence?.kind !== 'system') {
+        return stage;
+      }
+
+      const current = systemById.get(stage.evidence.id);
+      return {
+        ...stage,
+        evidence:
+          current === undefined
+            ? null
+            : {
+                kind: 'system' as const,
+                id: current.id,
+                title: current.title,
+                href:
+                  locale === 'fr'
+                    ? `/fr/systems/${current.slug}`
+                    : `/en/systems/${current.slug}`,
+              },
+      };
+    }),
   };
 }

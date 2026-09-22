@@ -87,6 +87,14 @@ export interface ProfileLocalizationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface ProfilePublicationsTable {
+  profile_id: string;
+  locale: PlatformLocale;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ProfileWorkPrinciplesTable {
   id: string;
   profile_id: string;
@@ -290,6 +298,10 @@ export type ProfileLocalizationRow = Selectable<ProfileLocalizationsTable>;
 export type NewProfileLocalizationRow = Insertable<ProfileLocalizationsTable>;
 export type ProfileLocalizationUpdate = Updateable<ProfileLocalizationsTable>;
 
+export type ProfilePublicationRow = Selectable<ProfilePublicationsTable>;
+export type NewProfilePublicationRow = Insertable<ProfilePublicationsTable>;
+export type ProfilePublicationUpdate = Updateable<ProfilePublicationsTable>;
+
 export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
 export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
 export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
@@ -401,6 +413,7 @@ export interface Database {
   system_localizations: SystemLocalizationsTable;
   profiles: ProfilesTable;
   profile_localizations: ProfileLocalizationsTable;
+  profile_publications: ProfilePublicationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
   profile_capability_groups: ProfileCapabilityGroupsTable;

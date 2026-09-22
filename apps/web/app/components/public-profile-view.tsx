@@ -9,16 +9,8 @@ interface PublicProfileViewProps {
 }
 
 const languageLabels = {
-  en: {
-    fr: 'French',
-    en: 'English',
-    ar: 'Arabic',
-  },
-  fr: {
-    fr: 'Français',
-    en: 'Anglais',
-    ar: 'Arabe',
-  },
+  en: { fr: 'French', en: 'English', ar: 'Arabic' },
+  fr: { fr: 'Français', en: 'Anglais', ar: 'Arabe' },
 } as const;
 
 const mobilityLabels = {
@@ -38,20 +30,23 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
   const fallback = destinationById('profile').description[profile.locale];
   const immediateProof = profile.representativeSystems[0] ?? null;
   const remainingSystems = profile.representativeSystems.slice(1);
+  const identity = profile.displayName ?? (profile.locale === 'fr' ? 'Profil' : 'Profile');
 
   return (
     <main className="aks-proof-page">
       <Container>
         <div className="aks-proof-stack">
-          <section className="aks-profile-first-view" aria-labelledby="profile-title">
+          <section
+            className="aks-profile-first-view"
+            aria-labelledby="profile-title"
+          >
             <div className="aks-profile-first-view-identity">
               <div className="aks-proof-stack">
                 <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                  AkikSystems
+                  {profile.locale === 'fr'
+                    ? 'Profil · AkikSystems'
+                    : 'Profile · AkikSystems'}
                 </Text>
-                <Heading id="profile-title" level={1} size="md">
-                  {profile.locale === 'fr' ? 'Profil' : 'Profile'}
-                </Heading>
                 {profile.portraitAssetId !== null &&
                 profile.portraitAltText !== null ? (
                   <img
@@ -70,11 +65,9 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               </div>
 
               <div className="aks-profile-first-view-copy">
-                {profile.displayName !== null ? (
-                  <Heading level={2} size="md">
-                    {profile.displayName}
-                  </Heading>
-                ) : null}
+                <Heading id="profile-title" level={1} size="md">
+                  {identity}
+                </Heading>
                 {profile.professionalTitle !== null ? (
                   <Text size="lg" tone="strong">
                     {profile.professionalTitle}
@@ -105,13 +98,18 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
             </div>
 
             {immediateProof !== null ? (
-              <aside className="aks-profile-immediate-proof" aria-label={
-                profile.locale === 'fr'
-                  ? 'Preuve immédiate'
-                  : 'Immediate proof'
-              }>
+              <aside
+                className="aks-profile-immediate-proof"
+                aria-label={
+                  profile.locale === 'fr'
+                    ? 'Preuve immédiate'
+                    : 'Immediate proof'
+                }
+              >
                 <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                  {profile.locale === 'fr' ? 'Preuve immédiate' : 'Immediate proof'}
+                  {profile.locale === 'fr'
+                    ? 'Preuve immédiate'
+                    : 'Immediate proof'}
                 </Text>
                 <Heading level={2} size="sm">
                   {immediateProof.title}
@@ -131,59 +129,64 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               </aside>
             ) : null}
           </section>
-          {profile.languages.length > 0 ||
-          profile.mobility.worldwide ||
-          profile.mobility.remote ||
-          profile.mobility.relocation ? (
-            <section className="aks-profile-languages-mobility">
-              <Heading level={2} size="sm">
-                {profile.locale === 'fr'
-                  ? 'Langues et mobilité'
-                  : 'Languages & mobility'}
-              </Heading>
-              {profile.languages.length > 0 ? (
-                <div className="aks-proof-stack">
-                  <Heading level={3} size="sm">
-                    {profile.locale === 'fr' ? 'Langues' : 'Languages'}
-                  </Heading>
-                  <ul className="aks-profile-fact-list">
-                    {profile.languages.map((language) => (
-                      <li key={language}>
-                        <Text>{languageLabels[profile.locale][language]}</Text>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {profile.mobility.worldwide ||
-              profile.mobility.remote ||
-              profile.mobility.relocation ? (
-                <div className="aks-proof-stack">
-                  <Heading level={3} size="sm">
-                    {profile.locale === 'fr' ? 'Mobilité' : 'Mobility'}
-                  </Heading>
-                  <ul className="aks-profile-fact-list">
-                    {(
-                      [
-                        'worldwide',
-                        'remote',
-                        'relocation',
-                      ] as const
-                    )
-                      .filter((key) => profile.mobility[key])
-                      .map((key) => (
-                        <li key={key}>
-                          <Text>{mobilityLabels[profile.locale][key]}</Text>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ) : null}
+
+          {profile.workPrinciples.length > 0 ? (
+            <section
+              className="aks-profile-work-principles"
+              id="profile-how-i-work"
+              aria-labelledby="profile-how-i-work-title"
+            >
+              <div className="aks-profile-section-heading">
+                <Heading id="profile-how-i-work-title" level={2} size="sm">
+                  {profile.locale === 'fr'
+                    ? 'Ma manière de travailler'
+                    : 'How I work'}
+                </Heading>
+                <Text size="sm" tone="muted">
+                  {profile.locale === 'fr'
+                    ? 'Des principes concrets, reliés à une preuve quand elle apporte du contexte.'
+                    : 'Concrete operating principles, linked to evidence when it adds useful context.'}
+                </Text>
+              </div>
+              <ol className="aks-profile-work-principle-list">
+                {profile.workPrinciples.map((principle) => (
+                  <li
+                    className="aks-profile-work-principle"
+                    key={principle.id}
+                  >
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {principle.title}
+                      </Heading>
+                      {principle.detail !== null ? (
+                        <Text tone="muted">{principle.detail}</Text>
+                      ) : null}
+                      {principle.evidenceSystem !== null ? (
+                        <Link
+                          href={
+                            profile.locale === 'fr'
+                              ? `/fr/systems/${principle.evidenceSystem.slug}`
+                              : `/en/systems/${principle.evidenceSystem.slug}`
+                          }
+                        >
+                          {profile.locale === 'fr'
+                            ? `Exemple : ${principle.evidenceSystem.title}`
+                            : `Example: ${principle.evidenceSystem.title}`}
+                        </Link>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </section>
           ) : null}
+
           {profile.technologyJourney.length > 0 ||
           profile.capabilityGroups.length > 0 ? (
-            <details className="aks-profile-depth" id="profile-technical-depth">
+            <details
+              className="aks-profile-depth"
+              id="profile-technical-depth"
+            >
               <summary className="aks-profile-depth-summary">
                 <span>
                   {profile.locale === 'fr'
@@ -213,7 +216,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     </div>
                     <ol className="aks-profile-technology-journey-list">
                       {profile.technologyJourney.map((stage) => (
-                        <li className="aks-profile-technology-journey-stage" key={stage.key}>
+                        <li
+                          className="aks-profile-technology-journey-stage"
+                          key={stage.key}
+                        >
                           <div className="aks-profile-technology-journey-marker">
                             <Text size="sm" tone="muted">
                               {String(stage.position + 1).padStart(2, '0')}
@@ -259,8 +265,8 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       </Heading>
                       <Text size="sm" tone="muted">
                         {profile.locale === 'fr'
-                          ? 'Des aptitudes d’ingénierie regroupées par domaine — distinctes des outils utilisés pour les exercer.'
-                          : 'Engineering abilities grouped by domain — distinct from the tools used to exercise them.'}
+                          ? 'Des aptitudes d’ingénierie regroupées par domaine — distinctes des outils utilisés.'
+                          : 'Engineering abilities grouped by domain — distinct from the tools used.'}
                       </Text>
                     </div>
                     <div className="aks-profile-capability-groups">
@@ -303,7 +309,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
 
           {profile.professionalJourney.length > 0 ||
           remainingSystems.length > 0 ? (
-            <details className="aks-profile-depth" id="profile-professional-evidence">
+            <details
+              className="aks-profile-depth"
+              id="profile-professional-evidence"
+            >
               <summary className="aks-profile-depth-summary">
                 <span>
                   {profile.locale === 'fr'
@@ -350,7 +359,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     </Heading>
                     <div className="aks-profile-system-list">
                       {remainingSystems.map((system) => (
-                        <article className="aks-profile-system" key={system.id}>
+                        <article
+                          className="aks-profile-system"
+                          key={system.id}
+                        >
                           <div className="aks-proof-stack">
                             <Heading level={3} size="sm">
                               {system.title}
@@ -377,62 +389,51 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
             </details>
           ) : null}
 
-          {profile.workPrinciples.length > 0 ? (
-            <details className="aks-profile-depth" id="profile-how-i-work">
-              <summary className="aks-profile-depth-summary">
-                <span>
-                  {profile.locale === 'fr'
-                    ? 'Approfondir ma manière de travailler'
-                    : 'Explore how I work'}
-                </span>
-                <span className="aks-profile-depth-summary-note">
-                  {profile.locale === 'fr'
-                    ? 'Principes et exemples'
-                    : 'Principles and examples'}
-                </span>
-              </summary>
-              <div className="aks-profile-depth-content">
-                <section className="aks-profile-work-principles">
-                  <div className="aks-profile-section-heading">
-                    <Heading level={2} size="sm">
-                      {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
-                    </Heading>
-                    <Text size="sm" tone="muted">
-                      {profile.locale === 'fr'
-                        ? 'Quelques principes concrets, reliés à des exemples quand ils apportent une preuve utile.'
-                        : 'A few concrete operating principles, linked to examples when they add useful proof.'}
-                    </Text>
-                  </div>
-                  <ol className="aks-profile-work-principle-list">
-                    {profile.workPrinciples.map((principle) => (
-                      <li className="aks-profile-work-principle" key={principle.id}>
-                        <div className="aks-proof-stack">
-                          <Heading level={3} size="sm">
-                            {principle.title}
-                          </Heading>
-                          {principle.detail !== null ? (
-                            <Text tone="muted">{principle.detail}</Text>
-                          ) : null}
-                          {principle.evidenceSystem !== null ? (
-                            <Link
-                              href={
-                                profile.locale === 'fr'
-                                  ? `/fr/systems/${principle.evidenceSystem.slug}`
-                                  : `/en/systems/${principle.evidenceSystem.slug}`
-                              }
-                            >
-                              {profile.locale === 'fr'
-                                ? `Exemple : ${principle.evidenceSystem.title}`
-                                : `Example: ${principle.evidenceSystem.title}`}
-                            </Link>
-                          ) : null}
-                        </div>
+          {profile.languages.length > 0 ||
+          profile.mobility.worldwide ||
+          profile.mobility.remote ||
+          profile.mobility.relocation ? (
+            <section className="aks-profile-languages-mobility">
+              <Heading level={2} size="sm">
+                {profile.locale === 'fr'
+                  ? 'Langues et mobilité'
+                  : 'Languages & mobility'}
+              </Heading>
+              {profile.languages.length > 0 ? (
+                <div className="aks-proof-stack">
+                  <Heading level={3} size="sm">
+                    {profile.locale === 'fr' ? 'Langues' : 'Languages'}
+                  </Heading>
+                  <ul className="aks-profile-fact-list">
+                    {profile.languages.map((language) => (
+                      <li key={language}>
+                        <Text>{languageLabels[profile.locale][language]}</Text>
                       </li>
                     ))}
-                  </ol>
-                </section>
-              </div>
-            </details>
+                  </ul>
+                </div>
+              ) : null}
+              {profile.mobility.worldwide ||
+              profile.mobility.remote ||
+              profile.mobility.relocation ? (
+                <div className="aks-proof-stack">
+                  <Heading level={3} size="sm">
+                    {profile.locale === 'fr' ? 'Mobilité' : 'Mobility'}
+                  </Heading>
+                  <ul className="aks-profile-fact-list">
+                    {(
+                      ['worldwide', 'remote', 'relocation'] as const
+                    )
+                      .filter((key) => profile.mobility[key])
+                      .map((key) => (
+                        <li key={key}>
+                          <Text>{mobilityLabels[profile.locale][key]}</Text>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
           ) : null}
         </div>
       </Container>

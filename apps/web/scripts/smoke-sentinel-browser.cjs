@@ -61,6 +61,25 @@ async function openProfileDepth(page, id) {
   return details;
 }
 
+async function publishProfileDraft(page, locales = ['en', 'fr']) {
+  await page.goto(`${origin}/admin/profile`);
+
+  for (const locale of locales) {
+    const card = page.locator(
+      `[data-profile-publication="${locale}"]`,
+    );
+    const publishButton = card.getByRole('button', {
+      name: /^(Publish|Republish draft)$/,
+    });
+    await publishButton.click();
+    await page
+      .getByText(`${locale.toUpperCase()} Profile published from current draft.`, {
+        exact: true,
+      })
+      .waitFor();
+  }
+}
+
 async function assertProfileAdministration(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -186,9 +205,10 @@ async function assertProfileAdministration(page) {
     .getByText('Languages and mobility updated.', { exact: true })
     .waitFor();
 
+  await publishProfileDraft(page);
+
   await page.goto(`${origin}/en/profile`);
-  await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
-  await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
   await page.getByText('Software systems builder', { exact: true }).waitFor();
   await page
     .getByText('I design and build inspectable software systems.', { exact: true })
@@ -199,7 +219,6 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
-  await openProfileDepth(page, 'profile-how-i-work');
   await page
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
     .waitFor();
@@ -258,8 +277,7 @@ async function assertProfileAdministration(page) {
   );
 
   await page.goto(`${origin}/fr/profil`);
-  await page.getByRole('heading', { level: 1, name: 'Profil', exact: true }).waitFor();
-  await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
   await page.getByText('Concepteur de systèmes logiciels', { exact: true }).waitFor();
   await page
     .getByText('Je conçois et construis des systèmes logiciels inspectables.', { exact: true })
@@ -270,7 +288,6 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
-  await openProfileDepth(page, 'profile-how-i-work');
   await page
     .getByRole('heading', { level: 2, name: 'Ma manière de travailler', exact: true })
     .waitFor();
@@ -321,8 +338,8 @@ async function assertProfileAdministration(page) {
 
   await page.setViewportSize({ width: 390, height: 844 });
   for (const target of [
-    { path: '/en/profile', heading: 'Profile' },
-    { path: '/fr/profil', heading: 'Profil' },
+    { path: '/en/profile', heading: 'Amine AKIK' },
+    { path: '/fr/profil', heading: 'Amine AKIK' },
   ]) {
     await page.goto(`${origin}${target.path}`);
     await page
@@ -335,7 +352,7 @@ async function assertProfileAdministration(page) {
       true,
       `${target.path} administered Profile must not overflow on mobile.`,
     );
-    await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
     assert.equal(
       await page.locator('.aks-profile-work-principle-list li').count(),
       3,
@@ -404,6 +421,7 @@ async function assertProfessionalJourneySelection(page) {
   await marelliCard.getByRole('spinbutton', { name: 'Order', exact: true }).fill('0');
   await page.getByRole('button', { name: 'Save professional journey' }).click();
   await page.getByText('Professional journey updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await openProfileDepth(page, 'profile-professional-evidence');
@@ -484,9 +502,9 @@ async function assertWorkPrincipleEvidence(page) {
   await evidenceSelects.first().selectOption({ label: 'Sentinel' });
   await page.getByRole('button', { name: 'Save principle evidence' }).click();
   await page.getByText('How I work evidence updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
-  await openProfileDepth(page, 'profile-how-i-work');
   const englishHow = page.locator('.aks-profile-work-principles');
   await englishHow
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
@@ -505,7 +523,6 @@ async function assertWorkPrincipleEvidence(page) {
   );
 
   await page.goto(`${origin}/fr/profil`);
-  await openProfileDepth(page, 'profile-how-i-work');
   const frenchHow = page.locator('.aks-profile-work-principles');
   await frenchHow
     .getByRole('heading', {
@@ -572,6 +589,7 @@ async function assertTechnologicalJourney(page) {
   await page
     .getByText('Technological journey updated.', { exact: true })
     .waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await openProfileDepth(page, 'profile-technical-depth');
@@ -652,7 +670,6 @@ async function assertProfileProgressiveDepth(browser, page) {
       summaries: [
         'Explore technical depth',
         'Explore professional evidence',
-        'Explore how I work',
       ],
     },
     {
@@ -660,7 +677,6 @@ async function assertProfileProgressiveDepth(browser, page) {
       summaries: [
         'Approfondir la technique',
         'Approfondir les preuves professionnelles',
-        'Approfondir ma manière de travailler',
       ],
     },
   ]) {
@@ -668,8 +684,8 @@ async function assertProfileProgressiveDepth(browser, page) {
     const depths = page.locator('details.aks-profile-depth');
     assert.equal(
       await depths.count(),
-      3,
-      `${target.path} must expose exactly three intentional depth controls.`,
+      2,
+      `${target.path} must expose exactly two intentional depth controls while How I work remains visible.`,
     );
     for (const summary of target.summaries) {
       const details = page.locator('details.aks-profile-depth').filter({
@@ -731,16 +747,14 @@ async function assertProfileProgressiveDepth(browser, page) {
     const noJsPage = await noJs.newPage();
     const response = await noJsPage.goto(`${origin}/en/profile`);
     assert.equal(response?.status(), 200);
-    assert.equal(await noJsPage.locator('details.aks-profile-depth').count(), 3);
+    assert.equal(await noJsPage.locator('details.aks-profile-depth').count(), 2);
     await noJsPage
       .locator('details#profile-technical-depth > summary')
       .click();
     await noJsPage
       .getByRole('heading', { level: 2, name: 'Technical Capabilities', exact: true })
       .waitFor();
-    await noJsPage
-      .locator('details#profile-how-i-work > summary')
-      .click();
+    await noJsPage.locator('#profile-how-i-work').waitFor();
     await noJsPage
       .getByRole('heading', { level: 2, name: 'How I work', exact: true })
       .waitFor();
@@ -756,7 +770,7 @@ async function assertProfileWithoutPriorCv(browser) {
       path: '/en/profile',
       viewport: { width: 1440, height: 900 },
       locale: 'en',
-      profileHeading: 'Profile',
+      profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
       proofAction: 'Inspect this proof',
@@ -770,7 +784,7 @@ async function assertProfileWithoutPriorCv(browser) {
       path: '/en/profile',
       viewport: { width: 390, height: 844 },
       locale: 'en',
-      profileHeading: 'Profile',
+      profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
       proofAction: 'Inspect this proof',
@@ -784,7 +798,7 @@ async function assertProfileWithoutPriorCv(browser) {
       path: '/fr/profil',
       viewport: { width: 1440, height: 900 },
       locale: 'fr',
-      profileHeading: 'Profil',
+      profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
       proofAction: 'Inspecter cette preuve',
@@ -798,7 +812,7 @@ async function assertProfileWithoutPriorCv(browser) {
       path: '/fr/profil',
       viewport: { width: 390, height: 844 },
       locale: 'fr',
-      profileHeading: 'Profil',
+      profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
       proofAction: 'Inspecter cette preuve',
@@ -857,9 +871,8 @@ async function assertProfileWithoutPriorCv(browser) {
       );
 
       // "How he works" and deeper technical substance remain one intentional action away.
-      const howDetails = page.locator('details#profile-how-i-work');
-      await howDetails.getByText(scenario.howSummary, { exact: true }).click();
-      await howDetails.getByText(scenario.principle, { exact: true }).waitFor();
+      const howSection = page.locator('#profile-how-i-work');
+      await howSection.getByText(scenario.principle, { exact: true }).waitFor();
 
       const technicalDetails = page.locator('details#profile-technical-depth');
       await technicalDetails.getByText(scenario.technicalSummary, { exact: true }).click();
@@ -1062,10 +1075,9 @@ async function assertProfileAfterPriorCvExposure(browser) {
         `${scenario.name} must expose the known Experience once inside its dedicated evidence layer.`,
       );
 
-      const howDetails = page.locator('details#profile-how-i-work');
-      await howDetails.getByText(scenario.howSummary, { exact: true }).click();
-      await howDetails.getByText(scenario.principle, { exact: true }).waitFor();
-      await howDetails.getByText(scenario.principleEvidence, { exact: true }).waitFor();
+      const howSection = page.locator('#profile-how-i-work');
+      await howSection.getByText(scenario.principle, { exact: true }).waitFor();
+      await howSection.getByText(scenario.principleEvidence, { exact: true }).waitFor();
 
       const technicalDetails = page.locator('details#profile-technical-depth');
       await technicalDetails.getByText(scenario.technicalSummary, { exact: true }).click();
@@ -1123,6 +1135,7 @@ async function assertRepresentativeSystemSelection(page) {
   await sentinelCard.locator('input[type="number"]').fill('0');
   await page.getByRole('button', { name: 'Save representative Systems' }).click();
   await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   const englishProof = page.locator('.aks-profile-immediate-proof');
@@ -1218,12 +1231,12 @@ async function savePresentation(page, locale, text) {
 }
 
 const globalDestinations = [
-  { path: '/en/profile', lang: 'en', heading: 'Profile', context: 'Profile', alternate: '/fr/profil' },
+  { path: '/en/profile', lang: 'en', heading: 'Amine AKIK', context: 'Profile', alternate: '/fr/profil' },
   { path: '/en/systems', lang: 'en', heading: 'Systems', context: 'Systems', alternate: '/fr/systems' },
   { path: '/en/writings', lang: 'en', heading: 'Writings', context: 'Writings', alternate: '/fr/ecrits' },
   { path: '/en/learning', lang: 'en', heading: 'Learning', context: 'Learning', alternate: '/fr/apprentissage' },
   { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', context: 'Work with us', alternate: '/fr/travailler-ensemble' },
-  { path: '/fr/profil', lang: 'fr', heading: 'Profil', context: 'Profil', alternate: '/en/profile' },
+  { path: '/fr/profil', lang: 'fr', heading: 'Amine AKIK', context: 'Profil', alternate: '/en/profile' },
   { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', context: 'Systèmes', alternate: '/en/systems' },
   { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', context: 'Écrits', alternate: '/en/writings' },
   { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', context: 'Apprentissage', alternate: '/en/learning' },
@@ -1528,7 +1541,7 @@ async function assertRealDeviceClasses(browser, { includeDeep = false } = {}) {
       );
 
       await page.goto(`${origin}/en/profile`);
-      await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+      await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
 
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
@@ -1853,7 +1866,7 @@ async function assertGlobalKeyboardNavigation(browser) {
   try {
     const page = await mobile.newPage();
     await page.goto(`${origin}/en/profile`);
-    await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
 
     await page.keyboard.press('Tab');
     assert.equal(
@@ -1913,7 +1926,7 @@ async function assertGlobalKeyboardNavigation(browser) {
     );
 
     await page.goto(`${origin}/en/profile`);
-    await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true }).waitFor();
     await page.locator('.aks-experience-meta a[hreflang="fr"]').focus();
     await page.keyboard.press('Enter');
     await page.waitForURL(`${origin}/fr/profil`);
@@ -2267,15 +2280,10 @@ async function assertAxe(page) {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-    await assertGlobalDestinations(page);
     await assertHomePortal(page, 'en');
     await assertHomePortal(page, 'fr');
 
     await assertIntentPrefetching(browser);
-    await assertRealDeviceClasses(browser);
-
-    await assertFirstLevelDeepLinkAutonomy(browser);
-    await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
     await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
     await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
@@ -2289,6 +2297,12 @@ async function assertAxe(page) {
     await page.waitForURL(`${origin}/admin`);
 
     await assertProfileAdministration(page);
+
+    await assertGlobalDestinations(page);
+    await assertRealDeviceClasses(browser);
+    await assertFirstLevelDeepLinkAutonomy(browser);
+    await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
+
     await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();
@@ -2446,7 +2460,7 @@ async function assertAxe(page) {
       await reducedPage.locator('.aks-experience-nav a[href="/en/profile"]').click();
       await reducedPage.waitForURL(`${origin}/en/profile`);
       await reducedPage
-        .getByRole('heading', { level: 1, name: 'Profile', exact: true })
+        .getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true })
         .waitFor();
       assert.equal(
         await reducedPage.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),
@@ -2484,7 +2498,7 @@ async function assertAxe(page) {
     );
     await page.waitForURL(`${origin}/en/profile`);
     await page
-      .getByRole('heading', { level: 1, name: 'Profile', exact: true })
+      .getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true })
       .waitFor();
     assert.equal(
       await page.locator('.aks-experience-nav a[aria-current="page"]').getAttribute('href'),

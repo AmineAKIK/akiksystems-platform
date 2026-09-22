@@ -6,6 +6,7 @@ export default [
   route('admin/two-factor', 'routes/admin-two-factor.tsx'),
   route('admin/security', 'routes/admin-security.tsx'),
   route('admin/profile', 'routes/admin-profile.tsx'),
+  route('admin/profile/preview/:locale', 'routes/admin-profile-preview.tsx'),
   route('admin/systems/:systemId', 'routes/admin-system.tsx'),
   route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
   route(

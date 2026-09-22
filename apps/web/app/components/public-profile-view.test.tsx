@@ -132,7 +132,9 @@ describe('PublicProfileView first view', () => {
     );
 
     expect(html).toContain('class="aks-profile-first-view"');
+    expect(html).toContain('<h1');
     expect(html).toContain('Amine AKIK');
+    expect(html).toContain('Profile · AkikSystems');
     expect(html).toContain('Software systems builder');
     expect(html).not.toContain('Immediate proof');
   });
@@ -507,7 +509,7 @@ describe('PublicProfileView progressive depth', () => {
     expect(html).toContain('id="profile-professional-evidence"');
     expect(html).toContain('Explore professional evidence');
     expect(html).toContain('id="profile-how-i-work"');
-    expect(html).toContain('Explore how I work');
+    expect(html).toContain('How I work');
     expect(html).not.toMatch(/<details[^>]*\sopen(?:=|\s|>)/);
     expect(html).toContain('Programming foundations');
     expect(html).toContain('Marelli');
@@ -560,6 +562,6 @@ describe('PublicProfileView progressive depth', () => {
 
     expect(html).toContain('Approfondir la technique');
     expect(html).toContain('Approfondir les preuves professionnelles');
-    expect(html).toContain('Approfondir ma manière de travailler');
+    expect(html).toContain('Ma manière de travailler');
   });
 });

@@ -78,13 +78,20 @@ try {
     assert.match(frenchHtml, new RegExp(`href="${href}"`));
   }
 
+  for (const unpublishedProfile of ['/en/profile', '/fr/profil']) {
+    const response = await globalThis.fetch(`${origin}${unpublishedProfile}`);
+    assert.equal(
+      response.status,
+      404,
+      `${unpublishedProfile} must stay unavailable until an explicit Profile publication exists.`,
+    );
+  }
+
   const directRoutes = [
-    { path: '/en/profile', lang: 'en', heading: 'Profile', activeHref: '/en/profile' },
     { path: '/en/systems', lang: 'en', heading: 'Systems', activeHref: '/en/systems' },
     { path: '/en/writings', lang: 'en', heading: 'Writings', activeHref: '/en/writings' },
     { path: '/en/learning', lang: 'en', heading: 'Learning', activeHref: '/en/learning' },
     { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', activeHref: '/en/work-with-us' },
-    { path: '/fr/profil', lang: 'fr', heading: 'Profil', activeHref: '/fr/profil' },
     { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', activeHref: '/fr/systems' },
     { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', activeHref: '/fr/ecrits' },
     { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', activeHref: '/fr/apprentissage' },
