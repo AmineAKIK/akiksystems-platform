@@ -193,7 +193,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
     const system = await db
       .selectFrom('systems')
-      .select(['id', 'lifecycle', 'archived_at', 'created_at', 'updated_at'])
+      .select([
+        'id',
+        'lifecycle',
+        'presentation_kind',
+        'evidence_policy',
+        'archived_at',
+        'created_at',
+        'updated_at',
+      ])
       .where('id', '=', systemId)
       .executeTakeFirst();
 
@@ -208,6 +216,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       links,
       assetCount,
       auditEvents,
+      publications,
     ] = await Promise.all([
       db
         .selectFrom('system_localizations')
@@ -284,7 +293,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
       db
         .selectFrom('system_links')
-        .select(['id', 'kind', 'url', 'position'])
+        .select(['id', 'kind', 'url', 'label_en', 'label_fr', 'position'])
         .where('system_id', '=', systemId)
         .orderBy('position')
         .execute(),
@@ -308,6 +317,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .where('system_id', '=', systemId)
         .orderBy('created_at', 'desc')
         .limit(20)
+        .execute(),
+      db
+        .selectFrom('system_publications')
+        .select(['locale', 'published_at'])
+        .where('system_id', '=', systemId)
         .execute(),
     ]);
 
@@ -351,6 +365,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experience: experiences[0] ?? null,
       links,
       assetCount: Number(assetCount.count),
+      publicationState: {
+        en: publications.some((publication) => publication.locale === 'en'),
+        fr: publications.some((publication) => publication.locale === 'fr'),
+      },
       auditEvents: auditEvents.map((event) => ({
         ...event,
         created_at: event.created_at.toISOString(),
@@ -861,7 +879,10 @@ export default function AdminSystem() {
     .map((technology) => `${technology.slug} | ${technology.name}`)
     .join('\n');
   const linkText = data.links
-    .map((link) => `${link.kind} | ${link.url}`)
+    .map(
+      (link) =>
+        `${link.kind} | ${link.url} | ${link.label_en ?? ''} | ${link.label_fr ?? ''}`,
+    )
     .join('\n');
 
   const presentationEnBlocks = data.en?.presentation_document?.blocks.length ?? 0;
