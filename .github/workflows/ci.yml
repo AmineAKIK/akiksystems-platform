@@ -105,6 +105,7 @@ jobs:
           pnpm db:verify-published-systems-list
           pnpm db:verify-system-editorial-controls
           pnpm db:verify-protocap-domain
+          pnpm db:verify-oria-domain
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
