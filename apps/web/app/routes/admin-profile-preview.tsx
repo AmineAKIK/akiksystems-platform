@@ -1,4 +1,7 @@
-import { getDraftProfile } from '@akiksystems/db';
+import {
+  getDraftProfile,
+  listPublishedSystemReferences,
+} from '@akiksystems/db';
 import { type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { PublicProfileView } from '../components/public-profile-view';
@@ -19,8 +22,25 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response('Profile preview not found.', { status: 404 });
   }
 
+  const referenceIds = [
+    ...new Set([
+      ...profile.representativeSystems.map(({ id }) => id),
+      ...profile.workPrinciples.flatMap(({ evidenceSystem }) =>
+        evidenceSystem === null ? [] : [evidenceSystem.id],
+      ),
+      ...profile.technologyJourney.flatMap(({ evidence }) =>
+        evidence?.kind === 'system' ? [evidence.id] : [],
+      ),
+    ]),
+  ];
+  const systemReferences = await listPublishedSystemReferences(appDb, {
+    locale,
+    ids: referenceIds,
+  });
+
   return {
     profile,
+    systemReferences,
   };
 }
 
@@ -32,6 +52,11 @@ export function meta(): MetaDescriptor[] {
 }
 
 export default function AdminProfilePreview() {
-  const { profile } = useLoaderData<typeof loader>();
-  return <PublicProfileView profile={profile} />;
+  const { profile, systemReferences } = useLoaderData<typeof loader>();
+  return (
+    <PublicProfileView
+      profile={profile}
+      systemReferences={systemReferences}
+    />
+  );
 }

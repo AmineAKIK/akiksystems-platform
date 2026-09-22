@@ -1,11 +1,13 @@
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
-import type { PublicProfile } from '@akiksystems/db';
+import type { PublicProfile, PublicSystemReference } from '@akiksystems/db';
 
 import { destinationById } from '../i18n/global-destinations';
+import { SystemReference } from './system-reference';
 
 interface PublicProfileViewProps {
   profile: PublicProfile;
+  systemReferences: PublicSystemReference[];
 }
 
 const languageLabels = {
@@ -26,10 +28,24 @@ const mobilityLabels = {
   },
 } as const;
 
-export function PublicProfileView({ profile }: PublicProfileViewProps) {
+export function PublicProfileView({
+  profile,
+  systemReferences,
+}: PublicProfileViewProps) {
   const fallback = destinationById('profile').description[profile.locale];
-  const immediateProof = profile.representativeSystems[0] ?? null;
-  const remainingSystems = profile.representativeSystems.slice(1);
+  const referenceById = new Map(
+    systemReferences.map((reference) => [reference.id, reference]),
+  );
+  const immediateProof =
+    profile.representativeSystems[0] === undefined
+      ? null
+      : referenceById.get(profile.representativeSystems[0].id) ?? null;
+  const remainingSystems = profile.representativeSystems
+    .slice(1)
+    .flatMap((system) => {
+      const reference = referenceById.get(system.id);
+      return reference === undefined ? [] : [reference];
+    });
   const identity = profile.displayName ?? (profile.locale === 'fr' ? 'Profil' : 'Profile');
 
   return (
@@ -106,26 +122,14 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     : 'Immediate proof'
                 }
               >
-                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                  {profile.locale === 'fr'
-                    ? 'Preuve immédiate'
-                    : 'Immediate proof'}
-                </Text>
-                <Heading level={2} size="sm">
-                  {immediateProof.title}
-                </Heading>
-                <Text tone="muted">{immediateProof.summary}</Text>
-                <Link
-                  href={
+                <SystemReference
+                  label={
                     profile.locale === 'fr'
-                      ? `/fr/systems/${immediateProof.slug}`
-                      : `/en/systems/${immediateProof.slug}`
+                      ? 'Preuve immédiate'
+                      : 'Immediate proof'
                   }
-                >
-                  {profile.locale === 'fr'
-                    ? 'Inspecter cette preuve'
-                    : 'Inspect this proof'}
-                </Link>
+                  reference={immediateProof}
+                />
               </aside>
             ) : null}
           </section>
@@ -161,18 +165,13 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       {principle.detail !== null ? (
                         <Text tone="muted">{principle.detail}</Text>
                       ) : null}
-                      {principle.evidenceSystem !== null ? (
-                        <Link
-                          href={
-                            profile.locale === 'fr'
-                              ? `/fr/systems/${principle.evidenceSystem.slug}`
-                              : `/en/systems/${principle.evidenceSystem.slug}`
-                          }
-                        >
-                          {profile.locale === 'fr'
-                            ? `Exemple : ${principle.evidenceSystem.title}`
-                            : `Example: ${principle.evidenceSystem.title}`}
-                        </Link>
+                      {principle.evidenceSystem !== null &&
+                      referenceById.has(principle.evidenceSystem.id) ? (
+                        <SystemReference
+                          label={profile.locale === 'fr' ? 'Exemple' : 'Example'}
+                          reference={referenceById.get(principle.evidenceSystem.id)!}
+                          variant="inline"
+                        />
                       ) : null}
                     </div>
                   </li>
@@ -234,12 +233,12 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                             ) : null}
                             {stage.evidence !== null ? (
                               stage.evidence.kind === 'system' &&
-                              stage.evidence.href !== null ? (
-                                <Link href={stage.evidence.href}>
-                                  {profile.locale === 'fr'
-                                    ? `Preuve : ${stage.evidence.title}`
-                                    : `Evidence: ${stage.evidence.title}`}
-                                </Link>
+                              referenceById.has(stage.evidence.id) ? (
+                                <SystemReference
+                                  label={profile.locale === 'fr' ? 'Preuve' : 'Evidence'}
+                                  reference={referenceById.get(stage.evidence.id)!}
+                                  variant="inline"
+                                />
                               ) : (
                                 <Text size="sm" tone="strong">
                                   {profile.locale === 'fr'
@@ -358,29 +357,11 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                         : 'Representative Systems'}
                     </Heading>
                     <div className="aks-profile-system-list">
-                      {remainingSystems.map((system) => (
-                        <article
-                          className="aks-profile-system"
-                          key={system.id}
-                        >
-                          <div className="aks-proof-stack">
-                            <Heading level={3} size="sm">
-                              {system.title}
-                            </Heading>
-                            <Text tone="muted">{system.summary}</Text>
-                            <Link
-                              href={
-                                profile.locale === 'fr'
-                                  ? `/fr/systems/${system.slug}`
-                                  : `/en/systems/${system.slug}`
-                              }
-                            >
-                              {profile.locale === 'fr'
-                                ? 'Inspecter le système'
-                                : 'Inspect System'}
-                            </Link>
-                          </div>
-                        </article>
+                      {remainingSystems.map((reference) => (
+                        <SystemReference
+                          key={reference.id}
+                          reference={reference}
+                        />
                       ))}
                     </div>
                   </section>

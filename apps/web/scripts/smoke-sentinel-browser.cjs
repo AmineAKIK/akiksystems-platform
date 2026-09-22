@@ -509,8 +509,9 @@ async function assertWorkPrincipleEvidence(page) {
   await englishHow
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
     .waitFor();
+  await englishHow.getByText('Example', { exact: true }).waitFor();
   const englishEvidence = englishHow.getByRole('link', {
-    name: 'Example: Sentinel',
+    name: 'Sentinel',
     exact: true,
   });
   assert.equal(await englishEvidence.getAttribute('href'), '/en/systems/sentinel');
@@ -531,8 +532,9 @@ async function assertWorkPrincipleEvidence(page) {
       exact: true,
     })
     .waitFor();
+  await frenchHow.getByText('Exemple', { exact: true }).waitFor();
   const frenchEvidence = frenchHow.getByRole('link', {
-    name: 'Exemple : Sentinel',
+    name: 'Sentinel',
     exact: true,
   });
   assert.equal(await frenchEvidence.getAttribute('href'), '/fr/systems/sentinel');
@@ -608,9 +610,10 @@ async function assertTechnologicalJourney(page) {
     ],
   );
   await englishJourney.getByText('Context: Marelli', { exact: true }).waitFor();
+  await englishJourney.getByText('Evidence', { exact: true }).waitFor();
   assert.equal(
     await englishJourney
-      .getByRole('link', { name: 'Evidence: Sentinel', exact: true })
+      .getByRole('link', { name: 'Sentinel', exact: true })
       .getAttribute('href'),
     '/en/systems/sentinel',
   );
@@ -637,9 +640,10 @@ async function assertTechnologicalJourney(page) {
     ],
   );
   await frenchJourney.getByText('Contexte : Marelli', { exact: true }).waitFor();
+  await frenchJourney.getByText('Preuve', { exact: true }).waitFor();
   assert.equal(
     await frenchJourney
-      .getByRole('link', { name: 'Preuve : Sentinel', exact: true })
+      .getByRole('link', { name: 'Sentinel', exact: true })
       .getAttribute('href'),
     '/fr/systems/sentinel',
   );
@@ -773,7 +777,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
-      proofAction: 'Inspect this proof',
+      proofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
       technicalSummary: 'Explore technical depth',
@@ -787,7 +791,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
-      proofAction: 'Inspect this proof',
+      proofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
       technicalSummary: 'Explore technical depth',
@@ -801,7 +805,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
-      proofAction: 'Inspecter cette preuve',
+      proofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
       technicalSummary: 'Approfondir la technique',
@@ -815,7 +819,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
-      proofAction: 'Inspecter cette preuve',
+      proofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
       technicalSummary: 'Approfondir la technique',
@@ -845,7 +849,7 @@ async function assertProfileWithoutPriorCv(browser) {
       const firstView = page.locator('.aks-profile-first-view');
       const proof = page.locator('.aks-profile-immediate-proof');
       await proof
-        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
         .waitFor();
       assert.equal(
         await proof.getByRole('link', { name: scenario.proofAction }).getAttribute('href'),
@@ -919,10 +923,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'English',
         'Arabic',
       ],
-      immediateProofAction: 'Inspect this proof',
+      immediateProofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
-      principleEvidence: 'Example: Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Explore technical depth',
       capability: 'Design bounded systems',
       journeyStage: 'Development and AkikSystems',
@@ -942,10 +946,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'English',
         'Arabic',
       ],
-      immediateProofAction: 'Inspect this proof',
+      immediateProofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
-      principleEvidence: 'Example: Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Explore technical depth',
       capability: 'Design bounded systems',
       journeyStage: 'Development and AkikSystems',
@@ -965,10 +969,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'Anglais',
         'Arabe',
       ],
-      immediateProofAction: 'Inspecter cette preuve',
+      immediateProofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
-      principleEvidence: 'Exemple : Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Approfondir la technique',
       capability: 'Concevoir des systèmes délimités',
       journeyStage: 'Développement et AkikSystems',
@@ -988,10 +992,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'Anglais',
         'Arabe',
       ],
-      immediateProofAction: 'Inspecter cette preuve',
+      immediateProofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
-      principleEvidence: 'Exemple : Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Approfondir la technique',
       capability: 'Concevoir des systèmes délimités',
       journeyStage: 'Développement et AkikSystems',
@@ -1037,7 +1041,7 @@ async function assertProfileAfterPriorCvExposure(browser) {
 
       const proof = page.locator('.aks-profile-immediate-proof');
       await proof
-        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
         .waitFor();
       const proofHref = await proof
         .getByRole('link', { name: scenario.immediateProofAction, exact: true })
@@ -1458,6 +1462,65 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+async function assertReusableSystemReferences(browser) {
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    for (const target of [
+      { path: '/en/writings', locale: 'en', heading: 'Writings' },
+      { path: '/fr/ecrits', locale: 'fr', heading: 'Écrits' },
+      { path: '/en/learning', locale: 'en', heading: 'Learning' },
+      { path: '/fr/apprentissage', locale: 'fr', heading: 'Apprentissage' },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
+
+      const references = page.locator('.aks-system-reference');
+      assert.ok(
+        (await references.count()) >= 2,
+        `${target.path} must demonstrate at least two published reusable System references.`,
+      );
+      const first = references.first();
+      assert.match(await first.innerText(), /Role|Rôle/i);
+      assert.match(await first.innerText(), /Maturity|Maturité/i);
+
+      const hrefs = await references.locator('a').evaluateAll((links) =>
+        links.map((link) => link.getAttribute('href')),
+      );
+      for (const href of hrefs) {
+        assert.ok(
+          typeof href === 'string' && href.startsWith(`/${target.locale}/systems/`),
+          `${target.path} must use locale-safe System deep links, received ${href}.`,
+        );
+      }
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/writings', '/fr/ecrits', '/en/learning', '/fr/apprentissage']) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      await page.locator('.aks-system-reference').first().waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} reusable System references must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -1478,7 +1541,7 @@ async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/en/profile`);
   const englishProof = page.locator('.aks-profile-immediate-proof');
   await englishProof
-    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+    .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
     .waitFor();
   await englishProof
     .getByText(
@@ -1488,14 +1551,14 @@ async function assertRepresentativeSystemSelection(page) {
     .waitFor();
   assert.equal(
     await englishProof
-      .getByRole('link', { name: 'Inspect this proof' })
+      .getByRole('link', { name: 'Inspect System' })
       .getAttribute('href'),
     '/en/systems/sentinel',
   );
   assert.equal(
-    await page.locator('.aks-profile-system').count(),
-    0,
-    'The immediate proof must not be duplicated in the lower System list.',
+    await page.locator('.aks-system-reference').count(),
+    1,
+    'The immediate proof must be the only SystemReference card when Sentinel is the only representative System.',
   );
   assert.equal(
     /job seeker|open to work/i.test(await page.locator('.aks-profile-first-view').innerText()),
@@ -1506,7 +1569,7 @@ async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/fr/profil`);
   const frenchProof = page.locator('.aks-profile-immediate-proof');
   await frenchProof
-    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+    .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
     .waitFor();
   await frenchProof
     .getByText(
@@ -1516,14 +1579,14 @@ async function assertRepresentativeSystemSelection(page) {
     .waitFor();
   assert.equal(
     await frenchProof
-      .getByRole('link', { name: 'Inspecter cette preuve' })
+      .getByRole('link', { name: 'Inspecter le système' })
       .getAttribute('href'),
     '/fr/systems/sentinel',
   );
   assert.equal(
-    await page.locator('.aks-profile-system').count(),
-    0,
-    'La preuve immédiate ne doit pas être dupliquée dans la liste de systèmes.',
+    await page.locator('.aks-system-reference').count(),
+    1,
+    'La preuve immédiate doit être la seule carte SystemReference lorsque Sentinel est le seul système représentatif.',
   );
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -2761,6 +2824,8 @@ async function assertAxe(page) {
     await assertOriaInteractiveEntry(browser);
 
     await assertTugeresStandardSystem(browser);
+
+    await assertReusableSystemReferences(browser);
 
     await assertRepresentativeSystemSelection(page);
 

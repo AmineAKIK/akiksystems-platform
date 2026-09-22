@@ -18,6 +18,15 @@ export type {
   PublicProfileWorkPrincipleEvidence,
 } from './public-profile.js';
 export { getPublishedSystem, listPublishedSystems } from './public-system.js';
+export {
+  getPublishedSystemReferenceById,
+  listPublishedSystemReferences,
+  systemReferenceHref,
+} from './system-reference.js';
+export type {
+  ListPublishedSystemReferencesInput,
+  PublicSystemReference,
+} from './system-reference.js';
 export type {
   GetPublishedSystemInput,
   ListPublishedSystemsInput,
