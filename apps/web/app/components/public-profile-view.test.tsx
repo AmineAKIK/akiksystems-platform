@@ -414,7 +414,15 @@ describe('PublicProfileView technological journey', () => {
             alternateLocale: 'en',
             technologyJourney: frenchStages,
           })}
-          systemReferences={[]}
+          systemReferences={[
+            reference(
+              '00000000-0000-4000-8000-000000000028',
+              'sentinel',
+              'Sentinel',
+              'Visibilité opérationnelle et preuves inspectables.',
+              'fr',
+            ),
+          ]}
         />
       </MemoryRouter>,
     );
@@ -460,7 +468,10 @@ describe('PublicProfileView Technical Capabilities', () => {
   it('renders grouped capabilities as abilities rather than a technology stack', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
-        <PublicProfileView profile={profile({ capabilityGroups })} />
+        <PublicProfileView
+          profile={profile({ capabilityGroups })}
+          systemReferences={[]}
+        />
       </MemoryRouter>,
     );
 
