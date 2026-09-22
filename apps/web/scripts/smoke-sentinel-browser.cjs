@@ -405,6 +405,80 @@ async function assertProfessionalJourneySelection(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertWorkPrincipleEvidence(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', { level: 3, name: 'Evidence examples', exact: true })
+    .waitFor();
+
+  const evidenceSelects = page.locator('select[name^="evidence-"]');
+  assert.ok(
+    (await evidenceSelects.count()) >= 1,
+    'Saved working principles must expose optional evidence selectors.',
+  );
+  await evidenceSelects.first().selectOption({ label: 'Sentinel' });
+  await page.getByRole('button', { name: 'Save principle evidence' }).click();
+  await page.getByText('How I work evidence updated.', { exact: true }).waitFor();
+
+  await page.goto(`${origin}/en/profile`);
+  const englishHow = page.locator('.aks-profile-work-principles');
+  await englishHow
+    .getByRole('heading', { level: 2, name: 'How I work', exact: true })
+    .waitFor();
+  const englishEvidence = englishHow.getByRole('link', {
+    name: 'Example: Sentinel',
+    exact: true,
+  });
+  assert.equal(await englishEvidence.getAttribute('href'), '/en/systems/sentinel');
+  assert.equal(
+    /Operational visibility built from industrial context/.test(
+      await englishHow.innerText(),
+    ),
+    false,
+    'How I work must link to System evidence without copying the System summary.',
+  );
+
+  await page.goto(`${origin}/fr/profil`);
+  const frenchHow = page.locator('.aks-profile-work-principles');
+  await frenchHow
+    .getByRole('heading', {
+      level: 2,
+      name: 'Ma manière de travailler',
+      exact: true,
+    })
+    .waitFor();
+  const frenchEvidence = frenchHow.getByRole('link', {
+    name: 'Exemple : Sentinel',
+    exact: true,
+  });
+  assert.equal(await frenchEvidence.getAttribute('href'), '/fr/systems/sentinel');
+  assert.equal(
+    /Visibilité opérationnelle issue d’un contexte industriel/.test(
+      await frenchHow.innerText(),
+    ),
+    false,
+    'How I work must not duplicate the localized System summary.',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/en/profile', '/fr/profil']) {
+    await page.goto(`${origin}${path}`);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${path} How I work must not overflow on mobile.`,
+    );
+    assert.equal(
+      await page.locator('.aks-profile-work-principle').count(),
+      3,
+      `${path} must preserve the three concise working principles.`,
+    );
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -1681,6 +1755,8 @@ async function assertAxe(page) {
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
 
     await assertRepresentativeSystemSelection(page);
+
+    await assertWorkPrincipleEvidence(page);
 
     await assertProfessionalJourneySelection(page);
 
