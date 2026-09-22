@@ -156,16 +156,18 @@ Publication readiness is a shared domain rule rather than UI-only validation.
 - A localization is ready only when its slug is valid, title is non-empty, summary is non-empty, and `presentation_document` is valid v1 with at least one block.
 - The shared `validateSystemPublicationReadiness` helper returns understandable reasons for incomplete content.
 - The Sentinel workspace shows readiness independently for EN and FR.
-- PostgreSQL prevents incomplete rows from entering or remaining in `published` state, including later edits that would make an already-published localization incomplete.
-- Actual publish/unpublish controls remain scoped to AKS-023; AKS-022 defines and enforces the precondition.
+- The draft workspace may become incomplete while an older public snapshot remains stable; publication readiness is checked again before replacing that snapshot.
+- PostgreSQL still protects the legacy draft editorial-state invariants, while `system_publications` is the authoritative public boundary.
+- Publish materializes a locale-scoped snapshot; Unpublish removes that snapshot.
 
 ### Public localized System route
 
 Published Systems are directly accessible by localized deep link.
 
 - `/:locale/systems/:slug` resolves through the AKS-026 `getPublishedSystem` boundary and renders through the AKS-027 shared renderer.
-- Draft localizations and archived Systems return 404 because the public route never queries admin state directly.
-- EN and FR remain independent; each URL exists only when that specific localization is published.
+- Public reads resolve only from `system_publications`; draft edits cannot change the visible title, summary, proof contract, presentation, links, or media until that locale is published again.
+- Archived Systems return 404 even when a prior publication snapshot still exists.
+- EN and FR remain independent; each URL exists only while that locale has a publication snapshot.
 - Initial HTML is server-rendered and includes the System title, summary, technologies, origin context, links, and structured presentation without requiring client JavaScript.
 - Contextual media uses `/:locale/systems/:slug/assets/:assetId`; the asset route verifies the owning System is active and that the requested localization is published before reading private object storage.
 - Public HTML and media responses use short cache lifetimes with stale-while-revalidate.
@@ -188,9 +190,9 @@ The v1 System renderer is a code-defined semantic rendering boundary shared by p
 
 Public System consumption goes through one explicit query boundary: `getPublishedSystem(db, { locale, slug })`.
 
-- The root query requires `systems.lifecycle = active` and the requested localization to be `published`.
-- Draft localizations return `null`, including when another locale for the same System is published.
-- Archived Systems return `null` even if a localization still carries a published editorial state.
+- The root query requires `systems.lifecycle = active` and a matching locale/slug row in `system_publications`.
+- Draft workspace state is never queried to assemble public content; an existing public snapshot remains stable while a new draft is edited.
+- Archived Systems return `null` even if a publication snapshot still exists.
 - The returned projection contains only public identity/content plus ordered technologies, localized origin context, typed links, contextual media metadata, and the validated presentation document.
 - Admin lifecycle state, editorial state, audit events, storage keys, original filenames, byte sizes, internal timestamps, and content from the other locale are not part of the projection.
 - Media is represented by public-safe asset identity and localized metadata; delivery URL construction remains a web/runtime responsibility.
@@ -201,7 +203,7 @@ Public System consumption goes through one explicit query boundary: `getPublishe
 Draft System content can be previewed without creating a public route.
 
 - `/admin/systems/:systemId/preview/:locale` requires an authenticated admin session.
-- Preview uses the shared `SystemDetailView` renderer intended for the public System detail path, so draft review exercises the same semantic rendering surface instead of an admin-only approximation.
+- Preview uses the same experience resolver/renderers as public detail and applies the same `evidence_policy`, so `documented_only` cannot expose live/demo links in preview that public readers would not see.
 - Draft assets are fetched through an authenticated preview asset proxy and remain private in object storage.
 - Preview responses send `Cache-Control: private, no-store` and both HTML/meta and HTTP `X-Robots-Tag` directives for `noindex, nofollow, noarchive, nosnippet`.
 - Anonymous requests to preview pages and preview assets redirect to admin login.
@@ -213,12 +215,12 @@ Draft System content can be previewed without creating a public route.
 System publication is controlled per localization rather than per shared System identity.
 
 - EN and FR content are saved through separate locale-scoped admin actions.
-- Each locale has its own Publish / Unpublish control and its own `published_at` timestamp.
-- Publishing EN never changes FR state or content; publishing/unpublishing FR never changes EN.
+- Each locale has its own Publish / Unpublish control and one row in `system_publications` when public.
+- Publishing EN atomically replaces only the EN snapshot; FR is untouched, and vice versa.
 - A locale can publish only after satisfying the AKS-022 readiness contract.
-- Editing a draft localization does not write any columns in the other locale, including `updated_at`.
-- `EN=PUBLISHED / FR=DRAFT` is an explicitly supported state.
-- The public read model remains scoped to AKS-026; AKS-023 guarantees the persisted localized publication boundary it will consume.
+- Saving localized or presentation content marks that workspace locale draft without deleting its previous public snapshot.
+- Shared System changes such as technologies, origin context, evidence policy, presentation kind, links, or contextual assets mark both locale workspaces draft; the already-published snapshots remain unchanged until republished.
+- `EN=PUBLIC / FR=DRAFT-ONLY`, `EN=PUBLIC+NEW-DRAFT / FR=PUBLIC`, and the inverse states are explicitly supported.
 
 ### Admin audit trail
 
