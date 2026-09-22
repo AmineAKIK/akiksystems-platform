@@ -11,6 +11,7 @@
   "scripts": {
     "auth:bootstrap-admin": "pnpm --filter @akiksystems/web auth:bootstrap-admin",
     "auth:migrate": "pnpm --filter @akiksystems/web auth:migrate",
+    "content:bootstrap-protocap": "pnpm --filter @akiksystems/web content:bootstrap-protocap",
     "build": "pnpm -r --if-present build",
     "clean": "tsc -b --clean && rimraf \"apps/*/dist\" \"apps/*/build\" \"packages/*/dist\" coverage",
     "config:verify": "node packages/config/env/verify.mjs",
@@ -46,6 +47,7 @@
     "db:verify-public-system": "pnpm --filter @akiksystems/db db:verify-public-system",
     "db:verify-published-systems-list": "pnpm --filter @akiksystems/db db:verify-published-systems-list",
     "db:verify-system-editorial-controls": "pnpm --filter @akiksystems/db db:verify-system-editorial-controls",
+    "db:verify-protocap-domain": "pnpm --filter @akiksystems/db db:verify-protocap-domain",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
