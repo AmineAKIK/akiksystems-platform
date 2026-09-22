@@ -1253,6 +1253,95 @@ async function assertProtoCapGuidedDemo(browser) {
   }
 }
 
+async function assertOriaInteractiveEntry(browser) {
+  execFileSync('pnpm', ['db:bootstrap-oria-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+
+    for (const target of [
+      {
+        path: '/en/systems/oria-nutrition',
+        liveLabel: 'Open Oria in a new tab',
+        returnLabel: 'Back to Systems',
+      },
+      {
+        path: '/fr/systems/oria-nutrition',
+        liveLabel: 'Ouvrir Oria dans un nouvel onglet',
+        returnLabel: 'Retour aux Systèmes',
+      },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: 'Oria Nutrition', exact: true }).waitFor();
+      assert.equal(
+        await page.locator('.aks-system-experience').getAttribute('data-renderer'),
+        'interactive-entry',
+        'Oria must resolve through the interactive-entry renderer.',
+      );
+
+      const liveLink = page.getByRole('link', { name: target.liveLabel, exact: true });
+      await liveLink.waitFor();
+      assert.equal(
+        await liveLink.getAttribute('href'),
+        'https://amineakik.github.io/orianutrition/',
+      );
+      assert.equal(await liveLink.getAttribute('target'), '_blank');
+      assert.equal(await liveLink.getAttribute('rel'), 'noopener noreferrer');
+
+      const returnLink = page.getByRole('link', { name: target.returnLabel, exact: true });
+      assert.equal(
+        await returnLink.getAttribute('href'),
+        target.path.startsWith('/fr/') ? '/fr/systems' : '/en/systems',
+      );
+
+      const before = page.url();
+      const [external] = await Promise.all([
+        desktop.waitForEvent('page'),
+        liveLink.click(),
+      ]);
+      await external.waitForLoadState('domcontentloaded').catch(() => undefined);
+      assert.equal(
+        page.url(),
+        before,
+        'Opening Oria must preserve the AkikSystems page as the return point.',
+      );
+      await external.close();
+
+      assert.match(await page.locator('body').innerText(), /non-industrial|non industriel/i);
+      assert.match(await page.locator('body').innerText(), /No real client data|Aucune donnee de client reel/i);
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/systems/oria-nutrition', '/fr/systems/oria-nutrition']) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: 'Oria Nutrition', exact: true }).waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} interactive entry must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2539,6 +2628,8 @@ async function assertAxe(page) {
     await assertSystemsOverview(browser);
 
     await assertProtoCapGuidedDemo(browser);
+
+    await assertOriaInteractiveEntry(browser);
 
     await assertRepresentativeSystemSelection(page);
 
