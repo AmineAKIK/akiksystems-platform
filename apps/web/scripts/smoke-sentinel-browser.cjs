@@ -509,8 +509,9 @@ async function assertWorkPrincipleEvidence(page) {
   await englishHow
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
     .waitFor();
+  await englishHow.getByText('Example', { exact: true }).waitFor();
   const englishEvidence = englishHow.getByRole('link', {
-    name: 'Example: Sentinel',
+    name: 'Sentinel',
     exact: true,
   });
   assert.equal(await englishEvidence.getAttribute('href'), '/en/systems/sentinel');
@@ -531,8 +532,9 @@ async function assertWorkPrincipleEvidence(page) {
       exact: true,
     })
     .waitFor();
+  await frenchHow.getByText('Exemple', { exact: true }).waitFor();
   const frenchEvidence = frenchHow.getByRole('link', {
-    name: 'Exemple : Sentinel',
+    name: 'Sentinel',
     exact: true,
   });
   assert.equal(await frenchEvidence.getAttribute('href'), '/fr/systems/sentinel');
@@ -608,9 +610,10 @@ async function assertTechnologicalJourney(page) {
     ],
   );
   await englishJourney.getByText('Context: Marelli', { exact: true }).waitFor();
+  await englishJourney.getByText('Evidence', { exact: true }).waitFor();
   assert.equal(
     await englishJourney
-      .getByRole('link', { name: 'Evidence: Sentinel', exact: true })
+      .getByRole('link', { name: 'Sentinel', exact: true })
       .getAttribute('href'),
     '/en/systems/sentinel',
   );
@@ -637,9 +640,10 @@ async function assertTechnologicalJourney(page) {
     ],
   );
   await frenchJourney.getByText('Contexte : Marelli', { exact: true }).waitFor();
+  await frenchJourney.getByText('Preuve', { exact: true }).waitFor();
   assert.equal(
     await frenchJourney
-      .getByRole('link', { name: 'Preuve : Sentinel', exact: true })
+      .getByRole('link', { name: 'Sentinel', exact: true })
       .getAttribute('href'),
     '/fr/systems/sentinel',
   );
@@ -773,7 +777,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
-      proofAction: 'Inspect this proof',
+      proofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
       technicalSummary: 'Explore technical depth',
@@ -787,7 +791,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Software systems builder',
       introduction: 'I design and build inspectable software systems.',
-      proofAction: 'Inspect this proof',
+      proofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
       technicalSummary: 'Explore technical depth',
@@ -801,7 +805,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
-      proofAction: 'Inspecter cette preuve',
+      proofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
       technicalSummary: 'Approfondir la technique',
@@ -815,7 +819,7 @@ async function assertProfileWithoutPriorCv(browser) {
       profileHeading: 'Amine AKIK',
       title: 'Concepteur de systèmes logiciels',
       introduction: 'Je conçois et construis des systèmes logiciels inspectables.',
-      proofAction: 'Inspecter cette preuve',
+      proofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
       technicalSummary: 'Approfondir la technique',
@@ -919,10 +923,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'English',
         'Arabic',
       ],
-      immediateProofAction: 'Inspect this proof',
+      immediateProofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
-      principleEvidence: 'Example: Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Explore technical depth',
       capability: 'Design bounded systems',
       journeyStage: 'Development and AkikSystems',
@@ -942,10 +946,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'English',
         'Arabic',
       ],
-      immediateProofAction: 'Inspect this proof',
+      immediateProofAction: 'Inspect System',
       howSummary: 'Explore how I work',
       principle: 'Make evidence inspectable',
-      principleEvidence: 'Example: Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Explore technical depth',
       capability: 'Design bounded systems',
       journeyStage: 'Development and AkikSystems',
@@ -965,10 +969,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'Anglais',
         'Arabe',
       ],
-      immediateProofAction: 'Inspecter cette preuve',
+      immediateProofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
-      principleEvidence: 'Exemple : Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Approfondir la technique',
       capability: 'Concevoir des systèmes délimités',
       journeyStage: 'Développement et AkikSystems',
@@ -988,10 +992,10 @@ async function assertProfileAfterPriorCvExposure(browser) {
         'Anglais',
         'Arabe',
       ],
-      immediateProofAction: 'Inspecter cette preuve',
+      immediateProofAction: 'Inspecter le système',
       howSummary: 'Approfondir ma manière de travailler',
       principle: 'Rendre les preuves inspectables',
-      principleEvidence: 'Exemple : Sentinel',
+      principleEvidence: 'Sentinel',
       technicalSummary: 'Approfondir la technique',
       capability: 'Concevoir des systèmes délimités',
       journeyStage: 'Développement et AkikSystems',
