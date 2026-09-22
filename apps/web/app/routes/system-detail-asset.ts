@@ -80,7 +80,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const bytes = new Uint8Array(await stored.arrayBuffer());
   const variant = await resizePublicImage(bytes, asset.mime_type, requestedWidth);
 
-  return new Response(variant, {
+  const body = variant.buffer.slice(
+    variant.byteOffset,
+    variant.byteOffset + variant.byteLength,
+  ) as ArrayBuffer;
+
+  return new Response(body, {
     headers: {
       'Cache-Control': 'public, max-age=31536000, immutable',
       'Content-Type': asset.mime_type,
