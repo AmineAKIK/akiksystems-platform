@@ -207,6 +207,11 @@ export async function action({ request }: Route.ActionArgs) {
           slug: 'sentinel',
           title: 'Sentinel',
           summary: null,
+          proof_role: 'Industrial-context software system',
+          proof_maturity: 'Inspectable implementation',
+          proof_demo_nature: 'No separate public demo',
+          proof_data_nature: 'Real-world context; no customer data exposed',
+          proof_limits: 'Origin context alone is not evidence of current deployment or publicly exposed operational data.',
         },
         {
           system_id: systemId,
@@ -214,6 +219,11 @@ export async function action({ request }: Route.ActionArgs) {
           slug: 'sentinel',
           title: 'Sentinel',
           summary: null,
+          proof_role: 'Système logiciel issu d un contexte industriel',
+          proof_maturity: 'Implémentation inspectable',
+          proof_demo_nature: 'Aucune démo publique séparée',
+          proof_data_nature: 'Contexte réel ; aucune donnée client exposée',
+          proof_limits: 'Le contexte d origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
         },
       ])
       .execute();
