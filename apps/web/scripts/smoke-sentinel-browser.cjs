@@ -61,6 +61,29 @@ async function openProfileDepth(page, id) {
   return details;
 }
 
+async function publishProfileDraft(page, locales = ['en', 'fr']) {
+  await page.goto(`${origin}/admin/profile`);
+
+  for (const locale of locales) {
+    const card = page.locator('.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: locale.toUpperCase(),
+        exact: true,
+      }),
+    });
+    const publishButton = card.getByRole('button', {
+      name: /^(Publish|Republish draft)$/,
+    });
+    await publishButton.click();
+    await page
+      .getByText(`${locale.toUpperCase()} Profile published from current draft.`, {
+        exact: true,
+      })
+      .waitFor();
+  }
+}
+
 async function assertProfileAdministration(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -185,6 +208,8 @@ async function assertProfileAdministration(page) {
   await page
     .getByText('Languages and mobility updated.', { exact: true })
     .waitFor();
+
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
@@ -404,6 +429,7 @@ async function assertProfessionalJourneySelection(page) {
   await marelliCard.getByRole('spinbutton', { name: 'Order', exact: true }).fill('0');
   await page.getByRole('button', { name: 'Save professional journey' }).click();
   await page.getByText('Professional journey updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await openProfileDepth(page, 'profile-professional-evidence');
@@ -484,6 +510,7 @@ async function assertWorkPrincipleEvidence(page) {
   await evidenceSelects.first().selectOption({ label: 'Sentinel' });
   await page.getByRole('button', { name: 'Save principle evidence' }).click();
   await page.getByText('How I work evidence updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await openProfileDepth(page, 'profile-how-i-work');
@@ -1123,6 +1150,7 @@ async function assertRepresentativeSystemSelection(page) {
   await sentinelCard.locator('input[type="number"]').fill('0');
   await page.getByRole('button', { name: 'Save representative Systems' }).click();
   await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   const englishProof = page.locator('.aks-profile-immediate-proof');
