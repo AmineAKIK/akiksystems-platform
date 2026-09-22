@@ -126,19 +126,38 @@ jobs:
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
-      - name: Install isolated browser qualification runtime
-        run: |
-          mkdir -p /tmp/akiksystems-l1-browser
-          cd /tmp/akiksystems-l1-browser
-          npm init -y
-          npm install playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
-          ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Cache browser qualification runtime
+        id: browser-runtime-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/akiksystems-browser-runtime/node_modules
+          key: ${{ runner.os }}-node24-browser-runtime-pw1.55.0-axe4.10.3-lh12.8.2
 
-      - name: Qualify Sentinel admin-to-public journey
+      - name: Install browser qualification runtime
+        if: steps.browser-runtime-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/akiksystems-browser-runtime
+          cd /tmp/akiksystems-browser-runtime
+          npm init -y
+          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
+
+      - name: Resolve browser executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_PATH" ]; then
+            echo "No system Chrome/Chromium is available on the runner." >&2
+            exit 1
+          fi
+          "$CHROME_PATH" --version
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Full browser qualification (L2-L4)
         env:
-          NODE_PATH: /tmp/akiksystems-l1-browser/node_modules
-          LIGHTHOUSE_BIN: /tmp/akiksystems-l1-browser/node_modules/.bin/lighthouse
-        run: node apps/web/scripts/smoke-sentinel-browser.cjs
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          LIGHTHOUSE_BIN: /tmp/akiksystems-browser-runtime/node_modules/.bin/lighthouse
+        run: node apps/web/scripts/smoke-platform-browser.cjs
 
       - name: Smoke private admin authentication
         run: pnpm smoke:auth

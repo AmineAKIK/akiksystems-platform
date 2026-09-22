@@ -7,6 +7,8 @@ const { setTimeout: sleep } = require('node:timers/promises');
 const { chromium } = require('playwright');
 const axe = require('axe-core');
 
+const chromePath = process.env.CHROME_PATH?.trim() || undefined;
+
 const adminEmail = process.env.ADMIN_EMAIL;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
@@ -1265,13 +1267,21 @@ async function assertOptimizedSystemMedia(page, path) {
   );
 }
 
-async function assertProtoCapGuidedDemo(browser) {
-  execFileSync('pnpm', ['db:bootstrap-protocap-qualification'], {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: 'pipe',
-  });
+function bootstrapL4QualificationSystems() {
+  for (const command of [
+    'db:bootstrap-protocap-qualification',
+    'db:bootstrap-oria-qualification',
+    'db:bootstrap-tugeres-qualification',
+  ]) {
+    execFileSync('pnpm', [command], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: 'pipe',
+    });
+  }
+}
 
+async function assertProtoCapGuidedDemo(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
     const page = await desktop.newPage();
@@ -1346,12 +1356,6 @@ async function assertProtoCapGuidedDemo(browser) {
 }
 
 async function assertOriaInteractiveEntry(browser) {
-  execFileSync('pnpm', ['db:bootstrap-oria-qualification'], {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: 'pipe',
-  });
-
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
     const page = await desktop.newPage();
@@ -1445,12 +1449,6 @@ async function assertOriaInteractiveEntry(browser) {
 }
 
 async function assertTugeresStandardSystem(browser) {
-  execFileSync('pnpm', ['db:bootstrap-tugeres-qualification'], {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: 'pipe',
-  });
-
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
     const page = await desktop.newPage();
@@ -2847,14 +2845,17 @@ async function assertAxe(page) {
       nodes: violation.nodes.length,
     })),
     [],
-    'Sentinel must have no serious or critical axe violations.',
+    'The qualified page must have no serious or critical axe violations.',
   );
 }
 
 (async () => {
   await waitForServer();
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    ...(chromePath ? { executablePath: chromePath } : {}),
+  });
   try {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -2995,17 +2996,16 @@ async function assertAxe(page) {
       /aucune donnée client exposée/i,
     ]);
 
-    await assertSystemsOverview(browser);
+    bootstrapL4QualificationSystems();
 
-    await assertProtoCapGuidedDemo(browser);
-
-    await assertOriaInteractiveEntry(browser);
-
-    await assertTugeresStandardSystem(browser);
-
-    await assertReusableSystemReferences(browser);
-
-    await assertTechnicalEvaluatorPaths(browser);
+    await Promise.all([
+      assertSystemsOverview(browser),
+      assertProtoCapGuidedDemo(browser),
+      assertOriaInteractiveEntry(browser),
+      assertTugeresStandardSystem(browser),
+      assertReusableSystemReferences(browser),
+      assertTechnicalEvaluatorPaths(browser),
+    ]);
 
     await assertRepresentativeSystemSelection(page);
 
@@ -3015,11 +3015,11 @@ async function assertAxe(page) {
 
     await assertTechnologicalJourney(page);
 
-    await assertProfileProgressiveDepth(browser, page);
-
-    await assertProfileWithoutPriorCv(browser);
-
-    await assertProfileAfterPriorCvExposure(browser);
+    await Promise.all([
+      assertProfileProgressiveDepth(browser, page),
+      assertProfileWithoutPriorCv(browser),
+      assertProfileAfterPriorCvExposure(browser),
+    ]);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
@@ -3039,11 +3039,13 @@ async function assertAxe(page) {
       'A published deep translation must switch to its equivalent localized System route.',
     );
 
-    await assertPublishedSystemDeepLinkAutonomy(browser);
-    await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
-    await assertRealDeviceClasses(browser, { includeDeep: true });
-    await assertTenSecondComprehensionBaseline(browser);
-    await assertGlobalKeyboardNavigation(browser);
+    await Promise.all([
+      assertPublishedSystemDeepLinkAutonomy(browser),
+      assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true }),
+      assertRealDeviceClasses(browser, { includeDeep: true }),
+      assertTenSecondComprehensionBaseline(browser),
+      assertGlobalKeyboardNavigation(browser),
+    ]);
 
     const reducedDesktop = await browser.newContext({
       viewport: { width: 1280, height: 800 },
@@ -3295,7 +3297,7 @@ async function assertAxe(page) {
       {
         env: {
           ...process.env,
-          CHROME_PATH: chromium.executablePath(),
+          CHROME_PATH: chromePath ?? chromium.executablePath(),
         },
         stdio: 'pipe',
       },
@@ -3363,7 +3365,7 @@ async function assertAxe(page) {
     }
 
     process.stdout.write(
-      'Sentinel L1 browser qualification passed: global destination deep links and touch navigation on desktop/mobile, admin EN/FR editing, draft preview, independent publication, public SSR/deep links, SEO, keyboard access, 320px reflow, reduced motion, axe, mobile Lighthouse performance, and no-JS reading are verified.\\n',
+      'AkikSystems full browser qualification passed: Home, Profile, Systems, EN/FR publication, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, Lighthouse performance, and no-JS reading are verified.\\n',
     );
   } finally {
     await browser.close();
