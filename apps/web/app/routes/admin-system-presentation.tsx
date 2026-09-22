@@ -222,6 +222,11 @@ export async function action({ request, params }: Route.ActionArgs) {
         'slug',
         'title',
         'summary',
+        'proof_role',
+        'proof_maturity',
+        'proof_demo_nature',
+        'proof_data_nature',
+        'proof_limits',
         'editorial_state',
       ])
       .where('system_id', '=', systemId)
@@ -233,6 +238,11 @@ export async function action({ request, params }: Route.ActionArgs) {
         slug: localization.slug,
         title: localization.title,
         summary: localization.summary,
+        proofRole: localization.proof_role,
+        proofMaturity: localization.proof_maturity,
+        proofDemoNature: localization.proof_demo_nature,
+        proofDataNature: localization.proof_data_nature,
+        proofLimits: localization.proof_limits,
         presentationDocument: document,
       });
 
