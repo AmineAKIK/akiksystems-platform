@@ -42,7 +42,8 @@
     "db:bootstrap-oria-qualification": "tsx src/cli/bootstrap-oria-qualification.ts",
     "db:bootstrap-protocap-qualification": "tsx src/cli/bootstrap-protocap-qualification.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
-    "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts"
+    "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts",
+    "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
