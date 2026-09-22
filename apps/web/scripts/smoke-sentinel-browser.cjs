@@ -479,6 +479,103 @@ async function assertWorkPrincipleEvidence(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertTechnologicalJourney(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', { level: 2, name: 'Technological journey', exact: true })
+    .waitFor();
+
+  const journeyForm = page.locator('form').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Technological journey',
+      exact: true,
+    }),
+  });
+
+  await journeyForm
+    .locator('select[name="journey-industry-evidence"]')
+    .selectOption({ label: 'Experience · Marelli' });
+  await journeyForm
+    .locator('select[name="journey-development_akiksystems-evidence"]')
+    .selectOption({ label: 'System · Sentinel' });
+  await journeyForm
+    .getByRole('button', { name: 'Save technological journey' })
+    .click();
+  await page
+    .getByText('Technological journey updated.', { exact: true })
+    .waitFor();
+
+  await page.goto(`${origin}/en/profile`);
+  const englishJourney = page.locator('.aks-profile-technology-journey');
+  await englishJourney
+    .getByRole('heading', { level: 2, name: 'Technological journey', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await englishJourney.locator('h3').allInnerTexts(),
+    [
+      'Programming foundations',
+      'Networks and telecom',
+      'IT support',
+      'Relevant industry',
+      'Development and AkikSystems',
+    ],
+  );
+  await englishJourney.getByText('Context: Marelli', { exact: true }).waitFor();
+  assert.equal(
+    await englishJourney
+      .getByRole('link', { name: 'Evidence: Sentinel', exact: true })
+      .getAttribute('href'),
+    '/en/systems/sentinel',
+  );
+  assert.equal(
+    /React|Docker/.test(await englishJourney.innerText()),
+    false,
+    'The technological journey must not collapse into a concrete tool list.',
+  );
+
+  await page.goto(`${origin}/fr/profil`);
+  const frenchJourney = page.locator('.aks-profile-technology-journey');
+  await frenchJourney
+    .getByRole('heading', { level: 2, name: 'Parcours technologique', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await frenchJourney.locator('h3').allInnerTexts(),
+    [
+      'Fondations en programmation',
+      'Réseaux et télécoms',
+      'Support informatique',
+      'Industrie pertinente',
+      'Développement et AkikSystems',
+    ],
+  );
+  await frenchJourney.getByText('Contexte : Marelli', { exact: true }).waitFor();
+  assert.equal(
+    await frenchJourney
+      .getByRole('link', { name: 'Preuve : Sentinel', exact: true })
+      .getAttribute('href'),
+    '/fr/systems/sentinel',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/en/profile', '/fr/profil']) {
+    await page.goto(`${origin}${path}`);
+    assert.equal(
+      await page.locator('.aks-profile-technology-journey-stage').count(),
+      5,
+      `${path} must preserve the fixed five-step technological journey.`,
+    );
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${path} technological journey must not overflow on mobile.`,
+    );
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -1759,6 +1856,8 @@ async function assertAxe(page) {
     await assertWorkPrincipleEvidence(page);
 
     await assertProfessionalJourneySelection(page);
+
+    await assertTechnologicalJourney(page);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
