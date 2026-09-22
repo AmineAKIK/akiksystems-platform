@@ -283,7 +283,7 @@ Profile languages and mobility are structured facts rather than duplicated local
 
 ### Profile capabilities
 
-Profile capabilities are modeled separately from concrete Technologies.
+Profile capabilities are modeled and presented separately from concrete Technologies.
 
 - `profile_capability_groups` owns ordered conceptual groupings for the public Profile.
 - `profile_capability_group_localizations` localizes group labels independently in EN/FR.
@@ -291,7 +291,9 @@ Profile capabilities are modeled separately from concrete Technologies.
 - `profile_capability_localizations` stores localized capability title and optional summary.
 - Capability tables have no relation to `technologies` or `system_technologies`; tools remain evidence/context rather than being treated as abilities.
 - The Profile admin rejects capability/group titles that exactly reuse an existing Technology name or slug.
-- AKS-059 establishes the domain and administration boundary; grouped public presentation remains scoped to AKS-065.
+- Public Profile renders capabilities as semantic grouped abilities with explanatory copy, not as badges, tags, logos, or a technology stack.
+- The section keeps group/capability ordering from the read model and reflows from two columns to one on mobile.
+- Concrete technologies such as React or Docker remain visually and conceptually outside the Technical Capabilities section.
 
 ### Experience context
 
