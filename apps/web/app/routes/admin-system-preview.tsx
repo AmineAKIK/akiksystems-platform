@@ -1,7 +1,7 @@
 import { Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
-import { SystemDetailView } from '../components/system-detail-view';
+import { SystemExperience } from '../components/system-experience-resolver';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
@@ -49,6 +49,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       .select([
         'systems.id',
         'systems.lifecycle',
+        'systems.presentation_kind',
         'system_localizations.slug',
         'system_localizations.title',
         'system_localizations.summary',
@@ -134,6 +135,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         title: localization.title,
         summary: localization.summary,
         editorialState: localization.editorial_state,
+        presentationKind: localization.presentation_kind,
         presentationDocument: localization.presentation_document,
         technologies,
         links,
@@ -178,13 +180,14 @@ export default function AdminSystemPreview() {
           <Link href={`/admin/systems/${data.systemId}`}>Back to workspace</Link>
         </div>
       </div>
-      <SystemDetailView
+      <SystemExperience
         assets={data.assets}
         links={data.links}
         locale={data.locale}
         originSummary={data.originSummary}
         originTitle={data.originTitle}
         presentationDocument={data.presentationDocument}
+        presentationKind={data.presentationKind}
         preview
         summary={data.summary}
         technologies={data.technologies}

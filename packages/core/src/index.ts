@@ -8,6 +8,14 @@ export const systemLifecycles = ['active', 'archived'] as const;
 
 export type SystemLifecycle = (typeof systemLifecycles)[number];
 
+export const systemPresentationKinds = [
+  'standard',
+  'guided_demo',
+  'interactive_entry',
+] as const;
+
+export type SystemPresentationKind = (typeof systemPresentationKinds)[number];
+
 export const systemEditorialStates = ['draft', 'published'] as const;
 
 export type SystemEditorialState = (typeof systemEditorialStates)[number];
@@ -17,6 +25,7 @@ export type SystemId = string;
 export interface SystemIdentity {
   id: SystemId;
   lifecycle: SystemLifecycle;
+  presentationKind: SystemPresentationKind;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

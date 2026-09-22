@@ -164,6 +164,7 @@ try {
   assert.ok(published !== null);
   assert.equal(published.id, systemId);
   assert.equal(published.locale, 'en');
+  assert.equal(published.presentationKind, 'standard');
   assert.equal(published.slug, 'public-sentinel-proof');
   assert.equal(published.title, 'Public Sentinel');
   assert.equal(published.summary, 'Published public summary.');

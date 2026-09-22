@@ -5,7 +5,7 @@ import {
   type MetaDescriptor,
 } from 'react-router';
 
-import { SystemDetailView } from '../components/system-detail-view';
+import { SystemExperience } from '../components/system-experience-resolver';
 import { appDb } from '../lib/db.server';
 import { requireLocale } from '../i18n/locales';
 
@@ -138,13 +138,14 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 export default function SystemDetailRoute() {
   const { system } = useLoaderData<typeof loader>();
   return (
-    <SystemDetailView
+    <SystemExperience
       assets={system.media}
       links={system.links}
       locale={system.locale}
       originSummary={system.origin?.summary ?? null}
       originTitle={system.origin?.title ?? null}
       presentationDocument={system.presentationDocument}
+      presentationKind={system.presentationKind}
       summary={system.summary}
       technologies={system.technologies}
       title={system.title}

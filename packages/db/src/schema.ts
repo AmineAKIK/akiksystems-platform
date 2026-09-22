@@ -5,6 +5,7 @@ import type {
   SystemExperienceRelationKind,
   SystemLifecycle,
   SystemLinkKind,
+  SystemPresentationKind,
 } from '@akiksystems/core';
 import type {
   ColumnType,
@@ -49,6 +50,7 @@ export interface SystemMetadataTable {
 export interface SystemsTable {
   id: string;
   lifecycle: DefaultedColumn<SystemLifecycle>;
+  presentation_kind: DefaultedColumn<SystemPresentationKind>;
   editorial_position: DefaultedColumn<number>;
   featured: DefaultedColumn<boolean>;
   archived_at: NullableTimestampColumn;
