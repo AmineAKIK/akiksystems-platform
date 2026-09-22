@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { bootstrapProtoCapDomain } from '@akiksystems/db';
 
 import { deleteAssetObject, putAssetObject } from '../app/lib/asset-storage.server';
+import { imageDimensions } from '../app/lib/image-dimensions.server';
 import { appDb } from '../app/lib/db.server';
 
 const existing = await appDb
@@ -25,6 +26,10 @@ const assetId = randomUUID();
 const storageKey = `systems/protocap/${assetId}.png`;
 const source = new URL('./fixtures/protocap-reference-cover.png', import.meta.url);
 const bytes = await readFile(source);
+const dimensions = imageDimensions('image/png', new Uint8Array(bytes));
+if (dimensions === null) {
+  throw new Error('Unable to read intrinsic media dimensions.');
+}
 const file = new File([bytes], 'protocap-reference-cover.png', {
   type: 'image/png',
 });
@@ -39,6 +44,8 @@ try {
       originalFilename: file.name,
       mimeType: 'image/png',
       byteSize: file.size,
+      width: dimensions.width,
+      height: dimensions.height,
     },
   });
 
