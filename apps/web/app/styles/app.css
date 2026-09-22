@@ -1384,3 +1384,133 @@
     gap: var(--aks-space-6);
   }
 }
+
+
+/* AKS-071: calm Systems overview focused on rapid identification, not technical density. */
+.aks-systems-overview {
+  min-height: calc(100dvh - 4.5rem);
+  padding-block: clamp(var(--aks-space-6), 7vh, var(--aks-space-9));
+}
+
+.aks-systems-overview-stack {
+  display: grid;
+  gap: clamp(var(--aks-space-6), 5vw, var(--aks-space-8));
+}
+
+.aks-systems-overview-header {
+  display: grid;
+  gap: var(--aks-space-3);
+  max-width: 48rem;
+}
+
+.aks-systems-overview-intro {
+  max-width: 52ch;
+}
+
+.aks-systems-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--aks-border-subtle);
+  list-style: none;
+}
+
+.aks-systems-item {
+  min-width: 0;
+  border-bottom: 1px solid var(--aks-border-subtle);
+}
+
+.aks-systems-entry {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  gap: clamp(var(--aks-space-4), 3vw, var(--aks-space-6));
+  align-items: start;
+  min-width: 0;
+  padding-block: var(--aks-space-6);
+  color: var(--aks-text-primary);
+  text-decoration: none;
+}
+
+.aks-systems-entry:hover .aks-systems-title,
+.aks-systems-entry:focus-visible .aks-systems-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.aks-systems-index {
+  color: var(--aks-text-muted);
+  font-family: var(--aks-font-mono);
+  font-size: var(--aks-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.aks-systems-copy {
+  display: grid;
+  gap: var(--aks-space-2);
+  min-width: 0;
+}
+
+.aks-systems-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2) var(--aks-space-3);
+  align-items: baseline;
+}
+
+.aks-systems-title {
+  font-size: var(--aks-font-size-heading-sm);
+  font-weight: 700;
+  letter-spacing: var(--aks-tracking-tight);
+}
+
+.aks-systems-summary {
+  max-width: 62ch;
+  color: var(--aks-text-muted);
+  line-height: 1.55;
+}
+
+.aks-systems-featured {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: 999px;
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-xs);
+  font-weight: 650;
+}
+
+.aks-systems-inspect {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  white-space: nowrap;
+}
+
+.aks-systems-empty {
+  padding-block: var(--aks-space-6);
+  border-block: 1px solid var(--aks-border-subtle);
+}
+
+@media (max-width: 48rem) {
+  .aks-systems-overview {
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-systems-overview-stack {
+    gap: var(--aks-space-6);
+  }
+
+  .aks-systems-entry {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--aks-space-3);
+    padding-block: var(--aks-space-5);
+  }
+
+  .aks-systems-inspect {
+    grid-column: 2;
+    white-space: normal;
+  }
+
+  .aks-systems-summary {
+    max-width: none;
+  }
+}
