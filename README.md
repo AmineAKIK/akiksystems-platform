@@ -222,6 +222,20 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile progressive depth
+
+Profile keeps the first reading immediately scannable and moves deeper proof behind native, one-step disclosures.
+
+- Identity, positioning, immediate System proof, languages, and mobility remain visible on first reading.
+- Deeper content is grouped into three stable native `details` disclosures: technical depth, professional evidence, and How I work.
+- Disclosures are closed by default and open with one intentional pointer or keyboard action.
+- All deeper content remains in SSR HTML; progressive depth does not depend on JavaScript.
+- Technical depth contains the technological journey and Technical Capabilities.
+- Professional evidence contains selected relevant Experience and additional representative Systems.
+- How I work contains concise principles and their optional System examples.
+- Existing deep System links remain real routes; disclosures do not duplicate evidence.
+- EN/FR labels are localized and both collapsed and expanded states remain mobile-safe.
+
 ### Profile technological journey
 
 The Profile technological journey is a fixed five-step technical progression, not a complete autobiography or a tool inventory.

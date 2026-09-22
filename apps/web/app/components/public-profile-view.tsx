@@ -181,200 +181,258 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               ) : null}
             </section>
           ) : null}
-          {profile.technologyJourney.length > 0 ? (
-            <section className="aks-profile-technology-journey">
-              <div className="aks-profile-section-heading">
-                <Heading level={2} size="sm">
+          {profile.technologyJourney.length > 0 ||
+          profile.capabilityGroups.length > 0 ? (
+            <details className="aks-profile-depth" id="profile-technical-depth">
+              <summary className="aks-profile-depth-summary">
+                <span>
                   {profile.locale === 'fr'
-                    ? 'Parcours technologique'
-                    : 'Technological journey'}
-                </Heading>
-                <Text size="sm" tone="muted">
+                    ? 'Approfondir la technique'
+                    : 'Explore technical depth'}
+                </span>
+                <span className="aks-profile-depth-summary-note">
                   {profile.locale === 'fr'
-                    ? 'Une progression technique cohérente, de la programmation aux systèmes logiciels inspectables.'
-                    : 'A coherent technical progression from programming to inspectable software systems.'}
-                </Text>
-              </div>
-              <ol className="aks-profile-technology-journey-list">
-                {profile.technologyJourney.map((stage) => (
-                  <li className="aks-profile-technology-journey-stage" key={stage.key}>
-                    <div className="aks-profile-technology-journey-marker">
+                    ? 'Parcours technologique et capacités'
+                    : 'Technological journey and capabilities'}
+                </span>
+              </summary>
+              <div className="aks-profile-depth-content">
+                {profile.technologyJourney.length > 0 ? (
+                  <section className="aks-profile-technology-journey">
+                    <div className="aks-profile-section-heading">
+                      <Heading level={2} size="sm">
+                        {profile.locale === 'fr'
+                          ? 'Parcours technologique'
+                          : 'Technological journey'}
+                      </Heading>
                       <Text size="sm" tone="muted">
-                        {String(stage.position + 1).padStart(2, '0')}
+                        {profile.locale === 'fr'
+                          ? 'Une progression technique cohérente, de la programmation aux systèmes logiciels inspectables.'
+                          : 'A coherent technical progression from programming to inspectable software systems.'}
                       </Text>
                     </div>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {stage.title}
-                      </Heading>
-                      {stage.summary !== null ? (
-                        <Text tone="muted">{stage.summary}</Text>
-                      ) : null}
-                      {stage.evidence !== null ? (
-                        stage.evidence.kind === 'system' &&
-                        stage.evidence.href !== null ? (
-                          <Link href={stage.evidence.href}>
-                            {profile.locale === 'fr'
-                              ? `Preuve : ${stage.evidence.title}`
-                              : `Evidence: ${stage.evidence.title}`}
-                          </Link>
-                        ) : (
-                          <Text size="sm" tone="strong">
-                            {profile.locale === 'fr'
-                              ? `Contexte : ${stage.evidence.title}`
-                              : `Context: ${stage.evidence.title}`}
-                          </Text>
-                        )
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-          {profile.capabilityGroups.length > 0 ? (
-            <section className="aks-profile-capabilities">
-              <div className="aks-profile-section-heading">
-                <Heading level={2} size="sm">
-                  {profile.locale === 'fr'
-                    ? 'Capacités techniques'
-                    : 'Technical Capabilities'}
-                </Heading>
-                <Text size="sm" tone="muted">
-                  {profile.locale === 'fr'
-                    ? 'Des aptitudes d’ingénierie regroupées par domaine — distinctes des outils utilisés pour les exercer.'
-                    : 'Engineering abilities grouped by domain — distinct from the tools used to exercise them.'}
-                </Text>
-              </div>
-              <div className="aks-profile-capability-groups">
-                {profile.capabilityGroups.map((group) => (
-                  <section
-                    aria-labelledby={`capability-group-${group.id}`}
-                    className="aks-profile-capability-group"
-                    key={group.id}
-                  >
-                    <Heading
-                      id={`capability-group-${group.id}`}
-                      level={3}
-                      size="sm"
-                    >
-                      {group.title}
-                    </Heading>
-                    <ul className="aks-profile-capability-list">
-                      {group.capabilities.map((capability) => (
-                        <li
-                          className="aks-profile-capability"
-                          key={capability.id}
-                        >
-                          <Text tone="strong">{capability.title}</Text>
-                          {capability.summary !== null ? (
+                    <ol className="aks-profile-technology-journey-list">
+                      {profile.technologyJourney.map((stage) => (
+                        <li className="aks-profile-technology-journey-stage" key={stage.key}>
+                          <div className="aks-profile-technology-journey-marker">
                             <Text size="sm" tone="muted">
-                              {capability.summary}
+                              {String(stage.position + 1).padStart(2, '0')}
                             </Text>
-                          ) : null}
+                          </div>
+                          <div className="aks-proof-stack">
+                            <Heading level={3} size="sm">
+                              {stage.title}
+                            </Heading>
+                            {stage.summary !== null ? (
+                              <Text tone="muted">{stage.summary}</Text>
+                            ) : null}
+                            {stage.evidence !== null ? (
+                              stage.evidence.kind === 'system' &&
+                              stage.evidence.href !== null ? (
+                                <Link href={stage.evidence.href}>
+                                  {profile.locale === 'fr'
+                                    ? `Preuve : ${stage.evidence.title}`
+                                    : `Evidence: ${stage.evidence.title}`}
+                                </Link>
+                              ) : (
+                                <Text size="sm" tone="strong">
+                                  {profile.locale === 'fr'
+                                    ? `Contexte : ${stage.evidence.title}`
+                                    : `Context: ${stage.evidence.title}`}
+                                </Text>
+                              )
+                            ) : null}
+                          </div>
                         </li>
                       ))}
-                    </ul>
+                    </ol>
                   </section>
-                ))}
-              </div>
-            </section>
-          ) : null}
-          {profile.professionalJourney.length > 0 ? (
-            <section className="aks-profile-professional-journey">
-              <Heading level={2} size="sm">
-                {profile.locale === 'fr'
-                  ? 'Parcours professionnel pertinent'
-                  : 'Relevant professional journey'}
-              </Heading>
-              <ol className="aks-profile-journey-list">
-                {profile.professionalJourney.map((experience) => (
-                  <li key={experience.id}>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {experience.title}
-                      </Heading>
-                      {experience.summary !== null ? (
-                        <Text tone="muted">{experience.summary}</Text>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-          {remainingSystems.length > 0 ? (
-            <section className="aks-profile-representative-systems">
-              <Heading level={2} size="sm">
-                {profile.locale === 'fr'
-                  ? 'Systèmes représentatifs'
-                  : 'Representative Systems'}
-              </Heading>
-              <div className="aks-profile-system-list">
-                {remainingSystems.map((system) => (
-                  <article className="aks-profile-system" key={system.id}>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {system.title}
-                      </Heading>
-                      <Text tone="muted">{system.summary}</Text>
-                      <Link
-                        href={
-                          profile.locale === 'fr'
-                            ? `/fr/systems/${system.slug}`
-                            : `/en/systems/${system.slug}`
-                        }
-                      >
+                ) : null}
+
+                {profile.capabilityGroups.length > 0 ? (
+                  <section className="aks-profile-capabilities">
+                    <div className="aks-profile-section-heading">
+                      <Heading level={2} size="sm">
                         {profile.locale === 'fr'
-                          ? 'Inspecter le système'
-                          : 'Inspect System'}
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ) : null}
-          {profile.workPrinciples.length > 0 ? (
-            <section className="aks-profile-work-principles">
-              <div className="aks-profile-section-heading">
-                <Heading level={2} size="sm">
-                  {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
-                </Heading>
-                <Text size="sm" tone="muted">
-                  {profile.locale === 'fr'
-                    ? 'Quelques principes concrets, reliés à des exemples quand ils apportent une preuve utile.'
-                    : 'A few concrete operating principles, linked to examples when they add useful proof.'}
-                </Text>
-              </div>
-              <ol className="aks-profile-work-principle-list">
-                {profile.workPrinciples.map((principle) => (
-                  <li className="aks-profile-work-principle" key={principle.id}>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {principle.title}
+                          ? 'Capacités techniques'
+                          : 'Technical Capabilities'}
                       </Heading>
-                      {principle.detail !== null ? (
-                        <Text tone="muted">{principle.detail}</Text>
-                      ) : null}
-                      {principle.evidenceSystem !== null ? (
-                        <Link
-                          href={
-                            profile.locale === 'fr'
-                              ? `/fr/systems/${principle.evidenceSystem.slug}`
-                              : `/en/systems/${principle.evidenceSystem.slug}`
-                          }
-                        >
-                          {profile.locale === 'fr'
-                            ? `Exemple : ${principle.evidenceSystem.title}`
-                            : `Example: ${principle.evidenceSystem.title}`}
-                        </Link>
-                      ) : null}
+                      <Text size="sm" tone="muted">
+                        {profile.locale === 'fr'
+                          ? 'Des aptitudes d’ingénierie regroupées par domaine — distinctes des outils utilisés pour les exercer.'
+                          : 'Engineering abilities grouped by domain — distinct from the tools used to exercise them.'}
+                      </Text>
                     </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
+                    <div className="aks-profile-capability-groups">
+                      {profile.capabilityGroups.map((group) => (
+                        <section
+                          aria-labelledby={`capability-group-${group.id}`}
+                          className="aks-profile-capability-group"
+                          key={group.id}
+                        >
+                          <Heading
+                            id={`capability-group-${group.id}`}
+                            level={3}
+                            size="sm"
+                          >
+                            {group.title}
+                          </Heading>
+                          <ul className="aks-profile-capability-list">
+                            {group.capabilities.map((capability) => (
+                              <li
+                                className="aks-profile-capability"
+                                key={capability.id}
+                              >
+                                <Text tone="strong">{capability.title}</Text>
+                                {capability.summary !== null ? (
+                                  <Text size="sm" tone="muted">
+                                    {capability.summary}
+                                  </Text>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            </details>
+          ) : null}
+
+          {profile.professionalJourney.length > 0 ||
+          remainingSystems.length > 0 ? (
+            <details className="aks-profile-depth" id="profile-professional-evidence">
+              <summary className="aks-profile-depth-summary">
+                <span>
+                  {profile.locale === 'fr'
+                    ? 'Approfondir les preuves professionnelles'
+                    : 'Explore professional evidence'}
+                </span>
+                <span className="aks-profile-depth-summary-note">
+                  {profile.locale === 'fr'
+                    ? 'Expériences pertinentes et systèmes'
+                    : 'Relevant experience and systems'}
+                </span>
+              </summary>
+              <div className="aks-profile-depth-content">
+                {profile.professionalJourney.length > 0 ? (
+                  <section className="aks-profile-professional-journey">
+                    <Heading level={2} size="sm">
+                      {profile.locale === 'fr'
+                        ? 'Parcours professionnel pertinent'
+                        : 'Relevant professional journey'}
+                    </Heading>
+                    <ol className="aks-profile-journey-list">
+                      {profile.professionalJourney.map((experience) => (
+                        <li key={experience.id}>
+                          <div className="aks-proof-stack">
+                            <Heading level={3} size="sm">
+                              {experience.title}
+                            </Heading>
+                            {experience.summary !== null ? (
+                              <Text tone="muted">{experience.summary}</Text>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ) : null}
+
+                {remainingSystems.length > 0 ? (
+                  <section className="aks-profile-representative-systems">
+                    <Heading level={2} size="sm">
+                      {profile.locale === 'fr'
+                        ? 'Systèmes représentatifs'
+                        : 'Representative Systems'}
+                    </Heading>
+                    <div className="aks-profile-system-list">
+                      {remainingSystems.map((system) => (
+                        <article className="aks-profile-system" key={system.id}>
+                          <div className="aks-proof-stack">
+                            <Heading level={3} size="sm">
+                              {system.title}
+                            </Heading>
+                            <Text tone="muted">{system.summary}</Text>
+                            <Link
+                              href={
+                                profile.locale === 'fr'
+                                  ? `/fr/systems/${system.slug}`
+                                  : `/en/systems/${system.slug}`
+                              }
+                            >
+                              {profile.locale === 'fr'
+                                ? 'Inspecter le système'
+                                : 'Inspect System'}
+                            </Link>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            </details>
+          ) : null}
+
+          {profile.workPrinciples.length > 0 ? (
+            <details className="aks-profile-depth" id="profile-how-i-work">
+              <summary className="aks-profile-depth-summary">
+                <span>
+                  {profile.locale === 'fr'
+                    ? 'Approfondir ma manière de travailler'
+                    : 'Explore how I work'}
+                </span>
+                <span className="aks-profile-depth-summary-note">
+                  {profile.locale === 'fr'
+                    ? 'Principes et exemples'
+                    : 'Principles and examples'}
+                </span>
+              </summary>
+              <div className="aks-profile-depth-content">
+                <section className="aks-profile-work-principles">
+                  <div className="aks-profile-section-heading">
+                    <Heading level={2} size="sm">
+                      {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
+                    </Heading>
+                    <Text size="sm" tone="muted">
+                      {profile.locale === 'fr'
+                        ? 'Quelques principes concrets, reliés à des exemples quand ils apportent une preuve utile.'
+                        : 'A few concrete operating principles, linked to examples when they add useful proof.'}
+                    </Text>
+                  </div>
+                  <ol className="aks-profile-work-principle-list">
+                    {profile.workPrinciples.map((principle) => (
+                      <li className="aks-profile-work-principle" key={principle.id}>
+                        <div className="aks-proof-stack">
+                          <Heading level={3} size="sm">
+                            {principle.title}
+                          </Heading>
+                          {principle.detail !== null ? (
+                            <Text tone="muted">{principle.detail}</Text>
+                          ) : null}
+                          {principle.evidenceSystem !== null ? (
+                            <Link
+                              href={
+                                profile.locale === 'fr'
+                                  ? `/fr/systems/${principle.evidenceSystem.slug}`
+                                  : `/en/systems/${principle.evidenceSystem.slug}`
+                              }
+                            >
+                              {profile.locale === 'fr'
+                                ? `Exemple : ${principle.evidenceSystem.title}`
+                                : `Example: ${principle.evidenceSystem.title}`}
+                            </Link>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              </div>
+            </details>
           ) : null}
         </div>
       </Container>
