@@ -6,6 +6,7 @@ import type {
 } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
+import { DeferredDemoLink } from './deferred-demo-link';
 import {
   SystemProofTransparency,
   type SystemProofTransparencyData,
@@ -218,11 +219,19 @@ export function StandardSystemRenderer({
                   }
                   className="aks-proof-actions"
                 >
-                  {links.map((link) => (
-                    <Link href={link.url} key={link.id}>
-                      {linkLabel(link.kind, locale)}
-                    </Link>
-                  ))}
+                  {links.map((link) =>
+                    link.kind === 'demo' ? (
+                      <DeferredDemoLink
+                        key={link.id}
+                        locale={locale}
+                        url={link.url}
+                      />
+                    ) : (
+                      <Link href={link.url} key={link.id}>
+                        {linkLabel(link.kind, locale)}
+                      </Link>
+                    ),
+                  )}
                 </nav>
               ) : null}
             </header>
