@@ -47,6 +47,20 @@ async function waitForServer() {
   throw new Error(`Sentinel browser smoke server did not become ready. stderr=${stderr}`);
 }
 
+async function openProfileDepth(page, id) {
+  const details = page.locator(`details#${id}`);
+  await details.waitFor();
+  if ((await details.getAttribute('open')) === null) {
+    await details.locator(':scope > summary').click();
+  }
+  assert.notEqual(
+    await details.getAttribute('open'),
+    null,
+    `${id} must open after one intentional disclosure action.`,
+  );
+  return details;
+}
+
 async function assertProfileAdministration(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -185,6 +199,7 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
+  await openProfileDepth(page, 'profile-how-i-work');
   await page
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
     .waitFor();
@@ -204,6 +219,7 @@ async function assertProfileAdministration(page) {
   await page
     .getByRole('heading', { level: 2, name: 'Languages & mobility', exact: true })
     .waitFor();
+  await openProfileDepth(page, 'profile-technical-depth');
   assert.deepEqual(
     await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').first().locator('li').allInnerTexts(),
     ['French', 'English', 'Arabic'],
@@ -254,6 +270,7 @@ async function assertProfileAdministration(page) {
       { exact: true },
     )
     .waitFor();
+  await openProfileDepth(page, 'profile-how-i-work');
   await page
     .getByRole('heading', { level: 2, name: 'Ma manière de travailler', exact: true })
     .waitFor();
@@ -273,6 +290,7 @@ async function assertProfileAdministration(page) {
   await page
     .getByRole('heading', { level: 2, name: 'Langues et mobilité', exact: true })
     .waitFor();
+  await openProfileDepth(page, 'profile-technical-depth');
   assert.deepEqual(
     await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').first().locator('li').allInnerTexts(),
     ['Français', 'Anglais', 'Arabe'],
@@ -388,6 +406,7 @@ async function assertProfessionalJourneySelection(page) {
   await page.getByText('Professional journey updated.', { exact: true }).waitFor();
 
   await page.goto(`${origin}/en/profile`);
+  await openProfileDepth(page, 'profile-professional-evidence');
   await page
     .getByRole('heading', {
       level: 2,
@@ -407,6 +426,7 @@ async function assertProfessionalJourneySelection(page) {
     .waitFor();
 
   await page.goto(`${origin}/fr/profil`);
+  await openProfileDepth(page, 'profile-professional-evidence');
   await page
     .getByRole('heading', {
       level: 2,
@@ -431,6 +451,7 @@ async function assertProfessionalJourneySelection(page) {
     { path: '/fr/profil', heading: 'Parcours professionnel pertinent' },
   ]) {
     await page.goto(`${origin}${target.path}`);
+    await openProfileDepth(page, 'profile-professional-evidence');
     await page.getByRole('heading', { level: 2, name: target.heading, exact: true }).waitFor();
     assert.equal(
       await page.locator('.aks-profile-journey-list li').count(),
@@ -465,6 +486,7 @@ async function assertWorkPrincipleEvidence(page) {
   await page.getByText('How I work evidence updated.', { exact: true }).waitFor();
 
   await page.goto(`${origin}/en/profile`);
+  await openProfileDepth(page, 'profile-how-i-work');
   const englishHow = page.locator('.aks-profile-work-principles');
   await englishHow
     .getByRole('heading', { level: 2, name: 'How I work', exact: true })
@@ -483,6 +505,7 @@ async function assertWorkPrincipleEvidence(page) {
   );
 
   await page.goto(`${origin}/fr/profil`);
+  await openProfileDepth(page, 'profile-how-i-work');
   const frenchHow = page.locator('.aks-profile-work-principles');
   await frenchHow
     .getByRole('heading', {
@@ -551,6 +574,7 @@ async function assertTechnologicalJourney(page) {
     .waitFor();
 
   await page.goto(`${origin}/en/profile`);
+  await openProfileDepth(page, 'profile-technical-depth');
   const englishJourney = page.locator('.aks-profile-technology-journey');
   await englishJourney
     .getByRole('heading', { level: 2, name: 'Technological journey', exact: true })
@@ -579,6 +603,7 @@ async function assertTechnologicalJourney(page) {
   );
 
   await page.goto(`${origin}/fr/profil`);
+  await openProfileDepth(page, 'profile-technical-depth');
   const frenchJourney = page.locator('.aks-profile-technology-journey');
   await frenchJourney
     .getByRole('heading', { level: 2, name: 'Parcours technologique', exact: true })
