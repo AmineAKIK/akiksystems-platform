@@ -50,6 +50,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         'systems.id',
         'systems.lifecycle',
         'systems.presentation_kind',
+        'systems.evidence_policy',
         'system_localizations.slug',
         'system_localizations.title',
         'system_localizations.summary',
@@ -97,7 +98,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
       db
         .selectFrom('system_links')
-        .select(['id', 'kind', 'url', 'position'])
+        .select(['id', 'kind', 'url', 'label_en', 'label_fr', 'position'])
         .where('system_id', '=', systemId)
         .orderBy('position')
         .execute(),
@@ -140,6 +141,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
     ]);
 
+    const previewLinks =
+      localization.evidence_policy === 'documented_only'
+        ? links.filter(
+            (link) =>
+              link.kind === 'repository' || link.kind === 'documentation',
+          )
+        : links;
+
     return data(
       {
         systemId,
@@ -157,7 +166,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         presentationKind: localization.presentation_kind,
         presentationDocument: localization.presentation_document,
         technologies,
-        links,
+        links: previewLinks.map((link) => ({
+          id: link.id,
+          kind: link.kind,
+          url: link.url,
+          label: locale === 'fr' ? link.label_fr : link.label_en,
+        })),
         originTitle: experience?.title ?? null,
         originSummary: experience?.summary ?? null,
         assets: assets.map((asset) => ({
