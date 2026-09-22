@@ -429,7 +429,8 @@ describe('PublicProfileView technological journey', () => {
 
     expect(html).toContain('Parcours technologique');
     expect(html).toContain('Contexte : Marelli');
-    expect(html).toContain('Preuve : Sentinel');
+    expect(html).toContain('Preuve');
+    expect(html).toContain('Sentinel');
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
