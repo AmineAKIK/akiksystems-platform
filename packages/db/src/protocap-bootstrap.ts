@@ -369,6 +369,8 @@ export async function bootstrapProtoCapDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+          label_en: 'Product boundaries',
+          label_fr: 'Limites du produit',
           position: 3,
         },
       ])
