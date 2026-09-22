@@ -441,6 +441,85 @@ try {
     'preuve-profil-un',
   );
 
+  const evidencePrincipleId = randomUUID();
+
+  await db
+    .insertInto('profile_work_principles')
+    .values({
+      id: evidencePrincipleId,
+      profile_id: profileId,
+      position: 0,
+      evidence_system_id: secondSystemId,
+    })
+    .execute();
+
+  await db
+    .insertInto('profile_work_principle_localizations')
+    .values([
+      {
+        principle_id: evidencePrincipleId,
+        locale: 'en',
+        title: 'Connect claims to proof',
+        detail: 'Use a concrete example when it adds useful evidence.',
+      },
+      {
+        principle_id: evidencePrincipleId,
+        locale: 'fr',
+        title: 'Relier les affirmations aux preuves',
+        detail: 'Utiliser un exemple concret quand il apporte une preuve utile.',
+      },
+    ])
+    .execute();
+
+  const englishWithPrincipleEvidence = await getPublicProfile(db, 'en');
+  const frenchWithPrincipleEvidence = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithPrincipleEvidence);
+  assert.ok(frenchWithPrincipleEvidence);
+  assert.deepEqual(
+    englishWithPrincipleEvidence.workPrinciples[0]?.evidenceSystem,
+    {
+      id: secondSystemId,
+      slug: 'profile-proof-two',
+      title: 'Profile Proof Two',
+    },
+  );
+  assert.equal(
+    frenchWithPrincipleEvidence.workPrinciples[0]?.evidenceSystem,
+    null,
+    'A principle must not expose a System example when that locale is not published.',
+  );
+
+  let longPrincipleError: unknown;
+  try {
+    await db
+      .insertInto('profile_work_principle_localizations')
+      .values({
+        principle_id: evidencePrincipleId,
+        locale: 'en',
+        title: 'x'.repeat(81),
+        detail: null,
+      })
+      .onConflict((conflict) =>
+        conflict.columns(['principle_id', 'locale']).doUpdateSet({
+          title: 'x'.repeat(81),
+        }),
+      )
+      .execute();
+  } catch (error) {
+    longPrincipleError = error;
+  }
+  assert.ok(longPrincipleError && typeof longPrincipleError === 'object');
+  assert.equal((longPrincipleError as PostgreSqlError).code, '23514');
+  assert.equal(
+    (longPrincipleError as PostgreSqlError).constraint,
+    'profile_work_principle_localizations_title_length_check',
+  );
+
+  await db
+    .deleteFrom('profile_work_principles')
+    .where('id', '=', evidencePrincipleId)
+    .execute();
+
   await db
     .deleteFrom('profile_systems')
     .where('profile_id', '=', profileId)
@@ -718,7 +797,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered concise bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

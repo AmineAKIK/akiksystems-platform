@@ -1160,3 +1160,49 @@
   padding: 0;
   list-style: none;
 }
+
+/* AKS-063: concise operating principles with optional evidence references. */
+.aks-profile-section-heading {
+  display: grid;
+  gap: var(--aks-space-2);
+  max-width: 48rem;
+}
+
+.aks-profile-work-principle-list {
+  counter-reset: aks-profile-principle;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.aks-profile-work-principle {
+  counter-increment: aks-profile-principle;
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-profile-work-principle::before {
+  display: block;
+  margin-block-end: var(--aks-space-3);
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  content: counter(aks-profile-principle, decimal-leading-zero);
+}
+
+.aks-profile-work-principle .aks-proof-stack {
+  gap: var(--aks-space-2);
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-work-principle-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-profile-work-principle {
+    padding: var(--aks-space-4);
+  }
+}

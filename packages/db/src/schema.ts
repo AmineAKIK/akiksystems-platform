@@ -85,6 +85,7 @@ export interface ProfileWorkPrinciplesTable {
   id: string;
   profile_id: string;
   position: number;
+  evidence_system_id: string | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }

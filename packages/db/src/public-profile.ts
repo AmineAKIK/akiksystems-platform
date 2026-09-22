@@ -3,11 +3,18 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
+export interface PublicProfileWorkPrincipleEvidence {
+  id: string;
+  slug: string;
+  title: string;
+}
+
 export interface PublicProfileWorkPrinciple {
   id: string;
   position: number;
   title: string;
   detail: string | null;
+  evidenceSystem: PublicProfileWorkPrincipleEvidence | null;
 }
 
 export interface PublicProfileCapability {
@@ -219,23 +226,70 @@ export async function getPublicProfile(
     .orderBy('profile_systems.position')
     .execute();
 
-  const workPrinciples = await db
+  const workPrincipleRows = await db
     .selectFrom('profile_work_principles')
     .innerJoin(
       'profile_work_principle_localizations',
       'profile_work_principle_localizations.principle_id',
       'profile_work_principles.id',
     )
+    .leftJoin(
+      'systems as evidence_system',
+      (join) =>
+        join
+          .onRef(
+            'evidence_system.id',
+            '=',
+            'profile_work_principles.evidence_system_id',
+          )
+          .on('evidence_system.lifecycle', '=', 'active'),
+    )
+    .leftJoin(
+      'system_localizations as evidence_localization',
+      (join) =>
+        join
+          .onRef(
+            'evidence_localization.system_id',
+            '=',
+            'evidence_system.id',
+          )
+          .on('evidence_localization.locale', '=', locale)
+          .on('evidence_localization.editorial_state', '=', 'published')
+          .on('evidence_localization.published_at', 'is not', null)
+          .on('evidence_localization.presentation_document', 'is not', null),
+    )
     .select([
       'profile_work_principles.id',
       'profile_work_principles.position',
       'profile_work_principle_localizations.title',
       'profile_work_principle_localizations.detail',
+      'evidence_system.id as evidence_system_id',
+      'evidence_localization.slug as evidence_slug',
+      'evidence_localization.title as evidence_title',
     ])
     .where('profile_work_principles.profile_id', '=', profile.id)
     .where('profile_work_principle_localizations.locale', '=', locale)
     .orderBy('profile_work_principles.position')
     .execute();
+
+  const workPrinciples: PublicProfileWorkPrinciple[] = workPrincipleRows.map(
+    (principle) => ({
+      id: principle.id,
+      position: principle.position,
+      title: principle.title,
+      detail: principle.detail,
+      evidenceSystem:
+        principle.evidence_system_id !== null &&
+        principle.evidence_slug !== null &&
+        principle.evidence_title !== null
+          ? {
+              id: principle.evidence_system_id,
+              slug: principle.evidence_slug,
+              title: principle.evidence_title,
+            }
+          : null,
+    }),
+  );
 
   return {
     id: profile.id,

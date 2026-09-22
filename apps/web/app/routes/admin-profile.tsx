@@ -70,6 +70,18 @@ function parseWorkPrinciples(value: string): ParsedWorkPrinciple[] {
       );
     }
 
+    if (enTitle.length > 80 || frTitle.length > 80) {
+      throw new Error(
+        `Principle line ${index + 1} titles must stay within 80 characters.`,
+      );
+    }
+
+    if ((enDetail?.length ?? 0) > 240 || (frDetail?.length ?? 0) > 240) {
+      throw new Error(
+        `Principle line ${index + 1} details must stay within 240 characters.`,
+      );
+    }
+
     const publicCopy = [enTitle, enDetail, frTitle, frDetail]
       .filter((part): part is string => part !== null)
       .join(' ');
@@ -362,6 +374,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     .select([
       'profile_work_principles.id',
       'profile_work_principles.position',
+      'profile_work_principles.evidence_system_id',
       'principle_en.title as title_en',
       'principle_en.detail as detail_en',
       'principle_fr.title as title_fr',
@@ -542,6 +555,76 @@ export async function action({ request }: Route.ActionArgs) {
     return { ok: true, message: 'Professional identity updated.' };
   }
 
+  if (intent === 'work-principle-evidence') {
+    const currentPrinciples = await appDb
+      .selectFrom('profile_work_principles')
+      .select(['id'])
+      .where('profile_id', '=', profileId)
+      .execute();
+
+    const assignments = currentPrinciples.map(({ id }) => {
+      const value = form.get(`evidence-${id}`);
+      return {
+        principleId: id,
+        systemId:
+          typeof value === 'string' && value.trim() !== '' ? value.trim() : null,
+      };
+    });
+
+    const selectedSystemIds = [
+      ...new Set(
+        assignments
+          .map(({ systemId }) => systemId)
+          .filter((systemId): systemId is string => systemId !== null),
+      ),
+    ];
+
+    if (selectedSystemIds.length > 0) {
+      const validSystems = await appDb
+        .selectFrom('systems')
+        .select('id')
+        .where('lifecycle', '=', 'active')
+        .where('id', 'in', selectedSystemIds)
+        .execute();
+
+      if (validSystems.length !== selectedSystemIds.length) {
+        return {
+          ok: false,
+          message: 'Principle evidence must reference active System objects.',
+        };
+      }
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      for (const assignment of assignments) {
+        await transaction
+          .updateTable('profile_work_principles')
+          .set({
+            evidence_system_id: assignment.systemId,
+            updated_at: new Date(),
+          })
+          .where('id', '=', assignment.principleId)
+          .where('profile_id', '=', profileId)
+          .executeTakeFirstOrThrow();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.work_principle_evidence_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          principleCount: assignments.length,
+          evidenceCount: assignments.filter(({ systemId }) => systemId !== null)
+            .length,
+        },
+      });
+    });
+
+    return { ok: true, message: 'How I work evidence updated.' };
+  }
+
   if (intent === 'work-principles') {
     let principles: ParsedWorkPrinciple[];
 
@@ -556,6 +639,18 @@ export async function action({ request }: Route.ActionArgs) {
             : 'Working principles are invalid.',
       };
     }
+
+    const existingPrinciples = await appDb
+      .selectFrom('profile_work_principles')
+      .select(['position', 'evidence_system_id'])
+      .where('profile_id', '=', profileId)
+      .execute();
+    const evidenceByPosition = new Map(
+      existingPrinciples.map((principle) => [
+        principle.position,
+        principle.evidence_system_id,
+      ]),
+    );
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
@@ -572,6 +667,7 @@ export async function action({ request }: Route.ActionArgs) {
             id: principleId,
             profile_id: profileId,
             position,
+            evidence_system_id: evidenceByPosition.get(position) ?? null,
           })
           .execute();
 
@@ -1393,6 +1489,47 @@ export default function AdminProfile() {
               />
               <Button type="submit">Save How I work</Button>
             </Form>
+
+            {data.principles.length > 0 ? (
+              <Form className="aks-admin-form" method="post">
+                <input
+                  name="_intent"
+                  type="hidden"
+                  value="work-principle-evidence"
+                />
+                <Heading level={3} size="sm">
+                  Evidence examples
+                </Heading>
+                <Text size="sm" tone="muted">
+                  Optionally connect a principle to one active System. Public
+                  Profile shows the example only when that System is published
+                  in the current language.
+                </Text>
+                <div className="aks-proof-stack">
+                  {data.principles.map((principle) => (
+                    <label key={principle.id}>
+                      <span>
+                        {principle.title_en ??
+                          principle.title_fr ??
+                          `Principle ${principle.position + 1}`}
+                      </span>
+                      <select
+                        defaultValue={principle.evidence_system_id ?? ''}
+                        name={`evidence-${principle.id}`}
+                      >
+                        <option value="">No evidence System</option>
+                        {data.selectableSystems.map((system) => (
+                          <option key={system.id} value={system.id}>
+                            {system.title_en ?? system.title_fr ?? system.id}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+                <Button type="submit">Save principle evidence</Button>
+              </Form>
+            ) : null}
           </section>
 
           <section className="aks-admin-card">

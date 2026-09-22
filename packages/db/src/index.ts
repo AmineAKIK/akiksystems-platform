@@ -7,6 +7,7 @@ export type {
   PublicProfileMobility,
   PublicProfileSystem,
   PublicProfileWorkPrinciple,
+  PublicProfileWorkPrincipleEvidence,
 } from './public-profile.js';
 export { getPublishedSystem } from './public-system.js';
 export type {
