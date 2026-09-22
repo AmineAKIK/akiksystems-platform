@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -25,7 +26,8 @@ describe('System Experience Resolver', () => {
     'routes %s through one centralized renderer boundary',
     (presentationKind) => {
       const html = renderToStaticMarkup(
-        <SystemExperience
+        <MemoryRouter>
+          <SystemExperience
           assets={[]}
           links={[]}
           locale="en"
@@ -36,7 +38,8 @@ describe('System Experience Resolver', () => {
           summary="Inspectable System."
           technologies={[]}
           title="Sentinel"
-        />,
+          />
+        </MemoryRouter>,
       );
 
       expect(html).toContain(`data-presentation-kind="${presentationKind}"`);
