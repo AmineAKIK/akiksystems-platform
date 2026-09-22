@@ -116,6 +116,18 @@ async function assertProfileAdministration(page) {
   await page.getByRole('button', { name: 'Save How I work' }).click();
   await page.getByText('How I work updated.', { exact: true }).waitFor();
 
+  const capabilities = page.locator('textarea[name="capabilities"]');
+  await capabilities.fill(
+    [
+      '# Architecture || Architecture',
+      'Design bounded systems | Shape explicit boundaries and contracts. || Concevoir des systèmes délimités | Structurer des frontières et des contrats explicites.',
+      '# Delivery || Livraison',
+      'Qualify delivery paths | Build observable paths from change to production. || Qualifier les parcours de livraison | Construire des parcours observables du changement à la production.',
+    ].join('\n'),
+  );
+  await page.getByRole('button', { name: 'Save capabilities' }).click();
+  await page.getByText('Capabilities updated.', { exact: true }).waitFor();
+
   await page.goto(`${origin}/en/profile`);
   await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
   await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
@@ -205,6 +217,38 @@ async function assertProfileAdministration(page) {
   }
 
   await page.setViewportSize({ width: 1280, height: 800 });
+}
+
+async function assertCapabilityTechnologySeparation(page) {
+  await page.goto(`${origin}/admin/profile`);
+  await page
+    .getByRole('heading', { level: 2, name: 'Capabilities', exact: true })
+    .waitFor();
+
+  const capabilities = page.locator('textarea[name="capabilities"]');
+  await capabilities.fill(
+    '# Frontend engineering || Ingénierie frontend\nReact | Tool name, not an ability. || React | Nom d’outil, pas une capacité.',
+  );
+  await page.getByRole('button', { name: 'Save capabilities' }).click();
+  await page
+    .getByText(
+      'Capabilities must describe conceptual or engineering abilities, not Technology names.',
+      { exact: true },
+    )
+    .waitFor();
+
+  await page.reload();
+  const persisted = await page.locator('textarea[name="capabilities"]').inputValue();
+  assert.match(
+    persisted,
+    /Design bounded systems/,
+    'Rejecting a Technology name must preserve the previously saved capability model.',
+  );
+  assert.doesNotMatch(
+    persisted,
+    /^React\s*\|/m,
+    'Technology names must not persist as Profile capabilities.',
+  );
 }
 
 async function assertProfessionalJourneySelection(page) {
@@ -1476,6 +1520,15 @@ async function assertAxe(page) {
       'fr',
       'Sentinel transforme les signaux opérationnels en un système calme et inspectable.',
     );
+
+    await page.goto(`${origin}${page.systemPath}`);
+    await page
+      .locator('textarea[name="technologies"]')
+      .fill('react | React\ndocker | Docker');
+    await page.getByRole('button', { name: 'Save technology stack' }).click();
+    await page.getByText('Technology stack updated.', { exact: true }).waitFor();
+
+    await assertCapabilityTechnologySeparation(page);
 
     await page.goto(`${origin}${page.systemPath}`);
     const originContextForm = page.locator('form').filter({
