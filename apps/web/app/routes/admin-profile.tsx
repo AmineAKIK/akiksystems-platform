@@ -573,19 +573,7 @@ export async function action({ request }: Route.ActionArgs) {
     const locale = localeValue;
 
     if (intent === 'profile-unpublish') {
-      for (const [locale, values] of Object.entries(localized)) {
-      if ((values.professional_title?.length ?? 0) > 100) {
-        return { ok: false, message: `${locale.toUpperCase()} professional title must stay within 100 characters.` };
-      }
-      if ((values.introduction?.length ?? 0) > 320) {
-        return { ok: false, message: `${locale.toUpperCase()} introduction must stay within 320 characters.` };
-      }
-      if ((values.foundational_copy?.length ?? 0) > 600) {
-        return { ok: false, message: `${locale.toUpperCase()} foundational copy must stay within 600 characters.` };
-      }
-    }
-
-    await appDb.transaction().execute(async (transaction) => {
+      await appDb.transaction().execute(async (transaction) => {
         await transaction
           .deleteFrom('profile_publications')
           .where('profile_id', '=', profileId)
@@ -675,6 +663,27 @@ export async function action({ request }: Route.ActionArgs) {
         foundational_copy: optionalText(form, 'foundationalCopyFr'),
       },
     };
+
+    for (const [locale, values] of Object.entries(localized)) {
+      if ((values.professional_title?.length ?? 0) > 100) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} professional title must stay within 100 characters.`,
+        };
+      }
+      if ((values.introduction?.length ?? 0) > 320) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} introduction must stay within 320 characters.`,
+        };
+      }
+      if ((values.foundational_copy?.length ?? 0) > 600) {
+        return {
+          ok: false,
+          message: `${locale.toUpperCase()} foundational copy must stay within 600 characters.`,
+        };
+      }
+    }
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
