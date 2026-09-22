@@ -161,3 +161,88 @@ describe('PublicProfileView first view', () => {
     expect(html).toContain('href="/fr/systems/sentinel"');
   });
 });
+
+
+describe('PublicProfileView How I work evidence', () => {
+  it('renders optional working-principle evidence without copying System summary', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          profile={profile({
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000063',
+                position: 0,
+                title: 'Make evidence inspectable',
+                detail: 'Prefer concrete proof over opaque claims.',
+                evidenceSystem: {
+                  id: '00000000-0000-4000-8000-000000000028',
+                  slug: 'sentinel',
+                  title: 'Sentinel',
+                },
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('How I work');
+    expect(html).toContain('Make evidence inspectable');
+    expect(html).toContain('Example: Sentinel');
+    expect(html).toContain('href="/en/systems/sentinel"');
+    expect(html).not.toContain('Operational visibility built');
+  });
+
+  it('keeps a principle useful without inventing an example', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          profile={profile({
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000064',
+                position: 0,
+                title: 'Reduce before adding',
+                detail: null,
+                evidenceSystem: null,
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Reduce before adding');
+    expect(html).not.toContain('Example:');
+  });
+
+  it('localizes the evidence affordance in French', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/profil']}>
+        <PublicProfileView
+          profile={profile({
+            locale: 'fr',
+            alternateLocale: 'en',
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000065',
+                position: 0,
+                title: 'Rendre les preuves inspectables',
+                detail: 'Privilégier des preuves concrètes.',
+                evidenceSystem: {
+                  id: '00000000-0000-4000-8000-000000000028',
+                  slug: 'sentinel',
+                  title: 'Sentinel',
+                },
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('Exemple : Sentinel');
+    expect(html).toContain('href="/fr/systems/sentinel"');
+  });
+});
