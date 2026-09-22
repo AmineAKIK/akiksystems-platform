@@ -7,7 +7,7 @@ import {
   type PresentationBlock,
   type PresentationDocument,
 } from '@akiksystems/core';
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import { markSystemDraft, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { useMemo, useState } from 'react';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -233,29 +233,6 @@ export async function action({ request, params }: Route.ActionArgs) {
       .where('locale', '=', locale)
       .executeTakeFirst();
 
-    if (localization?.editorial_state === 'published') {
-      const readiness = validateSystemPublicationReadiness({
-        slug: localization.slug,
-        title: localization.title,
-        summary: localization.summary,
-        proofRole: localization.proof_role,
-        proofMaturity: localization.proof_maturity,
-        proofDemoNature: localization.proof_demo_nature,
-        proofDataNature: localization.proof_data_nature,
-        proofLimits: localization.proof_limits,
-        presentationDocument: document,
-      });
-
-      if (!readiness.ready) {
-        return {
-          ok: false,
-          message:
-            'This localization is already published and cannot become incomplete.',
-          errors: readiness.errors,
-        };
-      }
-    }
-
     if (localization === undefined) {
       await db.transaction().execute(async (transaction) => {
         await transaction
@@ -266,6 +243,10 @@ export async function action({ request, params }: Route.ActionArgs) {
             presentation_document: document,
           })
           .execute();
+
+        await markSystemDraft(transaction, { systemId, locale });
+
+        await markSystemDraft(transaction, { systemId, locale });
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
@@ -397,6 +378,33 @@ function PresentationBlockEditor({
                 }
               />
             </label>
+            {block.level === 2 ? (
+              <label>
+                <span>Evidence semantics</span>
+                <select
+                  value={block.evidenceStatus ?? ''}
+                  onChange={(event) =>
+                    onChange(index, {
+                      ...block,
+                      evidenceStatus:
+                        event.target.value === ''
+                          ? null
+                          : (event.target.value as
+                              | 'implemented'
+                              | 'boundary'
+                              | 'hypothesis'
+                              | 'future_integration'),
+                    })
+                  }
+                >
+                  <option value="">Neutral / renderer default</option>
+                  <option value="implemented">Implemented</option>
+                  <option value="boundary">Explicit boundary</option>
+                  <option value="hypothesis">Hypothesis</option>
+                  <option value="future_integration">Future integration</option>
+                </select>
+              </label>
+            ) : null}
           </>
         ) : null}
 
