@@ -421,41 +421,54 @@ async function assertRepresentativeSystemSelection(page) {
   await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
 
   await page.goto(`${origin}/en/profile`);
-  await page
-    .getByRole('heading', { level: 2, name: 'Representative Systems', exact: true })
+  const englishProof = page.locator('.aks-profile-immediate-proof');
+  await englishProof
+    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
     .waitFor();
-  const englishCard = page.locator('.aks-profile-system').filter({
-    has: page.getByRole('heading', { level: 3, name: 'Sentinel', exact: true }),
-  });
-  await englishCard
+  await englishProof
     .getByText(
       'Operational visibility built from industrial context and inspectable evidence.',
       { exact: true },
     )
     .waitFor();
   assert.equal(
-    await englishCard.getByRole('link', { name: 'Inspect System' }).getAttribute('href'),
+    await englishProof
+      .getByRole('link', { name: 'Inspect this proof' })
+      .getAttribute('href'),
     '/en/systems/sentinel',
+  );
+  assert.equal(
+    await page.locator('.aks-profile-system').count(),
+    0,
+    'The immediate proof must not be duplicated in the lower System list.',
+  );
+  assert.equal(
+    /job seeker|open to work/i.test(await page.locator('.aks-profile-first-view').innerText()),
+    false,
+    'The first view must communicate mastery without job-seeker badging.',
   );
 
   await page.goto(`${origin}/fr/profil`);
-  await page
-    .getByRole('heading', { level: 2, name: 'Systèmes représentatifs', exact: true })
+  const frenchProof = page.locator('.aks-profile-immediate-proof');
+  await frenchProof
+    .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
     .waitFor();
-  const frenchCard = page.locator('.aks-profile-system').filter({
-    has: page.getByRole('heading', { level: 3, name: 'Sentinel', exact: true }),
-  });
-  await frenchCard
+  await frenchProof
     .getByText(
       'Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables.',
       { exact: true },
     )
     .waitFor();
   assert.equal(
-    await frenchCard
-      .getByRole('link', { name: 'Inspecter le système' })
+    await frenchProof
+      .getByRole('link', { name: 'Inspecter cette preuve' })
       .getAttribute('href'),
     '/fr/systems/sentinel',
+  );
+  assert.equal(
+    await page.locator('.aks-profile-system').count(),
+    0,
+    'La preuve immédiate ne doit pas être dupliquée dans la liste de systèmes.',
   );
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -466,9 +479,13 @@ async function assertRepresentativeSystemSelection(page) {
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
       ),
       true,
-      `${path} representative Systems must not overflow on mobile.`,
+      `${path} Profile first view must not overflow on mobile.`,
     );
-    assert.equal(await page.locator('.aks-profile-system').count(), 1);
+    assert.equal(
+      await page.locator('.aks-profile-immediate-proof').count(),
+      1,
+      `${path} must keep immediate proof visible on mobile.`,
+    );
   }
   await page.setViewportSize({ width: 1280, height: 800 });
 }

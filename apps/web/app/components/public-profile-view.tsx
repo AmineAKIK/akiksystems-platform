@@ -36,52 +36,101 @@ const mobilityLabels = {
 
 export function PublicProfileView({ profile }: PublicProfileViewProps) {
   const fallback = destinationById('profile').description[profile.locale];
+  const immediateProof = profile.representativeSystems[0] ?? null;
+  const remainingSystems = profile.representativeSystems.slice(1);
 
   return (
     <main className="aks-proof-page">
       <Container>
         <div className="aks-proof-stack">
-          <Text size="sm" tone="muted">
-            AkikSystems
-          </Text>
-          <Heading level={1} size="md">
-            {profile.locale === 'fr' ? 'Profil' : 'Profile'}
-          </Heading>
-          {profile.portraitAssetId !== null && profile.portraitAltText !== null ? (
-            <img
-              alt={profile.portraitAltText}
-              className="aks-profile-portrait"
-              height={320}
-              loading="eager"
-              src={profile.locale === 'fr' ? '/fr/profil/portrait' : '/en/profile/portrait'}
-              width={320}
-            />
-          ) : null}
-          {profile.displayName !== null ? (
-            <Heading level={2} size="sm">
-              {profile.displayName}
-            </Heading>
-          ) : null}
-          {profile.professionalTitle !== null ? (
-            <Text size="lg" tone="strong">
-              {profile.professionalTitle}
-            </Text>
-          ) : null}
-          <Text size="lg" tone="muted">
-            {profile.introduction ?? fallback}
-          </Text>
-          {profile.foundationalCopy !== null ? (
-            <Text>{profile.foundationalCopy}</Text>
-          ) : null}
-          {profile.sourceCvAssetId !== null ? (
-            <div className="aks-proof-actions">
-              <Link
-                href={profile.locale === 'fr' ? '/fr/profil/cv' : '/en/profile/cv'}
-              >
-                {profile.locale === 'fr' ? 'Voir le CV source' : 'View source CV'}
-              </Link>
+          <section className="aks-profile-first-view" aria-labelledby="profile-title">
+            <div className="aks-profile-first-view-identity">
+              <div className="aks-proof-stack">
+                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                  AkikSystems
+                </Text>
+                <Heading id="profile-title" level={1} size="md">
+                  {profile.locale === 'fr' ? 'Profil' : 'Profile'}
+                </Heading>
+                {profile.portraitAssetId !== null &&
+                profile.portraitAltText !== null ? (
+                  <img
+                    alt={profile.portraitAltText}
+                    className="aks-profile-portrait"
+                    height={320}
+                    loading="eager"
+                    src={
+                      profile.locale === 'fr'
+                        ? '/fr/profil/portrait'
+                        : '/en/profile/portrait'
+                    }
+                    width={320}
+                  />
+                ) : null}
+              </div>
+
+              <div className="aks-profile-first-view-copy">
+                {profile.displayName !== null ? (
+                  <Heading level={2} size="md">
+                    {profile.displayName}
+                  </Heading>
+                ) : null}
+                {profile.professionalTitle !== null ? (
+                  <Text size="lg" tone="strong">
+                    {profile.professionalTitle}
+                  </Text>
+                ) : null}
+                <Text size="lg" tone="muted">
+                  {profile.introduction ?? fallback}
+                </Text>
+                {profile.foundationalCopy !== null ? (
+                  <Text>{profile.foundationalCopy}</Text>
+                ) : null}
+                {profile.sourceCvAssetId !== null ? (
+                  <div className="aks-proof-actions">
+                    <Link
+                      href={
+                        profile.locale === 'fr'
+                          ? '/fr/profil/cv'
+                          : '/en/profile/cv'
+                      }
+                    >
+                      {profile.locale === 'fr'
+                        ? 'Voir le CV source'
+                        : 'View source CV'}
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
             </div>
-          ) : null}
+
+            {immediateProof !== null ? (
+              <aside className="aks-profile-immediate-proof" aria-label={
+                profile.locale === 'fr'
+                  ? 'Preuve immédiate'
+                  : 'Immediate proof'
+              }>
+                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                  {profile.locale === 'fr' ? 'Preuve immédiate' : 'Immediate proof'}
+                </Text>
+                <Heading level={2} size="sm">
+                  {immediateProof.title}
+                </Heading>
+                <Text tone="muted">{immediateProof.summary}</Text>
+                <Link
+                  href={
+                    profile.locale === 'fr'
+                      ? `/fr/systems/${immediateProof.slug}`
+                      : `/en/systems/${immediateProof.slug}`
+                  }
+                >
+                  {profile.locale === 'fr'
+                    ? 'Inspecter cette preuve'
+                    : 'Inspect this proof'}
+                </Link>
+              </aside>
+            ) : null}
+          </section>
           {profile.languages.length > 0 ||
           profile.mobility.worldwide ||
           profile.mobility.remote ||
@@ -155,7 +204,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               </ol>
             </section>
           ) : null}
-          {profile.representativeSystems.length > 0 ? (
+          {remainingSystems.length > 0 ? (
             <section className="aks-profile-representative-systems">
               <Heading level={2} size="sm">
                 {profile.locale === 'fr'
@@ -163,7 +212,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   : 'Representative Systems'}
               </Heading>
               <div className="aks-profile-system-list">
-                {profile.representativeSystems.map((system) => (
+                {remainingSystems.map((system) => (
                   <article className="aks-profile-system" key={system.id}>
                     <div className="aks-proof-stack">
                       <Heading level={3} size="sm">

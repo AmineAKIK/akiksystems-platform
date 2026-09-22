@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile first view
+
+The Profile first view is composed as identity plus immediate proof rather than a generic portfolio hero.
+
+- Portrait, display name, professional title, introduction, and foundational copy establish the professional position.
+- The first published representative System is promoted as immediate proof with its live localized summary and deep link.
+- That System is removed from the lower representative-System list to avoid duplicate proof in the same reading path.
+- If no representative System exists, the first view remains useful and does not invent placeholder proof.
+- The composition collapses to a single column on narrower layouts and remains readable without horizontal scrolling.
+- Job-seeker badges or generic open-to-work messaging are intentionally absent; the view communicates mastery through identity and inspectable evidence.
+- Later Profile tickets remain responsible for How I work composition, technological journey, Technical Capabilities, and progressive-depth behavior.
+
 ### Profile source CV
 
 The Profile can expose one optional source CV artifact without turning the Profile into an HTML copy of the CV.
