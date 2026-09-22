@@ -250,6 +250,8 @@ export interface AssetsTable {
   original_filename: string;
   mime_type: string;
   byte_size: number;
+  width: number | null;
+  height: number | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
