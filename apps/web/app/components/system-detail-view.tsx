@@ -32,6 +32,7 @@ export interface SystemDetailAsset {
   mimeType: string;
   width: number | null;
   height: number | null;
+  variantWidths?: number[];
 }
 
 export interface SystemDetailViewProps {
@@ -127,6 +128,13 @@ export function PresentationBlockView({
             loading="lazy"
             sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem"
             src={asset.url}
+            srcSet={
+              asset.variantWidths === undefined
+                ? undefined
+                : asset.variantWidths
+                    .map((width) => `${asset.url}?width=${width} ${width}w`)
+                    .join(', ')
+            }
             width={asset.width ?? undefined}
           />
           {asset.caption !== null ? (
