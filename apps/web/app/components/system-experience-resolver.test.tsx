@@ -7,6 +7,14 @@ import {
   SystemExperience,
 } from './system-experience-resolver';
 
+const proofTransparency = {
+  role: 'System case study',
+  maturity: 'Inspectable implementation',
+  demoNature: 'No separate public demo',
+  dataNature: 'Real-world context; no customer data exposed',
+  limits: 'No deployment or measured impact is claimed.',
+};
+
 const presentationKinds = [
   'standard',
   'guided_demo',
@@ -33,7 +41,9 @@ describe('System Experience Resolver', () => {
           locale="en"
           originSummary={null}
           originTitle={null}
-          presentationDocument={{ version: 1, blocks: [] }}
+          proofTransparency={proofTransparency}
+          proofTransparency={proofTransparency}
+        presentationDocument={{ version: 1, blocks: [] }}
           presentationKind={presentationKind}
           summary="Inspectable System."
           technologies={[]}
@@ -71,6 +81,7 @@ describe('Guided demo System experience', () => {
         locale="en"
         originSummary="Industrial operations context."
         originTitle="L'Oreal / La Roche-Posay"
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [
@@ -119,6 +130,7 @@ describe('Interactive-entry System experience', () => {
         locale="en"
         originSummary={null}
         originTitle={null}
+        proofTransparency={proofTransparency}
         presentationDocument={{
           version: 1,
           blocks: [
