@@ -44,6 +44,10 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('systems')
     .dropConstraint('systems_editorial_position_check')
+    .execute();
+
+  await db.schema
+    .alterTable('systems')
     .dropColumn('featured')
     .dropColumn('editorial_position')
     .execute();
