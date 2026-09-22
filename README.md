@@ -222,6 +222,17 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile languages and mobility
+
+Profile languages and mobility are structured facts rather than duplicated localized prose.
+
+- `profile_languages` stores the ordered public language codes `fr`, `en`, and `ar`.
+- PostgreSQL restricts the language vocabulary and prevents duplicate codes or positions per Profile.
+- `profile_mobility` stores independent `worldwide`, `remote`, and `relocation` flags for the singleton public Profile.
+- `/admin/profile` manages language inclusion/order and mobility flags in one controlled form.
+- The public Profile localizes labels in code for EN/FR while preserving the same underlying facts.
+- Empty language/mobility facts do not create placeholder public copy.
+
 ### Profile capabilities
 
 Profile capabilities are modeled separately from concrete Technologies.
