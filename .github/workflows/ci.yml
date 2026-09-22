@@ -104,6 +104,7 @@ jobs:
           pnpm db:verify-public-system
           pnpm db:verify-published-systems-list
           pnpm db:verify-system-editorial-controls
+          pnpm db:verify-protocap-domain
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile

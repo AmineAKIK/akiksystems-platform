@@ -1,3 +1,5 @@
+export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
+export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
