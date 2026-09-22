@@ -1238,6 +1238,27 @@ async function assertOptimizedSystemMedia(page, path) {
     /max-width: 48rem/,
     `${path} System media must publish a mobile-aware sizes contract.`,
   );
+
+  const srcset = (await image.getAttribute('srcset')) ?? '';
+  assert.match(
+    srcset,
+    /\?width=(320|640|960|1280)\s+\d+w/,
+    `${path} System media must expose real width variants through srcset.`,
+  );
+
+  const firstVariant = srcset.split(',')[0]?.trim().split(/\s+/)[0];
+  assert.ok(firstVariant, `${path} must expose at least one responsive media variant.`);
+  const variantResponse = await page.request.get(new URL(firstVariant, origin).toString());
+  assert.equal(
+    variantResponse.status(),
+    200,
+    `${path} responsive media variant must be served successfully.`,
+  );
+  assert.match(
+    variantResponse.headers()['cache-control'] ?? '',
+    /immutable/,
+    `${path} generated responsive variants must be cacheable as immutable assets.`,
+  );
 }
 
 async function assertProtoCapGuidedDemo(browser) {
