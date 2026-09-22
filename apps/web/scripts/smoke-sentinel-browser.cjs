@@ -589,6 +589,7 @@ async function assertTechnologicalJourney(page) {
   await page
     .getByText('Technological journey updated.', { exact: true })
     .waitFor();
+  await publishProfileDraft(page);
 
   await page.goto(`${origin}/en/profile`);
   await openProfileDepth(page, 'profile-technical-depth');
@@ -669,7 +670,6 @@ async function assertProfileProgressiveDepth(browser, page) {
       summaries: [
         'Explore technical depth',
         'Explore professional evidence',
-        'Explore how I work',
       ],
     },
     {
@@ -677,7 +677,6 @@ async function assertProfileProgressiveDepth(browser, page) {
       summaries: [
         'Approfondir la technique',
         'Approfondir les preuves professionnelles',
-        'Approfondir ma manière de travailler',
       ],
     },
   ]) {
@@ -685,8 +684,8 @@ async function assertProfileProgressiveDepth(browser, page) {
     const depths = page.locator('details.aks-profile-depth');
     assert.equal(
       await depths.count(),
-      3,
-      `${target.path} must expose exactly three intentional depth controls.`,
+      2,
+      `${target.path} must expose exactly two intentional depth controls while How I work remains visible.`,
     );
     for (const summary of target.summaries) {
       const details = page.locator('details.aks-profile-depth').filter({
@@ -748,7 +747,7 @@ async function assertProfileProgressiveDepth(browser, page) {
     const noJsPage = await noJs.newPage();
     const response = await noJsPage.goto(`${origin}/en/profile`);
     assert.equal(response?.status(), 200);
-    assert.equal(await noJsPage.locator('details.aks-profile-depth').count(), 3);
+    assert.equal(await noJsPage.locator('details.aks-profile-depth').count(), 2);
     await noJsPage
       .locator('details#profile-technical-depth > summary')
       .click();
