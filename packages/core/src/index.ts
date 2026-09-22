@@ -153,6 +153,8 @@ export interface SystemLink {
   systemId: SystemId;
   kind: SystemLinkKind;
   url: string;
+  labelEn: string | null;
+  labelFr: string | null;
   position: number;
   createdAt: Date;
   updatedAt: Date;
