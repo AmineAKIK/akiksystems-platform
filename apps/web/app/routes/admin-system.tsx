@@ -487,6 +487,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         .where('locale', '=', locale)
         .executeTakeFirst();
 
+      await markSystemDraft(db, { systemId, locale });
       await upsertLocalization(db, systemId, locale, {
         slug,
         title,
@@ -497,7 +498,6 @@ export async function action({ request, params }: Route.ActionArgs) {
         proofDataNature,
         proofLimits,
       });
-      await markSystemDraft(db, { systemId, locale });
 
       await writeAdminAuditEvent(db, {
         actorUserId: session.user.id,
