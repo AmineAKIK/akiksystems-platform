@@ -10,7 +10,7 @@ const db = createDatabase(databaseUrlFromEnv());
 const firstId = randomUUID();
 const secondId = randomUUID();
 const draftId = randomUUID();
-const ids = [firstId, secondId, draftId];
+const ids: string[] = [firstId, secondId, draftId];
 const document = {
   version: 1 as const,
   blocks: [{ type: 'paragraph' as const, text: 'Proof.' }],
