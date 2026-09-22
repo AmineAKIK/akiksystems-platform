@@ -205,17 +205,11 @@ export async function bootstrapOriaDomain(
   const publishedAt = new Date();
 
   await db.transaction().execute(async (transaction) => {
-    const maxPosition = await transaction
-      .selectFrom('systems')
-      .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
-      .executeTakeFirst();
-
     await transaction
       .insertInto('systems')
       .values({
         id: systemId,
         presentation_kind: 'interactive_entry',
-        editorial_position: (maxPosition?.max_position ?? -1) + 1,
         featured: false,
       })
       .execute();

@@ -1,7 +1,7 @@
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import {
+  lockSystemMutation,
   markSystemDraft,
-  parseSystemPublicationSnapshot,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
@@ -137,17 +137,19 @@ export async function action({ request, params }: Route.ActionArgs) {
       const assetId = randomUUID();
       const extension = assetExtensionForMimeType(file.type);
       const storageKey = `systems/${systemId}/${assetId}.${extension}`;
-      const maxPosition = await db
-        .selectFrom('system_assets')
-        .select(({ fn }) => fn.max<number>('position').as('max_position'))
-        .where('system_id', '=', systemId)
-        .executeTakeFirst();
-      const position = (maxPosition?.max_position ?? -1) + 1;
-
       try {
         await putAssetObject(storageKey, file);
 
         await db.transaction().execute(async (transaction) => {
+          await lockSystemMutation(transaction, systemId);
+
+          const maxPosition = await transaction
+            .selectFrom('system_assets')
+            .select(({ fn }) => fn.max<number>('position').as('max_position'))
+            .where('system_id', '=', systemId)
+            .executeTakeFirst();
+          const position = (maxPosition?.max_position ?? -1) + 1;
+
           await transaction
             .insertInto('assets')
             .values({
@@ -233,97 +235,74 @@ export async function action({ request, params }: Route.ActionArgs) {
         return { ok: false, message: 'Invalid asset identifier.' };
       }
 
-      const asset = await db
-        .selectFrom('assets')
-        .select(['id', 'storage_key'])
-        .where('id', '=', assetId)
-        .executeTakeFirst();
+      return db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
 
-      if (asset === undefined) {
-        return { ok: false, message: 'Asset no longer exists.' };
-      }
+        const asset = await transaction
+          .selectFrom('assets')
+          .select(['id', 'storage_key'])
+          .where('id', '=', assetId)
+          .executeTakeFirst();
 
-      const publications = await db
-        .selectFrom('system_publications')
-        .select(['locale', 'snapshot'])
-        .where('system_id', '=', systemId)
-        .execute();
-      const publishedLocales = publications.flatMap((publication) => {
-        const snapshot = parseSystemPublicationSnapshot(publication.snapshot);
-        return snapshot?.media.some((media) => media.id === assetId)
-          ? [publication.locale]
-          : [];
-      });
+        if (asset === undefined) {
+          return { ok: false, message: 'Asset no longer exists.' };
+        }
 
-      if (publishedLocales.length > 0) {
-        await db.transaction().execute(async (transaction) => {
-          await transaction
-            .deleteFrom('system_assets')
-            .where('system_id', '=', systemId)
-            .where('asset_id', '=', assetId)
-            .execute();
+        const publicationReferences = await transaction
+          .selectFrom('system_publication_assets')
+          .select(['locale'])
+          .where('system_id', '=', systemId)
+          .where('asset_id', '=', assetId)
+          .orderBy('locale')
+          .execute();
 
-          await markSystemDraft(transaction, { systemId });
+        if (publicationReferences.length > 0) {
+          return {
+            ok: false,
+            message:
+              `Deletion blocked: this asset is still referenced by public snapshot(s) ${publicationReferences
+                .map(({ locale }) => locale)
+                .join(', ')}. Remove every image block that uses it, republish those locales, then delete the asset.`,
+          };
+        }
 
-          await writeAdminAuditEvent(transaction, {
-            actorUserId: session.user.id,
-            actorEmail: session.user.email,
-            action: 'system.asset_unlinked_from_draft',
-            entityType: 'asset',
-            entityId: assetId,
-            systemId,
-            metadata: {
-              retainedForPublishedLocales: publishedLocales,
-              storageObjectDeleted: false,
-            },
-          });
-        });
+        const references = await transaction
+          .selectFrom('system_assets')
+          .select('system_id')
+          .where('asset_id', '=', assetId)
+          .execute();
 
-        return {
-          ok: true,
-          message:
-            `Asset removed from the draft. Its bytes are retained because public snapshot(s) ${publishedLocales.join(', ')} still reference it; republishing those locales will retire that public reference.`,
-        };
-      }
+        const currentReference = references.some(
+          (reference) => reference.system_id === systemId,
+        );
 
-      const references = await db
-        .selectFrom('system_assets')
-        .select('system_id')
-        .where('asset_id', '=', assetId)
-        .execute();
+        if (!currentReference) {
+          return {
+            ok: false,
+            message: 'This asset is not linked to the current System.',
+          };
+        }
 
-      const currentReference = references.some(
-        (reference) => reference.system_id === systemId,
-      );
+        if (references.length > 1) {
+          return {
+            ok: false,
+            message:
+              'Deletion blocked: this asset is still referenced by another context.',
+          };
+        }
 
-      if (!currentReference) {
-        return {
-          ok: false,
-          message: 'This asset is not linked to the current System.',
-        };
-      }
+        try {
+          await deleteAssetObject(asset.storage_key);
+        } catch (error) {
+          return {
+            ok: false,
+            message:
+              error instanceof Error
+                ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
+                : 'Storage deletion failed; metadata was kept so the operation can be retried.',
+          };
+        }
 
-      if (references.length > 1) {
-        return {
-          ok: false,
-          message:
-            'Deletion blocked: this asset is still referenced by another context.',
-        };
-      }
-
-      try {
-        await deleteAssetObject(asset.storage_key);
-      } catch (error) {
-        return {
-          ok: false,
-          message:
-            error instanceof Error
-              ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
-              : 'Storage deletion failed; metadata was kept so the operation can be retried.',
-        };
-      }
-
-      await db.transaction().execute(async (transaction) => {
         await transaction
           .deleteFrom('system_assets')
           .where('system_id', '=', systemId)
@@ -348,9 +327,9 @@ export async function action({ request, params }: Route.ActionArgs) {
             storageObjectDeleted: true,
           },
         });
-      });
 
-      return { ok: true, message: 'Asset removed from this System and storage.' };
+        return { ok: true, message: 'Asset removed from this System and storage.' };
+      });
     }
 
     return { ok: false, message: 'Unsupported asset operation.' };

@@ -74,37 +74,35 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: false, message: 'Invalid move direction.' };
     }
 
-    const ordered = await db
-      .selectFrom('systems')
-      .select(['id', 'editorial_position'])
-      .orderBy('editorial_position')
-      .orderBy('created_at')
-      .orderBy('id')
-      .execute();
+    const result = await db.transaction().execute(async (transaction) => {
+      const ordered = await transaction
+        .selectFrom('systems')
+        .select(['id', 'editorial_position'])
+        .orderBy('editorial_position')
+        .orderBy('created_at')
+        .orderBy('id')
+        .forUpdate()
+        .execute();
 
-    const currentIndex = ordered.findIndex(({ id }) => id === systemId);
+      const currentIndex = ordered.findIndex(({ id }) => id === systemId);
 
-    if (currentIndex === -1) {
-      throw new Response('System not found.', { status: 404 });
-    }
+      if (currentIndex === -1) {
+        throw new Response('System not found.', { status: 404 });
+      }
 
-    const targetIndex =
-      direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    const target = ordered[targetIndex];
-    const current = ordered[currentIndex];
+      const targetIndex =
+        direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      const target = ordered[targetIndex];
+      const current = ordered[currentIndex];
 
-    if (target === undefined || current === undefined) {
-      return { ok: true, message: 'System is already at that boundary.' };
-    }
-
-    await db.transaction().execute(async (transaction) => {
-      const temporaryPosition =
-        Math.max(...ordered.map((system) => system.editorial_position)) + 1;
+      if (target === undefined || current === undefined) {
+        return { moved: false };
+      }
 
       await transaction
         .updateTable('systems')
         .set({
-          editorial_position: temporaryPosition,
+          editorial_position: target.editorial_position,
           updated_at: new Date(),
         })
         .where('id', '=', current.id)
@@ -117,15 +115,6 @@ export async function action({ request }: Route.ActionArgs) {
           updated_at: new Date(),
         })
         .where('id', '=', target.id)
-        .execute();
-
-      await transaction
-        .updateTable('systems')
-        .set({
-          editorial_position: target.editorial_position,
-          updated_at: new Date(),
-        })
-        .where('id', '=', current.id)
         .execute();
 
       await writeAdminAuditEvent(transaction, {
@@ -141,7 +130,13 @@ export async function action({ request }: Route.ActionArgs) {
           editorialPosition: target.editorial_position,
         },
       });
+
+      return { moved: true };
     });
+
+    if (!result.moved) {
+      return { ok: true, message: 'System is already at that boundary.' };
+    }
 
     return { ok: true, message: 'System order updated.' };
   }
@@ -187,6 +182,40 @@ export async function action({ request }: Route.ActionArgs) {
     };
   }
 
+  if (intent === 'create-system') {
+    const systemId = randomUUID();
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('systems')
+        .values({ id: systemId })
+        .execute();
+
+      await transaction
+        .insertInto('system_localizations')
+        .values([
+          { system_id: systemId, locale: 'en' },
+          { system_id: systemId, locale: 'fr' },
+        ])
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'system.created',
+        entityType: 'system',
+        entityId: systemId,
+        systemId,
+        metadata: {
+          initialLocales: ['en', 'fr'],
+          creationMode: 'blank_admin_system',
+        },
+      });
+    });
+
+    return redirect(`/admin/systems/${systemId}`);
+  }
+
   if (intent !== 'create-sentinel') {
     return null;
   }
@@ -207,7 +236,7 @@ export async function action({ request }: Route.ActionArgs) {
   await db.transaction().execute(async (transaction) => {
     await transaction
       .insertInto('systems')
-      .values({ id: systemId, editorial_position: 0 })
+      .values({ id: systemId })
       .execute();
 
     await transaction
@@ -250,7 +279,6 @@ export async function action({ request }: Route.ActionArgs) {
       metadata: {
         initialLocales: ['en', 'fr'],
         initialSlug: 'sentinel',
-        editorialPosition: 0,
         featured: false,
       },
     });
@@ -308,6 +336,10 @@ export default function Admin() {
                 Order and prominence are shared System-level editorial controls,
                 independent from EN/FR publication state.
               </Text>
+              <Form method="post">
+                <input name="_intent" type="hidden" value="create-system" />
+                <Button emphasis="quiet" type="submit">Create blank System</Button>
+              </Form>
               {data.systems.length === 0 ? (
                 <>
                   <Text tone="muted">

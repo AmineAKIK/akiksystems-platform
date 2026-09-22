@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { publishSystemLocalization } from '../system-publication.js';
 import { bootstrapTugeresDomain } from '../tugeres-bootstrap.js';
 import { createDatabase } from '../database.js';
 import { databaseUrlFromEnv } from './env.js';
@@ -17,7 +18,9 @@ try {
     throw new Error('ASSET_STORAGE_TEST_ROOT is required for browser qualification.');
   }
 
-  const fixture = await readFile(path.resolve(process.cwd(), 'apps/web/scripts/fixtures/tugeres-reference-menu.webp'));
+  const fixture = await readFile(
+    new URL('../../../../apps/web/scripts/fixtures/tugeres-reference-menu.webp', import.meta.url),
+  );
   const target = path.resolve(testRoot, storageKey);
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, fixture);
@@ -53,6 +56,9 @@ try {
     ])
     .onConflict((conflict) => conflict.column('id').doNothing())
     .execute();
+
+  await publishSystemLocalization(db, { systemId: result.systemId, locale: 'en' });
+  await publishSystemLocalization(db, { systemId: result.systemId, locale: 'fr' });
 
   process.stdout.write(
     `Tugeres browser qualification bootstrap ${result.created ? 'created' : 'reused'} System ${result.systemId}, including unsupported stored links for public-filter qualification.\n`,

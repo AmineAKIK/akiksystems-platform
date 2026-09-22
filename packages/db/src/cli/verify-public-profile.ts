@@ -5,7 +5,10 @@ import { sql } from 'kysely';
 
 import { createDatabase } from '../database.js';
 import { getDraftProfile, getPublicProfile } from '../public-profile.js';
-import { bootstrapSystemPublications } from '../system-publication.js';
+import {
+  bootstrapSystemPublications,
+  markSystemDraft,
+} from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -515,6 +518,31 @@ try {
     frenchWithSystems.representativeSystems[0]?.slug,
     'preuve-profil-un',
   );
+
+  await db
+    .updateTable('system_localizations')
+    .set({
+      title: 'Unpublished draft replacement',
+      summary: 'This draft must not leak into Profile.',
+      updated_at: new Date(),
+    })
+    .where('system_id', '=', firstSystemId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+  await markSystemDraft(db, { systemId: firstSystemId, locale: 'en' });
+
+  const englishWhileSystemHasDraft = await getDraftProfile(db, 'en');
+  assert.ok(englishWhileSystemHasDraft);
+  const firstSystemReference = englishWhileSystemHasDraft.representativeSystems.find(
+    ({ id }) => id === firstSystemId,
+  );
+  assert.ok(firstSystemReference);
+  assert.equal(
+    firstSystemReference.title,
+    'Profile Proof One',
+    'Profile draft must resolve the last published System snapshot while a newer System draft exists.',
+  );
+  assert.equal(firstSystemReference.summary, 'English summary one.');
 
   await db
     .updateTable('profile_technology_journey_stages')

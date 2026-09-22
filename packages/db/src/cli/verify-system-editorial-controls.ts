@@ -11,7 +11,9 @@ const db = createDatabase(databaseUrlFromEnv());
 const firstId = randomUUID();
 const secondId = randomUUID();
 const draftId = randomUUID();
-const ids: string[] = [firstId, secondId, draftId];
+const autoIdOne = randomUUID();
+const autoIdTwo = randomUUID();
+const ids: string[] = [firstId, secondId, draftId, autoIdOne, autoIdTwo];
 const document = {
   version: 1 as const,
   blocks: [{ type: 'paragraph' as const, text: 'Proof.' }],
@@ -24,6 +26,25 @@ try {
   if (migrationResult.error !== undefined) {
     throw migrationResult.error;
   }
+
+  await db
+    .insertInto('systems')
+    .values([{ id: autoIdOne }, { id: autoIdTwo }])
+    .execute();
+
+  const autoPositions = await db
+    .selectFrom('systems')
+    .select(['id', 'editorial_position'])
+    .where('id', 'in', [autoIdOne, autoIdTwo])
+    .orderBy('editorial_position')
+    .execute();
+
+  assert.equal(autoPositions.length, 2);
+  assert.notEqual(
+    autoPositions[0]?.editorial_position,
+    autoPositions[1]?.editorial_position,
+    'DB-managed editorial positions must be collision-free for generic System creation.',
+  );
 
   await db.transaction().execute(async (transaction) => {
     await transaction
@@ -108,18 +129,13 @@ try {
   await db.transaction().execute(async (transaction) => {
     await transaction
       .updateTable('systems')
-      .set({ editorial_position: 33, featured: true, updated_at: new Date() })
+      .set({ editorial_position: 30, featured: true, updated_at: new Date() })
       .where('id', '=', firstId)
       .execute();
     await transaction
       .updateTable('systems')
       .set({ editorial_position: 31, featured: false, updated_at: new Date() })
       .where('id', '=', secondId)
-      .execute();
-    await transaction
-      .updateTable('systems')
-      .set({ editorial_position: 30, updated_at: new Date() })
-      .where('id', '=', firstId)
       .execute();
   });
 

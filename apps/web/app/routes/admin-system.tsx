@@ -7,9 +7,10 @@ import {
   type SystemLinkKind,
 } from '@akiksystems/core';
 import {
+  lockSystemMutation,
   markSystemDraft,
-  publishSystemLocalization,
-  unpublishSystemLocalization,
+  publishSystemLocalizationInTransaction,
+  unpublishSystemLocalizationInTransaction,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
@@ -126,64 +127,6 @@ function parseLinkLines(
         labelFr,
       };
     });
-}
-
-async function upsertLocalization(
-  db: typeof appDb,
-  systemId: string,
-  locale: PlatformLocale,
-  values: {
-    slug: string | null;
-    title: string | null;
-    summary: string | null;
-    proofRole: string | null;
-    proofMaturity: string | null;
-    proofDemoNature: string | null;
-    proofDataNature: string | null;
-    proofLimits: string | null;
-  },
-) {
-  const existing = await db
-    .selectFrom('system_localizations')
-    .select('system_id')
-    .where('system_id', '=', systemId)
-    .where('locale', '=', locale)
-    .executeTakeFirst();
-
-  if (existing === undefined) {
-    await db
-      .insertInto('system_localizations')
-      .values({
-        system_id: systemId,
-        locale,
-        slug: values.slug,
-        title: values.title,
-        summary: values.summary,
-        proof_role: values.proofRole,
-        proof_maturity: values.proofMaturity,
-        proof_demo_nature: values.proofDemoNature,
-        proof_data_nature: values.proofDataNature,
-        proof_limits: values.proofLimits,
-      })
-      .execute();
-  } else {
-    await db
-      .updateTable('system_localizations')
-      .set({
-        slug: values.slug,
-        title: values.title,
-        summary: values.summary,
-        proof_role: values.proofRole,
-        proof_maturity: values.proofMaturity,
-        proof_demo_nature: values.proofDemoNature,
-        proof_data_nature: values.proofDataNature,
-        proof_limits: values.proofLimits,
-        updated_at: new Date(),
-      })
-      .where('system_id', '=', systemId)
-      .where('locale', '=', locale)
-      .execute();
-  }
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -409,6 +352,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         await transaction
           .updateTable('systems')
           .set({
@@ -487,39 +431,68 @@ export async function action({ request, params }: Route.ActionArgs) {
         .where('locale', '=', locale)
         .executeTakeFirst();
 
-      await markSystemDraft(db, { systemId, locale });
-      await upsertLocalization(db, systemId, locale, {
-        slug,
-        title,
-        summary,
-        proofRole,
-        proofMaturity,
-        proofDemoNature,
-        proofDataNature,
-        proofLimits,
-      });
+      await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
+        await markSystemDraft(transaction, { systemId, locale });
 
-      await writeAdminAuditEvent(db, {
-        actorUserId: session.user.id,
-        actorEmail: session.user.email,
-        action: 'system.localization_updated',
-        entityType: 'system_localization',
-        entityId: `${systemId}:${locale}`,
-        systemId,
-        locale,
-        metadata: {
-          fields: [
-            'slug',
-            'title',
-            'summary',
-            'proofRole',
-            'proofMaturity',
-            'proofDemoNature',
-            'proofDataNature',
-            'proofLimits',
-          ],
-          editorialState: current?.editorial_state ?? 'draft',
-        },
+        if (current === undefined) {
+          await transaction
+            .insertInto('system_localizations')
+            .values({
+              system_id: systemId,
+              locale,
+              slug,
+              title,
+              summary,
+              proof_role: proofRole,
+              proof_maturity: proofMaturity,
+              proof_demo_nature: proofDemoNature,
+              proof_data_nature: proofDataNature,
+              proof_limits: proofLimits,
+            })
+            .execute();
+        } else {
+          await transaction
+            .updateTable('system_localizations')
+            .set({
+              slug,
+              title,
+              summary,
+              proof_role: proofRole,
+              proof_maturity: proofMaturity,
+              proof_demo_nature: proofDemoNature,
+              proof_data_nature: proofDataNature,
+              proof_limits: proofLimits,
+              updated_at: new Date(),
+            })
+            .where('system_id', '=', systemId)
+            .where('locale', '=', locale)
+            .execute();
+        }
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.localization_updated',
+          entityType: 'system_localization',
+          entityId: `${systemId}:${locale}`,
+          systemId,
+          locale,
+          metadata: {
+            fields: [
+              'slug',
+              'title',
+              'summary',
+              'proofRole',
+              'proofMaturity',
+              'proofDemoNature',
+              'proofDataNature',
+              'proofLimits',
+            ],
+            previousEditorialState: current?.editorial_state ?? 'draft',
+            resultingEditorialState: 'draft',
+          },
+        });
       });
 
       return {
@@ -576,11 +549,53 @@ export async function action({ request, params }: Route.ActionArgs) {
           };
         }
 
-        await publishSystemLocalization(db, { systemId, locale });
-        await writeAdminAuditEvent(db, {
+        try {
+          await db.transaction().execute(async (transaction) => {
+            await lockSystemMutation(transaction, systemId);
+            await publishSystemLocalizationInTransaction(transaction, {
+              systemId,
+              locale,
+            });
+            await writeAdminAuditEvent(transaction, {
+              actorUserId: session.user.id,
+              actorEmail: session.user.email,
+              action: 'system.localization_published',
+              entityType: 'system_localization',
+              entityId: `${systemId}:${locale}`,
+              systemId,
+              locale,
+              metadata: {
+                previousState: localization.editorial_state,
+                publicationModel: 'snapshot',
+              },
+            });
+          });
+        } catch (error) {
+          return {
+            ok: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : `${locale.toUpperCase()} publication failed.`,
+          };
+        }
+
+        return {
+          ok: true,
+          message: `${locale.toUpperCase()} public snapshot published.`,
+        };
+      }
+
+      await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
+        await unpublishSystemLocalizationInTransaction(transaction, {
+          systemId,
+          locale,
+        });
+        await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
           actorEmail: session.user.email,
-          action: 'system.localization_published',
+          action: 'system.localization_unpublished',
           entityType: 'system_localization',
           entityId: `${systemId}:${locale}`,
           systemId,
@@ -590,26 +605,6 @@ export async function action({ request, params }: Route.ActionArgs) {
             publicationModel: 'snapshot',
           },
         });
-
-        return {
-          ok: true,
-          message: `${locale.toUpperCase()} public snapshot published.`,
-        };
-      }
-
-      await unpublishSystemLocalization(db, { systemId, locale });
-      await writeAdminAuditEvent(db, {
-        actorUserId: session.user.id,
-        actorEmail: session.user.email,
-        action: 'system.localization_unpublished',
-        entityType: 'system_localization',
-        entityId: `${systemId}:${locale}`,
-        systemId,
-        locale,
-        metadata: {
-          previousState: localization.editorial_state,
-          publicationModel: 'snapshot',
-        },
       });
 
       return {
@@ -631,6 +626,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         await transaction
           .deleteFrom('system_technologies')
           .where('system_id', '=', systemId)
@@ -715,6 +711,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       const experienceId = linked?.experience_id ?? randomUUID();
 
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         if (linked === undefined) {
           await transaction
             .insertInto('experiences')
@@ -809,6 +806,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         await transaction
           .deleteFrom('system_links')
           .where('system_id', '=', systemId)
@@ -1253,7 +1251,7 @@ export default function AdminSystem() {
               <input name="_intent" type="hidden" value="links" />
               <Heading level={2} size="sm">External links</Heading>
               <Text size="sm" tone="muted">
-                One ordered link per line: live|repository|demo|documentation | https://...
+                One ordered link per line: kind | URL | English label | French label
               </Text>
               <textarea defaultValue={linkText} name="links" rows={8} />
               <Button type="submit">Save links</Button>

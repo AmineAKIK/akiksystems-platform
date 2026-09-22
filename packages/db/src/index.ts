@@ -18,13 +18,16 @@ export type {
   PublicProfileWorkPrincipleEvidence,
 } from './public-profile.js';
 export { getPublishedSystem, listPublishedSystems } from './public-system.js';
+export { lockSystemMutation } from './system-mutation-lock.js';
 export {
   bootstrapSystemPublications,
   buildSystemPublicationSnapshot,
   markSystemDraft,
   parseSystemPublicationSnapshot,
   publishSystemLocalization,
+  publishSystemLocalizationInTransaction,
   unpublishSystemLocalization,
+  unpublishSystemLocalizationInTransaction,
 } from './system-publication.js';
 export type {
   SystemPublicationLink,
@@ -95,6 +98,7 @@ export type {
   NewSystemExperienceRow,
   NewSystemLinkRow,
   NewSystemLocalizationRow,
+  NewSystemPublicationAssetRow,
   NewSystemPublicationRow,
   NewSystemRow,
   NewSystemTechnologyRow,
@@ -160,6 +164,8 @@ export type {
   SystemLinksTable,
   SystemLinkUpdate,
   SystemLocalizationUpdate,
+  SystemPublicationAssetRow,
+  SystemPublicationAssetsTable,
   SystemPublicationRow,
   SystemPublicationsTable,
   SystemPublicationUpdate,

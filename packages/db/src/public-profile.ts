@@ -243,20 +243,6 @@ export async function getDraftProfile(
           )
           .on('journey_system.lifecycle', '=', 'active'),
     )
-    .leftJoin(
-      'system_localizations as journey_system_localization',
-      (join) =>
-        join
-          .onRef(
-            'journey_system_localization.system_id',
-            '=',
-            'journey_system.id',
-          )
-          .on('journey_system_localization.locale', '=', locale)
-          .on('journey_system_localization.editorial_state', '=', 'published')
-          .on('journey_system_localization.published_at', 'is not', null)
-          .on('journey_system_localization.presentation_document', 'is not', null),
-    )
     .select([
       'profile_technology_journey_stages.stage_key',
       'profile_technology_journey_stages.position',
@@ -266,27 +252,116 @@ export async function getDraftProfile(
       'profile_technology_journey_stage_localizations.summary',
       'journey_experience.title as evidence_experience_title',
       'journey_system.id as published_evidence_system_id',
-      'journey_system_localization.slug as evidence_system_slug',
-      'journey_system_localization.title as evidence_system_title',
     ])
     .where('profile_technology_journey_stages.profile_id', '=', profile.id)
     .orderBy('profile_technology_journey_stages.position')
     .execute();
 
+  const professionalJourney = await db
+    .selectFrom('profile_experiences')
+    .innerJoin(
+      'experience_localizations',
+      'experience_localizations.experience_id',
+      'profile_experiences.experience_id',
+    )
+    .select([
+      'profile_experiences.experience_id as id',
+      'profile_experiences.position',
+      'experience_localizations.title',
+      'experience_localizations.summary',
+    ])
+    .where('profile_experiences.profile_id', '=', profile.id)
+    .where('experience_localizations.locale', '=', locale)
+    .orderBy('profile_experiences.position')
+    .execute();
+
+  const representativeSystemRows = await db
+    .selectFrom('profile_systems')
+    .innerJoin('systems', 'systems.id', 'profile_systems.system_id')
+    .select([
+      'systems.id',
+      'profile_systems.position',
+    ])
+    .where('profile_systems.profile_id', '=', profile.id)
+    .where('systems.lifecycle', '=', 'active')
+    .orderBy('profile_systems.position')
+    .execute();
+
+  const workPrincipleRows = await db
+    .selectFrom('profile_work_principles')
+    .innerJoin(
+      'profile_work_principle_localizations',
+      'profile_work_principle_localizations.principle_id',
+      'profile_work_principles.id',
+    )
+    .leftJoin(
+      'systems as evidence_system',
+      (join) =>
+        join
+          .onRef(
+            'evidence_system.id',
+            '=',
+            'profile_work_principles.evidence_system_id',
+          )
+          .on('evidence_system.lifecycle', '=', 'active'),
+    )
+
+    .select([
+      'profile_work_principles.id',
+      'profile_work_principles.position',
+      'profile_work_principle_localizations.title',
+      'profile_work_principle_localizations.detail',
+      'evidence_system.id as evidence_system_id',
+    ])
+    .where('profile_work_principles.profile_id', '=', profile.id)
+    .where('profile_work_principle_localizations.locale', '=', locale)
+    .orderBy('profile_work_principles.position')
+    .execute();
+
+  const referencedSystemIds = [
+    ...new Set([
+      ...representativeSystemRows.map(({ id }) => id),
+      ...workPrincipleRows
+        .map(({ evidence_system_id }) => evidence_system_id)
+        .filter((id): id is string => id !== null),
+      ...technologyJourneyRows
+        .map(({ published_evidence_system_id }) => published_evidence_system_id)
+        .filter((id): id is string => id !== null),
+    ]),
+  ];
+
+  const publicationRows =
+    referencedSystemIds.length === 0
+      ? []
+      : await db
+          .selectFrom('system_publications')
+          .select(['system_id', 'snapshot'])
+          .where('locale', '=', locale)
+          .where('system_id', 'in', referencedSystemIds)
+          .execute();
+
+  const publishedSystemById = new Map(
+    publicationRows.flatMap((row) => {
+      const publication = parseSystemPublicationSnapshot(row.snapshot);
+      return publication === null
+        ? []
+        : [[row.system_id, publication] as const];
+    }),
+  );
+
   const technologyJourney: PublicProfileTechnologyJourneyStage[] =
     technologyJourneyRows.map((stage) => {
+      const publication =
+        stage.published_evidence_system_id === null
+          ? undefined
+          : publishedSystemById.get(stage.published_evidence_system_id);
       const systemEvidence =
-        stage.published_evidence_system_id !== null &&
-        stage.evidence_system_slug !== null &&
-        stage.evidence_system_title !== null
+        stage.published_evidence_system_id !== null && publication !== undefined
           ? {
               kind: 'system' as const,
               id: stage.published_evidence_system_id,
-              title: stage.evidence_system_title,
-              href:
-                locale === 'fr'
-                  ? `/fr/systems/${stage.evidence_system_slug}`
-                  : `/en/systems/${stage.evidence_system_slug}`,
+              title: publication.title,
+              href: `/${locale}/systems/${publication.slug}`,
             }
           : null;
       const experienceEvidence =
@@ -309,115 +384,43 @@ export async function getDraftProfile(
       };
     });
 
-  const professionalJourney = await db
-    .selectFrom('profile_experiences')
-    .innerJoin(
-      'experience_localizations',
-      'experience_localizations.experience_id',
-      'profile_experiences.experience_id',
-    )
-    .select([
-      'profile_experiences.experience_id as id',
-      'profile_experiences.position',
-      'experience_localizations.title',
-      'experience_localizations.summary',
-    ])
-    .where('profile_experiences.profile_id', '=', profile.id)
-    .where('experience_localizations.locale', '=', locale)
-    .orderBy('profile_experiences.position')
-    .execute();
-
-  const representativeSystems = await db
-    .selectFrom('profile_systems')
-    .innerJoin('systems', 'systems.id', 'profile_systems.system_id')
-    .innerJoin(
-      'system_localizations',
-      'system_localizations.system_id',
-      'systems.id',
-    )
-    .select([
-      'systems.id',
-      'profile_systems.position',
-      'system_localizations.slug',
-      'system_localizations.title',
-      'system_localizations.summary',
-    ])
-    .where('profile_systems.profile_id', '=', profile.id)
-    .where('systems.lifecycle', '=', 'active')
-    .where('system_localizations.locale', '=', locale)
-    .where('system_localizations.editorial_state', '=', 'published')
-    .where('system_localizations.published_at', 'is not', null)
-    .where('system_localizations.presentation_document', 'is not', null)
-    .where('system_localizations.slug', 'is not', null)
-    .where('system_localizations.title', 'is not', null)
-    .where('system_localizations.summary', 'is not', null)
-    .orderBy('profile_systems.position')
-    .execute();
-
-  const workPrincipleRows = await db
-    .selectFrom('profile_work_principles')
-    .innerJoin(
-      'profile_work_principle_localizations',
-      'profile_work_principle_localizations.principle_id',
-      'profile_work_principles.id',
-    )
-    .leftJoin(
-      'systems as evidence_system',
-      (join) =>
-        join
-          .onRef(
-            'evidence_system.id',
-            '=',
-            'profile_work_principles.evidence_system_id',
-          )
-          .on('evidence_system.lifecycle', '=', 'active'),
-    )
-    .leftJoin(
-      'system_localizations as evidence_localization',
-      (join) =>
-        join
-          .onRef(
-            'evidence_localization.system_id',
-            '=',
-            'evidence_system.id',
-          )
-          .on('evidence_localization.locale', '=', locale)
-          .on('evidence_localization.editorial_state', '=', 'published')
-          .on('evidence_localization.published_at', 'is not', null)
-          .on('evidence_localization.presentation_document', 'is not', null),
-    )
-    .select([
-      'profile_work_principles.id',
-      'profile_work_principles.position',
-      'profile_work_principle_localizations.title',
-      'profile_work_principle_localizations.detail',
-      'evidence_system.id as evidence_system_id',
-      'evidence_localization.slug as evidence_slug',
-      'evidence_localization.title as evidence_title',
-    ])
-    .where('profile_work_principles.profile_id', '=', profile.id)
-    .where('profile_work_principle_localizations.locale', '=', locale)
-    .orderBy('profile_work_principles.position')
-    .execute();
-
   const workPrinciples: PublicProfileWorkPrinciple[] = workPrincipleRows.map(
-    (principle) => ({
-      id: principle.id,
-      position: principle.position,
-      title: principle.title,
-      detail: principle.detail,
-      evidenceSystem:
-        principle.evidence_system_id !== null &&
-        principle.evidence_slug !== null &&
-        principle.evidence_title !== null
-          ? {
-              id: principle.evidence_system_id,
-              slug: principle.evidence_slug,
-              title: principle.evidence_title,
-            }
-          : null,
-    }),
+    (principle) => {
+      const publication =
+        principle.evidence_system_id === null
+          ? undefined
+          : publishedSystemById.get(principle.evidence_system_id);
+
+      return {
+        id: principle.id,
+        position: principle.position,
+        title: principle.title,
+        detail: principle.detail,
+        evidenceSystem:
+          principle.evidence_system_id !== null && publication !== undefined
+            ? {
+                id: principle.evidence_system_id,
+                slug: publication.slug,
+                title: publication.title,
+              }
+            : null,
+      };
+    },
   );
+
+  const representativeSystems: PublicProfileSystem[] =
+    representativeSystemRows.flatMap((system) => {
+      const publication = publishedSystemById.get(system.id);
+      return publication === undefined
+        ? []
+        : [{
+            id: system.id,
+            position: system.position,
+            slug: publication.slug,
+            title: publication.title,
+            summary: publication.summary,
+          }];
+    });
 
   return {
     id: profile.id,
@@ -439,13 +442,7 @@ export async function getDraftProfile(
       remote: false,
       relocation: false,
     },
-    representativeSystems: representativeSystems.map((system) => ({
-      id: system.id,
-      position: system.position,
-      slug: system.slug!,
-      title: system.title!,
-      summary: system.summary!,
-    })),
+    representativeSystems,
     alternateLocale: locale === 'en' ? 'fr' : 'en',
   };
 }

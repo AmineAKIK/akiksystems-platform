@@ -87,6 +87,13 @@ export interface SystemPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface SystemPublicationAssetsTable {
+  system_id: string;
+  locale: PlatformLocale;
+  asset_id: string;
+  created_at: TimestampColumn;
+}
+
 export interface ProfilesTable {
   id: string;
   singleton_key: DefaultedColumn<'public'>;
@@ -317,6 +324,8 @@ export type SystemLocalizationUpdate = Updateable<SystemLocalizationsTable>;
 export type SystemPublicationRow = Selectable<SystemPublicationsTable>;
 export type NewSystemPublicationRow = Insertable<SystemPublicationsTable>;
 export type SystemPublicationUpdate = Updateable<SystemPublicationsTable>;
+export type SystemPublicationAssetRow = Selectable<SystemPublicationAssetsTable>;
+export type NewSystemPublicationAssetRow = Insertable<SystemPublicationAssetsTable>;
 
 export type ProfileRow = Selectable<ProfilesTable>;
 export type NewProfileRow = Insertable<ProfilesTable>;
@@ -440,6 +449,7 @@ export interface Database {
   systems: SystemsTable;
   system_localizations: SystemLocalizationsTable;
   system_publications: SystemPublicationsTable;
+  system_publication_assets: SystemPublicationAssetsTable;
   profiles: ProfilesTable;
   profile_localizations: ProfileLocalizationsTable;
   profile_publications: ProfilePublicationsTable;

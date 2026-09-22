@@ -211,11 +211,6 @@ export async function bootstrapTugeresDomain(
   const publishedAt = new Date();
 
   await db.transaction().execute(async (transaction) => {
-    const maxPosition = await transaction
-      .selectFrom('systems')
-      .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
-      .executeTakeFirst();
-
     await transaction
       .insertInto('systems')
       .values({

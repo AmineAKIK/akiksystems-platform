@@ -1,5 +1,9 @@
 import {
   isSystemLinkAllowedByEvidencePolicy,
+  systemEvidencePolicies,
+  systemLinkKinds,
+  systemPresentationKinds,
+  validatePresentationDocument,
   validateSystemPublicationReadiness,
   type PlatformLocale,
   type PresentationDocument,
@@ -9,6 +13,7 @@ import {
 } from '@akiksystems/core';
 import type { Kysely, Transaction } from 'kysely';
 
+import { lockSystemMutation } from './system-mutation-lock.js';
 import type { Database } from './schema.js';
 
 export interface SystemPublicationTechnology {
@@ -65,29 +70,107 @@ export interface SystemPublicationSnapshot {
   media: SystemPublicationMedia[];
 }
 
-function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapshot {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string';
+}
+
+function isPosition(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= 0;
+}
+
+function isPublicationTechnology(
+  value: unknown,
+): value is SystemPublicationTechnology {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'version' in value &&
-    value.version === 1 &&
-    'systemId' in value &&
-    typeof value.systemId === 'string' &&
-    'locale' in value &&
-    (value.locale === 'en' || value.locale === 'fr') &&
-    'slug' in value &&
+    isRecord(value) &&
+    typeof value.id === 'string' &&
     typeof value.slug === 'string' &&
-    'title' in value &&
+    typeof value.name === 'string' &&
+    isPosition(value.position)
+  );
+}
+
+function isPublicationOrigin(value: unknown): value is SystemPublicationOrigin {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
     typeof value.title === 'string' &&
-    'summary' in value &&
+    isNullableString(value.summary)
+  );
+}
+
+function isPublicationLink(value: unknown): value is SystemPublicationLink {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.kind === 'string' &&
+    systemLinkKinds.includes(value.kind as SystemLinkKind) &&
+    typeof value.url === 'string' &&
+    isNullableString(value.label) &&
+    isPosition(value.position)
+  );
+}
+
+function isPublicationMedia(value: unknown): value is SystemPublicationMedia {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.mimeType === 'string' &&
+    isNullableString(value.altText) &&
+    isNullableString(value.caption) &&
+    (value.width === null ||
+      (typeof value.width === 'number' &&
+        Number.isInteger(value.width) &&
+        value.width > 0)) &&
+    (value.height === null ||
+      (typeof value.height === 'number' &&
+        Number.isInteger(value.height) &&
+        value.height > 0)) &&
+    isPosition(value.position)
+  );
+}
+
+function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapshot {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const proofTransparency = value.proofTransparency;
+  const presentation = validatePresentationDocument(value.presentationDocument);
+
+  return (
+    value.version === 1 &&
+    typeof value.systemId === 'string' &&
+    (value.locale === 'en' || value.locale === 'fr') &&
+    typeof value.presentationKind === 'string' &&
+    systemPresentationKinds.includes(
+      value.presentationKind as SystemPresentationKind,
+    ) &&
+    typeof value.evidencePolicy === 'string' &&
+    systemEvidencePolicies.includes(
+      value.evidencePolicy as SystemEvidencePolicy,
+    ) &&
+    typeof value.slug === 'string' &&
+    typeof value.title === 'string' &&
     typeof value.summary === 'string' &&
-    'presentationDocument' in value &&
-    'technologies' in value &&
+    isRecord(proofTransparency) &&
+    typeof proofTransparency.role === 'string' &&
+    typeof proofTransparency.maturity === 'string' &&
+    typeof proofTransparency.demoNature === 'string' &&
+    typeof proofTransparency.dataNature === 'string' &&
+    typeof proofTransparency.limits === 'string' &&
+    presentation.valid &&
     Array.isArray(value.technologies) &&
-    'links' in value &&
+    value.technologies.every(isPublicationTechnology) &&
+    (value.origin === null || isPublicationOrigin(value.origin)) &&
     Array.isArray(value.links) &&
-    'media' in value &&
-    Array.isArray(value.media)
+    value.links.every(isPublicationLink) &&
+    Array.isArray(value.media) &&
+    value.media.every(isPublicationMedia)
   );
 }
 
@@ -148,6 +231,14 @@ async function publicationSource(
       `System localization ${systemId}:${locale} is not publication-ready: ${readiness.errors.join(' ')}`,
     );
   }
+
+  const presentationAssetIds = [
+    ...new Set(
+      row.presentation_document!.blocks.flatMap((block) =>
+        block.type === 'image' ? [block.assetId] : [],
+      ),
+    ),
+  ];
 
   const [technologies, origin, rawLinks, media] = await Promise.all([
     db
@@ -212,9 +303,30 @@ async function publicationSource(
       .execute(),
   ]);
 
+  const availableMediaIds = new Set(media.map((asset) => asset.id));
+  const missingPresentationAssetId = presentationAssetIds.find(
+    (assetId) => !availableMediaIds.has(assetId),
+  );
+  if (missingPresentationAssetId !== undefined) {
+    throw new Error(
+      `System localization ${systemId}:${locale} references unavailable presentation asset ${missingPresentationAssetId}.`,
+    );
+  }
+
   const links = rawLinks.filter((link) =>
     isSystemLinkAllowedByEvidencePolicy(row.evidence_policy, link.kind),
   );
+
+  const unlabeledDocumentation = links.find(
+    (link) =>
+      link.kind === 'documentation' &&
+      (locale === 'fr' ? link.label_fr : link.label_en) === null,
+  );
+  if (unlabeledDocumentation !== undefined) {
+    throw new Error(
+      `System localization ${systemId}:${locale} requires a localized label for documentation link ${unlabeledDocumentation.url}.`,
+    );
+  }
 
   return {
     version: 1,
@@ -242,15 +354,17 @@ async function publicationSource(
       label: locale === 'fr' ? link.label_fr : link.label_en,
       position: link.position,
     })),
-    media: media.map((asset) => ({
-      id: asset.id,
-      mimeType: asset.mime_type,
-      altText: asset.alt_text,
-      caption: asset.caption,
-      width: asset.width,
-      height: asset.height,
-      position: asset.position,
-    })),
+    media: media
+      .filter((asset) => presentationAssetIds.includes(asset.id))
+      .map((asset) => ({
+        id: asset.id,
+        mimeType: asset.mime_type,
+        altText: asset.alt_text,
+        caption: asset.caption,
+        width: asset.width,
+        height: asset.height,
+        position: asset.position,
+      })),
   };
 }
 
@@ -261,78 +375,121 @@ export async function buildSystemPublicationSnapshot(
   return publicationSource(db, input.systemId, input.locale);
 }
 
-export async function publishSystemLocalization(
-  db: Kysely<Database>,
+async function replacePublicationAssetReferences(
+  db: Transaction<Database>,
+  snapshot: SystemPublicationSnapshot,
+): Promise<void> {
+  await db
+    .deleteFrom('system_publication_assets')
+    .where('system_id', '=', snapshot.systemId)
+    .where('locale', '=', snapshot.locale)
+    .execute();
+
+  if (snapshot.media.length === 0) {
+    return;
+  }
+
+  await db
+    .insertInto('system_publication_assets')
+    .values(
+      snapshot.media.map((media) => ({
+        system_id: snapshot.systemId,
+        locale: snapshot.locale,
+        asset_id: media.id,
+      })),
+    )
+    .execute();
+}
+
+export async function publishSystemLocalizationInTransaction(
+  transaction: Transaction<Database>,
   input: { systemId: string; locale: PlatformLocale; now?: Date },
 ): Promise<SystemPublicationSnapshot> {
   const now = input.now ?? new Date();
+  await lockSystemMutation(transaction, input.systemId);
+  const snapshot = await publicationSource(
+    transaction,
+    input.systemId,
+    input.locale,
+  );
 
-  return db.transaction().execute(async (transaction) => {
-    const snapshot = await publicationSource(
-      transaction,
-      input.systemId,
-      input.locale,
-    );
-
-    await transaction
-      .insertInto('system_publications')
-      .values({
-        system_id: input.systemId,
-        locale: input.locale,
+  await transaction
+    .insertInto('system_publications')
+    .values({
+      system_id: input.systemId,
+      locale: input.locale,
+      slug: snapshot.slug,
+      snapshot: snapshot as unknown as Record<string, unknown>,
+      published_at: now,
+      updated_at: now,
+    })
+    .onConflict((conflict) =>
+      conflict.columns(['system_id', 'locale']).doUpdateSet({
         slug: snapshot.slug,
         snapshot: snapshot as unknown as Record<string, unknown>,
         published_at: now,
         updated_at: now,
-      })
-      .onConflict((conflict) =>
-        conflict.columns(['system_id', 'locale']).doUpdateSet({
-          slug: snapshot.slug,
-          snapshot: snapshot as unknown as Record<string, unknown>,
-          published_at: now,
-          updated_at: now,
-        }),
-      )
-      .execute();
+      }),
+    )
+    .execute();
 
-    await transaction
-      .updateTable('system_localizations')
-      .set({
-        editorial_state: 'published',
-        published_at: now,
-        updated_at: now,
-      })
-      .where('system_id', '=', input.systemId)
-      .where('locale', '=', input.locale)
-      .execute();
+  await replacePublicationAssetReferences(transaction, snapshot);
 
-    return snapshot;
-  });
+  await transaction
+    .updateTable('system_localizations')
+    .set({
+      editorial_state: 'published',
+      published_at: now,
+      updated_at: now,
+    })
+    .where('system_id', '=', input.systemId)
+    .where('locale', '=', input.locale)
+    .execute();
+
+  return snapshot;
+}
+
+export async function publishSystemLocalization(
+  db: Kysely<Database>,
+  input: { systemId: string; locale: PlatformLocale; now?: Date },
+): Promise<SystemPublicationSnapshot> {
+  return db.transaction().execute((transaction) =>
+    publishSystemLocalizationInTransaction(transaction, input),
+  );
+}
+
+export async function unpublishSystemLocalizationInTransaction(
+  transaction: Transaction<Database>,
+  input: { systemId: string; locale: PlatformLocale; now?: Date },
+): Promise<void> {
+  const now = input.now ?? new Date();
+  await lockSystemMutation(transaction, input.systemId);
+
+  await transaction
+    .deleteFrom('system_publications')
+    .where('system_id', '=', input.systemId)
+    .where('locale', '=', input.locale)
+    .execute();
+
+  await transaction
+    .updateTable('system_localizations')
+    .set({
+      editorial_state: 'draft',
+      published_at: null,
+      updated_at: now,
+    })
+    .where('system_id', '=', input.systemId)
+    .where('locale', '=', input.locale)
+    .execute();
 }
 
 export async function unpublishSystemLocalization(
   db: Kysely<Database>,
   input: { systemId: string; locale: PlatformLocale; now?: Date },
 ): Promise<void> {
-  const now = input.now ?? new Date();
-
-  await db.transaction().execute(async (transaction) => {
-    await transaction
-      .deleteFrom('system_publications')
-      .where('system_id', '=', input.systemId)
-      .where('locale', '=', input.locale)
-      .execute();
-
-    await transaction
-      .updateTable('system_localizations')
-      .set({
-        editorial_state: 'draft',
-        published_at: null,
-        updated_at: now,
-      })
-      .where('system_id', '=', input.systemId)
-      .where('locale', '=', input.locale)
-      .execute();
-  });
+  await db.transaction().execute((transaction) =>
+    unpublishSystemLocalizationInTransaction(transaction, input),
+  );
 }
 
 export async function markSystemDraft(
@@ -380,22 +537,26 @@ export async function bootstrapSystemPublications(
       continue;
     }
 
-    const snapshot = await publicationSource(
-      db,
-      candidate.system_id,
-      candidate.locale,
-    );
-    await db
-      .insertInto('system_publications')
-      .values({
-        system_id: candidate.system_id,
-        locale: candidate.locale,
-        slug: snapshot.slug,
-        snapshot: snapshot as unknown as Record<string, unknown>,
-        published_at: candidate.published_at!,
-        updated_at: new Date(),
-      })
-      .execute();
+    await db.transaction().execute(async (transaction) => {
+      const snapshot = await publicationSource(
+        transaction,
+        candidate.system_id,
+        candidate.locale,
+      );
+      await transaction
+        .insertInto('system_publications')
+        .values({
+          system_id: candidate.system_id,
+          locale: candidate.locale,
+          slug: snapshot.slug,
+          snapshot: snapshot as unknown as Record<string, unknown>,
+          published_at: candidate.published_at!,
+          updated_at: new Date(),
+        })
+        .execute();
+
+      await replacePublicationAssetReferences(transaction, snapshot);
+    });
 
     created += 1;
   }

@@ -6,7 +6,11 @@ import {
   type PresentationBlock,
   type PresentationDocument,
 } from '@akiksystems/core';
-import { markSystemDraft, writeAdminAuditEvent } from '@akiksystems/db';
+import {
+  lockSystemMutation,
+  markSystemDraft,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { useMemo, useState } from 'react';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -234,6 +238,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     if (localization === undefined) {
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         await transaction
           .insertInto('system_localizations')
           .values({
@@ -261,6 +266,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       });
     } else {
       await db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
         await markSystemDraft(transaction, { systemId, locale });
 
         await transaction
