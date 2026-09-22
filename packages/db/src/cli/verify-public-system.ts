@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getPublishedSystem } from '../public-system.js';
 import { createDatabase } from '../database.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -152,6 +153,8 @@ try {
   });
 
   assert.equal(
+  await bootstrapSystemPublications(db);
+
     await getPublishedSystem(db, { locale: 'en', slug: 'public-sentinel-proof' }),
     null,
     'draft localization must not be public',
