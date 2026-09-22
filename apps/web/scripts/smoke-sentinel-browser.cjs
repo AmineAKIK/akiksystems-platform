@@ -128,6 +128,35 @@ async function assertProfileAdministration(page) {
   await page.getByRole('button', { name: 'Save capabilities' }).click();
   await page.getByText('Capabilities updated.', { exact: true }).waitFor();
 
+  const languageForm = page.locator('form').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Languages and mobility',
+      exact: true,
+    }),
+  });
+  for (const [code, position] of [
+    ['fr', '0'],
+    ['en', '1'],
+    ['ar', '2'],
+  ]) {
+    await languageForm
+      .locator(`input[name="language"][value="${code}"]`)
+      .check();
+    await languageForm
+      .locator(`input[name="language-position-${code}"]`)
+      .fill(position);
+  }
+  await languageForm.locator('input[name="mobility-worldwide"]').check();
+  await languageForm.locator('input[name="mobility-remote"]').check();
+  await languageForm.locator('input[name="mobility-relocation"]').check();
+  await languageForm
+    .getByRole('button', { name: 'Save languages and mobility' })
+    .click();
+  await page
+    .getByText('Languages and mobility updated.', { exact: true })
+    .waitFor();
+
   await page.goto(`${origin}/en/profile`);
   await page.getByRole('heading', { level: 1, name: 'Profile', exact: true }).waitFor();
   await page.getByRole('heading', { level: 2, name: 'Amine AKIK', exact: true }).waitFor();
@@ -157,6 +186,19 @@ async function assertProfileAdministration(page) {
     false,
     'The public English Profile must not expose the internal CSSOV name.',
   );
+  await page
+    .getByRole('heading', { level: 2, name: 'Languages & mobility', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').first().locator('li').allInnerTexts(),
+    ['French', 'English', 'Arabic'],
+  );
+  for (const label of ['Worldwide', 'Remote', 'Relocation']) {
+    await page
+      .locator('.aks-profile-languages-mobility')
+      .getByText(label, { exact: true })
+      .waitFor();
+  }
   assert.equal(
     await page.locator('.aks-experience-meta a[hreflang="fr"]').getAttribute('href'),
     '/fr/profil',
@@ -191,6 +233,19 @@ async function assertProfileAdministration(page) {
     false,
     'The public French Profile must not expose the internal CSSOV name.',
   );
+  await page
+    .getByRole('heading', { level: 2, name: 'Langues et mobilité', exact: true })
+    .waitFor();
+  assert.deepEqual(
+    await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').first().locator('li').allInnerTexts(),
+    ['Français', 'Anglais', 'Arabe'],
+  );
+  for (const label of ['International', 'À distance', 'Relocalisation']) {
+    await page
+      .locator('.aks-profile-languages-mobility')
+      .getByText(label, { exact: true })
+      .waitFor();
+  }
 
   await page.setViewportSize({ width: 390, height: 844 });
   for (const target of [
@@ -213,6 +268,11 @@ async function assertProfileAdministration(page) {
       await page.locator('.aks-profile-work-principle-list li').count(),
       3,
       `${target.path} must preserve the three administered working principles on mobile.`,
+    );
+    assert.equal(
+      await page.locator('.aks-profile-languages-mobility .aks-profile-fact-list').count(),
+      2,
+      `${target.path} must preserve structured language and mobility facts on mobile.`,
     );
   }
 
