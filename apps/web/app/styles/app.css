@@ -968,6 +968,94 @@
   cursor: not-allowed;
 }
 
+
+/* AKS-062: first-view composition communicates identity and immediate proof without a generic hero. */
+.aks-profile-first-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.75fr);
+  gap: clamp(var(--aks-space-6), 5vw, var(--aks-space-8));
+  align-items: end;
+  min-height: min(44rem, calc(100dvh - 8rem));
+  padding-block: clamp(var(--aks-space-6), 7vh, var(--aks-space-8));
+  border-bottom: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-first-view-identity {
+  display: grid;
+  grid-template-columns: minmax(11rem, 16rem) minmax(0, 1fr);
+  gap: clamp(var(--aks-space-5), 4vw, var(--aks-space-7));
+  align-items: end;
+  min-width: 0;
+}
+
+.aks-profile-first-view-copy {
+  display: grid;
+  gap: var(--aks-space-4);
+  min-width: 0;
+  max-width: 42rem;
+}
+
+.aks-profile-first-view-copy .aks-heading {
+  max-width: 13ch;
+}
+
+.aks-profile-first-view-copy .aks-text {
+  max-width: 58ch;
+}
+
+.aks-profile-immediate-proof {
+  display: grid;
+  gap: var(--aks-space-3);
+  align-self: end;
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border-inline-start: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-immediate-proof .aks-heading {
+  max-width: 18ch;
+}
+
+.aks-profile-immediate-proof .aks-text {
+  max-width: 38ch;
+}
+
+@media (max-width: 64rem) {
+  .aks-profile-first-view {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
+  }
+
+  .aks-profile-immediate-proof {
+    border-inline-start: 0;
+    border-top: 1px solid var(--aks-border-subtle);
+    padding-inline: 0;
+    padding-block-end: 0;
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-first-view {
+    gap: var(--aks-space-6);
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-profile-first-view-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-profile-first-view-copy {
+    gap: var(--aks-space-3);
+  }
+
+  .aks-profile-first-view-copy .aks-heading,
+  .aks-profile-first-view-copy .aks-text,
+  .aks-profile-immediate-proof .aks-heading,
+  .aks-profile-immediate-proof .aks-text {
+    max-width: none;
+  }
+}
+
 /* AKS-055: one restrained public portrait, never a CV-card treatment. */
 .aks-profile-portrait {
   display: block;
