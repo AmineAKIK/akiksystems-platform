@@ -55,7 +55,10 @@ try {
 
   await db
     .insertInto('systems')
-    .values([{ id: firstSystemId }, { id: secondSystemId }])
+    .values([
+      { id: firstSystemId, editorial_position: 0 },
+      { id: secondSystemId, editorial_position: 1 },
+    ])
     .execute();
 
   await db
