@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile post-CV value-add qualification
+
+AKS-068 qualifies Profile for a visitor who already knows common CV facts and should discover meaningful new context rather than a repetition.
+
+- The automated proxy first establishes a deterministic CV-like baseline in a fresh browser context: identity, professional title, Marelli, languages, and mobility.
+- It then visits the localized Profile on desktop/mobile in EN/FR.
+- Identity may repeat for orientation, but Marelli chronology must stay outside the first view and remain collapsed inside the professional-evidence disclosure.
+- The test verifies new value beyond the baseline: immediate Sentinel proof, a concrete How I work principle linked to Sentinel, a Technical Capability, and the development/AkikSystems technological-journey stage.
+- Technical depth must add capability context rather than regress into a React/Docker-style tool list.
+- CI records structured observations with `priorCvExposure: "simulated-baseline"` and the newly discovered evidence/context.
+- This is a deterministic product proxy, not a substitute for a human study using the real CV PDF. A human post-CV study should still ask what new information or evidence the Profile added after reading the CV.
+
 ### Profile direct-entry comprehension qualification
 
 AKS-067 qualifies the Profile as a first-contact destination for someone who has not seen the CV.

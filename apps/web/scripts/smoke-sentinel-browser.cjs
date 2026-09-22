@@ -891,6 +891,224 @@ async function assertProfileWithoutPriorCv(browser) {
   );
 }
 
+async function assertProfileAfterPriorCvExposure(browser) {
+  const scenarios = [
+    {
+      name: 'desktop EN post-CV Profile',
+      path: '/en/profile',
+      viewport: { width: 1440, height: 900 },
+      locale: 'en',
+      cvBaseline: [
+        'Amine AKIK',
+        'Software systems builder',
+        'Marelli',
+        'French',
+        'English',
+        'Arabic',
+      ],
+      immediateProofAction: 'Inspect this proof',
+      howSummary: 'Explore how I work',
+      principle: 'Make evidence inspectable',
+      principleEvidence: 'Example: Sentinel',
+      technicalSummary: 'Explore technical depth',
+      capability: 'Design bounded systems',
+      journeyStage: 'Development and AkikSystems',
+      professionalSummary: 'Explore professional evidence',
+      professionalHeading: 'Relevant professional journey',
+    },
+    {
+      name: 'mobile EN post-CV Profile',
+      path: '/en/profile',
+      viewport: { width: 390, height: 844 },
+      locale: 'en',
+      cvBaseline: [
+        'Amine AKIK',
+        'Software systems builder',
+        'Marelli',
+        'French',
+        'English',
+        'Arabic',
+      ],
+      immediateProofAction: 'Inspect this proof',
+      howSummary: 'Explore how I work',
+      principle: 'Make evidence inspectable',
+      principleEvidence: 'Example: Sentinel',
+      technicalSummary: 'Explore technical depth',
+      capability: 'Design bounded systems',
+      journeyStage: 'Development and AkikSystems',
+      professionalSummary: 'Explore professional evidence',
+      professionalHeading: 'Relevant professional journey',
+    },
+    {
+      name: 'desktop FR post-CV Profile',
+      path: '/fr/profil',
+      viewport: { width: 1440, height: 900 },
+      locale: 'fr',
+      cvBaseline: [
+        'Amine AKIK',
+        'Concepteur de systèmes logiciels',
+        'Marelli',
+        'Français',
+        'Anglais',
+        'Arabe',
+      ],
+      immediateProofAction: 'Inspecter cette preuve',
+      howSummary: 'Approfondir ma manière de travailler',
+      principle: 'Rendre les preuves inspectables',
+      principleEvidence: 'Exemple : Sentinel',
+      technicalSummary: 'Approfondir la technique',
+      capability: 'Concevoir des systèmes délimités',
+      journeyStage: 'Développement et AkikSystems',
+      professionalSummary: 'Approfondir les preuves professionnelles',
+      professionalHeading: 'Parcours professionnel pertinent',
+    },
+    {
+      name: 'mobile FR post-CV Profile',
+      path: '/fr/profil',
+      viewport: { width: 390, height: 844 },
+      locale: 'fr',
+      cvBaseline: [
+        'Amine AKIK',
+        'Concepteur de systèmes logiciels',
+        'Marelli',
+        'Français',
+        'Anglais',
+        'Arabe',
+      ],
+      immediateProofAction: 'Inspecter cette preuve',
+      howSummary: 'Approfondir ma manière de travailler',
+      principle: 'Rendre les preuves inspectables',
+      principleEvidence: 'Exemple : Sentinel',
+      technicalSummary: 'Approfondir la technique',
+      capability: 'Concevoir des systèmes délimités',
+      journeyStage: 'Développement et AkikSystems',
+      professionalSummary: 'Approfondir les preuves professionnelles',
+      professionalHeading: 'Parcours professionnel pertinent',
+    },
+  ];
+
+  const observations = [];
+
+  for (const scenario of scenarios) {
+    const context = await browser.newContext({ viewport: scenario.viewport });
+    try {
+      const page = await context.newPage();
+
+      // Deterministic prior-CV proxy. This is intentionally not presented as the real PDF:
+      // it establishes already-known CV-like facts before Profile is visited.
+      await page.setContent(
+        [
+          '<main><h1>Prior CV exposure proxy</h1>',
+          ...scenario.cvBaseline.map((fact) => `<p>${fact}</p>`),
+          '</main>',
+        ].join(''),
+      );
+      for (const fact of scenario.cvBaseline) {
+        await page.getByText(fact, { exact: true }).waitFor();
+      }
+
+      const response = await page.goto(`${origin}${scenario.path}`);
+      assert.equal(response?.status(), 200, `${scenario.name} must load after the CV proxy.`);
+      assert.equal(await page.locator('html').getAttribute('lang'), scenario.locale);
+
+      const firstView = page.locator('.aks-profile-first-view');
+      const firstViewText = await firstView.innerText();
+
+      // Orientation can repeat identity/title, but CV chronology must not dominate the first view.
+      assert.match(firstViewText, /Amine AKIK/);
+      assert.equal(
+        /Marelli/.test(firstViewText),
+        false,
+        `${scenario.name} must not repeat CV experience chronology in the first view.`,
+      );
+
+      const proof = page.locator('.aks-profile-immediate-proof');
+      await proof
+        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .waitFor();
+      const proofHref = await proof
+        .getByRole('link', { name: scenario.immediateProofAction, exact: true })
+        .getAttribute('href');
+      assert.equal(
+        proofHref,
+        scenario.locale === 'fr' ? '/fr/systems/sentinel' : '/en/systems/sentinel',
+        `${scenario.name} must add inspectable proof beyond the CV baseline.`,
+      );
+
+      // Repeated professional chronology is intentionally secondary after prior CV exposure.
+      const professionalDetails = page.locator('details#profile-professional-evidence');
+      assert.equal(
+        await professionalDetails.getAttribute('open'),
+        null,
+        `${scenario.name} must keep repeated professional evidence collapsed by default.`,
+      );
+      await professionalDetails
+        .getByText(scenario.professionalSummary, { exact: true })
+        .click();
+      await professionalDetails
+        .getByRole('heading', {
+          level: 2,
+          name: scenario.professionalHeading,
+          exact: true,
+        })
+        .waitFor();
+      assert.equal(
+        await professionalDetails.getByRole('heading', {
+          level: 3,
+          name: 'Marelli',
+          exact: true,
+        }).count(),
+        1,
+        `${scenario.name} must expose the known Experience once inside its dedicated evidence layer.`,
+      );
+
+      const howDetails = page.locator('details#profile-how-i-work');
+      await howDetails.getByText(scenario.howSummary, { exact: true }).click();
+      await howDetails.getByText(scenario.principle, { exact: true }).waitFor();
+      await howDetails.getByText(scenario.principleEvidence, { exact: true }).waitFor();
+
+      const technicalDetails = page.locator('details#profile-technical-depth');
+      await technicalDetails.getByText(scenario.technicalSummary, { exact: true }).click();
+      await technicalDetails.getByText(scenario.capability, { exact: true }).waitFor();
+      await technicalDetails.getByText(scenario.journeyStage, { exact: true }).waitFor();
+      assert.equal(
+        /\bReact\b|\bDocker\b/.test(await technicalDetails.innerText()),
+        false,
+        `${scenario.name} must add capability context rather than repeat a CV-style tool list.`,
+      );
+
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${scenario.name} must remain readable after opening post-CV depth.`,
+      );
+
+      observations.push({
+        scenario: scenario.name,
+        priorCvExposure: 'simulated-baseline',
+        cvBaseline: scenario.cvBaseline,
+        repeatedContextDeprioritized: 'Marelli professional evidence collapsed by default',
+        novelContext: {
+          immediateProof: 'Sentinel',
+          proofHref,
+          workingPrinciple: scenario.principle,
+          workingPrincipleEvidence: 'Sentinel',
+          technicalCapability: scenario.capability,
+          technologicalJourney: scenario.journeyStage,
+        },
+      });
+    } finally {
+      await context.close();
+    }
+  }
+
+  process.stdout.write(
+    `AKS-068 post-CV automated value-add proxy: ${JSON.stringify(observations)}\\n`,
+  );
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2177,6 +2395,8 @@ async function assertAxe(page) {
     await assertProfileProgressiveDepth(browser, page);
 
     await assertProfileWithoutPriorCv(browser);
+
+    await assertProfileAfterPriorCvExposure(browser);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
