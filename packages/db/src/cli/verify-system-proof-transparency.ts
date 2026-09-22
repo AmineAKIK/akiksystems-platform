@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { bootstrapOriaDomain } from '../oria-bootstrap.js';
 import { bootstrapProtoCapDomain } from '../protocap-bootstrap.js';
 import { getPublishedSystem } from '../public-system.js';
+import { publishSystemLocalization } from '../system-publication.js';
 import { bootstrapTugeresDomain } from '../tugeres-bootstrap.js';
 import { createDatabase } from '../database.js';
 import { databaseUrlFromEnv } from './env.js';
@@ -45,7 +46,10 @@ try {
 
   const sentinelId = randomUUID();
   systemIds.push(sentinelId);
-  await db.insertInto('systems').values({ id: sentinelId }).execute();
+  await db
+    .insertInto('systems')
+    .values({ id: sentinelId, editorial_position: 50 })
+    .execute();
   await db
     .insertInto('system_localizations')
     .values([
@@ -87,6 +91,9 @@ try {
       },
     ])
     .execute();
+
+  await publishSystemLocalization(db, { systemId: sentinelId, locale: 'en' });
+  await publishSystemLocalization(db, { systemId: sentinelId, locale: 'fr' });
 
   const protoAssetId = randomUUID();
   assetIds.push(protoAssetId);
