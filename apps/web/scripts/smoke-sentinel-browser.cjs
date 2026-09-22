@@ -1334,12 +1334,12 @@ async function assertOriaInteractiveEntry(browser) {
     for (const target of [
       {
         path: '/en/systems/oria-nutrition',
-        liveLabel: 'Open Oria in a new tab',
+        liveLabel: 'Open the live application in a new tab',
         returnLabel: 'Back to Systems',
       },
       {
         path: '/fr/systems/oria-nutrition',
-        liveLabel: 'Ouvrir Oria dans un nouvel onglet',
+        liveLabel: 'Ouvrir l’application dans un nouvel onglet',
         returnLabel: 'Retour aux Systèmes',
       },
     ]) {
