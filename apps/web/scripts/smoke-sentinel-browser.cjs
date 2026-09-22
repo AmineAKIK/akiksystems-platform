@@ -2454,6 +2454,11 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/en/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel' }).waitFor();
+    assert.equal(
+      await page.locator('.aks-system-experience').getAttribute('data-renderer'),
+      'standard',
+      'Sentinel must render through the stable standard System renderer.',
+    );
     const unavailableLanguage = page.locator('.aks-language-unavailable');
     await unavailableLanguage.waitFor();
     assert.equal(
