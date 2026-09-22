@@ -1793,7 +1793,11 @@ export default function AdminProfile() {
                   const publicHref = locale === 'fr' ? '/fr/profil' : '/en/profile';
 
                   return (
-                    <div className="aks-admin-card" key={locale}>
+                    <div
+                      className="aks-admin-card"
+                      data-profile-publication={locale}
+                      key={locale}
+                    >
                       <Heading level={3} size="sm">
                         {locale.toUpperCase()}
                       </Heading>
