@@ -11,10 +11,12 @@ export type {
   PublicProfileWorkPrinciple,
   PublicProfileWorkPrincipleEvidence,
 } from './public-profile.js';
-export { getPublishedSystem } from './public-system.js';
+export { getPublishedSystem, listPublishedSystems } from './public-system.js';
 export type {
   GetPublishedSystemInput,
+  ListPublishedSystemsInput,
   PublishedSystem,
+  PublishedSystemListItem,
   PublicSystemAlternate,
   PublicSystemLink,
   PublicSystemMedia,
