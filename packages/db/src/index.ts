@@ -19,6 +19,7 @@ export type {
 } from './public-profile.js';
 export { getPublishedSystem, listPublishedSystems } from './public-system.js';
 export {
+  bootstrapSystemPublications,
   buildSystemPublicationSnapshot,
   markSystemDraft,
   parseSystemPublicationSnapshot,
