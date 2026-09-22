@@ -120,6 +120,11 @@ async function upsertLocalization(
     slug: string | null;
     title: string | null;
     summary: string | null;
+    proofRole: string | null;
+    proofMaturity: string | null;
+    proofDemoNature: string | null;
+    proofDataNature: string | null;
+    proofLimits: string | null;
   },
 ) {
   const existing = await db
@@ -138,6 +143,11 @@ async function upsertLocalization(
         slug: values.slug,
         title: values.title,
         summary: values.summary,
+        proof_role: values.proofRole,
+        proof_maturity: values.proofMaturity,
+        proof_demo_nature: values.proofDemoNature,
+        proof_data_nature: values.proofDataNature,
+        proof_limits: values.proofLimits,
       })
       .execute();
   } else {
@@ -147,6 +157,11 @@ async function upsertLocalization(
         slug: values.slug,
         title: values.title,
         summary: values.summary,
+        proof_role: values.proofRole,
+        proof_maturity: values.proofMaturity,
+        proof_demo_nature: values.proofDemoNature,
+        proof_data_nature: values.proofDataNature,
+        proof_limits: values.proofLimits,
         updated_at: new Date(),
       })
       .where('system_id', '=', systemId)
@@ -185,6 +200,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           'slug',
           'title',
           'summary',
+          'proof_role',
+          'proof_maturity',
+          'proof_demo_nature',
+          'proof_data_nature',
+          'proof_limits',
           'editorial_state',
           'published_at',
           'presentation_document',
@@ -286,12 +306,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       slug: en?.slug ?? null,
       title: en?.title ?? null,
       summary: en?.summary ?? null,
+      proofRole: en?.proof_role ?? null,
+      proofMaturity: en?.proof_maturity ?? null,
+      proofDemoNature: en?.proof_demo_nature ?? null,
+      proofDataNature: en?.proof_data_nature ?? null,
+      proofLimits: en?.proof_limits ?? null,
       presentationDocument: en?.presentation_document ?? null,
     });
     const frReadiness = validateSystemPublicationReadiness({
       slug: fr?.slug ?? null,
       title: fr?.title ?? null,
       summary: fr?.summary ?? null,
+      proofRole: fr?.proof_role ?? null,
+      proofMaturity: fr?.proof_maturity ?? null,
+      proofDemoNature: fr?.proof_demo_nature ?? null,
+      proofDataNature: fr?.proof_data_nature ?? null,
+      proofLimits: fr?.proof_limits ?? null,
       presentationDocument: fr?.presentation_document ?? null,
     });
 
@@ -374,6 +404,11 @@ export async function action({ request, params }: Route.ActionArgs) {
       const slug = nullableField(form, 'slug');
       const title = nullableField(form, 'title');
       const summary = nullableField(form, 'summary');
+      const proofRole = nullableField(form, 'proofRole');
+      const proofMaturity = nullableField(form, 'proofMaturity');
+      const proofDemoNature = nullableField(form, 'proofDemoNature');
+      const proofDataNature = nullableField(form, 'proofDataNature');
+      const proofLimits = nullableField(form, 'proofLimits');
 
       if (slug !== null && !slugPattern.test(slug)) {
         return {
@@ -384,7 +419,15 @@ export async function action({ request, params }: Route.ActionArgs) {
 
       const current = await db
         .selectFrom('system_localizations')
-        .select(['editorial_state', 'presentation_document'])
+        .select([
+          'editorial_state',
+          'presentation_document',
+          'proof_role',
+          'proof_maturity',
+          'proof_demo_nature',
+          'proof_data_nature',
+          'proof_limits',
+        ])
         .where('system_id', '=', systemId)
         .where('locale', '=', locale)
         .executeTakeFirst();
@@ -394,6 +437,11 @@ export async function action({ request, params }: Route.ActionArgs) {
           slug,
           title,
           summary,
+          proofRole,
+          proofMaturity,
+          proofDemoNature,
+          proofDataNature,
+          proofLimits,
           presentationDocument: current.presentation_document,
         });
 
@@ -409,6 +457,11 @@ export async function action({ request, params }: Route.ActionArgs) {
         slug,
         title,
         summary,
+        proofRole,
+        proofMaturity,
+        proofDemoNature,
+        proofDataNature,
+        proofLimits,
       });
 
       await writeAdminAuditEvent(db, {
@@ -420,7 +473,16 @@ export async function action({ request, params }: Route.ActionArgs) {
         systemId,
         locale,
         metadata: {
-          fields: ['slug', 'title', 'summary'],
+          fields: [
+            'slug',
+            'title',
+            'summary',
+            'proofRole',
+            'proofMaturity',
+            'proofDemoNature',
+            'proofDataNature',
+            'proofLimits',
+          ],
           editorialState: current?.editorial_state ?? 'draft',
         },
       });
@@ -440,6 +502,11 @@ export async function action({ request, params }: Route.ActionArgs) {
           'slug',
           'title',
           'summary',
+          'proof_role',
+          'proof_maturity',
+          'proof_demo_nature',
+          'proof_data_nature',
+          'proof_limits',
           'presentation_document',
           'editorial_state',
         ])
@@ -459,6 +526,11 @@ export async function action({ request, params }: Route.ActionArgs) {
           slug: localization.slug,
           title: localization.title,
           summary: localization.summary,
+          proofRole: localization.proof_role,
+          proofMaturity: localization.proof_maturity,
+          proofDemoNature: localization.proof_demo_nature,
+          proofDataNature: localization.proof_data_nature,
+          proofLimits: localization.proof_limits,
           presentationDocument: localization.presentation_document,
         });
 
@@ -932,6 +1004,26 @@ export default function AdminSystem() {
                         rows={5}
                       />
                     </label>
+                    <label>
+                      <span>Role</span>
+                      <input defaultValue={data.en?.proof_role ?? ''} name="proofRole" />
+                    </label>
+                    <label>
+                      <span>Maturity</span>
+                      <input defaultValue={data.en?.proof_maturity ?? ''} name="proofMaturity" />
+                    </label>
+                    <label>
+                      <span>Demo nature</span>
+                      <input defaultValue={data.en?.proof_demo_nature ?? ''} name="proofDemoNature" />
+                    </label>
+                    <label>
+                      <span>Data nature</span>
+                      <input defaultValue={data.en?.proof_data_nature ?? ''} name="proofDataNature" />
+                    </label>
+                    <label>
+                      <span>Relevant limits</span>
+                      <textarea defaultValue={data.en?.proof_limits ?? ''} name="proofLimits" rows={4} />
+                    </label>
                     <Button type="submit">Save EN only</Button>
                   </Form>
                   <div className="aks-proof-stack">
@@ -982,6 +1074,26 @@ export default function AdminSystem() {
                         name="summary"
                         rows={5}
                       />
+                    </label>
+                    <label>
+                      <span>Rôle</span>
+                      <input defaultValue={data.fr?.proof_role ?? ''} name="proofRole" />
+                    </label>
+                    <label>
+                      <span>Maturité</span>
+                      <input defaultValue={data.fr?.proof_maturity ?? ''} name="proofMaturity" />
+                    </label>
+                    <label>
+                      <span>Nature de la démo</span>
+                      <input defaultValue={data.fr?.proof_demo_nature ?? ''} name="proofDemoNature" />
+                    </label>
+                    <label>
+                      <span>Nature des données</span>
+                      <input defaultValue={data.fr?.proof_data_nature ?? ''} name="proofDataNature" />
+                    </label>
+                    <label>
+                      <span>Limites pertinentes</span>
+                      <textarea defaultValue={data.fr?.proof_limits ?? ''} name="proofLimits" rows={4} />
                     </label>
                     <Button type="submit">Save FR only</Button>
                   </Form>
