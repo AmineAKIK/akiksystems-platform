@@ -222,6 +222,17 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile direct-entry comprehension qualification
+
+AKS-067 qualifies the Profile as a first-contact destination for someone who has not seen the CV.
+
+- The automated proxy starts from a fresh browser context and loads `/en/profile` or `/fr/profil` as the first visited route.
+- It does not visit Home, the source-CV route, or any other context first.
+- Desktop and mobile scenarios verify the visitor can identify Amine, his professional position, what he builds, and the immediate Sentinel proof from the first reading.
+- The test then verifies that one intentional disclosure action reveals a concrete How I work principle and a concrete Technical Capability.
+- The recorded CI observation explicitly marks `priorCvExposure: false` and captures the resolved proof deep link.
+- This is a deterministic comprehension proxy, not a substitute for a human comprehension study. Human validation should still ask participants to describe who Amine is, what he builds, how he works, and where proof lives without prompting.
+
 ### Profile progressive depth
 
 Profile keeps the first reading immediately scannable and moves deeper proof behind native, one-step disclosures.
