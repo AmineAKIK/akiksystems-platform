@@ -3132,6 +3132,7 @@ async function assertAxe(page) {
       title: 'Sentinel',
       summary: 'Visibilité opérationnelle, contexte industriel et preuves inspectables.',
     });
+
     const englishAfterFrenchEdit = await context.request.get(
       `${origin}/en/systems/sentinel`,
     );
@@ -3139,14 +3140,42 @@ async function assertAxe(page) {
       await englishAfterFrenchEdit.text(),
       /Operational visibility built from industrial context/,
     );
-    const frenchProfileAfterSystemEdit = await context.request.get(
+
+    const frenchSystemBeforeRepublish = await context.request.get(
+      `${origin}/fr/systems/sentinel`,
+    );
+    assert.match(
+      await frenchSystemBeforeRepublish.text(),
+      /Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables\./,
+      'Saving a draft must leave the previous FR public snapshot unchanged.',
+    );
+    assert.doesNotMatch(
+      await frenchSystemBeforeRepublish.text(),
+      /Visibilité opérationnelle, contexte industriel et preuves inspectables\./,
+    );
+
+    const frenchProfileBeforeRepublish = await context.request.get(
       `${origin}/fr/profil`,
     );
-    assert.equal(frenchProfileAfterSystemEdit.status(), 200);
+    assert.equal(frenchProfileBeforeRepublish.status(), 200);
     assert.match(
-      await frenchProfileAfterSystemEdit.text(),
+      await frenchProfileBeforeRepublish.text(),
+      /Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables\./,
+      'Profile references must remain on the published System snapshot while a newer draft exists.',
+    );
+
+    await page.goto(`${origin}${page.systemPath}`);
+    await page.getByRole('button', { name: 'Publish FR update' }).click();
+    await page.getByText('FR public snapshot published.', { exact: true }).waitFor();
+
+    const frenchProfileAfterRepublish = await context.request.get(
+      `${origin}/fr/profil`,
+    );
+    assert.equal(frenchProfileAfterRepublish.status(), 200);
+    assert.match(
+      await frenchProfileAfterRepublish.text(),
       /Visibilité opérationnelle, contexte industriel et preuves inspectables\./,
-      'Profile must reflect the current published System summary rather than a copied snapshot.',
+      'Profile must move to the new System content only after the FR System snapshot is republished.',
     );
 
     const mobile = await browser.newContext({
