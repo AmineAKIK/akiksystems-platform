@@ -28,6 +28,8 @@ export interface SystemDetailAsset {
   altText: string | null;
   caption: string | null;
   mimeType: string;
+  width: number | null;
+  height: number | null;
 }
 
 export interface SystemDetailViewProps {
@@ -119,9 +121,11 @@ export function PresentationBlockView({
           <img
             alt={asset.altText ?? ''}
             decoding="async"
+            height={asset.height ?? undefined}
             loading="lazy"
             sizes="(max-width: 48rem) calc(100vw - 2rem), 44rem"
             src={asset.url}
+            width={asset.width ?? undefined}
           />
           {asset.caption !== null ? (
             <figcaption>{asset.caption}</figcaption>
