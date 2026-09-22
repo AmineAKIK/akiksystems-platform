@@ -234,6 +234,11 @@ export async function bootstrapTugeresDomain(
           title: 'Tugères',
           summary:
             'White-label catering management and ordering system with an isolated per-caterer operating model, payments, billing, inventory and operational controls.',
+          proof_role: "White-label catering management and ordering product system",
+          proof_maturity: "Implemented and documented; active customer deployment not evidenced",
+          proof_demo_nature: "No supportable public demo or live customer deployment is exposed",
+          proof_data_nature: "Repository/reference data and documented operating model; no customer deployment data presented",
+          proof_limits: "Repository and runbook evidence do not prove an active customer deployment, tested restore, or production pilot readiness.",
           presentation_document: {
             ...englishPresentation,
             blocks: englishPresentation.blocks.map((block) =>
@@ -250,6 +255,11 @@ export async function bootstrapTugeresDomain(
           title: 'Tugères',
           summary:
             'Système white-label de gestion et commande pour traiteurs, avec instances isolées, paiements, facturation, stock et contrôles d exploitation.',
+          proof_role: "Système produit white-label de gestion et commande pour traiteurs",
+          proof_maturity: "Implémenté et documenté ; déploiement client actif non prouvé",
+          proof_demo_nature: "Aucune démo publique ou déploiement client live supportable n est exposé",
+          proof_data_nature: "Données de référence du dépôt et modèle d exploitation documenté ; aucune donnée de déploiement client présentée",
+          proof_limits: "Le dépôt et le runbook ne prouvent ni déploiement client actif, ni restauration testée, ni readiness d un pilote de production.",
           presentation_document: {
             ...frenchPresentation,
             blocks: frenchPresentation.blocks.map((block) =>
