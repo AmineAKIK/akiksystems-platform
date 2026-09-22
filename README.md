@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile source CV
+
+The Profile can expose one optional source CV artifact without turning the Profile into an HTML copy of the CV.
+
+- `profiles.source_cv_asset_id` points to one shared Asset and remains nullable.
+- The CV reference is distinct from the portrait reference.
+- `/admin/profile` accepts PDF only, supports replacement/removal, and records audit events.
+- Public Profile renders no CV copy; it exposes only an optional localized link.
+- The same PDF is served through `/en/profile/cv` and `/fr/profil/cv`.
+- Public delivery verifies the referenced Asset is a PDF and returns 404 when no valid CV is linked.
+- Replacing the CV updates the Profile reference before best-effort cleanup of the old storage object.
+
 ### Profile languages and mobility
 
 Profile languages and mobility are structured facts rather than duplicated localized prose.

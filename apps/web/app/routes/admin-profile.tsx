@@ -200,6 +200,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     profile,
     localizations,
     portrait,
+    sourceCv,
     auditEvents,
     selectableSystems,
     selectedSystems,
@@ -208,7 +209,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   ] = await Promise.all([
     appDb
       .selectFrom('profiles')
-      .select(['id', 'display_name', 'portrait_asset_id'])
+      .select(['id', 'display_name', 'portrait_asset_id', 'source_cv_asset_id'])
       .where('id', '=', profileId)
       .executeTakeFirstOrThrow(),
     appDb
@@ -245,6 +246,17 @@ export async function loader({ request }: Route.LoaderArgs) {
         'assets.byte_size',
         'portrait_en.alt_text as alt_en',
         'portrait_fr.alt_text as alt_fr',
+      ])
+      .where('profiles.id', '=', profileId)
+      .executeTakeFirst(),
+    appDb
+      .selectFrom('profiles')
+      .innerJoin('assets', 'assets.id', 'profiles.source_cv_asset_id')
+      .select([
+        'assets.id as cv_asset_id',
+        'assets.original_filename as cv_original_filename',
+        'assets.mime_type as cv_mime_type',
+        'assets.byte_size as cv_byte_size',
       ])
       .where('profiles.id', '=', profileId)
       .executeTakeFirst(),
@@ -450,6 +462,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     en: byLocale.get('en') ?? null,
     fr: byLocale.get('fr') ?? null,
     portrait: portrait ?? null,
+    sourceCv: sourceCv ?? null,
     principles,
     capabilityRows,
     profileLanguages,
@@ -918,6 +931,151 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'Representative Systems updated.' };
+  }
+
+  if (intent === 'source-cv') {
+    const file = form.get('file');
+
+    if (!(file instanceof File)) {
+      return { ok: false, message: 'Choose a PDF CV file.' };
+    }
+
+    if (file.type !== 'application/pdf') {
+      return { ok: false, message: 'Source CV must be a PDF file.' };
+    }
+
+    try {
+      validateAssetUpload(file);
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : 'CV upload is invalid.',
+      };
+    }
+
+    const current = await appDb
+      .selectFrom('profiles')
+      .leftJoin('assets', 'assets.id', 'profiles.source_cv_asset_id')
+      .select([
+        'profiles.source_cv_asset_id',
+        'assets.storage_key as source_cv_storage_key',
+      ])
+      .where('profiles.id', '=', profileId)
+      .executeTakeFirstOrThrow();
+
+    const assetId = randomUUID();
+    const storageKey = `profiles/${profileId}/cv/${assetId}.pdf`;
+
+    try {
+      await putAssetObject(storageKey, file);
+
+      await appDb.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('assets')
+          .values({
+            id: assetId,
+            storage_key: storageKey,
+            original_filename: file.name,
+            mime_type: file.type,
+            byte_size: file.size,
+          })
+          .execute();
+
+        await transaction
+          .updateTable('profiles')
+          .set({
+            source_cv_asset_id: assetId,
+            updated_at: new Date(),
+          })
+          .where('id', '=', profileId)
+          .executeTakeFirstOrThrow();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.source_cv_updated',
+          entityType: 'profile',
+          entityId: profileId,
+          metadata: {
+            mimeType: file.type,
+            byteSize: file.size,
+            replacedExistingCv: current.source_cv_asset_id !== null,
+          },
+        });
+      });
+    } catch (error) {
+      try {
+        await deleteAssetObject(storageKey);
+      } catch {
+        // Best-effort compensation if storage already rejected the upload.
+      }
+
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Source CV upload could not be completed.',
+      };
+    }
+
+    if (
+      current.source_cv_asset_id !== null &&
+      current.source_cv_storage_key !== null
+    ) {
+      try {
+        await deleteAssetObject(current.source_cv_storage_key);
+        await appDb
+          .deleteFrom('assets')
+          .where('id', '=', current.source_cv_asset_id)
+          .execute();
+      } catch {
+        // New CV is already committed; leave stale object/metadata for retry.
+      }
+    }
+
+    return { ok: true, message: 'Source CV updated.' };
+  }
+
+  if (intent === 'remove-source-cv') {
+    const current = await appDb
+      .selectFrom('profiles')
+      .innerJoin('assets', 'assets.id', 'profiles.source_cv_asset_id')
+      .select(['assets.id', 'assets.storage_key'])
+      .where('profiles.id', '=', profileId)
+      .executeTakeFirst();
+
+    if (current === undefined) {
+      return { ok: true, message: 'No source CV is currently set.' };
+    }
+
+    await deleteAssetObject(current.storage_key);
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .updateTable('profiles')
+        .set({
+          source_cv_asset_id: null,
+          updated_at: new Date(),
+        })
+        .where('id', '=', profileId)
+        .executeTakeFirstOrThrow();
+
+      await transaction.deleteFrom('assets').where('id', '=', current.id).execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.source_cv_removed',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          storageObjectDeleted: true,
+        },
+      });
+    });
+
+    return { ok: true, message: 'Source CV removed.' };
   }
 
   if (intent === 'portrait') {
@@ -1461,6 +1619,65 @@ export default function AdminProfile() {
               </div>
               <Button type="submit">Save representative Systems</Button>
             </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">
+                Source CV
+              </Heading>
+              <Text size="sm" tone="muted">
+                Optional PDF artifact only. Profile links to it without reproducing
+                the CV content.
+              </Text>
+              {data.sourceCv === null ? (
+                <Text tone="muted">No source CV is currently linked.</Text>
+              ) : (
+                <div className="aks-proof-stack">
+                  <Text tone="strong">{data.sourceCv.cv_original_filename}</Text>
+                  <Text size="sm" tone="muted">
+                    {data.sourceCv.cv_mime_type} · {data.sourceCv.cv_byte_size} bytes
+                  </Text>
+                  <div className="aks-proof-actions">
+                    <Link href="/en/profile/cv">Open public CV</Link>
+                    <Form method="post">
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value="remove-source-cv"
+                      />
+                      <Button emphasis="quiet" type="submit">
+                        Remove source CV
+                      </Button>
+                    </Form>
+                  </div>
+                </div>
+              )}
+
+              <Form
+                className="aks-admin-form"
+                encType="multipart/form-data"
+                method="post"
+              >
+                <input name="_intent" type="hidden" value="source-cv" />
+                <label>
+                  <span>CV PDF</span>
+                  <input
+                    accept="application/pdf"
+                    name="file"
+                    required
+                    type="file"
+                  />
+                </label>
+                <Text size="sm" tone="muted">
+                  PDF only, maximum 10 MiB. Replacing the file updates the Profile
+                  reference atomically before old media is cleaned up.
+                </Text>
+                <Button type="submit">
+                  {data.sourceCv === null ? 'Upload source CV' : 'Replace source CV'}
+                </Button>
+              </Form>
+            </div>
           </section>
 
           <section className="aks-admin-card">

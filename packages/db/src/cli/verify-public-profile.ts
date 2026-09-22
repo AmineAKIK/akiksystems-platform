@@ -587,6 +587,70 @@ try {
     .where('profile_id', '=', profileId)
     .execute();
 
+  const sourceCvId = randomUUID();
+
+  await db
+    .insertInto('assets')
+    .values({
+      id: sourceCvId,
+      storage_key: `qualification/profile/${sourceCvId}.pdf`,
+      original_filename: 'amine-akik-cv.pdf',
+      mime_type: 'application/pdf',
+      byte_size: 2048,
+    })
+    .execute();
+
+  await db
+    .updateTable('profiles')
+    .set({
+      source_cv_asset_id: sourceCvId,
+      updated_at: new Date(),
+    })
+    .where('id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  const englishWithCv = await getPublicProfile(db, 'en');
+  const frenchWithCv = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithCv);
+  assert.ok(frenchWithCv);
+  assert.equal(englishWithCv.sourceCvAssetId, sourceCvId);
+  assert.equal(
+    frenchWithCv.sourceCvAssetId,
+    sourceCvId,
+    'The source CV is one shared artifact, not duplicated by locale.',
+  );
+
+  let reusedPortraitError: unknown;
+  try {
+    await db
+      .updateTable('profiles')
+      .set({
+        portrait_asset_id: sourceCvId,
+        updated_at: new Date(),
+      })
+      .where('id', '=', profileId)
+      .executeTakeFirstOrThrow();
+  } catch (error) {
+    reusedPortraitError = error;
+  }
+  assert.ok(reusedPortraitError && typeof reusedPortraitError === 'object');
+  assert.equal((reusedPortraitError as PostgreSqlError).code, '23514');
+  assert.equal(
+    (reusedPortraitError as PostgreSqlError).constraint,
+    'profiles_source_cv_distinct_from_portrait_check',
+  );
+
+  await db
+    .updateTable('profiles')
+    .set({
+      source_cv_asset_id: null,
+      updated_at: new Date(),
+    })
+    .where('id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  await db.deleteFrom('assets').where('id', '=', sourceCvId).execute();
+
   await db
     .updateTable('profile_mobility')
     .set({
@@ -654,7 +718,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

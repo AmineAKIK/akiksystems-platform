@@ -51,6 +51,7 @@ export interface PublicProfile {
   displayName: string | null;
   portraitAssetId: string | null;
   portraitAltText: string | null;
+  sourceCvAssetId: string | null;
   professionalTitle: string | null;
   introduction: string | null;
   foundationalCopy: string | null;
@@ -75,6 +76,13 @@ export async function getPublicProfile(
       'profiles.id',
     )
     .leftJoin(
+      'assets as source_cv_asset',
+      (join) =>
+        join
+          .onRef('source_cv_asset.id', '=', 'profiles.source_cv_asset_id')
+          .on('source_cv_asset.mime_type', '=', 'application/pdf'),
+    )
+    .leftJoin(
       'asset_localizations as portrait_localization',
       (join) =>
         join
@@ -85,6 +93,7 @@ export async function getPublicProfile(
       'profiles.id',
       'profiles.display_name',
       'profiles.portrait_asset_id',
+      'source_cv_asset.id as source_cv_asset_id',
       'portrait_localization.alt_text as portrait_alt_text',
       'profile_localizations.professional_title',
       'profile_localizations.introduction',
@@ -234,6 +243,7 @@ export async function getPublicProfile(
     displayName: profile.display_name,
     portraitAssetId: profile.portrait_asset_id,
     portraitAltText: profile.portrait_alt_text,
+    sourceCvAssetId: profile.source_cv_asset_id,
     professionalTitle: profile.professional_title,
     introduction: profile.introduction,
     foundationalCopy: profile.foundational_copy,

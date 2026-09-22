@@ -73,6 +73,15 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           {profile.foundationalCopy !== null ? (
             <Text>{profile.foundationalCopy}</Text>
           ) : null}
+          {profile.sourceCvAssetId !== null ? (
+            <div className="aks-proof-actions">
+              <Link
+                href={profile.locale === 'fr' ? '/fr/profil/cv' : '/en/profile/cv'}
+              >
+                {profile.locale === 'fr' ? 'Voir le CV source' : 'View source CV'}
+              </Link>
+            </div>
+          ) : null}
           {profile.languages.length > 0 ||
           profile.mobility.worldwide ||
           profile.mobility.remote ||

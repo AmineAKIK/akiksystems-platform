@@ -53,7 +53,22 @@ async function assertProfileAdministration(page) {
     .getByRole('heading', { level: 1, name: 'Professional identity', exact: true })
     .waitFor();
 
-  const portraitInput = page.locator('input[name="file"]');
+  const cvSection = page.locator('.aks-admin-card').filter({
+    has: page.getByRole('heading', { level: 2, name: 'Source CV', exact: true }),
+  });
+  const cvInput = cvSection.locator('input[name="file"]');
+  await cvInput.waitFor();
+  assert.equal(
+    await cvInput.getAttribute('accept'),
+    'application/pdf',
+    'Source CV admin must accept PDF only.',
+  );
+  await page.getByText('No source CV is currently linked.', { exact: true }).waitFor();
+
+  const portraitSection = page.locator('.aks-admin-card').filter({
+    has: page.getByRole('heading', { level: 2, name: 'Portrait', exact: true }),
+  });
+  const portraitInput = portraitSection.locator('input[name="file"]');
   await portraitInput.waitFor();
   assert.equal(
     await portraitInput.getAttribute('accept'),
