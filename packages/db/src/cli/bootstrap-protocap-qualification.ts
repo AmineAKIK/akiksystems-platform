@@ -14,6 +14,8 @@ try {
       storageKey: `qualification/browser/protocap/${mediaId}.png`,
       originalFilename: 'protocap-reference-cover.png',
       mimeType: 'image/png',
+      width: 1280,
+      height: 720,
       byteSize: 109020,
     },
   });
