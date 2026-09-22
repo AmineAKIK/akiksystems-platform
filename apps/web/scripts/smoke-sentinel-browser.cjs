@@ -1194,17 +1194,77 @@ async function assertSystemsOverview(browser) {
   }
 }
 
+async function assertProtoCapGuidedDemo(browser) {
+  execFileSync('pnpm', ['db:bootstrap-protocap-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+
+    for (const target of [
+      { path: '/en/systems/protocap', hypothesis: 'Hypothesis', future: 'Future integration' },
+      { path: '/fr/systems/protocap', hypothesis: 'Hypothèse', future: 'Intégration future' },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: 'ProtoCap', exact: true }).waitFor();
+      assert.equal(
+        await page.locator('.aks-system-experience').getAttribute('data-renderer'),
+        'guided-demo',
+        'ProtoCap must resolve through the guided-demo renderer.',
+      );
+      await page.getByText(target.hypothesis, { exact: true }).waitFor();
+      await page.getByText(target.future, { exact: true }).waitFor();
+      assert.equal(
+        await page.locator('a[href="https://protocap-demo-production.up.railway.app/demo"]').count(),
+        1,
+        'ProtoCap must expose the isolated public demo directly.',
+      );
+      assert.match(await page.locator('body').innerText(), /fictitious|fictives/i);
+      assert.match(await page.locator('body').innerText(), /L'Oreal \/ La Roche-Posay/);
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/systems/protocap', '/fr/systems/protocap']) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: 'ProtoCap', exact: true }).waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} guided demo must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
     .getByRole('heading', { level: 2, name: 'Representative Systems', exact: true })
     .waitFor();
 
-  const sentinelCard = page.locator('.aks-admin-card').filter({
-    has: page.getByText('Sentinel', { exact: true }),
+  const checkbox = page.getByRole('checkbox', {
+    name: 'Sentinel',
+    exact: true,
   });
-  const checkbox = sentinelCard.locator('input[name="representativeSystem"]');
   await checkbox.check();
+  const sentinelCard = checkbox.locator('..').locator('..');
   await sentinelCard.locator('input[type="number"]').fill('0');
   await page.getByRole('button', { name: 'Save representative Systems' }).click();
   await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
@@ -2477,6 +2537,8 @@ async function assertAxe(page) {
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
 
     await assertSystemsOverview(browser);
+
+    await assertProtoCapGuidedDemo(browser);
 
     await assertRepresentativeSystemSelection(page);
 

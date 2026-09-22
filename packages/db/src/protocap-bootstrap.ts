@@ -75,6 +75,24 @@ const englishPresentation = {
       ],
     },
     {
+      type: 'heading' as const,
+      level: 2 as const,
+      text: 'Hypotheses',
+    },
+    {
+      type: 'paragraph' as const,
+      text: 'Operational value, time savings, productivity gains and adoption outcomes remain evaluation hypotheses unless a measured result is explicitly identified.',
+    },
+    {
+      type: 'heading' as const,
+      level: 2 as const,
+      text: 'Future integrations',
+    },
+    {
+      type: 'paragraph' as const,
+      text: 'Live plant feeds, shared transactional backends, enterprise document systems, durable distributed sessions and other production integrations are future work rather than current ProtoCap behavior.',
+    },
+    {
       type: 'quote' as const,
       text: 'The repository distinguishes implemented behavior, synthetic demonstration, browser-local state, protected runtime configuration and future operational integrations.',
       attribution: 'ProtoCap repository',
@@ -123,6 +141,24 @@ const frenchPresentation = {
         'Les sessions ShiftGuide, limites de debit et contextes fournisseur sont locaux au processus dans le demonstrateur actuel a une seule replique.',
         'Les fonctions ShiftGuide et Celine dependantes du serveur necessitent le reseau ; l application n est pas entierement hors ligne.',
       ],
+    },
+    {
+      type: 'heading' as const,
+      level: 2 as const,
+      text: 'Hypothèses',
+    },
+    {
+      type: 'paragraph' as const,
+      text: 'La valeur operationnelle, les gains de temps, de productivite et d adoption restent des hypotheses d evaluation sauf lorsqu un resultat mesure est explicitement identifie.',
+    },
+    {
+      type: 'heading' as const,
+      level: 2 as const,
+      text: 'Intégrations futures',
+    },
+    {
+      type: 'paragraph' as const,
+      text: 'Les flux usine en direct, les backends transactionnels partages, les systemes documentaires d entreprise, les sessions distribuees durables et les autres integrations de production relevent de travaux futurs.',
     },
     {
       type: 'quote' as const,

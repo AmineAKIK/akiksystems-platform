@@ -1514,3 +1514,122 @@
     max-width: none;
   }
 }
+
+
+/* AKS-075: guided-demo Systems expose the evidence contract before visual flourish. */
+.aks-guided-demo {
+  min-height: calc(100dvh - 4.5rem);
+  padding-block: clamp(var(--aks-space-6), 7vh, var(--aks-space-9));
+}
+
+.aks-guided-demo-stack {
+  display: grid;
+  gap: clamp(var(--aks-space-6), 5vw, var(--aks-space-8));
+}
+
+.aks-guided-demo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.75fr);
+  gap: clamp(var(--aks-space-5), 5vw, var(--aks-space-8));
+  align-items: end;
+}
+
+.aks-guided-demo-intro {
+  display: grid;
+  gap: var(--aks-space-4);
+  max-width: 58rem;
+}
+
+.aks-guided-demo-summary {
+  max-width: 56ch;
+}
+
+.aks-guided-demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4);
+  align-items: center;
+  padding-block-start: var(--aks-space-2);
+}
+
+.aks-guided-demo-contract,
+.aks-guided-demo-origin {
+  display: grid;
+  gap: var(--aks-space-3);
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-guided-demo-lead {
+  display: grid;
+  gap: var(--aks-space-5);
+  max-width: 52rem;
+}
+
+.aks-guided-demo-evidence {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-5);
+}
+
+.aks-guided-demo-card {
+  display: grid;
+  align-content: start;
+  gap: var(--aks-space-4);
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border-top: 2px solid var(--aks-text-primary);
+  background: var(--aks-surface-raised);
+}
+
+.aks-guided-demo-card-header,
+.aks-guided-demo-card-body,
+.aks-guided-demo-footer,
+.aks-guided-demo-footer > section {
+  display: grid;
+  gap: var(--aks-space-3);
+}
+
+.aks-guided-demo-status {
+  width: fit-content;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: 999px;
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--aks-tracking-label);
+  text-transform: uppercase;
+}
+
+.aks-guided-demo-card .aks-system-presentation-list {
+  margin: 0;
+}
+
+.aks-guided-demo-card .aks-system-presentation-figure {
+  margin-inline: 0;
+}
+
+.aks-guided-demo-footer {
+  padding-block-start: var(--aks-space-5);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+@media (max-width: 48rem) {
+  .aks-guided-demo {
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-guided-demo-hero,
+  .aks-guided-demo-evidence {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-guided-demo-contract,
+  .aks-guided-demo-origin,
+  .aks-guided-demo-card {
+    padding: var(--aks-space-4);
+  }
+}
