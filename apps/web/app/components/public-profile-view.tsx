@@ -238,18 +238,38 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           ) : null}
           {profile.workPrinciples.length > 0 ? (
             <section className="aks-profile-work-principles">
-              <Heading level={2} size="sm">
-                {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
-              </Heading>
+              <div className="aks-profile-section-heading">
+                <Heading level={2} size="sm">
+                  {profile.locale === 'fr' ? 'Ma manière de travailler' : 'How I work'}
+                </Heading>
+                <Text size="sm" tone="muted">
+                  {profile.locale === 'fr'
+                    ? 'Quelques principes concrets, reliés à des exemples quand ils apportent une preuve utile.'
+                    : 'A few concrete operating principles, linked to examples when they add useful proof.'}
+                </Text>
+              </div>
               <ol className="aks-profile-work-principle-list">
                 {profile.workPrinciples.map((principle) => (
-                  <li key={principle.id}>
+                  <li className="aks-profile-work-principle" key={principle.id}>
                     <div className="aks-proof-stack">
                       <Heading level={3} size="sm">
                         {principle.title}
                       </Heading>
                       {principle.detail !== null ? (
                         <Text tone="muted">{principle.detail}</Text>
+                      ) : null}
+                      {principle.evidenceSystem !== null ? (
+                        <Link
+                          href={
+                            profile.locale === 'fr'
+                              ? `/fr/systems/${principle.evidenceSystem.slug}`
+                              : `/en/systems/${principle.evidenceSystem.slug}`
+                          }
+                        >
+                          {profile.locale === 'fr'
+                            ? `Exemple : ${principle.evidenceSystem.title}`
+                            : `Example: ${principle.evidenceSystem.title}`}
+                        </Link>
                       ) : null}
                     </div>
                   </li>
