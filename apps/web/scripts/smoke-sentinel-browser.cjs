@@ -1342,6 +1342,71 @@ async function assertOriaInteractiveEntry(browser) {
   }
 }
 
+async function assertTugeresStandardSystem(browser) {
+  execFileSync('pnpm', ['db:bootstrap-tugeres-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+
+    for (const target of [
+      { path: '/en/systems/tugeres', heading: 'Tugères' },
+      { path: '/fr/systems/tugeres', heading: 'Tugères' },
+    ]) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
+      assert.equal(
+        await page.locator('.aks-system-experience').getAttribute('data-renderer'),
+        'standard',
+        'Tugeres must resolve through the standard renderer.',
+      );
+
+      const body = await page.locator('body').innerText();
+      assert.match(body, /Stripe/i);
+      assert.match(body, /MySQL/i);
+      assert.match(body, /customer deployment|déploiement client/i);
+      assert.equal(
+        await page.locator('a[href*="tugeres.fr"]').count(),
+        0,
+        'AKS-078 must not invent a live Tugeres deployment link.',
+      );
+      assert.equal(
+        await page.getByText(/demo/i).count(),
+        0,
+        'AKS-078 must not expose an unsupported demo claim.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/systems/tugeres', '/fr/systems/tugeres']) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: 'Tugères', exact: true }).waitFor();
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} Tugeres detail must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -2630,6 +2695,8 @@ async function assertAxe(page) {
     await assertProtoCapGuidedDemo(browser);
 
     await assertOriaInteractiveEntry(browser);
+
+    await assertTugeresStandardSystem(browser);
 
     await assertRepresentativeSystemSelection(page);
 
