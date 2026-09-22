@@ -1268,6 +1268,7 @@ async function assertProtoCapGuidedDemo(browser) {
       const response = await page.goto(`${origin}${path}`);
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'ProtoCap', exact: true }).waitFor();
+      await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -1364,6 +1365,7 @@ async function assertOriaInteractiveEntry(browser) {
       const response = await page.goto(`${origin}${path}`);
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'Oria Nutrition', exact: true }).waitFor();
+      await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -1441,6 +1443,7 @@ async function assertTugeresStandardSystem(browser) {
       const response = await page.goto(`${origin}${path}`);
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'Tugères', exact: true }).waitFor();
+      await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -2742,6 +2745,14 @@ async function assertAxe(page) {
     await page.goto(`${origin}${page.systemPath}`);
     await page.getByRole('button', { name: 'Publish FR' }).click();
     await page.getByRole('button', { name: 'Unpublish FR' }).waitFor();
+
+    await page.goto(`${origin}/fr/systems/sentinel`);
+    await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+    await assertSystemProofTransparency(page, 'fr', [
+      /contexte industriel/i,
+      /Implémentation inspectable/i,
+      /aucune donnée client exposée/i,
+    ]);
 
     await assertSystemsOverview(browser);
 
