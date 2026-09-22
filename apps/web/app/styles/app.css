@@ -1633,3 +1633,71 @@
     padding: var(--aks-space-4);
   }
 }
+
+
+/* AKS-077: interactive-entry Systems keep AkikSystems as a stable return point. */
+.aks-interactive-entry {
+  min-height: calc(100dvh - 4.5rem);
+  padding-block: clamp(var(--aks-space-6), 7vh, var(--aks-space-9));
+}
+
+.aks-interactive-entry-stack {
+  display: grid;
+  gap: clamp(var(--aks-space-6), 5vw, var(--aks-space-8));
+}
+
+.aks-interactive-entry-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(20rem, 0.8fr);
+  gap: clamp(var(--aks-space-5), 5vw, var(--aks-space-8));
+  align-items: start;
+}
+
+.aks-interactive-entry-intro,
+.aks-interactive-entry-transition,
+.aks-interactive-entry-boundary,
+.aks-interactive-entry-footer,
+.aks-interactive-entry-footer > section {
+  display: grid;
+  gap: var(--aks-space-3);
+}
+
+.aks-interactive-entry-summary {
+  max-width: 56ch;
+}
+
+.aks-interactive-entry-transition,
+.aks-interactive-entry-boundary {
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-interactive-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4);
+  align-items: center;
+  padding-block-start: var(--aks-space-2);
+}
+
+.aks-interactive-entry-footer {
+  padding-block-start: var(--aks-space-5);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+@media (max-width: 48rem) {
+  .aks-interactive-entry {
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-interactive-entry-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-interactive-entry-transition,
+  .aks-interactive-entry-boundary {
+    padding: var(--aks-space-4);
+  }
+}

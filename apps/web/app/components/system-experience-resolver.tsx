@@ -2,6 +2,7 @@ import type { SystemPresentationKind } from '@akiksystems/core';
 import type { ComponentType } from 'react';
 
 import { GuidedDemoSystemRenderer } from './guided-demo-system-renderer';
+import { InteractiveEntrySystemRenderer } from './interactive-entry-system-renderer';
 import {
   StandardSystemRenderer,
   type SystemDetailViewProps,
@@ -37,7 +38,7 @@ function GuidedDemoSystemExperience(props: SystemDetailViewProps) {
 }
 
 function InteractiveEntrySystemExperience(props: SystemDetailViewProps) {
-  return <StandardSystemRenderer {...props} />;
+  return <InteractiveEntrySystemRenderer {...props} />;
 }
 
 const rendererById = {
