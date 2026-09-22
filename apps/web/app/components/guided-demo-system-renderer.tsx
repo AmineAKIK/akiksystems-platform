@@ -1,6 +1,7 @@
 import type { PresentationBlock } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
+import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
 import {
   PresentationBlockView,
@@ -118,9 +119,7 @@ export function GuidedDemoSystemRenderer({
 
               <div className="aks-guided-demo-actions">
                 {demo !== null ? (
-                  <Link href={demo.url}>
-                    {locale === 'fr' ? 'Essayer la démo publique' : 'Try the public demo'}
-                  </Link>
+                  <DeferredDemoLink locale={locale} url={demo.url} />
                 ) : null}
                 {live !== null ? (
                   <Link href={live.url}>
