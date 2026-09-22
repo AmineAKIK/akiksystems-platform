@@ -95,6 +95,39 @@ export interface ProfileWorkPrincipleLocalizationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface ProfileCapabilityGroupsTable {
+  id: string;
+  profile_id: string;
+  position: number;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileCapabilityGroupLocalizationsTable {
+  group_id: string;
+  locale: PlatformLocale;
+  title: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileCapabilitiesTable {
+  id: string;
+  group_id: string;
+  position: number;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileCapabilityLocalizationsTable {
+  capability_id: string;
+  locale: PlatformLocale;
+  title: string;
+  summary: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ProfileExperiencesTable {
   profile_id: string;
   experience_id: string;
@@ -222,6 +255,28 @@ export type NewProfileWorkPrincipleLocalizationRow =
 export type ProfileWorkPrincipleLocalizationUpdate =
   Updateable<ProfileWorkPrincipleLocalizationsTable>;
 
+export type ProfileCapabilityGroupRow = Selectable<ProfileCapabilityGroupsTable>;
+export type NewProfileCapabilityGroupRow = Insertable<ProfileCapabilityGroupsTable>;
+export type ProfileCapabilityGroupUpdate = Updateable<ProfileCapabilityGroupsTable>;
+
+export type ProfileCapabilityGroupLocalizationRow =
+  Selectable<ProfileCapabilityGroupLocalizationsTable>;
+export type NewProfileCapabilityGroupLocalizationRow =
+  Insertable<ProfileCapabilityGroupLocalizationsTable>;
+export type ProfileCapabilityGroupLocalizationUpdate =
+  Updateable<ProfileCapabilityGroupLocalizationsTable>;
+
+export type ProfileCapabilityRow = Selectable<ProfileCapabilitiesTable>;
+export type NewProfileCapabilityRow = Insertable<ProfileCapabilitiesTable>;
+export type ProfileCapabilityUpdate = Updateable<ProfileCapabilitiesTable>;
+
+export type ProfileCapabilityLocalizationRow =
+  Selectable<ProfileCapabilityLocalizationsTable>;
+export type NewProfileCapabilityLocalizationRow =
+  Insertable<ProfileCapabilityLocalizationsTable>;
+export type ProfileCapabilityLocalizationUpdate =
+  Updateable<ProfileCapabilityLocalizationsTable>;
+
 export type ProfileExperienceRow = Selectable<ProfileExperiencesTable>;
 export type NewProfileExperienceRow = Insertable<ProfileExperiencesTable>;
 export type ProfileExperienceUpdate = Updateable<ProfileExperiencesTable>;
@@ -280,6 +335,10 @@ export interface Database {
   profile_localizations: ProfileLocalizationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
+  profile_capability_groups: ProfileCapabilityGroupsTable;
+  profile_capability_group_localizations: ProfileCapabilityGroupLocalizationsTable;
+  profile_capabilities: ProfileCapabilitiesTable;
+  profile_capability_localizations: ProfileCapabilityLocalizationsTable;
   profile_experiences: ProfileExperiencesTable;
   profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;

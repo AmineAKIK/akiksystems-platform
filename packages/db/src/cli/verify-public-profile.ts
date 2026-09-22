@@ -201,6 +201,147 @@ try {
     .execute();
 
 
+  const architectureGroupId = randomUUID();
+  const deliveryGroupId = randomUUID();
+  const architectureCapabilityId = randomUUID();
+  const deliveryCapabilityId = randomUUID();
+
+  await db
+    .insertInto('profile_capability_groups')
+    .values([
+      {
+        id: architectureGroupId,
+        profile_id: profileId,
+        position: 0,
+      },
+      {
+        id: deliveryGroupId,
+        profile_id: profileId,
+        position: 1,
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_capability_group_localizations')
+    .values([
+      {
+        group_id: architectureGroupId,
+        locale: 'en',
+        title: 'Architecture',
+      },
+      {
+        group_id: architectureGroupId,
+        locale: 'fr',
+        title: 'Architecture',
+      },
+      {
+        group_id: deliveryGroupId,
+        locale: 'en',
+        title: 'Delivery',
+      },
+      {
+        group_id: deliveryGroupId,
+        locale: 'fr',
+        title: 'Livraison',
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_capabilities')
+    .values([
+      {
+        id: architectureCapabilityId,
+        group_id: architectureGroupId,
+        position: 0,
+      },
+      {
+        id: deliveryCapabilityId,
+        group_id: deliveryGroupId,
+        position: 0,
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_capability_localizations')
+    .values([
+      {
+        capability_id: architectureCapabilityId,
+        locale: 'en',
+        title: 'Design bounded systems',
+        summary: 'Shape explicit boundaries and contracts.',
+      },
+      {
+        capability_id: architectureCapabilityId,
+        locale: 'fr',
+        title: 'Concevoir des systèmes délimités',
+        summary: 'Structurer des frontières et des contrats explicites.',
+      },
+      {
+        capability_id: deliveryCapabilityId,
+        locale: 'en',
+        title: 'Qualify delivery paths',
+        summary: null,
+      },
+      {
+        capability_id: deliveryCapabilityId,
+        locale: 'fr',
+        title: 'Qualifier les parcours de livraison',
+        summary: null,
+      },
+    ])
+    .execute();
+
+  const englishWithCapabilities = await getPublicProfile(db, 'en');
+  const frenchWithCapabilities = await getPublicProfile(db, 'fr');
+  assert.ok(englishWithCapabilities);
+  assert.ok(frenchWithCapabilities);
+  assert.deepEqual(
+    englishWithCapabilities.capabilityGroups.map(({ title }) => title),
+    ['Architecture', 'Delivery'],
+  );
+  assert.deepEqual(
+    frenchWithCapabilities.capabilityGroups.map(({ title }) => title),
+    ['Architecture', 'Livraison'],
+  );
+  assert.deepEqual(
+    englishWithCapabilities.capabilityGroups[0]?.capabilities.map(
+      ({ title }) => title,
+    ),
+    ['Design bounded systems'],
+  );
+  assert.equal(
+    frenchWithCapabilities.capabilityGroups[1]?.capabilities[0]?.title,
+    'Qualifier les parcours de livraison',
+  );
+
+  const technologyId = randomUUID();
+  await db
+    .insertInto('technologies')
+    .values({
+      id: technologyId,
+      slug: `qualification-react-${technologyId}`,
+      name: 'React',
+    })
+    .execute();
+
+  const afterTechnologyInsert = await getPublicProfile(db, 'en');
+  assert.ok(afterTechnologyInsert);
+  assert.deepEqual(
+    afterTechnologyInsert.capabilityGroups,
+    englishWithCapabilities.capabilityGroups,
+    'Adding a Technology must not alter Profile capabilities.',
+  );
+
+  await db
+    .deleteFrom('profile_capability_groups')
+    .where('profile_id', '=', profileId)
+    .execute();
+  await db.deleteFrom('technologies').where('id', '=', technologyId).execute();
+
+
   const firstSystemId = randomUUID();
   const secondSystemId = randomUUID();
   const presentation = {
@@ -444,7 +585,7 @@ try {
   );
 
   process.stdout.write(
-    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, public reads, and database constraints are enforced.\n',
+    'Public Profile verification passed: singleton identity, editable shared/localized identity, localized portrait metadata, ordered bilingual working principles, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, public reads, and database constraints are enforced.\n',
   );
 } finally {
   await db.destroy();

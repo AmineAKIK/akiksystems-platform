@@ -10,6 +10,20 @@ export interface PublicProfileWorkPrinciple {
   detail: string | null;
 }
 
+export interface PublicProfileCapability {
+  id: string;
+  position: number;
+  title: string;
+  summary: string | null;
+}
+
+export interface PublicProfileCapabilityGroup {
+  id: string;
+  position: number;
+  title: string;
+  capabilities: PublicProfileCapability[];
+}
+
 export interface PublicProfileExperience {
   id: string;
   position: number;
@@ -37,6 +51,7 @@ export interface PublicProfile {
   workPrinciples: PublicProfileWorkPrinciple[];
   representativeSystems: PublicProfileSystem[];
   professionalJourney: PublicProfileExperience[];
+  capabilityGroups: PublicProfileCapabilityGroup[];
   alternateLocale: PlatformLocale;
 }
 
@@ -73,6 +88,60 @@ export async function getPublicProfile(
 
   if (profile === undefined) {
     return null;
+  }
+
+  const capabilityRows = await db
+    .selectFrom('profile_capability_groups')
+    .innerJoin(
+      'profile_capability_group_localizations',
+      'profile_capability_group_localizations.group_id',
+      'profile_capability_groups.id',
+    )
+    .innerJoin(
+      'profile_capabilities',
+      'profile_capabilities.group_id',
+      'profile_capability_groups.id',
+    )
+    .innerJoin(
+      'profile_capability_localizations',
+      'profile_capability_localizations.capability_id',
+      'profile_capabilities.id',
+    )
+    .select([
+      'profile_capability_groups.id as group_id',
+      'profile_capability_groups.position as group_position',
+      'profile_capability_group_localizations.title as group_title',
+      'profile_capabilities.id as capability_id',
+      'profile_capabilities.position as capability_position',
+      'profile_capability_localizations.title as capability_title',
+      'profile_capability_localizations.summary as capability_summary',
+    ])
+    .where('profile_capability_groups.profile_id', '=', profile.id)
+    .where('profile_capability_group_localizations.locale', '=', locale)
+    .where('profile_capability_localizations.locale', '=', locale)
+    .orderBy('profile_capability_groups.position')
+    .orderBy('profile_capabilities.position')
+    .execute();
+
+  const capabilityGroups: PublicProfileCapabilityGroup[] = [];
+  for (const row of capabilityRows) {
+    let group = capabilityGroups.find(({ id }) => id === row.group_id);
+    if (group === undefined) {
+      group = {
+        id: row.group_id,
+        position: row.group_position,
+        title: row.group_title,
+        capabilities: [],
+      };
+      capabilityGroups.push(group);
+    }
+
+    group.capabilities.push({
+      id: row.capability_id,
+      position: row.capability_position,
+      title: row.capability_title,
+      summary: row.capability_summary,
+    });
   }
 
   const professionalJourney = await db
@@ -149,6 +218,7 @@ export async function getPublicProfile(
     foundationalCopy: profile.foundational_copy,
     workPrinciples,
     professionalJourney,
+    capabilityGroups,
     representativeSystems: representativeSystems.map((system) => ({
       id: system.id,
       position: system.position,

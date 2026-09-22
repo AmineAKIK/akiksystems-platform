@@ -84,6 +84,100 @@ function parseWorkPrinciples(value: string): ParsedWorkPrinciple[] {
   });
 }
 
+interface ParsedCapability {
+  enTitle: string;
+  enSummary: string | null;
+  frTitle: string;
+  frSummary: string | null;
+}
+
+interface ParsedCapabilityGroup {
+  enTitle: string;
+  frTitle: string;
+  capabilities: ParsedCapability[];
+}
+
+function parseCapabilities(value: string): ParsedCapabilityGroup[] {
+  const groups: ParsedCapabilityGroup[] = [];
+  let current: ParsedCapabilityGroup | null = null;
+
+  for (const [index, rawLine] of value.split('\n').entries()) {
+    const line = rawLine.trim();
+    if (line === '') continue;
+
+    if (line.startsWith('#')) {
+      const parts = line.slice(1).split('||');
+      if (parts.length !== 2) {
+        throw new Error(
+          `Capability group line ${index + 1} must use "# EN group || FR group".`,
+        );
+      }
+
+      const enTitle = (parts[0] ?? '').trim();
+      const frTitle = (parts[1] ?? '').trim();
+      if (enTitle === '' || frTitle === '') {
+        throw new Error(
+          `Capability group line ${index + 1} requires EN and FR titles.`,
+        );
+      }
+
+      current = { enTitle, frTitle, capabilities: [] };
+      groups.push(current);
+      continue;
+    }
+
+    if (current === null) {
+      throw new Error(
+        `Capability line ${index + 1} must follow a "# EN group || FR group" line.`,
+      );
+    }
+
+    const parts = line.split('||');
+    if (parts.length !== 2) {
+      throw new Error(
+        `Capability line ${index + 1} must use "EN title | EN summary || FR title | FR summary".`,
+      );
+    }
+
+    const [enTitleRaw, ...enSummaryParts] = (parts[0] ?? '').split('|');
+    const [frTitleRaw, ...frSummaryParts] = (parts[1] ?? '').split('|');
+    const enTitle = (enTitleRaw ?? '').trim();
+    const frTitle = (frTitleRaw ?? '').trim();
+
+    if (enTitle === '' || frTitle === '') {
+      throw new Error(
+        `Capability line ${index + 1} requires EN and FR titles.`,
+      );
+    }
+
+    current.capabilities.push({
+      enTitle,
+      enSummary: enSummaryParts.join('|').trim() || null,
+      frTitle,
+      frSummary: frSummaryParts.join('|').trim() || null,
+    });
+  }
+
+  if (groups.length > 8) {
+    throw new Error('Capabilities are limited to eight groups.');
+  }
+
+  for (const group of groups) {
+    if (group.capabilities.length === 0) {
+      throw new Error(
+        `Capability group "${group.enTitle}" must contain at least one capability.`,
+      );
+    }
+    if (group.capabilities.length > 12) {
+      throw new Error(
+        `Capability group "${group.enTitle}" is limited to twelve capabilities.`,
+      );
+    }
+  }
+
+  return groups;
+}
+
 async function publicProfileId(): Promise<string> {
   const profile = await appDb
     .selectFrom('profiles')
@@ -265,12 +359,81 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('profile_work_principles.position')
     .execute();
 
+  const capabilityRows = await appDb
+    .selectFrom('profile_capability_groups')
+    .leftJoin(
+      'profile_capability_group_localizations as capability_group_en',
+      (join) =>
+        join
+          .onRef(
+            'capability_group_en.group_id',
+            '=',
+            'profile_capability_groups.id',
+          )
+          .on('capability_group_en.locale', '=', 'en'),
+    )
+    .leftJoin(
+      'profile_capability_group_localizations as capability_group_fr',
+      (join) =>
+        join
+          .onRef(
+            'capability_group_fr.group_id',
+            '=',
+            'profile_capability_groups.id',
+          )
+          .on('capability_group_fr.locale', '=', 'fr'),
+    )
+    .leftJoin(
+      'profile_capabilities',
+      'profile_capabilities.group_id',
+      'profile_capability_groups.id',
+    )
+    .leftJoin(
+      'profile_capability_localizations as capability_en',
+      (join) =>
+        join
+          .onRef(
+            'capability_en.capability_id',
+            '=',
+            'profile_capabilities.id',
+          )
+          .on('capability_en.locale', '=', 'en'),
+    )
+    .leftJoin(
+      'profile_capability_localizations as capability_fr',
+      (join) =>
+        join
+          .onRef(
+            'capability_fr.capability_id',
+            '=',
+            'profile_capabilities.id',
+          )
+          .on('capability_fr.locale', '=', 'fr'),
+    )
+    .select([
+      'profile_capability_groups.id as group_id',
+      'profile_capability_groups.position as group_position',
+      'capability_group_en.title as group_title_en',
+      'capability_group_fr.title as group_title_fr',
+      'profile_capabilities.id as capability_id',
+      'profile_capabilities.position as capability_position',
+      'capability_en.title as capability_title_en',
+      'capability_en.summary as capability_summary_en',
+      'capability_fr.title as capability_title_fr',
+      'capability_fr.summary as capability_summary_fr',
+    ])
+    .where('profile_capability_groups.profile_id', '=', profileId)
+    .orderBy('profile_capability_groups.position')
+    .orderBy('profile_capabilities.position')
+    .execute();
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
     fr: byLocale.get('fr') ?? null,
     portrait: portrait ?? null,
     principles,
+    capabilityRows,
     selectableSystems,
     selectedSystems,
     selectableExperiences,
@@ -413,6 +576,131 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { ok: true, message: 'How I work updated.' };
+  }
+
+  if (intent === 'capabilities') {
+    let groups: ParsedCapabilityGroup[];
+
+    try {
+      groups = parseCapabilities(textField(form, 'capabilities'));
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error ? error.message : 'Capabilities are invalid.',
+      };
+    }
+
+    const technologies = await appDb
+      .selectFrom('technologies')
+      .select(['name', 'slug'])
+      .execute();
+    const technologyTerms = new Set(
+      technologies.flatMap(({ name, slug }) => [
+        name.trim().toLocaleLowerCase(),
+        slug.trim().toLocaleLowerCase(),
+      ]),
+    );
+
+    for (const group of groups) {
+      for (const title of [group.enTitle, group.frTitle]) {
+        if (technologyTerms.has(title.toLocaleLowerCase())) {
+          return {
+            ok: false,
+            message:
+              'Capability groups must describe abilities, not Technology names.',
+          };
+        }
+      }
+
+      for (const capability of group.capabilities) {
+        for (const title of [capability.enTitle, capability.frTitle]) {
+          if (technologyTerms.has(title.toLocaleLowerCase())) {
+            return {
+              ok: false,
+              message:
+                'Capabilities must describe conceptual or engineering abilities, not Technology names.',
+            };
+          }
+        }
+      }
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('profile_capability_groups')
+        .where('profile_id', '=', profileId)
+        .execute();
+
+      for (const [groupPosition, group] of groups.entries()) {
+        const groupId = randomUUID();
+        await transaction
+          .insertInto('profile_capability_groups')
+          .values({
+            id: groupId,
+            profile_id: profileId,
+            position: groupPosition,
+          })
+          .execute();
+
+        await transaction
+          .insertInto('profile_capability_group_localizations')
+          .values([
+            { group_id: groupId, locale: 'en', title: group.enTitle },
+            { group_id: groupId, locale: 'fr', title: group.frTitle },
+          ])
+          .execute();
+
+        for (const [capabilityPosition, capability] of group.capabilities.entries()) {
+          const capabilityId = randomUUID();
+          await transaction
+            .insertInto('profile_capabilities')
+            .values({
+              id: capabilityId,
+              group_id: groupId,
+              position: capabilityPosition,
+            })
+            .execute();
+
+          await transaction
+            .insertInto('profile_capability_localizations')
+            .values([
+              {
+                capability_id: capabilityId,
+                locale: 'en',
+                title: capability.enTitle,
+                summary: capability.enSummary,
+              },
+              {
+                capability_id: capabilityId,
+                locale: 'fr',
+                title: capability.frTitle,
+                summary: capability.frSummary,
+              },
+            ])
+            .execute();
+        }
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.capabilities_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        metadata: {
+          groupCount: groups.length,
+          capabilityCount: groups.reduce(
+            (count, group) => count + group.capabilities.length,
+            0,
+          ),
+          locales: ['en', 'fr'],
+          technologySeparation: 'enforced',
+        },
+      });
+    });
+
+    return { ok: true, message: 'Capabilities updated.' };
   }
 
   if (intent === 'professional-journey') {
@@ -853,6 +1141,46 @@ export default function AdminProfile() {
                 rows={10}
               />
               <Button type="submit">Save How I work</Button>
+            </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <Form className="aks-admin-form" method="post">
+              <input name="_intent" type="hidden" value="capabilities" />
+              <Heading level={2} size="sm">
+                Capabilities
+              </Heading>
+              <Text size="sm" tone="muted">
+                Model engineering abilities separately from tools. Use a group
+                line "# EN group || FR group", then bilingual capability lines
+                "EN title | EN summary || FR title | FR summary". Technology
+                names such as React or Docker are rejected when they exist in
+                the Technology domain.
+              </Text>
+              <textarea
+                defaultValue={data.capabilityRows
+                  .map((row, index, rows) => {
+                    const previous = rows[index - 1];
+                    const groupLine =
+                      previous?.group_id === row.group_id
+                        ? []
+                        : [
+                            `# ${row.group_title_en ?? ''} || ${row.group_title_fr ?? ''}`,
+                          ];
+                    const capabilityLine =
+                      row.capability_id === null
+                        ? []
+                        : [
+                            `${row.capability_title_en ?? ''} | ${row.capability_summary_en ?? ''} || ${row.capability_title_fr ?? ''} | ${row.capability_summary_fr ?? ''}`,
+                          ];
+                    return [...groupLine, ...capabilityLine].join('\n');
+                  })
+                  .filter(Boolean)
+                  .join('\n')}
+                name="capabilities"
+                rows={14}
+              />
+              <Button type="submit">Save capabilities</Button>
             </Form>
           </section>
 

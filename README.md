@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile capabilities
+
+Profile capabilities are modeled separately from concrete Technologies.
+
+- `profile_capability_groups` owns ordered conceptual groupings for the public Profile.
+- `profile_capability_group_localizations` localizes group labels independently in EN/FR.
+- `profile_capabilities` owns ordered capability identity within a group.
+- `profile_capability_localizations` stores localized capability title and optional summary.
+- Capability tables have no relation to `technologies` or `system_technologies`; tools remain evidence/context rather than being treated as abilities.
+- The Profile admin rejects capability/group titles that exactly reuse an existing Technology name or slug.
+- AKS-059 establishes the domain and administration boundary; grouped public presentation remains scoped to AKS-065.
+
 ### Experience context
 
 Professional Experience is modeled once and localized independently from Systems.
