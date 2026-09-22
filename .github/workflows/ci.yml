@@ -103,6 +103,7 @@ jobs:
           pnpm db:verify-admin-audit
           pnpm db:verify-public-system
           pnpm db:verify-published-systems-list
+          pnpm db:verify-system-editorial-controls
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile

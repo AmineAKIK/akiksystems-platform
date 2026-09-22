@@ -45,6 +45,7 @@
     "db:verify-admin-audit": "pnpm --filter @akiksystems/db db:verify-admin-audit",
     "db:verify-public-system": "pnpm --filter @akiksystems/db db:verify-public-system",
     "db:verify-published-systems-list": "pnpm --filter @akiksystems/db db:verify-published-systems-list",
+    "db:verify-system-editorial-controls": "pnpm --filter @akiksystems/db db:verify-system-editorial-controls",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
