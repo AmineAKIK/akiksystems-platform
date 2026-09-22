@@ -122,6 +122,19 @@ export async function action({ request, params }: Route.ActionArgs) {
         };
       }
 
+      const altEn = optionalText(form.get('altEn'));
+      const altFr = optionalText(form.get('altFr'));
+      const captionEn = optionalText(form.get('captionEn'));
+      const captionFr = optionalText(form.get('captionFr'));
+
+      if (file.type.startsWith('image/') && (altEn === null || altFr === null)) {
+        return {
+          ok: false,
+          message:
+            'Image assets require both English and French alt text before upload.',
+        };
+      }
+
       const system = await db
         .selectFrom('systems')
         .select('id')
@@ -169,14 +182,14 @@ export async function action({ request, params }: Route.ActionArgs) {
               {
                 asset_id: assetId,
                 locale: 'en',
-                alt_text: optionalText(form.get('altEn')),
-                caption: optionalText(form.get('captionEn')),
+                alt_text: altEn,
+                caption: captionEn,
               },
               {
                 asset_id: assetId,
                 locale: 'fr',
-                alt_text: optionalText(form.get('altFr')),
-                caption: optionalText(form.get('captionFr')),
+                alt_text: altFr,
+                caption: captionFr,
               },
             ])
             .execute();
@@ -226,6 +239,101 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       return { ok: true, message: 'Asset uploaded and linked to this System.' };
+    }
+
+    if (intent === 'update-metadata') {
+      const assetId = form.get('assetId');
+
+      if (typeof assetId !== 'string' || !uuidPattern.test(assetId)) {
+        return { ok: false, message: 'Invalid asset identifier.' };
+      }
+
+      const altEn = optionalText(form.get('altEn'));
+      const altFr = optionalText(form.get('altFr'));
+      const captionEn = optionalText(form.get('captionEn'));
+      const captionFr = optionalText(form.get('captionFr'));
+
+      return db.transaction().execute(async (transaction) => {
+        await lockSystemMutation(transaction, systemId);
+
+        const asset = await transaction
+          .selectFrom('system_assets')
+          .innerJoin('assets', 'assets.id', 'system_assets.asset_id')
+          .select(['assets.id', 'assets.mime_type'])
+          .where('system_assets.system_id', '=', systemId)
+          .where('assets.id', '=', assetId)
+          .executeTakeFirst();
+
+        if (asset === undefined) {
+          return {
+            ok: false,
+            message: 'This asset is not linked to the current System.',
+          };
+        }
+
+        if (
+          asset.mime_type.startsWith('image/') &&
+          (altEn === null || altFr === null)
+        ) {
+          return {
+            ok: false,
+            message:
+              'Image assets require both English and French alt text.',
+          };
+        }
+
+        for (const [locale, altText, caption] of [
+          ['en', altEn, captionEn],
+          ['fr', altFr, captionFr],
+        ] as const) {
+          const existing = await transaction
+            .selectFrom('asset_localizations')
+            .select('asset_id')
+            .where('asset_id', '=', assetId)
+            .where('locale', '=', locale)
+            .executeTakeFirst();
+
+          if (existing === undefined) {
+            await transaction
+              .insertInto('asset_localizations')
+              .values({
+                asset_id: assetId,
+                locale,
+                alt_text: altText,
+                caption,
+              })
+              .execute();
+          } else {
+            await transaction
+              .updateTable('asset_localizations')
+              .set({
+                alt_text: altText,
+                caption,
+                updated_at: new Date(),
+              })
+              .where('asset_id', '=', assetId)
+              .where('locale', '=', locale)
+              .execute();
+          }
+        }
+
+        await markSystemDraft(transaction, { systemId });
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.asset_metadata_updated',
+          entityType: 'asset',
+          entityId: assetId,
+          systemId,
+          metadata: {
+            locales: ['en', 'fr'],
+            mimeType: asset.mime_type,
+          },
+        });
+
+        return { ok: true, message: 'Asset metadata updated.' };
+      });
     }
 
     if (intent === 'delete') {
@@ -409,6 +517,7 @@ export default function AdminSystemAssets() {
                 </label>
                 <Text size="sm" tone="muted">
                   Allowed: JPEG, PNG, WebP, AVIF, PDF. Maximum 10 MiB.
+                  Images require EN and FR alt text; PDFs do not.
                 </Text>
                 <Button type="submit">Upload asset</Button>
               </Form>
@@ -435,18 +544,49 @@ export default function AdminSystemAssets() {
                             : ' dimensions pending ·'}{' '}
                           position {asset.position}
                         </Text>
-                        <Text size="sm" tone="muted">
-                          EN alt: {asset.alt_en ?? '—'}
-                        </Text>
-                        <Text size="sm" tone="muted">
-                          FR alt: {asset.alt_fr ?? '—'}
-                        </Text>
-                        <Text size="sm" tone="muted">
-                          EN caption: {asset.caption_en ?? '—'}
-                        </Text>
-                        <Text size="sm" tone="muted">
-                          FR caption: {asset.caption_fr ?? '—'}
-                        </Text>
+                        <Form className="aks-admin-form" method="post">
+                          <input
+                            name="_intent"
+                            type="hidden"
+                            value="update-metadata"
+                          />
+                          <input name="assetId" type="hidden" value={asset.id} />
+                          <label>
+                            <span>English alt text</span>
+                            <input
+                              defaultValue={asset.alt_en ?? ''}
+                              name="altEn"
+                              type="text"
+                            />
+                          </label>
+                          <label>
+                            <span>English caption</span>
+                            <textarea
+                              defaultValue={asset.caption_en ?? ''}
+                              name="captionEn"
+                              rows={2}
+                            />
+                          </label>
+                          <label>
+                            <span>French alt text</span>
+                            <input
+                              defaultValue={asset.alt_fr ?? ''}
+                              name="altFr"
+                              type="text"
+                            />
+                          </label>
+                          <label>
+                            <span>French caption</span>
+                            <textarea
+                              defaultValue={asset.caption_fr ?? ''}
+                              name="captionFr"
+                              rows={2}
+                            />
+                          </label>
+                          <Button emphasis="quiet" type="submit">
+                            Save metadata
+                          </Button>
+                        </Form>
                         <Form method="post">
                           <input name="_intent" type="hidden" value="delete" />
                           <input
