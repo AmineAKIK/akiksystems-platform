@@ -1334,12 +1334,12 @@ async function assertOriaInteractiveEntry(browser) {
     for (const target of [
       {
         path: '/en/systems/oria-nutrition',
-        liveLabel: 'Open Oria in a new tab',
+        liveLabel: 'Open the live application in a new tab',
         returnLabel: 'Back to Systems',
       },
       {
         path: '/fr/systems/oria-nutrition',
-        liveLabel: 'Ouvrir Oria dans un nouvel onglet',
+        liveLabel: 'Ouvrir l’application dans un nouvel onglet',
         returnLabel: 'Retour aux Systèmes',
       },
     ]) {
@@ -1857,23 +1857,103 @@ async function assertFirstLevelDeepLinkAutonomy(browser, { mobile = false } = {}
   }
 }
 
+async function assertTechnicalEvaluatorPaths(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await context.newPage();
+    const targets = [
+      {
+        path: '/en/systems/sentinel',
+        heading: 'Sentinel',
+        evidence: ['https://sentinel.akiksystems.fr'],
+      },
+      {
+        path: '/en/systems/protocap',
+        heading: 'ProtoCap',
+        evidence: [
+          'https://github.com/AmineAKIK/protocap',
+          'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+        ],
+      },
+      {
+        path: '/en/systems/oria-nutrition',
+        heading: 'Oria Nutrition',
+        evidence: [
+          'https://amineakik.github.io/orianutrition/',
+          'https://github.com/AmineAKIK/orianutrition',
+          'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+        ],
+      },
+      {
+        path: '/en/systems/tugeres',
+        heading: 'Tugères',
+        evidence: [
+          'https://github.com/AmineAKIK/tugeres',
+          'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+        ],
+      },
+    ];
+
+    for (const target of targets) {
+      const response = await page.goto(`${origin}${target.path}`);
+      assert.equal(response?.status(), 200);
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
+      await assertSystemProofTransparency(page, 'en');
+
+      for (const href of target.evidence) {
+        assert.ok(
+          (await page.locator(`a[href="${href}"]`).count()) >= 1,
+          `${target.path} must expose the available technical evidence link ${href}.`,
+        );
+      }
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false } = {}) {
-  for (const target of [
+  const targets = [
     {
-      path: '/en/systems/sentinel',
+      enPath: '/en/systems/sentinel',
+      frPath: '/fr/systems/sentinel',
+      heading: 'Sentinel',
+    },
+    {
+      enPath: '/en/systems/protocap',
+      frPath: '/fr/systems/protocap',
+      heading: 'ProtoCap',
+    },
+    {
+      enPath: '/en/systems/oria-nutrition',
+      frPath: '/fr/systems/oria-nutrition',
+      heading: 'Oria Nutrition',
+    },
+    {
+      enPath: '/en/systems/tugeres',
+      frPath: '/fr/systems/tugeres',
+      heading: 'Tugères',
+    },
+  ].flatMap((system) => [
+    {
+      path: system.enPath,
       lang: 'en',
       contextLabel: 'Current context',
       destinationHref: '/en/systems',
-      alternateHref: '/fr/systems/sentinel',
+      alternateHref: system.frPath,
+      heading: system.heading,
     },
     {
-      path: '/fr/systems/sentinel',
+      path: system.frPath,
       lang: 'fr',
       contextLabel: 'Contexte actuel',
       destinationHref: '/fr/systems',
-      alternateHref: '/en/systems/sentinel',
+      alternateHref: system.enPath,
+      heading: system.heading,
     },
-  ]) {
+  ]);
+
+  for (const target of targets) {
     const directContext = await browser.newContext({
       viewport: mobile ? { width: 320, height: 720 } : { width: 1280, height: 800 },
     });
@@ -1884,8 +1964,9 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
 
       assert.equal(response?.status(), 200, `${target.path} direct load must return HTTP 200.`);
       assert.equal(await page.locator('html').getAttribute('lang'), target.lang);
-      await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
+      await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
       await page.locator('.aks-brand-signature').waitFor();
+      await assertSystemProofTransparency(page, target.lang);
 
       const localContext = page.locator(`[aria-label="${target.contextLabel}"]`);
       assert.equal(
@@ -1895,7 +1976,7 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
       );
       assert.equal(
         (await localContext.locator('[aria-current="page"]').innerText()).trim(),
-        'Sentinel',
+        target.heading,
         `${target.path} must reconstruct its current item on direct load.`,
       );
 
@@ -1906,6 +1987,14 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
           .getAttribute('href'),
         target.alternateHref,
         `${target.path} must reconstruct its translated deep-link target.`,
+      );
+
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${target.path} direct load must not overflow its viewport.`,
       );
 
       if (mobile) {
@@ -1926,6 +2015,8 @@ async function assertPublishedSystemDeepLinkAutonomy(browser, { mobile = false }
           `${target.path} must reconstruct Systems as active on desktop direct load.`,
         );
       }
+
+      await assertAxe(page);
     } finally {
       await directContext.close();
     }
@@ -2863,6 +2954,8 @@ async function assertAxe(page) {
     await assertTugeresStandardSystem(browser);
 
     await assertReusableSystemReferences(browser);
+
+    await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
 
