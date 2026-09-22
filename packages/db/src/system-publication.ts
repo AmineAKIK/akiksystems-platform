@@ -1,4 +1,5 @@
 import {
+  isSystemLinkAllowedByEvidencePolicy,
   validateSystemPublicationReadiness,
   type PlatformLocale,
   type PresentationDocument,
@@ -211,13 +212,9 @@ async function publicationSource(
       .execute(),
   ]);
 
-  const links =
-    row.evidence_policy === 'documented_only'
-      ? rawLinks.filter(
-          (link) =>
-            link.kind === 'repository' || link.kind === 'documentation',
-        )
-      : rawLinks;
+  const links = rawLinks.filter((link) =>
+    isSystemLinkAllowedByEvidencePolicy(row.evidence_policy, link.kind),
+  );
 
   return {
     version: 1,
