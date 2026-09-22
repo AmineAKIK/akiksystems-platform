@@ -150,12 +150,12 @@ describe('Interactive-entry System experience', () => {
       </MemoryRouter>,
     );
 
-    expect(html).toContain('Open Oria in a new tab');
+    expect(html).toContain('Open the live application in a new tab');
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain('Back to Systems');
     expect(html).toContain('href="/en/systems"');
-    expect(html).toContain('fictional, non-industrial portfolio demonstration');
+    expect(html).toContain('Review the proof-transparency summary above');
     expect(html).toContain('No real client data is processed.');
     expect(html).toContain('Repository');
   });
