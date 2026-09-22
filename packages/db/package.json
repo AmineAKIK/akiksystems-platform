@@ -31,7 +31,7 @@
     "db:verify-independent-publication": "tsx src/cli/verify-independent-publication.ts",
     "db:verify-admin-audit": "tsx src/cli/verify-admin-audit.ts",
     "db:verify-public-system": "tsx src/cli/verify-public-system.ts",
-    "db:verify-published-systems-list": "tsx src/cli/verify-published-systems-list.ts",
+    "db:verify-published-systems-list": "tsx src/cli/verify-published-systems-list.ts",\n    "db:verify-system-editorial-controls": "tsx src/cli/verify-system-editorial-controls.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts"
   },
