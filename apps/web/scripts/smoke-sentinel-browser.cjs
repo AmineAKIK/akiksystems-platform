@@ -1220,6 +1220,26 @@ async function assertSystemProofTransparency(page, locale, expectations = []) {
   }
 }
 
+async function assertOptimizedSystemMedia(page, path) {
+  const image = page.locator('.aks-system-presentation-figure img').first();
+  await image.waitFor({ state: 'attached' });
+
+  const width = Number(await image.getAttribute('width'));
+  const height = Number(await image.getAttribute('height'));
+  assert.ok(width > 0, `${path} System media must expose a positive intrinsic width.`);
+  assert.ok(height > 0, `${path} System media must expose a positive intrinsic height.`);
+  assert.equal(
+    await image.getAttribute('loading'),
+    'lazy',
+    `${path} System media must lazy-load below the initial reading.`,
+  );
+  assert.match(
+    (await image.getAttribute('sizes')) ?? '',
+    /max-width: 48rem/,
+    `${path} System media must publish a mobile-aware sizes contract.`,
+  );
+}
+
 async function assertProtoCapGuidedDemo(browser) {
   execFileSync('pnpm', ['db:bootstrap-protocap-qualification'], {
     cwd: process.cwd(),
@@ -1245,11 +1265,23 @@ async function assertProtoCapGuidedDemo(browser) {
       );
       await page.getByText(target.hypothesis, { exact: true }).waitFor();
       await page.getByText(target.future, { exact: true }).waitFor();
+      const deferredDemo = page.locator('[data-demo-loading="deferred"]');
       assert.equal(
-        await page.locator('a[href="https://protocap-demo-production.up.railway.app/demo"]').count(),
+        await deferredDemo.count(),
         1,
-        'ProtoCap must expose the isolated public demo directly.',
+        'ProtoCap must defer external demo entry behind one explicit disclosure.',
       );
+      assert.equal(
+        await page.locator('iframe').count(),
+        0,
+        'ProtoCap must not embed or load a third-party demo frame on initial render.',
+      );
+      assert.equal(
+        await deferredDemo.locator('a[href="https://protocap-demo-production.up.railway.app/demo"]').count(),
+        1,
+        'ProtoCap must keep the isolated public demo available after explicit intent.',
+      );
+      await assertOptimizedSystemMedia(page, target.path);
       assert.match(await page.locator('body').innerText(), /fictitious|fictives/i);
       assert.match(await page.locator('body').innerText(), /L'Oreal \/ La Roche-Posay/);
       await assertSystemProofTransparency(
@@ -1273,6 +1305,7 @@ async function assertProtoCapGuidedDemo(browser) {
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'ProtoCap', exact: true }).waitFor();
       await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
+      await assertOptimizedSystemMedia(page, path);
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -1356,6 +1389,7 @@ async function assertOriaInteractiveEntry(browser) {
           ? [/non industrielle/i, /fictif/i, /cabinet de nutrition/i]
           : [/non-industrial/i, /fictional/i, /operating nutrition practice/i],
       );
+      await assertOptimizedSystemMedia(page, target.path);
       await assertAxe(page);
     }
   } finally {
@@ -1370,6 +1404,7 @@ async function assertOriaInteractiveEntry(browser) {
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'Oria Nutrition', exact: true }).waitFor();
       await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
+      await assertOptimizedSystemMedia(page, path);
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -1434,6 +1469,7 @@ async function assertTugeresStandardSystem(browser) {
           ? [/white-label/i, /déploiement client actif non prouvé/i, /Aucune démo publique/i]
           : [/White-label catering/i, /customer deployment not evidenced/i, /No supportable public demo/i],
       );
+      await assertOptimizedSystemMedia(page, target.path);
       await assertAxe(page);
     }
   } finally {
@@ -1448,6 +1484,7 @@ async function assertTugeresStandardSystem(browser) {
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: 'Tugères', exact: true }).waitFor();
       await assertSystemProofTransparency(page, path.startsWith('/fr/') ? 'fr' : 'en');
+      await assertOptimizedSystemMedia(page, path);
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,

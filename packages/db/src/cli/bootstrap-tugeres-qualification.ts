@@ -14,6 +14,8 @@ try {
       storageKey: `qualification/browser/tugeres/${mediaId}.webp`,
       originalFilename: 'tugeres-reference-menu.webp',
       mimeType: 'image/webp',
+      width: 1280,
+      height: 720,
       byteSize: 82846,
     },
   });

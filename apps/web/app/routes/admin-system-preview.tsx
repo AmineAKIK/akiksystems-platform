@@ -129,6 +129,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .select([
           'assets.id',
           'assets.mime_type',
+          'assets.width',
+          'assets.height',
           'asset_localizations.alt_text',
           'asset_localizations.caption',
           'system_assets.position',
@@ -164,6 +166,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           altText: asset.alt_text,
           caption: asset.caption,
           mimeType: asset.mime_type,
+          width: asset.width,
+          height: asset.height,
         })),
       },
       {

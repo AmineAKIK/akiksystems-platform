@@ -60,6 +60,8 @@ try {
       original_filename: 'sentinel-dashboard.webp',
       mime_type: 'image/webp',
       byte_size: 4096,
+      width: 1280,
+      height: 720,
     })
     .execute();
 
@@ -104,6 +106,8 @@ try {
       'assets.storage_key',
       'assets.mime_type',
       'assets.byte_size',
+      'assets.width',
+      'assets.height',
       'asset_localizations.alt_text',
       'asset_localizations.caption',
       'system_assets.position',
@@ -113,6 +117,8 @@ try {
 
   assert.equal(localized.mime_type, 'image/webp');
   assert.equal(localized.byte_size, 4096);
+  assert.equal(localized.width, 1280);
+  assert.equal(localized.height, 720);
   assert.equal(localized.position, 0);
   assert.equal(localized.alt_text, 'Tableau de bord Sentinel');
   assert.match(localized.storage_key, /^systems\//);
@@ -165,6 +171,32 @@ try {
       `.execute(db),
   );
 
+
+  await expectPostgresError(
+    '23514',
+    'assets_dimensions_check',
+    () =>
+      sql`
+        insert into assets (
+          id,
+          storage_key,
+          original_filename,
+          mime_type,
+          byte_size,
+          width,
+          height
+        ) values (
+          ${secondAssetId}::uuid,
+          ${`systems/${systemId}/invalid-dimensions.webp`},
+          'invalid-dimensions.webp',
+          'image/webp',
+          1024,
+          1280,
+          null
+        )
+      `.execute(db),
+  );
+
   await expectPostgresError(
     '23514',
     'asset_localizations_locale_check',
@@ -199,7 +231,7 @@ try {
   assert.equal(Number(remainingLocalizations.count), 0);
 
   process.stdout.write(
-    'Contextual asset verification passed: metadata, localization, MIME/size constraints, context linking, and protected deletion are enforced.\n',
+    'Contextual asset verification passed: metadata, localization, MIME/size/dimension constraints, context linking, and protected deletion are enforced.\n',
   );
 } finally {
   await db.deleteFrom('system_assets').where('system_id', '=', systemId).execute();

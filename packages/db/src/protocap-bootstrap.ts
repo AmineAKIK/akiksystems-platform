@@ -10,6 +10,8 @@ export interface ProtoCapMediaInput {
   originalFilename: string;
   mimeType: 'image/png';
   byteSize: number;
+  width?: number;
+  height?: number;
 }
 
 export interface BootstrapProtoCapInput {
@@ -371,6 +373,8 @@ export async function bootstrapProtoCapDomain(
         original_filename: input.media.originalFilename,
         mime_type: input.media.mimeType,
         byte_size: input.media.byteSize,
+        width: input.media.width ?? null,
+        height: input.media.height ?? null,
       })
       .execute();
 

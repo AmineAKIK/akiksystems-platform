@@ -8,6 +8,7 @@ import {
 } from 'react-router';
 
 import { requireAdminSession } from '../lib/admin.server';
+import { imageDimensions } from '../lib/image-dimensions.server';
 import { appDb } from '../lib/db.server';
 import {
   assetExtensionForMimeType,
@@ -75,6 +76,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         'assets.original_filename',
         'assets.mime_type',
         'assets.byte_size',
+        'assets.width',
+        'assets.height',
         'assets.storage_key',
         'system_assets.position',
         'asset_en.alt_text as alt_en',
@@ -125,6 +128,8 @@ export async function action({ request, params }: Route.ActionArgs) {
         throw new Response('System not found.', { status: 404 });
       }
 
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const dimensions = imageDimensions(file.type, bytes);
       const assetId = randomUUID();
       const extension = assetExtensionForMimeType(file.type);
       const storageKey = `systems/${systemId}/${assetId}.${extension}`;
@@ -147,6 +152,8 @@ export async function action({ request, params }: Route.ActionArgs) {
               original_filename: file.name,
               mime_type: file.type,
               byte_size: file.size,
+              width: dimensions?.width ?? null,
+              height: dimensions?.height ?? null,
             })
             .execute();
 
@@ -189,6 +196,8 @@ export async function action({ request, params }: Route.ActionArgs) {
               byteSize: file.size,
               position,
               localizedMetadata: ['en', 'fr'],
+              width: dimensions?.width ?? null,
+              height: dimensions?.height ?? null,
             },
           });
         });
@@ -390,8 +399,11 @@ export default function AdminSystemAssets() {
                       <div className="aks-proof-stack">
                         <Text tone="strong">{asset.original_filename}</Text>
                         <Text size="sm" tone="muted">
-                          {asset.mime_type} · {asset.byte_size} bytes · position{' '}
-                          {asset.position}
+                          {asset.mime_type} · {asset.byte_size} bytes ·
+                          {asset.width !== null && asset.height !== null
+                            ? ` ${asset.width}×${asset.height} ·`
+                            : ' dimensions pending ·'}{' '}
+                          position {asset.position}
                         </Text>
                         <Text size="sm" tone="muted">
                           EN alt: {asset.alt_en ?? '—'}

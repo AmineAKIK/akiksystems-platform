@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { bootstrapOriaDomain } from '@akiksystems/db';
 
 import { deleteAssetObject, putAssetObject } from '../app/lib/asset-storage.server';
+import { imageDimensions } from '../app/lib/image-dimensions.server';
 import { appDb } from '../app/lib/db.server';
 
 const existing = await appDb
@@ -25,6 +26,10 @@ const assetId = randomUUID();
 const storageKey = `systems/oria-nutrition/${assetId}.webp`;
 const source = new URL('./fixtures/oria-reference-collations.webp', import.meta.url);
 const bytes = await readFile(source);
+const dimensions = imageDimensions('image/webp', new Uint8Array(bytes));
+if (dimensions === null) {
+  throw new Error('Unable to read intrinsic media dimensions.');
+}
 const file = new File([bytes], 'oria-reference-collations.webp', {
   type: 'image/webp',
 });
@@ -39,6 +44,8 @@ try {
       originalFilename: file.name,
       mimeType: 'image/webp',
       byteSize: file.size,
+      width: dimensions.width,
+      height: dimensions.height,
     },
   });
 
