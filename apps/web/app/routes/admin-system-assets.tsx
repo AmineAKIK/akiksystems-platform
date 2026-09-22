@@ -256,10 +256,33 @@ export async function action({ request, params }: Route.ActionArgs) {
       });
 
       if (publishedLocales.length > 0) {
+        await db.transaction().execute(async (transaction) => {
+          await transaction
+            .deleteFrom('system_assets')
+            .where('system_id', '=', systemId)
+            .where('asset_id', '=', assetId)
+            .execute();
+
+          await markSystemDraft(transaction, { systemId });
+
+          await writeAdminAuditEvent(transaction, {
+            actorUserId: session.user.id,
+            actorEmail: session.user.email,
+            action: 'system.asset_unlinked_from_draft',
+            entityType: 'asset',
+            entityId: assetId,
+            systemId,
+            metadata: {
+              retainedForPublishedLocales: publishedLocales,
+              storageObjectDeleted: false,
+            },
+          });
+        });
+
         return {
-          ok: false,
+          ok: true,
           message:
-            `Deletion blocked: this asset is present in public snapshot(s) ${publishedLocales.join(', ')}. Remove it from the draft and republish those locales first.`,
+            `Asset removed from the draft. Its bytes are retained because public snapshot(s) ${publishedLocales.join(', ')} still reference it; republishing those locales will retire that public reference.`,
         };
       }
 
