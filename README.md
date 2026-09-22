@@ -222,6 +222,18 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
+### Profile How I work
+
+Working principles stay deliberately short and practice-oriented, with optional links to inspectable System evidence.
+
+- Principle titles are limited to 80 characters and details to 240 characters in both server validation and PostgreSQL.
+- Internal methodology names remain excluded from public copy.
+- Each principle may reference one active System as an evidence/example relation.
+- The public Profile exposes that example only when the referenced System is published and presentation-ready in the current locale.
+- The example link reuses the System title and deep route without copying its summary into the principle.
+- Evidence association is administered separately from the bilingual principle text and is audit logged.
+- Re-editing the ordered principle text preserves evidence associations by principle position.
+
 ### Profile first view
 
 The Profile first view is composed as identity plus immediate proof rather than a generic portfolio hero.
