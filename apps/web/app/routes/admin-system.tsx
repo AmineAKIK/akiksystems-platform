@@ -1,10 +1,17 @@
 import {
+  systemEvidencePolicies,
   systemLinkKinds,
+  systemPresentationKinds,
   validateSystemPublicationReadiness,
   type PlatformLocale,
   type SystemLinkKind,
 } from '@akiksystems/core';
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import {
+  markSystemDraft,
+  publishSystemLocalization,
+  unpublishSystemLocalization,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -72,7 +79,12 @@ function parseTechnologyLines(value: string): Array<{ slug: string; name: string
 
 function parseLinkLines(
   value: string,
-): Array<{ kind: SystemLinkKind; url: string }> {
+): Array<{
+  kind: SystemLinkKind;
+  url: string;
+  labelEn: string | null;
+  labelFr: string | null;
+}> {
   if (value.trim() === '') {
     return [];
   }
@@ -82,9 +94,11 @@ function parseLinkLines(
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => {
-      const [rawKind, ...rawUrl] = line.split('|');
+      const [rawKind, rawUrl, rawLabelEn, rawLabelFr] = line.split('|');
       const kind = (rawKind ?? '').trim().toLowerCase();
-      const url = rawUrl.join('|').trim();
+      const url = (rawUrl ?? '').trim();
+      const labelEn = rawLabelEn?.trim() || null;
+      const labelFr = rawLabelFr?.trim() || null;
 
       if (!systemLinkKinds.includes(kind as SystemLinkKind)) {
         throw new Error(
@@ -108,6 +122,8 @@ function parseLinkLines(
       return {
         kind: kind as SystemLinkKind,
         url,
+        labelEn,
+        labelFr,
       };
     });
 }
@@ -351,7 +367,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     const system = await db
       .selectFrom('systems')
-      .select(['id', 'lifecycle'])
+      .select(['id', 'lifecycle', 'presentation_kind', 'evidence_policy'])
       .where('id', '=', systemId)
       .executeTakeFirst();
 
@@ -361,9 +377,17 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     if (intent === 'identity') {
       const lifecycle = field(form, 'lifecycle');
+      const presentationKind = field(form, 'presentationKind');
+      const evidencePolicy = field(form, 'evidencePolicy');
 
       if (lifecycle !== 'active' && lifecycle !== 'archived') {
         return { ok: false, message: 'Invalid lifecycle.' };
+      }
+      if (!systemPresentationKinds.includes(presentationKind as never)) {
+        return { ok: false, message: 'Invalid presentation kind.' };
+      }
+      if (!systemEvidencePolicies.includes(evidencePolicy as never)) {
+        return { ok: false, message: 'Invalid evidence policy.' };
       }
 
       await db.transaction().execute(async (transaction) => {
@@ -371,11 +395,20 @@ export async function action({ request, params }: Route.ActionArgs) {
           .updateTable('systems')
           .set({
             lifecycle,
+            presentation_kind: presentationKind as typeof system.presentation_kind,
+            evidence_policy: evidencePolicy as typeof system.evidence_policy,
             archived_at: lifecycle === 'archived' ? new Date() : null,
             updated_at: new Date(),
           })
           .where('id', '=', systemId)
           .execute();
+
+        if (
+          system.presentation_kind !== presentationKind ||
+          system.evidence_policy !== evidencePolicy
+        ) {
+          await markSystemDraft(transaction, { systemId });
+        }
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
@@ -392,6 +425,10 @@ export async function action({ request, params }: Route.ActionArgs) {
           metadata: {
             previousLifecycle: system.lifecycle,
             lifecycle,
+            previousPresentationKind: system.presentation_kind,
+            presentationKind,
+            previousEvidencePolicy: system.evidence_policy,
+            evidencePolicy,
           },
         });
       });
