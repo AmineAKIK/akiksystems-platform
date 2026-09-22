@@ -196,7 +196,8 @@ export async function action({ request, params }: Route.ActionArgs) {
               byteSize: file.size,
               position,
               localizedMetadata: ['en', 'fr'],
-              dimensions,
+              width: dimensions?.width ?? null,
+              height: dimensions?.height ?? null,
             },
           });
         });
