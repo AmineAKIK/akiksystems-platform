@@ -1,3 +1,14 @@
+export {
+  getPublishedTraining,
+  listPublishedTrainings,
+  publishTrainingLocalization,
+  unpublishTrainingLocalization,
+} from './training-publication.js';
+export type {
+  PublishedTraining,
+  PublishedTrainingListItem,
+  TrainingPublicationSnapshot,
+} from './training-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
 export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
 export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
@@ -173,5 +184,17 @@ export type {
   TechnologiesTable,
   TechnologyRow,
   TechnologyUpdate,
+  TrainingLocalizationRow,
+  TrainingLocalizationsTable,
+  TrainingLocalizationUpdate,
+  TrainingPublicationRow,
+  TrainingPublicationsTable,
+  TrainingPublicationUpdate,
+  TrainingRow,
+  TrainingsTable,
+  TrainingUpdate,
+  NewTrainingLocalizationRow,
+  NewTrainingPublicationRow,
+  NewTrainingRow,
   TimestampColumn,
 } from './schema.js';
