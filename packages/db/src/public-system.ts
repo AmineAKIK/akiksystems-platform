@@ -2,6 +2,7 @@ import type {
   PlatformLocale,
   PresentationDocument,
   SystemLinkKind,
+  SystemPresentationKind,
 } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
@@ -58,6 +59,7 @@ export interface ListPublishedSystemsInput {
 export interface PublishedSystem {
   id: string;
   locale: PlatformLocale;
+  presentationKind: SystemPresentationKind;
   slug: string;
   title: string;
   summary: string;
@@ -141,6 +143,7 @@ export async function getPublishedSystem(
     )
     .select([
       'systems.id',
+      'systems.presentation_kind',
       'system_localizations.slug',
       'system_localizations.title',
       'system_localizations.summary',
@@ -239,6 +242,7 @@ export async function getPublishedSystem(
   return {
     id: systemId,
     locale: input.locale,
+    presentationKind: localization.presentation_kind,
     slug: localization.slug,
     title: localization.title,
     summary: localization.summary,
