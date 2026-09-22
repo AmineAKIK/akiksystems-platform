@@ -32,6 +32,37 @@ try {
   assert.equal(bootstrap.created, true);
   systemId = bootstrap.systemId;
 
+  await db
+    .insertInto('system_links')
+    .values([
+      {
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'live',
+        url: 'https://unsupported.example.test/live',
+        position: 90,
+      },
+      {
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'demo',
+        url: 'https://unsupported.example.test/demo',
+        position: 91,
+      },
+    ])
+    .execute();
+
+  const storedKinds = await db
+    .selectFrom('system_links')
+    .select('kind')
+    .where('system_id', '=', systemId)
+    .orderBy('position')
+    .execute();
+  assert.deepEqual(
+    storedKinds.map(({ kind }) => kind),
+    ['repository', 'documentation', 'documentation', 'live', 'demo'],
+  );
+
   const english = await getPublishedSystem(db, { locale: 'en', slug: 'tugeres' });
   const french = await getPublishedSystem(db, { locale: 'fr', slug: 'tugeres' });
 
@@ -41,6 +72,8 @@ try {
   assert.equal(french.id, systemId);
   assert.equal(english.presentationKind, 'standard');
   assert.equal(french.presentationKind, 'standard');
+  assert.equal(english.evidencePolicy, 'documented_only');
+  assert.equal(french.evidencePolicy, 'documented_only');
   assert.equal(english.origin, null);
   assert.equal(french.origin, null);
 
@@ -56,6 +89,12 @@ try {
   assert.equal(
     english.links.some(({ kind }) => kind === 'live' || kind === 'demo'),
     false,
+    'documented_only must suppress stored live/demo links from the public projection',
+  );
+  assert.equal(
+    french.links.some(({ kind }) => kind === 'live' || kind === 'demo'),
+    false,
+    'documented_only must suppress stored live/demo links in every locale',
   );
   assert.equal(
     english.links.find(({ kind }) => kind === 'repository')?.url,
@@ -104,7 +143,7 @@ try {
   assert.deepEqual(repeated, { created: false, systemId });
 
   process.stdout.write(
-    'Tugeres domain verification passed: localized publication, standard presentation, capabilities, architecture evidence, repository/docs links, reference media, evidence boundaries, and idempotent bootstrap are enforced.\n',
+    'Tugeres domain verification passed: localized publication, documented-only evidence policy, suppression of unsupported stored live/demo links, architecture evidence, repository/docs links, reference media, evidence boundaries, and idempotent bootstrap are enforced.\n',
   );
 } finally {
   if (systemId !== null) {
