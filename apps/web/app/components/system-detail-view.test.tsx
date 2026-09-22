@@ -1,12 +1,15 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { SystemDetailView } from './system-detail-view';
+import { StandardSystemRenderer, SystemDetailView } from './system-detail-view';
 
-describe('SystemDetailView', () => {
+describe('StandardSystemRenderer', () => {
+  it('keeps the legacy alias bound to the stable renderer contract', () => {
+    expect(SystemDetailView).toBe(StandardSystemRenderer);
+  });
   it('renders the v1 System presentation vocabulary in source order', () => {
     const html = renderToStaticMarkup(
-      <SystemDetailView
+      <StandardSystemRenderer
         assets={[
           {
             id: 'asset-image',
@@ -95,7 +98,7 @@ describe('SystemDetailView', () => {
 
   it('renders unordered lists and localized document fallback links semantically', () => {
     const html = renderToStaticMarkup(
-      <SystemDetailView
+      <StandardSystemRenderer
         assets={[
           {
             id: 'asset-document',
@@ -133,7 +136,7 @@ describe('SystemDetailView', () => {
 
   it('omits unresolved media references instead of exposing broken markup', () => {
     const html = renderToStaticMarkup(
-      <SystemDetailView
+      <StandardSystemRenderer
         assets={[]}
         links={[]}
         locale="en"
