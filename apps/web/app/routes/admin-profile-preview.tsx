@@ -1,4 +1,7 @@
-import { getDraftProfile } from '@akiksystems/db';
+import {
+  getDraftProfile,
+  listPublishedSystemReferences,
+} from '@akiksystems/db';
 import { type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { PublicProfileView } from '../components/public-profile-view';
@@ -32,6 +35,11 @@ export function meta(): MetaDescriptor[] {
 }
 
 export default function AdminProfilePreview() {
-  const { profile } = useLoaderData<typeof loader>();
-  return <PublicProfileView profile={profile} />;
+  const { profile, systemReferences } = useLoaderData<typeof loader>();
+  return (
+    <PublicProfileView
+      profile={profile}
+      systemReferences={systemReferences}
+    />
+  );
 }
