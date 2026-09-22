@@ -1148,7 +1148,13 @@ async function assertSystemsOverview(browser) {
       });
       await sentinel.waitFor();
       await sentinel.getByText(target.summary, { exact: true }).waitFor();
-      await sentinel.getByText(target.inspect, { exact: true }).waitFor();
+      const inspectLabel = sentinel.locator('.aks-systems-inspect');
+      await inspectLabel.waitFor();
+      assert.match(
+        await inspectLabel.innerText(),
+        new RegExp(`^${target.inspect}`),
+        'Systems overview must expose an explicit inspection action.',
+      );
       assert.equal(
         await sentinel.getAttribute('href'),
         `${target.path}/sentinel`,
