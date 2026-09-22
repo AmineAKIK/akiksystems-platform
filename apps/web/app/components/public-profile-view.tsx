@@ -181,6 +181,57 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               ) : null}
             </section>
           ) : null}
+          {profile.technologyJourney.length > 0 ? (
+            <section className="aks-profile-technology-journey">
+              <div className="aks-profile-section-heading">
+                <Heading level={2} size="sm">
+                  {profile.locale === 'fr'
+                    ? 'Parcours technologique'
+                    : 'Technological journey'}
+                </Heading>
+                <Text size="sm" tone="muted">
+                  {profile.locale === 'fr'
+                    ? 'Une progression technique cohérente, de la programmation aux systèmes logiciels inspectables.'
+                    : 'A coherent technical progression from programming to inspectable software systems.'}
+                </Text>
+              </div>
+              <ol className="aks-profile-technology-journey-list">
+                {profile.technologyJourney.map((stage) => (
+                  <li className="aks-profile-technology-journey-stage" key={stage.key}>
+                    <div className="aks-profile-technology-journey-marker">
+                      <Text size="sm" tone="muted">
+                        {String(stage.position + 1).padStart(2, '0')}
+                      </Text>
+                    </div>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {stage.title}
+                      </Heading>
+                      {stage.summary !== null ? (
+                        <Text tone="muted">{stage.summary}</Text>
+                      ) : null}
+                      {stage.evidence !== null ? (
+                        stage.evidence.kind === 'system' &&
+                        stage.evidence.href !== null ? (
+                          <Link href={stage.evidence.href}>
+                            {profile.locale === 'fr'
+                              ? `Preuve : ${stage.evidence.title}`
+                              : `Evidence: ${stage.evidence.title}`}
+                          </Link>
+                        ) : (
+                          <Text size="sm" tone="strong">
+                            {profile.locale === 'fr'
+                              ? `Contexte : ${stage.evidence.title}`
+                              : `Context: ${stage.evidence.title}`}
+                          </Text>
+                        )
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
           {profile.professionalJourney.length > 0 ? (
             <section className="aks-profile-professional-journey">
               <Heading level={2} size="sm">
