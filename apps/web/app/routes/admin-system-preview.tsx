@@ -1,3 +1,4 @@
+import { isSystemLinkAllowedByEvidencePolicy } from '@akiksystems/core';
 import { Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
