@@ -1,6 +1,7 @@
 import type {
   PlatformLocale,
   PresentationDocument,
+  SystemEvidencePolicy,
   SystemLinkKind,
   SystemPresentationKind,
 } from '@akiksystems/core';
@@ -60,6 +61,7 @@ export interface PublishedSystem {
   id: string;
   locale: PlatformLocale;
   presentationKind: SystemPresentationKind;
+  evidencePolicy: SystemEvidencePolicy;
   slug: string;
   title: string;
   summary: string;
@@ -144,6 +146,7 @@ export async function getPublishedSystem(
     .select([
       'systems.id',
       'systems.presentation_kind',
+      'systems.evidence_policy',
       'system_localizations.slug',
       'system_localizations.title',
       'system_localizations.summary',
@@ -243,6 +246,7 @@ export async function getPublishedSystem(
     id: systemId,
     locale: input.locale,
     presentationKind: localization.presentation_kind,
+    evidencePolicy: localization.evidence_policy,
     slug: localization.slug,
     title: localization.title,
     summary: localization.summary,
@@ -250,7 +254,13 @@ export async function getPublishedSystem(
     presentationDocument: localization.presentation_document,
     technologies,
     origin: origin ?? null,
-    links,
+    links:
+      localization.evidence_policy === 'documented_only'
+        ? links.filter(
+            (link) =>
+              link.kind === 'repository' || link.kind === 'documentation',
+          )
+        : links,
     media: media.map((asset) => ({
       id: asset.id,
       mimeType: asset.mime_type,
