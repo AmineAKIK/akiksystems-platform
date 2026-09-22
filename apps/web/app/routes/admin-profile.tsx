@@ -815,51 +815,126 @@ export async function action({ request }: Route.ActionArgs) {
 
     const existingPrinciples = await appDb
       .selectFrom('profile_work_principles')
-      .select(['position', 'evidence_system_id'])
-      .where('profile_id', '=', profileId)
+      .leftJoin(
+        'profile_work_principle_localizations as existing_en',
+        (join) =>
+          join
+            .onRef('existing_en.principle_id', '=', 'profile_work_principles.id')
+            .on('existing_en.locale', '=', 'en'),
+      )
+      .leftJoin(
+        'profile_work_principle_localizations as existing_fr',
+        (join) =>
+          join
+            .onRef('existing_fr.principle_id', '=', 'profile_work_principles.id')
+            .on('existing_fr.locale', '=', 'fr'),
+      )
+      .select([
+        'profile_work_principles.id',
+        'profile_work_principles.evidence_system_id',
+        'existing_en.title as title_en',
+        'existing_fr.title as title_fr',
+      ])
+      .where('profile_work_principles.profile_id', '=', profileId)
       .execute();
-    const evidenceByPosition = new Map(
-      existingPrinciples.map((principle) => [
-        principle.position,
-        principle.evidence_system_id,
-      ]),
+
+    const principleKey = (enTitle: string, frTitle: string) =>
+      `${enTitle.trim().toLocaleLowerCase()}\u0000${frTitle.trim().toLocaleLowerCase()}`;
+    const existingByKey = new Map(
+      existingPrinciples
+        .filter(
+          (principle) =>
+            principle.title_en !== null && principle.title_fr !== null,
+        )
+        .map((principle) => [
+          principleKey(principle.title_en!, principle.title_fr!),
+          principle,
+        ]),
     );
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
-        .deleteFrom('profile_work_principles')
+        .updateTable('profile_work_principles')
+        .set((expression) => ({
+          position: expression('position', '+', 1000),
+          updated_at: new Date(),
+        }))
         .where('profile_id', '=', profileId)
         .execute();
 
+      const retainedIds: string[] = [];
+
       for (const [position, principle] of principles.entries()) {
-        const principleId = randomUUID();
+        const existing = existingByKey.get(
+          principleKey(principle.enTitle, principle.frTitle),
+        );
+        const principleId = existing?.id ?? randomUUID();
+        retainedIds.push(principleId);
 
+        if (existing === undefined) {
+          await transaction
+            .insertInto('profile_work_principles')
+            .values({
+              id: principleId,
+              profile_id: profileId,
+              position,
+              evidence_system_id: null,
+            })
+            .execute();
+        } else {
+          await transaction
+            .updateTable('profile_work_principles')
+            .set({
+              position,
+              updated_at: new Date(),
+            })
+            .where('id', '=', principleId)
+            .where('profile_id', '=', profileId)
+            .executeTakeFirstOrThrow();
+        }
+
+        for (const localization of [
+          {
+            locale: 'en' as const,
+            title: principle.enTitle,
+            detail: principle.enDetail,
+          },
+          {
+            locale: 'fr' as const,
+            title: principle.frTitle,
+            detail: principle.frDetail,
+          },
+        ]) {
+          await transaction
+            .insertInto('profile_work_principle_localizations')
+            .values({
+              principle_id: principleId,
+              locale: localization.locale,
+              title: localization.title,
+              detail: localization.detail,
+              updated_at: new Date(),
+            })
+            .onConflict((conflict) =>
+              conflict.columns(['principle_id', 'locale']).doUpdateSet({
+                title: localization.title,
+                detail: localization.detail,
+                updated_at: new Date(),
+              }),
+            )
+            .execute();
+        }
+      }
+
+      if (retainedIds.length === 0) {
         await transaction
-          .insertInto('profile_work_principles')
-          .values({
-            id: principleId,
-            profile_id: profileId,
-            position,
-            evidence_system_id: evidenceByPosition.get(position) ?? null,
-          })
+          .deleteFrom('profile_work_principles')
+          .where('profile_id', '=', profileId)
           .execute();
-
+      } else {
         await transaction
-          .insertInto('profile_work_principle_localizations')
-          .values([
-            {
-              principle_id: principleId,
-              locale: 'en',
-              title: principle.enTitle,
-              detail: principle.enDetail,
-            },
-            {
-              principle_id: principleId,
-              locale: 'fr',
-              title: principle.frTitle,
-              detail: principle.frDetail,
-            },
-          ])
+          .deleteFrom('profile_work_principles')
+          .where('profile_id', '=', profileId)
+          .where('id', 'not in', retainedIds)
           .execute();
       }
 
@@ -873,6 +948,7 @@ export async function action({ request }: Route.ActionArgs) {
           principleCount: principles.length,
           locales: ['en', 'fr'],
           ordering: 'explicit',
+          identityPreservation: 'bilingual-title-match',
         },
       });
     });
