@@ -1,4 +1,6 @@
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
+export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
+export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
 export type { BootstrapOriaInput, BootstrapOriaResult, OriaMediaInput } from './oria-bootstrap.js';
 export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
 export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
