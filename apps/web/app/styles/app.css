@@ -1327,3 +1327,60 @@
     padding-block: var(--aks-space-3);
   }
 }
+
+/* AKS-066: native progressive disclosure keeps first reading compact without hiding SSR proof. */
+.aks-profile-depth {
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-depth-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--aks-space-3);
+  align-items: center;
+  padding-block: var(--aks-space-5);
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
+.aks-profile-depth-summary::marker {
+  color: var(--aks-text-muted);
+}
+
+.aks-profile-depth-summary-note {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  font-weight: 500;
+  text-align: end;
+}
+
+.aks-profile-depth[open] > .aks-profile-depth-summary {
+  border-bottom: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-depth-content {
+  display: grid;
+  gap: var(--aks-space-7);
+  padding-block: var(--aks-space-5) var(--aks-space-7);
+}
+
+.aks-profile-depth-content > :first-child {
+  padding-block-start: 0;
+  border-top: 0;
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-depth-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--aks-space-1);
+  }
+
+  .aks-profile-depth-summary-note {
+    text-align: start;
+  }
+
+  .aks-profile-depth-content {
+    gap: var(--aks-space-6);
+  }
+}
