@@ -1055,3 +1055,20 @@
 .aks-profile-journey-list > li {
   padding-inline-start: var(--aks-space-2);
 }
+
+/* AKS-060: structured Profile facts for languages and mobility. */
+.aks-profile-languages-mobility {
+  display: grid;
+  gap: var(--aks-space-4);
+  padding-block-start: var(--aks-space-4);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-profile-fact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2) var(--aks-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
