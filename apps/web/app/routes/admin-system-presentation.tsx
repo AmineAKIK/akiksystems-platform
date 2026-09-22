@@ -2,7 +2,6 @@ import {
   parsePresentationDocument,
   presentationDocumentVersion,
   validatePresentationDocument,
-  validateSystemPublicationReadiness,
   type PlatformLocale,
   type PresentationBlock,
   type PresentationDocument,
@@ -243,8 +242,6 @@ export async function action({ request, params }: Route.ActionArgs) {
             presentation_document: document,
           })
           .execute();
-
-        await markSystemDraft(transaction, { systemId, locale });
 
         await markSystemDraft(transaction, { systemId, locale });
 
