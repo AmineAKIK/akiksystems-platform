@@ -14,6 +14,8 @@ try {
       storageKey: `qualification/browser/oria/${mediaId}.webp`,
       originalFilename: 'oria-reference-collations.webp',
       mimeType: 'image/webp',
+      width: 1280,
+      height: 720,
       byteSize: 97042,
     },
   });
