@@ -26,7 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     {
       profile,
       localContext: {
-        title: profile.displayName,
+        title: null,
         alternateHref: alternate === undefined ? null : '/fr/profil',
       },
       alternatePublished: alternate !== undefined,
