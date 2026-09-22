@@ -142,7 +142,7 @@ export function InteractiveEntrySystemRenderer({
                         ? locale === 'fr'
                           ? 'Dépôt'
                           : 'Repository'
-                        : 'Documentation'}
+                        : link.label ?? 'Documentation'}
                     </Link>
                   ),
                 )}

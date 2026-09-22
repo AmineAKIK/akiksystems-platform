@@ -1,10 +1,17 @@
 import {
+  systemEvidencePolicies,
   systemLinkKinds,
+  systemPresentationKinds,
   validateSystemPublicationReadiness,
   type PlatformLocale,
   type SystemLinkKind,
 } from '@akiksystems/core';
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import {
+  markSystemDraft,
+  publishSystemLocalization,
+  unpublishSystemLocalization,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -72,7 +79,12 @@ function parseTechnologyLines(value: string): Array<{ slug: string; name: string
 
 function parseLinkLines(
   value: string,
-): Array<{ kind: SystemLinkKind; url: string }> {
+): Array<{
+  kind: SystemLinkKind;
+  url: string;
+  labelEn: string | null;
+  labelFr: string | null;
+}> {
   if (value.trim() === '') {
     return [];
   }
@@ -82,9 +94,11 @@ function parseLinkLines(
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => {
-      const [rawKind, ...rawUrl] = line.split('|');
+      const [rawKind, rawUrl, rawLabelEn, rawLabelFr] = line.split('|');
       const kind = (rawKind ?? '').trim().toLowerCase();
-      const url = rawUrl.join('|').trim();
+      const url = (rawUrl ?? '').trim();
+      const labelEn = rawLabelEn?.trim() || null;
+      const labelFr = rawLabelFr?.trim() || null;
 
       if (!systemLinkKinds.includes(kind as SystemLinkKind)) {
         throw new Error(
@@ -108,6 +122,8 @@ function parseLinkLines(
       return {
         kind: kind as SystemLinkKind,
         url,
+        labelEn,
+        labelFr,
       };
     });
 }
@@ -177,7 +193,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
     const system = await db
       .selectFrom('systems')
-      .select(['id', 'lifecycle', 'archived_at', 'created_at', 'updated_at'])
+      .select([
+        'id',
+        'lifecycle',
+        'presentation_kind',
+        'evidence_policy',
+        'archived_at',
+        'created_at',
+        'updated_at',
+      ])
       .where('id', '=', systemId)
       .executeTakeFirst();
 
@@ -192,6 +216,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       links,
       assetCount,
       auditEvents,
+      publications,
     ] = await Promise.all([
       db
         .selectFrom('system_localizations')
@@ -268,7 +293,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
       db
         .selectFrom('system_links')
-        .select(['id', 'kind', 'url', 'position'])
+        .select(['id', 'kind', 'url', 'label_en', 'label_fr', 'position'])
         .where('system_id', '=', systemId)
         .orderBy('position')
         .execute(),
@@ -292,6 +317,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .where('system_id', '=', systemId)
         .orderBy('created_at', 'desc')
         .limit(20)
+        .execute(),
+      db
+        .selectFrom('system_publications')
+        .select(['locale', 'published_at'])
+        .where('system_id', '=', systemId)
         .execute(),
     ]);
 
@@ -335,6 +365,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       experience: experiences[0] ?? null,
       links,
       assetCount: Number(assetCount.count),
+      publicationState: {
+        en: publications.some((publication) => publication.locale === 'en'),
+        fr: publications.some((publication) => publication.locale === 'fr'),
+      },
       auditEvents: auditEvents.map((event) => ({
         ...event,
         created_at: event.created_at.toISOString(),
@@ -351,7 +385,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     const system = await db
       .selectFrom('systems')
-      .select(['id', 'lifecycle'])
+      .select(['id', 'lifecycle', 'presentation_kind', 'evidence_policy'])
       .where('id', '=', systemId)
       .executeTakeFirst();
 
@@ -361,9 +395,17 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     if (intent === 'identity') {
       const lifecycle = field(form, 'lifecycle');
+      const presentationKind = field(form, 'presentationKind');
+      const evidencePolicy = field(form, 'evidencePolicy');
 
       if (lifecycle !== 'active' && lifecycle !== 'archived') {
         return { ok: false, message: 'Invalid lifecycle.' };
+      }
+      if (!systemPresentationKinds.includes(presentationKind as never)) {
+        return { ok: false, message: 'Invalid presentation kind.' };
+      }
+      if (!systemEvidencePolicies.includes(evidencePolicy as never)) {
+        return { ok: false, message: 'Invalid evidence policy.' };
       }
 
       await db.transaction().execute(async (transaction) => {
@@ -371,11 +413,20 @@ export async function action({ request, params }: Route.ActionArgs) {
           .updateTable('systems')
           .set({
             lifecycle,
+            presentation_kind: presentationKind as typeof system.presentation_kind,
+            evidence_policy: evidencePolicy as typeof system.evidence_policy,
             archived_at: lifecycle === 'archived' ? new Date() : null,
             updated_at: new Date(),
           })
           .where('id', '=', systemId)
           .execute();
+
+        if (
+          system.presentation_kind !== presentationKind ||
+          system.evidence_policy !== evidencePolicy
+        ) {
+          await markSystemDraft(transaction, { systemId });
+        }
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
@@ -392,6 +443,10 @@ export async function action({ request, params }: Route.ActionArgs) {
           metadata: {
             previousLifecycle: system.lifecycle,
             lifecycle,
+            previousPresentationKind: system.presentation_kind,
+            presentationKind,
+            previousEvidencePolicy: system.evidence_policy,
+            evidencePolicy,
           },
         });
       });
@@ -432,27 +487,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         .where('locale', '=', locale)
         .executeTakeFirst();
 
-      if (current?.editorial_state === 'published') {
-        const readiness = validateSystemPublicationReadiness({
-          slug,
-          title,
-          summary,
-          proofRole,
-          proofMaturity,
-          proofDemoNature,
-          proofDataNature,
-          proofLimits,
-          presentationDocument: current.presentation_document,
-        });
-
-        if (!readiness.ready) {
-          return {
-            ok: false,
-            message: `${locale.toUpperCase()} is published and cannot become incomplete: ${readiness.errors.join(' ')}`,
-          };
-        }
-      }
-
+      await markSystemDraft(db, { systemId, locale });
       await upsertLocalization(db, systemId, locale, {
         slug,
         title,
@@ -541,77 +576,45 @@ export async function action({ request, params }: Route.ActionArgs) {
           };
         }
 
-        if (localization.editorial_state === 'published') {
-          return {
-            ok: true,
-            message: `${locale.toUpperCase()} is already published.`,
-          };
-        }
-
-        await db.transaction().execute(async (transaction) => {
-          await transaction
-            .updateTable('system_localizations')
-            .set({
-              editorial_state: 'published',
-              published_at: new Date(),
-              updated_at: new Date(),
-            })
-            .where('system_id', '=', systemId)
-            .where('locale', '=', locale)
-            .execute();
-
-          await writeAdminAuditEvent(transaction, {
-            actorUserId: session.user.id,
-            actorEmail: session.user.email,
-            action: 'system.localization_published',
-            entityType: 'system_localization',
-            entityId: `${systemId}:${locale}`,
-            systemId,
-            locale,
-            metadata: { previousState: localization.editorial_state },
-          });
-        });
-
-        return {
-          ok: true,
-          message: `${locale.toUpperCase()} published independently.`,
-        };
-      }
-
-      if (localization.editorial_state === 'draft') {
-        return {
-          ok: true,
-          message: `${locale.toUpperCase()} is already draft.`,
-        };
-      }
-
-      await db.transaction().execute(async (transaction) => {
-        await transaction
-          .updateTable('system_localizations')
-          .set({
-            editorial_state: 'draft',
-            published_at: null,
-            updated_at: new Date(),
-          })
-          .where('system_id', '=', systemId)
-          .where('locale', '=', locale)
-          .execute();
-
-        await writeAdminAuditEvent(transaction, {
+        await publishSystemLocalization(db, { systemId, locale });
+        await writeAdminAuditEvent(db, {
           actorUserId: session.user.id,
           actorEmail: session.user.email,
-          action: 'system.localization_unpublished',
+          action: 'system.localization_published',
           entityType: 'system_localization',
           entityId: `${systemId}:${locale}`,
           systemId,
           locale,
-          metadata: { previousState: localization.editorial_state },
+          metadata: {
+            previousState: localization.editorial_state,
+            publicationModel: 'snapshot',
+          },
         });
+
+        return {
+          ok: true,
+          message: `${locale.toUpperCase()} public snapshot published.`,
+        };
+      }
+
+      await unpublishSystemLocalization(db, { systemId, locale });
+      await writeAdminAuditEvent(db, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'system.localization_unpublished',
+        entityType: 'system_localization',
+        entityId: `${systemId}:${locale}`,
+        systemId,
+        locale,
+        metadata: {
+          previousState: localization.editorial_state,
+          publicationModel: 'snapshot',
+        },
       });
 
       return {
         ok: true,
-        message: `${locale.toUpperCase()} unpublished independently.`,
+        message: `${locale.toUpperCase()} public snapshot removed.`,
       };
     }
 
@@ -671,6 +674,8 @@ export async function action({ request, params }: Route.ActionArgs) {
             })
             .execute();
         }
+
+        await markSystemDraft(transaction, { systemId });
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
@@ -767,6 +772,8 @@ export async function action({ request, params }: Route.ActionArgs) {
           }
         }
 
+        await markSystemDraft(transaction, { systemId });
+
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
           actorEmail: session.user.email,
@@ -785,7 +792,12 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
 
     if (intent === 'links') {
-      let links: Array<{ kind: SystemLinkKind; url: string }>;
+      let links: Array<{
+        kind: SystemLinkKind;
+        url: string;
+        labelEn: string | null;
+        labelFr: string | null;
+      }>;
 
       try {
         links = parseLinkLines(field(form, 'links'));
@@ -810,10 +822,14 @@ export async function action({ request, params }: Route.ActionArgs) {
               system_id: systemId,
               kind: link.kind,
               url: link.url,
+              label_en: link.labelEn,
+              label_fr: link.labelFr,
               position,
             })
             .execute();
         }
+
+        await markSystemDraft(transaction, { systemId });
 
         await writeAdminAuditEvent(transaction, {
           actorUserId: session.user.id,
@@ -863,7 +879,10 @@ export default function AdminSystem() {
     .map((technology) => `${technology.slug} | ${technology.name}`)
     .join('\n');
   const linkText = data.links
-    .map((link) => `${link.kind} | ${link.url}`)
+    .map(
+      (link) =>
+        `${link.kind} | ${link.url} | ${link.label_en ?? ''} | ${link.label_fr ?? ''}`,
+    )
     .join('\n');
 
   const presentationEnBlocks = data.en?.presentation_document?.blocks.length ?? 0;
@@ -927,6 +946,33 @@ export default function AdminSystem() {
                     <option value="archived">Archived</option>
                   </select>
                 </label>
+                <label>
+                  <span>Presentation kind</span>
+                  <select
+                    defaultValue={data.system.presentation_kind}
+                    name="presentationKind"
+                  >
+                    {systemPresentationKinds.map((kind) => (
+                      <option key={kind} value={kind}>{kind}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Evidence policy</span>
+                  <select
+                    defaultValue={data.system.evidence_policy}
+                    name="evidencePolicy"
+                  >
+                    {systemEvidencePolicies.map((policy) => (
+                      <option key={policy} value={policy}>{policy}</option>
+                    ))}
+                  </select>
+                </label>
+                <Text size="sm" tone="muted">
+                  Changing presentation or evidence policy creates unpublished
+                  draft changes. Existing public snapshots stay unchanged until
+                  each locale is republished.
+                </Text>
                 <Button type="submit">Save identity</Button>
               </Form>
             </section>
@@ -937,7 +983,8 @@ export default function AdminSystem() {
 
                 <div className="aks-admin-readiness">
                   <Text size="sm" tone={data.enReadiness.ready ? 'strong' : 'muted'}>
-                    EN · {data.en?.editorial_state ?? 'draft'} ·{' '}
+                    EN · draft {data.en?.editorial_state ?? 'draft'} · public{' '}
+                    {data.publicationState.en ? 'published' : 'not published'} ·{' '}
                     {data.enReadiness.ready ? 'ready to publish' : 'not ready'}
                   </Text>
                   {!data.enReadiness.ready ? (
@@ -953,7 +1000,8 @@ export default function AdminSystem() {
 
                 <div className="aks-admin-readiness">
                   <Text size="sm" tone={data.frReadiness.ready ? 'strong' : 'muted'}>
-                    FR · {data.fr?.editorial_state ?? 'draft'} ·{' '}
+                    FR · draft {data.fr?.editorial_state ?? 'draft'} · public{' '}
+                    {data.publicationState.fr ? 'published' : 'not published'} ·{' '}
                     {data.frReadiness.ready ? 'ready to publish' : 'not ready'}
                   </Text>
                   {!data.frReadiness.ready ? (
@@ -968,7 +1016,9 @@ export default function AdminSystem() {
                 </div>
 
                 <Text size="sm" tone="muted">
-                  Publication is locale-scoped. EN and FR can independently be draft or published.
+                  Publication is locale-scoped and snapshot-based. Draft edits
+                  never change the public version until Publish replaces that
+                  locale's snapshot.
                 </Text>
               </div>
             </section>
@@ -1031,26 +1081,30 @@ export default function AdminSystem() {
                       {data.en?.editorial_state ?? 'draft'} ·{' '}
                       {data.enReadiness.ready ? 'ready' : 'not ready'}
                     </Text>
-                    <Form method="post">
-                      <input
-                        name="_intent"
-                        type="hidden"
-                        value={data.en?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                      />
-                      <input name="locale" type="hidden" value="en" />
-                      <Button
-                        disabled={
-                          data.en?.editorial_state !== 'published' &&
-                          !data.enReadiness.ready
-                        }
-                        emphasis="quiet"
-                        type="submit"
-                      >
-                        {data.en?.editorial_state === 'published'
-                          ? 'Unpublish EN'
-                          : 'Publish EN'}
-                      </Button>
-                    </Form>
+                    <div className="aks-proof-actions">
+                      <Form method="post">
+                        <input name="_intent" type="hidden" value="publish" />
+                        <input name="locale" type="hidden" value="en" />
+                        <Button
+                          disabled={!data.enReadiness.ready}
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          {data.publicationState.en
+                            ? 'Publish EN update'
+                            : 'Publish EN'}
+                        </Button>
+                      </Form>
+                      {data.publicationState.en ? (
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="unpublish" />
+                          <input name="locale" type="hidden" value="en" />
+                          <Button emphasis="quiet" type="submit">
+                            Unpublish EN
+                          </Button>
+                        </Form>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -1102,26 +1156,30 @@ export default function AdminSystem() {
                       {data.fr?.editorial_state ?? 'draft'} ·{' '}
                       {data.frReadiness.ready ? 'ready' : 'not ready'}
                     </Text>
-                    <Form method="post">
-                      <input
-                        name="_intent"
-                        type="hidden"
-                        value={data.fr?.editorial_state === 'published' ? 'unpublish' : 'publish'}
-                      />
-                      <input name="locale" type="hidden" value="fr" />
-                      <Button
-                        disabled={
-                          data.fr?.editorial_state !== 'published' &&
-                          !data.frReadiness.ready
-                        }
-                        emphasis="quiet"
-                        type="submit"
-                      >
-                        {data.fr?.editorial_state === 'published'
-                          ? 'Unpublish FR'
-                          : 'Publish FR'}
-                      </Button>
-                    </Form>
+                    <div className="aks-proof-actions">
+                      <Form method="post">
+                        <input name="_intent" type="hidden" value="publish" />
+                        <input name="locale" type="hidden" value="fr" />
+                        <Button
+                          disabled={!data.frReadiness.ready}
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          {data.publicationState.fr
+                            ? 'Publish FR update'
+                            : 'Publish FR'}
+                        </Button>
+                      </Form>
+                      {data.publicationState.fr ? (
+                        <Form method="post">
+                          <input name="_intent" type="hidden" value="unpublish" />
+                          <input name="locale" type="hidden" value="fr" />
+                          <Button emphasis="quiet" type="submit">
+                            Unpublish FR
+                          </Button>
+                        </Form>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>

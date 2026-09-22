@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { Kysely, Transaction } from 'kysely';
 
+import { publishSystemLocalization } from './system-publication.js';
 import type { Database } from './schema.js';
 
 export interface OriaMediaInput {
@@ -309,6 +310,8 @@ export async function bootstrapOriaDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+          label_en: 'Case study',
+          label_fr: 'Étude de cas',
           position: 2,
         },
         {
@@ -316,6 +319,8 @@ export async function bootstrapOriaDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/content-provenance.md',
+          label_en: 'Content provenance',
+          label_fr: 'Provenance du contenu',
           position: 3,
         },
       ])
@@ -363,6 +368,9 @@ export async function bootstrapOriaDomain(
       })
       .execute();
   });
+
+  await publishSystemLocalization(db, { systemId, locale: 'en', now: publishedAt });
+  await publishSystemLocalization(db, { systemId, locale: 'fr', now: publishedAt });
 
   return { created: true, systemId };
 }

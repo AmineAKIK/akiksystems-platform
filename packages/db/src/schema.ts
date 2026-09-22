@@ -78,6 +78,15 @@ export interface SystemLocalizationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface SystemPublicationsTable {
+  system_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ProfilesTable {
   id: string;
   singleton_key: DefaultedColumn<'public'>;
@@ -277,6 +286,8 @@ export interface SystemLinksTable {
   system_id: string;
   kind: SystemLinkKind;
   url: string;
+  label_en: string | null;
+  label_fr: string | null;
   position: number;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
@@ -302,6 +313,10 @@ export type SystemUpdate = Updateable<SystemsTable>;
 export type SystemLocalizationRow = Selectable<SystemLocalizationsTable>;
 export type NewSystemLocalizationRow = Insertable<SystemLocalizationsTable>;
 export type SystemLocalizationUpdate = Updateable<SystemLocalizationsTable>;
+
+export type SystemPublicationRow = Selectable<SystemPublicationsTable>;
+export type NewSystemPublicationRow = Insertable<SystemPublicationsTable>;
+export type SystemPublicationUpdate = Updateable<SystemPublicationsTable>;
 
 export type ProfileRow = Selectable<ProfilesTable>;
 export type NewProfileRow = Insertable<ProfilesTable>;
@@ -424,6 +439,7 @@ export interface Database {
   system_metadata: SystemMetadataTable;
   systems: SystemsTable;
   system_localizations: SystemLocalizationsTable;
+  system_publications: SystemPublicationsTable;
   profiles: ProfilesTable;
   profile_localizations: ProfileLocalizationsTable;
   profile_publications: ProfilePublicationsTable;

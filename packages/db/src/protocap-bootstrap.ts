@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { Kysely, Transaction } from 'kysely';
 
+import { publishSystemLocalization } from './system-publication.js';
 import type { Database } from './schema.js';
 
 export interface ProtoCapMediaInput {
@@ -49,6 +50,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'What is implemented',
+      evidenceStatus: 'implemented' as const,
     },
     {
       type: 'list' as const,
@@ -64,6 +66,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Evidence boundaries',
+      evidenceStatus: 'boundary' as const,
     },
     {
       type: 'list' as const,
@@ -80,6 +83,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Hypotheses',
+      evidenceStatus: 'hypothesis' as const,
     },
     {
       type: 'paragraph' as const,
@@ -89,6 +93,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Future integrations',
+      evidenceStatus: 'future_integration' as const,
     },
     {
       type: 'paragraph' as const,
@@ -117,6 +122,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Ce qui est implemente',
+      evidenceStatus: 'implemented' as const,
     },
     {
       type: 'list' as const,
@@ -132,6 +138,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Limites et preuves',
+      evidenceStatus: 'boundary' as const,
     },
     {
       type: 'list' as const,
@@ -148,6 +155,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Hypothèses',
+      evidenceStatus: 'hypothesis' as const,
     },
     {
       type: 'paragraph' as const,
@@ -157,6 +165,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Intégrations futures',
+      evidenceStatus: 'future_integration' as const,
     },
     {
       type: 'paragraph' as const,
@@ -360,6 +369,8 @@ export async function bootstrapProtoCapDomain(
           system_id: systemId,
           kind: 'documentation',
           url: 'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+          label_en: 'Product boundaries',
+          label_fr: 'Limites du produit',
           position: 3,
         },
       ])
@@ -407,6 +418,9 @@ export async function bootstrapProtoCapDomain(
       })
       .execute();
   });
+
+  await publishSystemLocalization(db, { systemId, locale: 'en', now: publishedAt });
+  await publishSystemLocalization(db, { systemId, locale: 'fr', now: publishedAt });
 
   return { created: true, systemId };
 }

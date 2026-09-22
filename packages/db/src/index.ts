@@ -19,6 +19,21 @@ export type {
 } from './public-profile.js';
 export { getPublishedSystem, listPublishedSystems } from './public-system.js';
 export {
+  bootstrapSystemPublications,
+  buildSystemPublicationSnapshot,
+  markSystemDraft,
+  parseSystemPublicationSnapshot,
+  publishSystemLocalization,
+  unpublishSystemLocalization,
+} from './system-publication.js';
+export type {
+  SystemPublicationLink,
+  SystemPublicationMedia,
+  SystemPublicationOrigin,
+  SystemPublicationSnapshot,
+  SystemPublicationTechnology,
+} from './system-publication.js';
+export {
   getPublishedSystemReferenceById,
   listPublishedSystemReferences,
   systemReferenceHref,
@@ -80,6 +95,7 @@ export type {
   NewSystemExperienceRow,
   NewSystemLinkRow,
   NewSystemLocalizationRow,
+  NewSystemPublicationRow,
   NewSystemRow,
   NewSystemTechnologyRow,
   NewTechnologyRow,
@@ -144,6 +160,9 @@ export type {
   SystemLinksTable,
   SystemLinkUpdate,
   SystemLocalizationUpdate,
+  SystemPublicationRow,
+  SystemPublicationsTable,
+  SystemPublicationUpdate,
   SystemMetadataTable,
   SystemRow,
   SystemsTable,

@@ -87,13 +87,13 @@ describe('Guided demo System experience', () => {
           version: 1,
           blocks: [
             { type: 'paragraph', text: 'ProtoCap introduction.' },
-            { type: 'heading', level: 2, text: 'What is implemented' },
+            { type: 'heading', level: 2, text: 'What is implemented', evidenceStatus: 'implemented' },
             { type: 'list', style: 'unordered', items: ['ShiftGuide works.'] },
-            { type: 'heading', level: 2, text: 'Evidence boundaries' },
+            { type: 'heading', level: 2, text: 'Evidence boundaries', evidenceStatus: 'boundary' },
             { type: 'list', style: 'unordered', items: ['Demo data is fictitious.'] },
-            { type: 'heading', level: 2, text: 'Hypotheses' },
+            { type: 'heading', level: 2, text: 'Hypotheses', evidenceStatus: 'hypothesis' },
             { type: 'paragraph', text: 'Productivity gains remain hypotheses.' },
-            { type: 'heading', level: 2, text: 'Future integrations' },
+            { type: 'heading', level: 2, text: 'Future integrations', evidenceStatus: 'future_integration' },
             { type: 'paragraph', text: 'Live plant feeds remain future work.' },
           ],
         }}

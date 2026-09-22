@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 import { listPublishedSystems } from '../public-system.js';
 import { createDatabase } from '../database.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -38,19 +39,23 @@ try {
       .values([
         {
           id: firstPublishedId,
+          editorial_position: 20,
           created_at: new Date('2026-01-01T00:00:00.000Z'),
         },
         {
           id: secondPublishedId,
+          editorial_position: 21,
           created_at: new Date('2026-02-01T00:00:00.000Z'),
         },
         {
           id: draftId,
+          editorial_position: 22,
           created_at: new Date('2025-12-01T00:00:00.000Z'),
         },
         {
           id: archivedId,
           lifecycle: 'archived',
+          editorial_position: 23,
           archived_at: new Date('2026-03-01T00:00:00.000Z'),
           created_at: new Date('2025-11-01T00:00:00.000Z'),
         },
@@ -153,6 +158,8 @@ try {
       ])
       .execute();
   });
+
+  await bootstrapSystemPublications(db);
 
   const english = await listPublishedSystems(db, { locale: 'en' });
 

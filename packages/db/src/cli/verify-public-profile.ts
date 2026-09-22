@@ -5,6 +5,7 @@ import { sql } from 'kysely';
 
 import { createDatabase } from '../database.js';
 import { getDraftProfile, getPublicProfile } from '../public-profile.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -404,8 +405,8 @@ try {
   await db
     .insertInto('systems')
     .values([
-      { id: firstSystemId, lifecycle: 'active' },
-      { id: secondSystemId, lifecycle: 'active' },
+      { id: firstSystemId, lifecycle: 'active', editorial_position: 40 },
+      { id: secondSystemId, lifecycle: 'active', editorial_position: 41 },
     ])
     .execute();
 
@@ -474,6 +475,8 @@ try {
       },
     ])
     .execute();
+
+  await bootstrapSystemPublications(db);
 
   await db
     .insertInto('profile_systems')

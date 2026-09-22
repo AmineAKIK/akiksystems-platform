@@ -16,6 +16,10 @@ if (!adminEmail || !adminPassword) {
 
 const port = '4177';
 const origin = `http://127.0.0.1:${port}`;
+const testAssetRoot = '/tmp/akiksystems-browser-assets';
+fs.rmSync(testAssetRoot, { force: true, recursive: true });
+fs.mkdirSync(testAssetRoot, { recursive: true });
+process.env.ASSET_STORAGE_TEST_ROOT = testAssetRoot;
 let stderr = '';
 
 const server = spawn(process.execPath, ['server.js'], {
@@ -1238,6 +1242,27 @@ async function assertOptimizedSystemMedia(page, path) {
     /max-width: 48rem/,
     `${path} System media must publish a mobile-aware sizes contract.`,
   );
+
+  const srcset = (await image.getAttribute('srcset')) ?? '';
+  assert.match(
+    srcset,
+    /\?width=(320|640|960|1280)\s+\d+w/,
+    `${path} System media must expose real width variants through srcset.`,
+  );
+
+  const firstVariant = srcset.split(',')[0]?.trim().split(/\s+/)[0];
+  assert.ok(firstVariant, `${path} must expose at least one responsive media variant.`);
+  const variantResponse = await page.request.get(new URL(firstVariant, origin).toString());
+  assert.equal(
+    variantResponse.status(),
+    200,
+    `${path} responsive media variant must be served successfully.`,
+  );
+  assert.match(
+    variantResponse.headers()['cache-control'] ?? '',
+    /immutable/,
+    `${path} generated responsive variants must be cacheable as immutable assets.`,
+  );
 }
 
 async function assertProtoCapGuidedDemo(browser) {
@@ -1865,31 +1890,48 @@ async function assertTechnicalEvaluatorPaths(browser) {
       {
         path: '/en/systems/sentinel',
         heading: 'Sentinel',
-        evidence: ['https://sentinel.akiksystems.fr'],
+        evidence: [{ href: 'https://sentinel.akiksystems.fr' }],
       },
       {
         path: '/en/systems/protocap',
         heading: 'ProtoCap',
         evidence: [
-          'https://github.com/AmineAKIK/protocap',
-          'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+          { href: 'https://github.com/AmineAKIK/protocap' },
+          {
+            href: 'https://github.com/AmineAKIK/protocap/blob/main/docs/product-boundaries.md',
+            label: 'Product boundaries',
+          },
         ],
       },
       {
         path: '/en/systems/oria-nutrition',
         heading: 'Oria Nutrition',
         evidence: [
-          'https://amineakik.github.io/orianutrition/',
-          'https://github.com/AmineAKIK/orianutrition',
-          'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+          { href: 'https://amineakik.github.io/orianutrition/' },
+          { href: 'https://github.com/AmineAKIK/orianutrition' },
+          {
+            href: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/case-study.md',
+            label: 'Case study',
+          },
+          {
+            href: 'https://github.com/AmineAKIK/orianutrition/blob/main/docs/content-provenance.md',
+            label: 'Content provenance',
+          },
         ],
       },
       {
         path: '/en/systems/tugeres',
         heading: 'Tugères',
         evidence: [
-          'https://github.com/AmineAKIK/tugeres',
-          'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+          { href: 'https://github.com/AmineAKIK/tugeres' },
+          {
+            href: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/tugeres-operations.md',
+            label: 'Operations runbook',
+          },
+          {
+            href: 'https://github.com/AmineAKIK/tugeres/blob/main/docs/guide-installation.md',
+            label: 'Installation guide',
+          },
         ],
       },
     ];
@@ -1900,11 +1942,19 @@ async function assertTechnicalEvaluatorPaths(browser) {
       await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
       await assertSystemProofTransparency(page, 'en');
 
-      for (const href of target.evidence) {
+      for (const item of target.evidence) {
+        const link = page.locator(`a[href="${item.href}"]`).first();
         assert.ok(
-          (await page.locator(`a[href="${href}"]`).count()) >= 1,
-          `${target.path} must expose the available technical evidence link ${href}.`,
+          (await link.count()) >= 1,
+          `${target.path} must expose the available technical evidence link ${item.href}.`,
         );
+        if (item.label) {
+          assert.equal(
+            (await link.innerText()).trim(),
+            item.label,
+            `${target.path} must give technical documentation a descriptive label.`,
+          );
+        }
       }
     }
   } finally {
@@ -3111,6 +3161,7 @@ async function assertAxe(page) {
       title: 'Sentinel',
       summary: 'Visibilité opérationnelle, contexte industriel et preuves inspectables.',
     });
+
     const englishAfterFrenchEdit = await context.request.get(
       `${origin}/en/systems/sentinel`,
     );
@@ -3118,14 +3169,42 @@ async function assertAxe(page) {
       await englishAfterFrenchEdit.text(),
       /Operational visibility built from industrial context/,
     );
-    const frenchProfileAfterSystemEdit = await context.request.get(
+
+    const frenchSystemBeforeRepublish = await context.request.get(
+      `${origin}/fr/systems/sentinel`,
+    );
+    assert.match(
+      await frenchSystemBeforeRepublish.text(),
+      /Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables\./,
+      'Saving a draft must leave the previous FR public snapshot unchanged.',
+    );
+    assert.doesNotMatch(
+      await frenchSystemBeforeRepublish.text(),
+      /Visibilité opérationnelle, contexte industriel et preuves inspectables\./,
+    );
+
+    const frenchProfileBeforeRepublish = await context.request.get(
       `${origin}/fr/profil`,
     );
-    assert.equal(frenchProfileAfterSystemEdit.status(), 200);
+    assert.equal(frenchProfileBeforeRepublish.status(), 200);
     assert.match(
-      await frenchProfileAfterSystemEdit.text(),
+      await frenchProfileBeforeRepublish.text(),
+      /Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables\./,
+      'Profile references must remain on the published System snapshot while a newer draft exists.',
+    );
+
+    await page.goto(`${origin}${page.systemPath}`);
+    await page.getByRole('button', { name: 'Publish FR update' }).click();
+    await page.getByText('FR public snapshot published.', { exact: true }).waitFor();
+
+    const frenchProfileAfterRepublish = await context.request.get(
+      `${origin}/fr/profil`,
+    );
+    assert.equal(frenchProfileAfterRepublish.status(), 200);
+    assert.match(
+      await frenchProfileAfterRepublish.text(),
       /Visibilité opérationnelle, contexte industriel et preuves inspectables\./,
-      'Profile must reflect the current published System summary rather than a copied snapshot.',
+      'Profile must move to the new System content only after the FR System snapshot is republished.',
     );
 
     const mobile = await browser.newContext({

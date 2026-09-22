@@ -6,6 +6,7 @@ import {
   systemReferenceHref,
 } from '../system-reference.js';
 import { createDatabase } from '../database.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -114,6 +115,8 @@ try {
       },
     ])
     .execute();
+
+  await bootstrapSystemPublications(db);
 
   const english = await listPublishedSystemReferences(db, {
     locale: 'en',

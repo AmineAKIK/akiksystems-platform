@@ -98,10 +98,13 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     await db.transaction().execute(async (transaction) => {
+      const temporaryPosition =
+        Math.max(...ordered.map((system) => system.editorial_position)) + 1;
+
       await transaction
         .updateTable('systems')
         .set({
-          editorial_position: target.editorial_position,
+          editorial_position: temporaryPosition,
           updated_at: new Date(),
         })
         .where('id', '=', current.id)
@@ -114,6 +117,15 @@ export async function action({ request }: Route.ActionArgs) {
           updated_at: new Date(),
         })
         .where('id', '=', target.id)
+        .execute();
+
+      await transaction
+        .updateTable('systems')
+        .set({
+          editorial_position: target.editorial_position,
+          updated_at: new Date(),
+        })
+        .where('id', '=', current.id)
         .execute();
 
       await writeAdminAuditEvent(transaction, {

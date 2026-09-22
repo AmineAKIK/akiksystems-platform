@@ -57,6 +57,9 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      - name: Install image processing runtime
+        run: sudo apt-get update && sudo apt-get install -y libvips-tools
+
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
@@ -109,6 +112,7 @@ jobs:
           pnpm db:verify-tugeres-domain
           pnpm db:verify-system-proof-transparency
           pnpm db:verify-system-references
+          pnpm db:verify-system-publication-snapshots
 
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile

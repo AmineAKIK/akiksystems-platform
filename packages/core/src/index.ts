@@ -146,6 +146,17 @@ export const systemLinkKinds = [
 
 export type SystemLinkKind = (typeof systemLinkKinds)[number];
 
+export function isSystemLinkAllowedByEvidencePolicy(
+  policy: SystemEvidencePolicy,
+  kind: SystemLinkKind,
+): boolean {
+  return (
+    policy === 'all_supported' ||
+    kind === 'repository' ||
+    kind === 'documentation'
+  );
+}
+
 export type SystemLinkId = string;
 
 export interface SystemLink {
@@ -153,6 +164,8 @@ export interface SystemLink {
   systemId: SystemId;
   kind: SystemLinkKind;
   url: string;
+  labelEn?: string | null;
+  labelFr?: string | null;
   position: number;
   createdAt: Date;
   updatedAt: Date;

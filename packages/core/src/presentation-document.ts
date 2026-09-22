@@ -2,6 +2,16 @@ export const presentationDocumentVersion = 1 as const;
 
 export type PresentationDocumentVersion = typeof presentationDocumentVersion;
 
+export const presentationEvidenceStatuses = [
+  'implemented',
+  'boundary',
+  'hypothesis',
+  'future_integration',
+] as const;
+
+export type PresentationEvidenceStatus =
+  (typeof presentationEvidenceStatuses)[number];
+
 export interface PresentationDocument {
   version: PresentationDocumentVersion;
   blocks: PresentationBlock[];
@@ -19,6 +29,7 @@ export interface PresentationHeadingBlock {
   type: 'heading';
   level: 2 | 3;
   text: string;
+  evidenceStatus?: PresentationEvidenceStatus | null;
 }
 
 export interface PresentationParagraphBlock {
@@ -84,7 +95,7 @@ function validateBlock(
 
   switch (block.type) {
     case 'heading': {
-      if (!hasOnlyKeys(block, ['type', 'level', 'text'])) {
+      if (!hasOnlyKeys(block, ['type', 'level', 'text', 'evidenceStatus'])) {
         errors.push(`blocks[${index}] heading contains unsupported properties.`);
       }
       if (block.level !== 2 && block.level !== 3) {
@@ -92,6 +103,26 @@ function validateBlock(
       }
       if (!isNonEmptyText(block.text)) {
         errors.push(`blocks[${index}].text must be non-empty text.`);
+      }
+      if (
+        block.evidenceStatus !== undefined &&
+        block.evidenceStatus !== null &&
+        !presentationEvidenceStatuses.includes(
+          block.evidenceStatus as PresentationEvidenceStatus,
+        )
+      ) {
+        errors.push(
+          `blocks[${index}].evidenceStatus must be implemented, boundary, hypothesis, future_integration, or null.`,
+        );
+      }
+      if (
+        block.level === 3 &&
+        block.evidenceStatus !== undefined &&
+        block.evidenceStatus !== null
+      ) {
+        errors.push(
+          `blocks[${index}].evidenceStatus is only supported on level-2 section headings.`,
+        );
       }
       break;
     }

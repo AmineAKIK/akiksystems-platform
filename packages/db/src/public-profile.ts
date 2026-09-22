@@ -1,6 +1,7 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
+import { parseSystemPublicationSnapshot } from './system-publication.js';
 import type { Database } from './schema.js';
 
 export interface PublicProfileWorkPrincipleEvidence {
@@ -496,29 +497,26 @@ export async function getPublicProfile(
     return snapshot;
   }
 
-  const publishedSystems = await db
-    .selectFrom('systems')
-    .innerJoin(
-      'system_localizations',
-      'system_localizations.system_id',
-      'systems.id',
-    )
-    .select([
-      'systems.id',
-      'system_localizations.slug',
-      'system_localizations.title',
-      'system_localizations.summary',
-    ])
+  const publicationRows = await db
+    .selectFrom('system_publications')
+    .innerJoin('systems', 'systems.id', 'system_publications.system_id')
+    .select(['systems.id', 'system_publications.snapshot'])
     .where('systems.id', 'in', systemIds)
     .where('systems.lifecycle', '=', 'active')
-    .where('system_localizations.locale', '=', locale)
-    .where('system_localizations.editorial_state', '=', 'published')
-    .where('system_localizations.published_at', 'is not', null)
-    .where('system_localizations.presentation_document', 'is not', null)
-    .where('system_localizations.slug', 'is not', null)
-    .where('system_localizations.title', 'is not', null)
-    .where('system_localizations.summary', 'is not', null)
+    .where('system_publications.locale', '=', locale)
     .execute();
+
+  const publishedSystems = publicationRows.flatMap((row) => {
+    const publication = parseSystemPublicationSnapshot(row.snapshot);
+    return publication === null
+      ? []
+      : [{
+          id: row.id,
+          slug: publication.slug,
+          title: publication.title,
+          summary: publication.summary,
+        }];
+  });
 
   const systemById = new Map(
     publishedSystems.map((system) => [

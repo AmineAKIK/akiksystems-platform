@@ -55,6 +55,7 @@ try {
     .insertInto('systems')
     .values({
       id: firstSystemId,
+      editorial_position: 0,
     })
     .executeTakeFirstOrThrow();
 
@@ -157,6 +158,7 @@ try {
     .insertInto('systems')
     .values({
       id: secondSystemId,
+      editorial_position: 1,
     })
     .executeTakeFirstOrThrow();
 

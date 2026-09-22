@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 import { listPublishedSystems } from '../public-system.js';
 import { createDatabase } from '../database.js';
+import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
@@ -28,9 +29,9 @@ try {
     await transaction
       .insertInto('systems')
       .values([
-        { id: firstId, editorial_position: 1, featured: false },
-        { id: secondId, editorial_position: 0, featured: true },
-        { id: draftId, editorial_position: 2, featured: true },
+        { id: firstId, editorial_position: 31, featured: false },
+        { id: secondId, editorial_position: 30, featured: true },
+        { id: draftId, editorial_position: 32, featured: true },
       ])
       .execute();
 
@@ -86,6 +87,8 @@ try {
       .execute();
   });
 
+  await bootstrapSystemPublications(db);
+
   const initial = await listPublishedSystems(db, { locale: 'en' });
   const relevantInitial = initial.filter(({ id }) => ids.includes(id));
 
@@ -96,8 +99,8 @@ try {
       featured,
     })),
     [
-      { id: secondId, position: 0, featured: true },
-      { id: firstId, position: 1, featured: false },
+      { id: secondId, position: 30, featured: true },
+      { id: firstId, position: 31, featured: false },
     ],
     'public library must follow configured editorial order and expose prominence only for published Systems',
   );
@@ -105,13 +108,18 @@ try {
   await db.transaction().execute(async (transaction) => {
     await transaction
       .updateTable('systems')
-      .set({ editorial_position: 0, featured: true, updated_at: new Date() })
+      .set({ editorial_position: 33, featured: true, updated_at: new Date() })
       .where('id', '=', firstId)
       .execute();
     await transaction
       .updateTable('systems')
-      .set({ editorial_position: 1, featured: false, updated_at: new Date() })
+      .set({ editorial_position: 31, featured: false, updated_at: new Date() })
       .where('id', '=', secondId)
+      .execute();
+    await transaction
+      .updateTable('systems')
+      .set({ editorial_position: 30, updated_at: new Date() })
+      .where('id', '=', firstId)
       .execute();
   });
 
@@ -125,8 +133,8 @@ try {
       featured,
     })),
     [
-      { id: firstId, position: 0, featured: true },
-      { id: secondId, position: 1, featured: false },
+      { id: firstId, position: 30, featured: true },
+      { id: secondId, position: 31, featured: false },
     ],
     'changing persisted editorial controls must immediately change the public projection without code changes',
   );
