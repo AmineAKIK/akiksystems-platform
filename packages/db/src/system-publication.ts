@@ -371,7 +371,7 @@ export async function bootstrapSystemPublications(
     .execute();
 
   let created = 0;
-  let refreshed = 0;
+  const refreshed = 0;
 
   for (const candidate of candidates) {
     const existing = await db
