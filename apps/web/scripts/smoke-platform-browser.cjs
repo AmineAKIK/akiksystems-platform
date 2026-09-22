@@ -2998,14 +2998,12 @@ async function assertAxe(page) {
 
     bootstrapL4QualificationSystems();
 
-    await Promise.all([
-      assertSystemsOverview(browser),
-      assertProtoCapGuidedDemo(browser),
-      assertOriaInteractiveEntry(browser),
-      assertTugeresStandardSystem(browser),
-      assertReusableSystemReferences(browser),
-      assertTechnicalEvaluatorPaths(browser),
-    ]);
+    await assertSystemsOverview(browser);
+    await assertProtoCapGuidedDemo(browser);
+    await assertOriaInteractiveEntry(browser);
+    await assertTugeresStandardSystem(browser);
+    await assertReusableSystemReferences(browser);
+    await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
 
@@ -3015,11 +3013,9 @@ async function assertAxe(page) {
 
     await assertTechnologicalJourney(page);
 
-    await Promise.all([
-      assertProfileProgressiveDepth(browser, page),
-      assertProfileWithoutPriorCv(browser),
-      assertProfileAfterPriorCvExposure(browser),
-    ]);
+    await assertProfileProgressiveDepth(browser, page);
+    await assertProfileWithoutPriorCv(browser);
+    await assertProfileAfterPriorCvExposure(browser);
 
     const englishResponse = await context.request.get(`${origin}/en/systems/sentinel`);
     const englishHtml = await englishResponse.text();
@@ -3039,13 +3035,11 @@ async function assertAxe(page) {
       'A published deep translation must switch to its equivalent localized System route.',
     );
 
-    await Promise.all([
-      assertPublishedSystemDeepLinkAutonomy(browser),
-      assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true }),
-      assertRealDeviceClasses(browser, { includeDeep: true }),
-      assertTenSecondComprehensionBaseline(browser),
-      assertGlobalKeyboardNavigation(browser),
-    ]);
+    await assertPublishedSystemDeepLinkAutonomy(browser);
+    await assertPublishedSystemDeepLinkAutonomy(browser, { mobile: true });
+    await assertRealDeviceClasses(browser, { includeDeep: true });
+    await assertTenSecondComprehensionBaseline(browser);
+    await assertGlobalKeyboardNavigation(browser);
 
     const reducedDesktop = await browser.newContext({
       viewport: { width: 1280, height: 800 },
