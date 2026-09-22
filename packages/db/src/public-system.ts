@@ -34,6 +34,8 @@ export interface PublicSystemMedia {
   mimeType: string;
   altText: string | null;
   caption: string | null;
+  width: number | null;
+  height: number | null;
   position: number;
 }
 
@@ -242,6 +244,8 @@ export async function getPublishedSystem(
       .select([
         'assets.id',
         'assets.mime_type',
+        'assets.width',
+        'assets.height',
         'asset_localizations.alt_text',
         'asset_localizations.caption',
         'system_assets.position',
@@ -290,6 +294,8 @@ export async function getPublishedSystem(
       mimeType: asset.mime_type,
       altText: asset.alt_text,
       caption: asset.caption,
+      width: asset.width,
+      height: asset.height,
       position: asset.position,
     })),
     alternate:
