@@ -164,7 +164,7 @@ export function SystemPresentation({
   );
 }
 
-export function SystemDetailView({
+export function StandardSystemRenderer({
   locale,
   title,
   summary,
@@ -240,3 +240,10 @@ export function SystemDetailView({
     </main>
   );
 }
+
+
+/**
+ * Backward-compatible alias while callers migrate to the explicit
+ * StandardSystemRenderer contract.
+ */
+export const SystemDetailView = StandardSystemRenderer;
