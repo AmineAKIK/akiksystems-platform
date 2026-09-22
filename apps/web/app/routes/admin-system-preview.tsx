@@ -141,13 +141,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .execute(),
     ]);
 
-    const previewLinks =
-      localization.evidence_policy === 'documented_only'
-        ? links.filter(
-            (link) =>
-              link.kind === 'repository' || link.kind === 'documentation',
-          )
-        : links;
+    const previewLinks = links.filter((link) =>
+      isSystemLinkAllowedByEvidencePolicy(
+        localization.evidence_policy,
+        link.kind,
+      ),
+    );
 
     return data(
       {
