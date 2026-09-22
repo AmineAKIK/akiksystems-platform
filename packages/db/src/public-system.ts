@@ -7,6 +7,10 @@ import type {
 } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
+import {
+  parseSystemPublicationSnapshot,
+  type SystemPublicationSnapshot,
+} from './system-publication.js';
 import type { Database } from './schema.js';
 
 export interface PublicSystemTechnology {
@@ -26,6 +30,7 @@ export interface PublicSystemLink {
   id: string;
   kind: SystemLinkKind;
   url: string;
+  label: string | null;
   position: number;
 }
 
@@ -88,218 +93,110 @@ export interface GetPublishedSystemInput {
   slug: string;
 }
 
+function listItemFromSnapshot(
+  snapshot: SystemPublicationSnapshot,
+  publishedAt: Date,
+  position: number,
+  featured: boolean,
+): PublishedSystemListItem {
+  return {
+    id: snapshot.systemId,
+    locale: snapshot.locale,
+    slug: snapshot.slug,
+    title: snapshot.title,
+    summary: snapshot.summary,
+    publishedAt,
+    position,
+    featured,
+  };
+}
+
 export async function listPublishedSystems(
   db: Kysely<Database>,
   input: ListPublishedSystemsInput,
 ): Promise<PublishedSystemListItem[]> {
   const rows = await db
-    .selectFrom('systems')
-    .innerJoin(
-      'system_localizations',
-      'system_localizations.system_id',
-      'systems.id',
-    )
+    .selectFrom('system_publications')
+    .innerJoin('systems', 'systems.id', 'system_publications.system_id')
     .select([
-      'systems.id',
+      'system_publications.snapshot',
+      'system_publications.published_at',
       'systems.editorial_position',
       'systems.featured',
-      'system_localizations.slug',
-      'system_localizations.title',
-      'system_localizations.summary',
-      'system_localizations.published_at',
     ])
     .where('systems.lifecycle', '=', 'active')
-    .where('system_localizations.locale', '=', input.locale)
-    .where('system_localizations.editorial_state', '=', 'published')
-    .where('system_localizations.slug', 'is not', null)
-    .where('system_localizations.title', 'is not', null)
-    .where('system_localizations.summary', 'is not', null)
-    .where('system_localizations.published_at', 'is not', null)
+    .where('system_publications.locale', '=', input.locale)
     .orderBy('systems.editorial_position')
     .orderBy('systems.created_at')
     .orderBy('systems.id')
     .execute();
 
-  return rows.flatMap((row) =>
-    row.slug === null ||
-    row.title === null ||
-    row.summary === null ||
-    row.published_at === null
+  return rows.flatMap((row) => {
+    const snapshot = parseSystemPublicationSnapshot(row.snapshot);
+    return snapshot === null
       ? []
       : [
-          {
-            id: row.id,
-            locale: input.locale,
-            slug: row.slug,
-            title: row.title,
-            summary: row.summary,
-            publishedAt: row.published_at,
-            position: row.editorial_position,
-            featured: row.featured,
-          },
-        ],
-  );
+          listItemFromSnapshot(
+            snapshot,
+            row.published_at,
+            row.editorial_position,
+            row.featured,
+          ),
+        ];
+  });
 }
 
 export async function getPublishedSystem(
   db: Kysely<Database>,
   input: GetPublishedSystemInput,
 ): Promise<PublishedSystem | null> {
-  const localization = await db
-    .selectFrom('systems')
-    .innerJoin(
-      'system_localizations',
-      'system_localizations.system_id',
-      'systems.id',
-    )
+  const publication = await db
+    .selectFrom('system_publications')
+    .innerJoin('systems', 'systems.id', 'system_publications.system_id')
     .select([
-      'systems.id',
-      'systems.presentation_kind',
-      'systems.evidence_policy',
-      'system_localizations.slug',
-      'system_localizations.title',
-      'system_localizations.summary',
-      'system_localizations.proof_role',
-      'system_localizations.proof_maturity',
-      'system_localizations.proof_demo_nature',
-      'system_localizations.proof_data_nature',
-      'system_localizations.proof_limits',
-      'system_localizations.published_at',
-      'system_localizations.presentation_document',
+      'system_publications.system_id',
+      'system_publications.snapshot',
+      'system_publications.published_at',
     ])
     .where('systems.lifecycle', '=', 'active')
-    .where('system_localizations.locale', '=', input.locale)
-    .where('system_localizations.slug', '=', input.slug)
-    .where('system_localizations.editorial_state', '=', 'published')
+    .where('system_publications.locale', '=', input.locale)
+    .where('system_publications.slug', '=', input.slug)
     .executeTakeFirst();
 
-  if (
-    localization === undefined ||
-    localization.slug === null ||
-    localization.title === null ||
-    localization.summary === null ||
-    localization.proof_role === null ||
-    localization.proof_maturity === null ||
-    localization.proof_demo_nature === null ||
-    localization.proof_data_nature === null ||
-    localization.proof_limits === null ||
-    localization.published_at === null ||
-    localization.presentation_document === null
-  ) {
+  if (publication === undefined) {
     return null;
   }
 
-  const systemId = localization.id;
-  const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
+  const snapshot = parseSystemPublicationSnapshot(publication.snapshot);
+  if (snapshot === null) {
+    return null;
+  }
 
-  const [technologies, origin, links, media, alternate] = await Promise.all([
-    db
-      .selectFrom('system_technologies')
-      .innerJoin(
-        'technologies',
-        'technologies.id',
-        'system_technologies.technology_id',
-      )
-      .select([
-        'technologies.id',
-        'technologies.slug',
-        'technologies.name',
-        'system_technologies.position',
-      ])
-      .where('system_technologies.system_id', '=', systemId)
-      .orderBy('system_technologies.position')
-      .execute(),
-    db
-      .selectFrom('system_experiences')
-      .innerJoin(
-        'experience_localizations',
-        'experience_localizations.experience_id',
-        'system_experiences.experience_id',
-      )
-      .select([
-        'system_experiences.experience_id as id',
-        'experience_localizations.title',
-        'experience_localizations.summary',
-      ])
-      .where('system_experiences.system_id', '=', systemId)
-      .where('system_experiences.relation_kind', '=', 'origin_context')
-      .where('experience_localizations.locale', '=', input.locale)
-      .executeTakeFirst(),
-    db
-      .selectFrom('system_links')
-      .select(['id', 'kind', 'url', 'position'])
-      .where('system_id', '=', systemId)
-      .orderBy('position')
-      .execute(),
-    db
-      .selectFrom('system_assets')
-      .innerJoin('assets', 'assets.id', 'system_assets.asset_id')
-      .leftJoin(
-        'asset_localizations',
-        (join) =>
-          join
-            .onRef('asset_localizations.asset_id', '=', 'assets.id')
-            .on('asset_localizations.locale', '=', input.locale),
-      )
-      .select([
-        'assets.id',
-        'assets.mime_type',
-        'assets.width',
-        'assets.height',
-        'asset_localizations.alt_text',
-        'asset_localizations.caption',
-        'system_assets.position',
-      ])
-      .where('system_assets.system_id', '=', systemId)
-      .orderBy('system_assets.position')
-      .execute(),
-    db
-      .selectFrom('system_localizations')
-      .select(['locale', 'slug'])
-      .where('system_id', '=', systemId)
-      .where('locale', '=', alternateLocale)
-      .where('editorial_state', '=', 'published')
-      .where('slug', 'is not', null)
-      .executeTakeFirst(),
-  ]);
+  const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
+  const alternate = await db
+    .selectFrom('system_publications')
+    .select(['locale', 'slug'])
+    .where('system_id', '=', publication.system_id)
+    .where('locale', '=', alternateLocale)
+    .executeTakeFirst();
 
   return {
-    id: systemId,
-    locale: input.locale,
-    presentationKind: localization.presentation_kind,
-    evidencePolicy: localization.evidence_policy,
-    slug: localization.slug,
-    title: localization.title,
-    summary: localization.summary,
-    proofTransparency: {
-      role: localization.proof_role,
-      maturity: localization.proof_maturity,
-      demoNature: localization.proof_demo_nature,
-      dataNature: localization.proof_data_nature,
-      limits: localization.proof_limits,
-    },
-    publishedAt: localization.published_at,
-    presentationDocument: localization.presentation_document,
-    technologies,
-    origin: origin ?? null,
-    links:
-      localization.evidence_policy === 'documented_only'
-        ? links.filter(
-            (link) =>
-              link.kind === 'repository' || link.kind === 'documentation',
-          )
-        : links,
-    media: media.map((asset) => ({
-      id: asset.id,
-      mimeType: asset.mime_type,
-      altText: asset.alt_text,
-      caption: asset.caption,
-      width: asset.width,
-      height: asset.height,
-      position: asset.position,
-    })),
+    id: snapshot.systemId,
+    locale: snapshot.locale,
+    presentationKind: snapshot.presentationKind,
+    evidencePolicy: snapshot.evidencePolicy,
+    slug: snapshot.slug,
+    title: snapshot.title,
+    summary: snapshot.summary,
+    proofTransparency: snapshot.proofTransparency,
+    publishedAt: publication.published_at,
+    presentationDocument: snapshot.presentationDocument,
+    technologies: snapshot.technologies,
+    origin: snapshot.origin,
+    links: snapshot.links,
+    media: snapshot.media,
     alternate:
-      alternate === undefined || alternate.slug === null
+      alternate === undefined
         ? null
         : {
             locale: alternate.locale,
