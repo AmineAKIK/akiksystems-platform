@@ -1,4 +1,5 @@
 import type { SystemPresentationKind } from '@akiksystems/core';
+import type { ComponentType } from 'react';
 
 import {
   SystemDetailView,
@@ -44,7 +45,7 @@ const rendererById = {
   'interactive-entry': InteractiveEntrySystemExperience,
 } as const satisfies Record<
   SystemExperienceRendererId,
-  (props: SystemDetailViewProps) => React.ReactNode
+  ComponentType<SystemDetailViewProps>
 >;
 
 export function SystemExperience({
