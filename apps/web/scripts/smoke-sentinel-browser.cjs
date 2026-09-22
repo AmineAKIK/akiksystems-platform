@@ -845,7 +845,7 @@ async function assertProfileWithoutPriorCv(browser) {
       const firstView = page.locator('.aks-profile-first-view');
       const proof = page.locator('.aks-profile-immediate-proof');
       await proof
-        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
         .waitFor();
       assert.equal(
         await proof.getByRole('link', { name: scenario.proofAction }).getAttribute('href'),
@@ -1037,7 +1037,7 @@ async function assertProfileAfterPriorCvExposure(browser) {
 
       const proof = page.locator('.aks-profile-immediate-proof');
       await proof
-        .getByRole('heading', { level: 2, name: 'Sentinel', exact: true })
+        .getByRole('heading', { level: 3, name: 'Sentinel', exact: true })
         .waitFor();
       const proofHref = await proof
         .getByRole('link', { name: scenario.immediateProofAction, exact: true })
@@ -1547,14 +1547,14 @@ async function assertRepresentativeSystemSelection(page) {
     .waitFor();
   assert.equal(
     await englishProof
-      .getByRole('link', { name: 'Inspect this proof' })
+      .getByRole('link', { name: 'Inspect System' })
       .getAttribute('href'),
     '/en/systems/sentinel',
   );
   assert.equal(
-    await page.locator('.aks-profile-system').count(),
-    0,
-    'The immediate proof must not be duplicated in the lower System list.',
+    await page.locator('.aks-system-reference').count(),
+    1,
+    'The immediate proof must be the only SystemReference card when Sentinel is the only representative System.',
   );
   assert.equal(
     /job seeker|open to work/i.test(await page.locator('.aks-profile-first-view').innerText()),
@@ -1575,14 +1575,14 @@ async function assertRepresentativeSystemSelection(page) {
     .waitFor();
   assert.equal(
     await frenchProof
-      .getByRole('link', { name: 'Inspecter cette preuve' })
+      .getByRole('link', { name: 'Inspecter le système' })
       .getAttribute('href'),
     '/fr/systems/sentinel',
   );
   assert.equal(
-    await page.locator('.aks-profile-system').count(),
-    0,
-    'La preuve immédiate ne doit pas être dupliquée dans la liste de systèmes.',
+    await page.locator('.aks-system-reference').count(),
+    1,
+    'La preuve immédiate doit être la seule carte SystemReference lorsque Sentinel est le seul système représentatif.',
   );
 
   await page.setViewportSize({ width: 390, height: 844 });
