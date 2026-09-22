@@ -92,7 +92,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     set presentation_document = jsonb_set(
       presentation_document,
       '{blocks}',
-      (
+      coalesce((
         select jsonb_agg(
           case
             when block ->> 'type' = 'heading'
@@ -117,7 +117,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
         )
         from jsonb_array_elements(presentation_document -> 'blocks')
           with ordinality as blocks(block, ordinality)
-      )
+      ), presentation_document -> 'blocks')
     )
     where presentation_document is not null
       and system_id in (
