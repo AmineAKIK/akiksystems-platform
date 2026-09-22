@@ -65,13 +65,9 @@ async function publishProfileDraft(page, locales = ['en', 'fr']) {
   await page.goto(`${origin}/admin/profile`);
 
   for (const locale of locales) {
-    const card = page.locator('.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: locale.toUpperCase(),
-        exact: true,
-      }),
-    });
+    const card = page.locator(
+      `[data-profile-publication="${locale}"]`,
+    );
     const publishButton = card.getByRole('button', {
       name: /^(Publish|Republish draft)$/,
     });
