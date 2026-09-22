@@ -1259,11 +1259,12 @@ async function assertRepresentativeSystemSelection(page) {
     .getByRole('heading', { level: 2, name: 'Representative Systems', exact: true })
     .waitFor();
 
-  const sentinelCard = page.locator('.aks-admin-card').filter({
-    has: page.getByText('Sentinel', { exact: true }),
+  const checkbox = page.getByRole('checkbox', {
+    name: 'Sentinel',
+    exact: true,
   });
-  const checkbox = sentinelCard.locator('input[name="representativeSystem"]');
   await checkbox.check();
+  const sentinelCard = checkbox.locator('..').locator('..');
   await sentinelCard.locator('input[type="number"]').fill('0');
   await page.getByRole('button', { name: 'Save representative Systems' }).click();
   await page.getByText('Representative Systems updated.', { exact: true }).waitFor();
