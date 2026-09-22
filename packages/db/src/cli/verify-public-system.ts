@@ -124,6 +124,8 @@ try {
         original_filename: 'secret-internal-name.png',
         mime_type: 'image/png',
         byte_size: 42,
+        width: 1440,
+        height: 900,
       })
       .execute();
     await transaction
@@ -189,6 +191,8 @@ try {
   assert.equal(published.links[0]?.kind, 'repository');
   assert.equal(published.media[0]?.altText, 'Public image alt');
   assert.equal(published.media[0]?.caption, 'Public image caption');
+  assert.equal(published.media[0]?.width, 1440);
+  assert.equal(published.media[0]?.height, 900);
 
   assert.equal(
     await getPublishedSystem(db, { locale: 'fr', slug: 'sentinel-prive-preuve' }),
