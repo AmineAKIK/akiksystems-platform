@@ -16,6 +16,10 @@ if (!adminEmail || !adminPassword) {
 
 const port = '4177';
 const origin = `http://127.0.0.1:${port}`;
+const testAssetRoot = '/tmp/akiksystems-browser-assets';
+fs.rmSync(testAssetRoot, { force: true, recursive: true });
+fs.mkdirSync(testAssetRoot, { recursive: true });
+process.env.ASSET_STORAGE_TEST_ROOT = testAssetRoot;
 let stderr = '';
 
 const server = spawn(process.execPath, ['server.js'], {
