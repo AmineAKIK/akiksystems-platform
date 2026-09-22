@@ -50,6 +50,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'What is implemented',
+      evidenceStatus: 'implemented' as const,
     },
     {
       type: 'list' as const,
@@ -65,6 +66,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Evidence boundaries',
+      evidenceStatus: 'boundary' as const,
     },
     {
       type: 'list' as const,
@@ -81,6 +83,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Hypotheses',
+      evidenceStatus: 'hypothesis' as const,
     },
     {
       type: 'paragraph' as const,
@@ -90,6 +93,7 @@ const englishPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Future integrations',
+      evidenceStatus: 'future_integration' as const,
     },
     {
       type: 'paragraph' as const,
@@ -118,6 +122,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Ce qui est implemente',
+      evidenceStatus: 'implemented' as const,
     },
     {
       type: 'list' as const,
@@ -133,6 +138,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Limites et preuves',
+      evidenceStatus: 'boundary' as const,
     },
     {
       type: 'list' as const,
@@ -149,6 +155,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Hypothèses',
+      evidenceStatus: 'hypothesis' as const,
     },
     {
       type: 'paragraph' as const,
@@ -158,6 +165,7 @@ const frenchPresentation = {
       type: 'heading' as const,
       level: 2 as const,
       text: 'Intégrations futures',
+      evidenceStatus: 'future_integration' as const,
     },
     {
       type: 'paragraph' as const,
