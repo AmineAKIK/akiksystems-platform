@@ -13,7 +13,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     .select([
       'assets.storage_key',
       'assets.mime_type',
-      'assets.original_filename',
     ])
     .where('profiles.singleton_key', '=', 'public')
     .where('assets.mime_type', '=', 'application/pdf')
@@ -29,7 +28,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     headers: {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
       'Content-Type': cv.mime_type,
-      'Content-Disposition': `inline; filename="${cv.original_filename.replaceAll('"', '')}"`,
+      'Content-Disposition': 'inline; filename="amine-akik-cv.pdf"',
     },
   });
 }
