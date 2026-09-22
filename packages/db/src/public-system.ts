@@ -47,6 +47,8 @@ export interface PublishedSystemListItem {
   title: string;
   summary: string;
   publishedAt: Date;
+  position: number;
+  featured: boolean;
 }
 
 export interface ListPublishedSystemsInput {
@@ -86,6 +88,8 @@ export async function listPublishedSystems(
     )
     .select([
       'systems.id',
+      'systems.editorial_position',
+      'systems.featured',
       'system_localizations.slug',
       'system_localizations.title',
       'system_localizations.summary',
@@ -98,6 +102,7 @@ export async function listPublishedSystems(
     .where('system_localizations.title', 'is not', null)
     .where('system_localizations.summary', 'is not', null)
     .where('system_localizations.published_at', 'is not', null)
+    .orderBy('systems.editorial_position')
     .orderBy('systems.created_at')
     .orderBy('systems.id')
     .execute();
@@ -116,6 +121,8 @@ export async function listPublishedSystems(
             title: row.title,
             summary: row.summary,
             publishedAt: row.published_at,
+            position: row.editorial_position,
+            featured: row.featured,
           },
         ],
   );
