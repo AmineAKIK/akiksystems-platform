@@ -48,16 +48,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 
-  await db
-    .insertInto('profile_mobility')
-    .columns(['profile_id'])
-    .expression(
-      db
-        .selectFrom('profiles')
-        .select('id as profile_id')
-        .where('singleton_key', '=', 'public'),
-    )
-    .execute();
+  await sql`
+    insert into profile_mobility (profile_id)
+    select id
+    from profiles
+    where singleton_key = 'public'
+  `.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
