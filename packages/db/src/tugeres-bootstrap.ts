@@ -218,6 +218,7 @@ export async function bootstrapTugeresDomain(
       .values({
         id: systemId,
         presentation_kind: 'standard',
+        evidence_policy: 'documented_only',
         editorial_position: (maxPosition?.max_position ?? -1) + 1,
         featured: false,
       })
@@ -232,7 +233,7 @@ export async function bootstrapTugeresDomain(
           slug: 'tugeres',
           title: 'Tugères',
           summary:
-            'White-label catering management and ordering system with isolated per-caterer deployments, payments, billing, inventory and operational controls.',
+            'White-label catering management and ordering system with an isolated per-caterer operating model, payments, billing, inventory and operational controls.',
           presentation_document: {
             ...englishPresentation,
             blocks: englishPresentation.blocks.map((block) =>
