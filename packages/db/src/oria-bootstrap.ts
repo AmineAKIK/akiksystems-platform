@@ -10,6 +10,8 @@ export interface OriaMediaInput {
   originalFilename: string;
   mimeType: 'image/webp';
   byteSize: number;
+  width?: number;
+  height?: number;
 }
 
 export interface BootstrapOriaInput {
@@ -327,6 +329,8 @@ export async function bootstrapOriaDomain(
         original_filename: input.media.originalFilename,
         mime_type: input.media.mimeType,
         byte_size: input.media.byteSize,
+        width: input.media.width ?? null,
+        height: input.media.height ?? null,
       })
       .execute();
 
