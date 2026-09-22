@@ -1524,22 +1524,13 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    if (
-      current.source_cv_asset_id !== null &&
-      current.source_cv_storage_key !== null
-    ) {
-      try {
-        await deleteAssetObject(current.source_cv_storage_key);
-        await appDb
-          .deleteFrom('assets')
-          .where('id', '=', current.source_cv_asset_id)
-          .execute();
-      } catch {
-        // New CV is already committed; leave stale object/metadata for retry.
-      }
-    }
-
-    return { ok: true, message: 'Source CV updated.' };
+    return {
+      ok: true,
+      message:
+        current.source_cv_asset_id === null
+          ? 'Source CV updated.'
+          : 'Source CV updated. Previous asset preserved for any published Profile snapshot.',
+    };
   }
 
   if (intent === 'remove-source-cv') {
@@ -1554,8 +1545,6 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: true, message: 'No source CV is currently set.' };
     }
 
-    await deleteAssetObject(current.storage_key);
-
     await appDb.transaction().execute(async (transaction) => {
       await transaction
         .updateTable('profiles')
@@ -1566,8 +1555,6 @@ export async function action({ request }: Route.ActionArgs) {
         .where('id', '=', profileId)
         .executeTakeFirstOrThrow();
 
-      await transaction.deleteFrom('assets').where('id', '=', current.id).execute();
-
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
@@ -1575,7 +1562,9 @@ export async function action({ request }: Route.ActionArgs) {
         entityType: 'profile',
         entityId: profileId,
         metadata: {
-          storageObjectDeleted: true,
+          assetId: current.id,
+          storageObjectPreserved: true,
+          reason: 'published_snapshot_safety',
         },
       });
     });
@@ -1701,23 +1690,13 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    if (
-      current.portrait_asset_id !== null &&
-      current.portrait_storage_key !== null
-    ) {
-      try {
-        await deleteAssetObject(current.portrait_storage_key);
-        await appDb
-          .deleteFrom('assets')
-          .where('id', '=', current.portrait_asset_id)
-          .execute();
-      } catch {
-        // The new portrait is already committed. Keep stale metadata/object for
-        // retry rather than rolling back a valid public portrait.
-      }
-    }
-
-    return { ok: true, message: 'Portrait updated.' };
+    return {
+      ok: true,
+      message:
+        current.portrait_asset_id === null
+          ? 'Portrait updated.'
+          : 'Portrait updated. Previous asset preserved for any published Profile snapshot.',
+    };
   }
 
   if (intent === 'remove-portrait') {
@@ -1732,8 +1711,6 @@ export async function action({ request }: Route.ActionArgs) {
       return { ok: true, message: 'No portrait is currently set.' };
     }
 
-    await deleteAssetObject(current.storage_key);
-
     await appDb.transaction().execute(async (transaction) => {
       await transaction
         .updateTable('profiles')
@@ -1744,8 +1721,6 @@ export async function action({ request }: Route.ActionArgs) {
         .where('id', '=', profileId)
         .executeTakeFirstOrThrow();
 
-      await transaction.deleteFrom('assets').where('id', '=', current.id).execute();
-
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
@@ -1753,7 +1728,9 @@ export async function action({ request }: Route.ActionArgs) {
         entityType: 'profile',
         entityId: profileId,
         metadata: {
-          storageObjectDeleted: true,
+          assetId: current.id,
+          storageObjectPreserved: true,
+          reason: 'published_snapshot_safety',
         },
       });
     });
