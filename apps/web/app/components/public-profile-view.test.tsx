@@ -76,3 +76,88 @@ describe('PublicProfileView source CV', () => {
     expect(html).toContain('Voir le CV source');
   });
 });
+
+
+describe('PublicProfileView first view', () => {
+  const sentinel = {
+    id: '00000000-0000-4000-8000-000000000028',
+    position: 0,
+    slug: 'sentinel',
+    title: 'Sentinel',
+    summary: 'Operational visibility built from inspectable evidence.',
+  };
+
+  const second = {
+    id: '00000000-0000-4000-8000-000000000029',
+    position: 1,
+    slug: 'second-system',
+    title: 'Second System',
+    summary: 'A second representative system.',
+  };
+
+  it('uses the first representative System as immediate proof without duplication', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          profile={profile({
+            introduction:
+              'I design and build inspectable software systems.',
+            foundationalCopy:
+              'Professional identity connected to inspectable evidence.',
+            representativeSystems: [sentinel, second],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-label="Immediate proof"');
+    expect(html).toContain('Inspect this proof');
+    expect(html.match(/>Sentinel</g)).toHaveLength(1);
+    expect(html).toContain('Representative Systems');
+    expect(html).toContain('Second System');
+  });
+
+  it('keeps the first view useful without inventing proof when no System is selected', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          profile={profile({
+            introduction:
+              'I design and build inspectable software systems.',
+            representativeSystems: [],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('class="aks-profile-first-view"');
+    expect(html).toContain('Amine AKIK');
+    expect(html).toContain('Software systems builder');
+    expect(html).not.toContain('Immediate proof');
+  });
+
+  it('localizes the immediate proof affordance in French', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/profil']}>
+        <PublicProfileView
+          profile={profile({
+            locale: 'fr',
+            alternateLocale: 'en',
+            professionalTitle: 'Concepteur de systèmes logiciels',
+            introduction: 'Je conçois des systèmes logiciels inspectables.',
+            representativeSystems: [
+              {
+                ...sentinel,
+                summary: 'Visibilité opérationnelle et preuves inspectables.',
+              },
+            ],
+          })}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-label="Preuve immédiate"');
+    expect(html).toContain('Inspecter cette preuve');
+    expect(html).toContain('href="/fr/systems/sentinel"');
+  });
+});
