@@ -53,6 +53,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         'system_localizations.slug',
         'system_localizations.title',
         'system_localizations.summary',
+        'system_localizations.proof_role',
+        'system_localizations.proof_maturity',
+        'system_localizations.proof_demo_nature',
+        'system_localizations.proof_data_nature',
+        'system_localizations.proof_limits',
         'system_localizations.editorial_state',
         'system_localizations.presentation_document',
       ])
@@ -64,6 +69,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       localization === undefined ||
       localization.title === null ||
       localization.summary === null ||
+      localization.proof_role === null ||
+      localization.proof_maturity === null ||
+      localization.proof_demo_nature === null ||
+      localization.proof_data_nature === null ||
+      localization.proof_limits === null ||
       localization.presentation_document === null
     ) {
       throw new Response('Preview content is incomplete.', { status: 404 });
@@ -134,6 +144,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         locale,
         title: localization.title,
         summary: localization.summary,
+        proofTransparency: {
+          role: localization.proof_role,
+          maturity: localization.proof_maturity,
+          demoNature: localization.proof_demo_nature,
+          dataNature: localization.proof_data_nature,
+          limits: localization.proof_limits,
+        },
         editorialState: localization.editorial_state,
         presentationKind: localization.presentation_kind,
         presentationDocument: localization.presentation_document,
@@ -187,6 +204,7 @@ export default function AdminSystemPreview() {
         originSummary={data.originSummary}
         originTitle={data.originTitle}
         presentationDocument={data.presentationDocument}
+        proofTransparency={data.proofTransparency}
         presentationKind={data.presentationKind}
         preview
         summary={data.summary}
