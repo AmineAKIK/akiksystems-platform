@@ -49,6 +49,8 @@ export interface SystemMetadataTable {
 export interface SystemsTable {
   id: string;
   lifecycle: DefaultedColumn<SystemLifecycle>;
+  editorial_position: DefaultedColumn<number>;
+  featured: DefaultedColumn<boolean>;
   archived_at: NullableTimestampColumn;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
