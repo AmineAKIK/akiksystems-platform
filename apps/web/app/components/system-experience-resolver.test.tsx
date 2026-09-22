@@ -42,8 +42,7 @@ describe('System Experience Resolver', () => {
           originSummary={null}
           originTitle={null}
           proofTransparency={proofTransparency}
-          proofTransparency={proofTransparency}
-        presentationDocument={{ version: 1, blocks: [] }}
+          presentationDocument={{ version: 1, blocks: [] }}
           presentationKind={presentationKind}
           summary="Inspectable System."
           technologies={[]}
@@ -54,6 +53,8 @@ describe('System Experience Resolver', () => {
 
       expect(html).toContain(`data-presentation-kind="${presentationKind}"`);
       expect(html).toContain('data-renderer=');
+      expect(html).toContain('Proof transparency');
+      expect(html).toContain('System case study');
       if (presentationKind === 'guided_demo') {
         expect(html).toContain('<main class="aks-guided-demo"');
         expect(html).toContain('Evidence contract');
