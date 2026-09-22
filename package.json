@@ -13,6 +13,7 @@
     "auth:migrate": "pnpm --filter @akiksystems/web auth:migrate",
     "content:bootstrap-protocap": "pnpm --filter @akiksystems/web content:bootstrap-protocap",
     "content:bootstrap-oria": "pnpm --filter @akiksystems/web content:bootstrap-oria",
+    "content:bootstrap-tugeres": "pnpm --filter @akiksystems/web content:bootstrap-tugeres",
     "build": "pnpm -r --if-present build",
     "clean": "tsc -b --clean && rimraf \"apps/*/dist\" \"apps/*/build\" \"packages/*/dist\" coverage",
     "config:verify": "node packages/config/env/verify.mjs",
@@ -50,6 +51,8 @@
     "db:verify-system-editorial-controls": "pnpm --filter @akiksystems/db db:verify-system-editorial-controls",
     "db:verify-protocap-domain": "pnpm --filter @akiksystems/db db:verify-protocap-domain",
     "db:verify-oria-domain": "pnpm --filter @akiksystems/db db:verify-oria-domain",
+    "db:verify-tugeres-domain": "pnpm --filter @akiksystems/db db:verify-tugeres-domain",
+    "db:bootstrap-tugeres-qualification": "pnpm --filter @akiksystems/db db:bootstrap-tugeres-qualification",
     "db:bootstrap-oria-qualification": "pnpm --filter @akiksystems/db db:bootstrap-oria-qualification",
     "db:bootstrap-protocap-qualification": "pnpm --filter @akiksystems/db db:bootstrap-protocap-qualification",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
