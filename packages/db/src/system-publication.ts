@@ -163,7 +163,7 @@ function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapsh
     typeof proofTransparency.demoNature === 'string' &&
     typeof proofTransparency.dataNature === 'string' &&
     typeof proofTransparency.limits === 'string' &&
-    presentation.valid &&
+    presentation.success &&
     Array.isArray(value.technologies) &&
     value.technologies.every(isPublicationTechnology) &&
     (value.origin === null || isPublicationOrigin(value.origin)) &&
@@ -303,13 +303,36 @@ async function publicationSource(
       .execute(),
   ]);
 
-  const availableMediaIds = new Set(media.map((asset) => asset.id));
+  const availableMediaById = new Map(
+    media.map((asset) => [asset.id, asset] as const),
+  );
   const missingPresentationAssetId = presentationAssetIds.find(
-    (assetId) => !availableMediaIds.has(assetId),
+    (assetId) => !availableMediaById.has(assetId),
   );
   if (missingPresentationAssetId !== undefined) {
     throw new Error(
       `System localization ${systemId}:${locale} references unavailable presentation asset ${missingPresentationAssetId}.`,
+    );
+  }
+
+  const invalidPresentationMedia = presentationAssetIds
+    .map((assetId) => availableMediaById.get(assetId)!)
+    .find((asset) => !asset.mime_type.startsWith('image/'));
+  if (invalidPresentationMedia !== undefined) {
+    throw new Error(
+      `System localization ${systemId}:${locale} uses non-image asset ${invalidPresentationMedia.id} in an image block.`,
+    );
+  }
+
+  const missingAltTextMedia = presentationAssetIds
+    .map((assetId) => availableMediaById.get(assetId)!)
+    .find(
+      (asset) =>
+        asset.alt_text === null || asset.alt_text.trim().length === 0,
+    );
+  if (missingAltTextMedia !== undefined) {
+    throw new Error(
+      `System localization ${systemId}:${locale} requires localized alt text for presentation image ${missingAltTextMedia.id}.`,
     );
   }
 
