@@ -1970,11 +1970,14 @@ async function assertWritingAdminAndPublic(page) {
     .waitFor();
 
   for (const target of targets) {
-    const archivedDetail = await page.goto(origin + target.detail);
+    const archivedDetail = await page.context().request.get(
+      origin + target.detail,
+      { headers: { 'Cache-Control': 'no-cache' } },
+    );
     assert.equal(
-      archivedDetail?.status(),
+      archivedDetail.status(),
       404,
-      'Archived Writing deep links must disappear from public delivery.',
+      'Archived Writing deep links must disappear from origin public delivery.',
     );
   }
 
@@ -2005,9 +2008,12 @@ async function assertWritingAdminAndPublic(page) {
     .waitFor();
 
   for (const target of targets) {
-    const restoredDetail = await page.goto(origin + target.detail);
+    const restoredDetail = await page.context().request.get(
+      origin + target.detail,
+      { headers: { 'Cache-Control': 'no-cache' } },
+    );
     assert.equal(
-      restoredDetail?.status(),
+      restoredDetail.status(),
       200,
       'Restoring a Writing must reactivate preserved publication snapshots without republishing.',
     );
