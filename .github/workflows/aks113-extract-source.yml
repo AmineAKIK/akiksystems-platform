@@ -109,7 +109,231 @@ jobs:
               if not line:
                   continue
 
-              marker = re.match(r'^(\\d{2}) / RÉFLEXION$', line)
+              marker = re.match(r'^(\d{2}) / RÉFLEXION, line)
+              if marker:
+                  flush()
+                  current = marker.group(1)
+                  content.append(
+                      {
+                          'type': 'heading',
+                          'attrs': {'level': 2},
+                          'content': [text_node(chapter_by_number[current])],
+                      }
+                  )
+                  continue
+
+              if current is None:
+                  continue
+
+              if (
+                  line in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI'}
+                  or line == 'AKIK Mohamed Amine / AkikSystems'
+                  or re.match(r'^\d{2} / 25, line)
+              ):
+                  flush()
+                  continue
+
+              title = chapter_by_number[current]
+              if (
+                  line == title
+                  or line == title + ' · suite'
+                  or line in heading_fragments.get(current, set())
+                  or (line.endswith(' · suite') and line[:-8].strip() == title)
+              ):
+                  continue
+
+              if line.startswith('http://') or line.startswith('https://'):
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              if current == '12' and line in {
+                  'ProtoCap — dépôt public :',
+                  'Démonstration en ligne :',
+              }:
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              buffer.append(line)
+              if re.search(r'[.!?…»]$', line):
+                  flush()
+
+          flush()
+
+          document = {'version': 1, 'type': 'doc', 'content': content}
+          if len(content) != 213:
+              raise SystemExit(f'Unexpected block count: {len(content)}')
+
+          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
+          output = Path('packages/db/src/rendre-attention-essay-document.json')
+          output.write_text(serialized, encoding='utf-8')
+          print(f'Generated {len(content)} blocks at {output}.')
+          PY
+
+      - name: Commit generated canonical document
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/db/src/rendre-attention-essay-document.json
+          if git diff --cached --quiet; then
+            echo "Canonical document already up to date."
+            exit 0
+          fi
+          git commit -m "Add canonical AKS-113 essay document"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Upload extracted essay source
+        uses: actions/upload-artifact@v4
+        with:
+          name: aks113-source-text
+          path: .tmp/extracted/rendre-l-attention-au-reel.txt
+          if-no-files-found: error
+          retention-days: 1
+, line)
+              if marker:
+                  flush()
+                  current = marker.group(1)
+                  content.append(
+                      {
+                          'type': 'heading',
+                          'attrs': {'level': 2},
+                          'content': [text_node(chapter_by_number[current])],
+                      }
+                  )
+                  continue
+
+              if current is None:
+                  continue
+
+              if (
+                  line in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI'}
+                  or line == 'AKIK Mohamed Amine / AkikSystems'
+                  or re.match(r'^\\d{2} / 25$', line)
+              ):
+                  flush()
+                  continue
+
+              title = chapter_by_number[current]
+              if (
+                  line == title
+                  or line == title + ' · suite'
+                  or line in heading_fragments.get(current, set())
+                  or (line.endswith(' · suite') and line[:-8].strip() == title)
+              ):
+                  continue
+
+              if line.startswith('http://') or line.startswith('https://'):
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              if current == '12' and line in {
+                  'ProtoCap — dépôt public :',
+                  'Démonstration en ligne :',
+              }:
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              buffer.append(line)
+              if re.search(r'[.!?…»]$', line):
+                  flush()
+
+          flush()
+
+          document = {'version': 1, 'type': 'doc', 'content': content}
+          if len(content) != 213:
+              raise SystemExit(f'Unexpected block count: {len(content)}')
+
+          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
+          output = Path('packages/db/src/rendre-attention-essay-document.json')
+          output.write_text(serialized, encoding='utf-8')
+          print(f'Generated {len(content)} blocks at {output}.')
+          PY
+
+      - name: Commit generated canonical document
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/db/src/rendre-attention-essay-document.json
+          if git diff --cached --quiet; then
+            echo "Canonical document already up to date."
+            exit 0
+          fi
+          git commit -m "Add canonical AKS-113 essay document"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Upload extracted essay source
+        uses: actions/upload-artifact@v4
+        with:
+          name: aks113-source-text
+          path: .tmp/extracted/rendre-l-attention-au-reel.txt
+          if-no-files-found: error
+          retention-days: 1
+, line)
+              ):
+                  flush()
+                  continue
+
+              title = chapter_by_number[current]
+              if (
+                  line == title
+                  or line == title + ' · suite'
+                  or line in heading_fragments.get(current, set())
+                  or (line.endswith(' · suite') and line[:-8].strip() == title)
+              ):
+                  continue
+
+              if line.startswith('http://') or line.startswith('https://'):
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              if current == '12' and line in {
+                  'ProtoCap — dépôt public :',
+                  'Démonstration en ligne :',
+              }:
+                  flush()
+                  content.append(paragraph(line))
+                  continue
+
+              buffer.append(line)
+              if re.search(r'[.!?…»]$', line):
+                  flush()
+
+          flush()
+
+          document = {'version': 1, 'type': 'doc', 'content': content}
+          if len(content) != 213:
+              raise SystemExit(f'Unexpected block count: {len(content)}')
+
+          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
+          output = Path('packages/db/src/rendre-attention-essay-document.json')
+          output.write_text(serialized, encoding='utf-8')
+          print(f'Generated {len(content)} blocks at {output}.')
+          PY
+
+      - name: Commit generated canonical document
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/db/src/rendre-attention-essay-document.json
+          if git diff --cached --quiet; then
+            echo "Canonical document already up to date."
+            exit 0
+          fi
+          git commit -m "Add canonical AKS-113 essay document"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Upload extracted essay source
+        uses: actions/upload-artifact@v4
+        with:
+          name: aks113-source-text
+          path: .tmp/extracted/rendre-l-attention-au-reel.txt
+          if-no-files-found: error
+          retention-days: 1
+, line)
               if marker:
                   flush()
                   current = marker.group(1)
