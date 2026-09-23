@@ -1,7 +1,10 @@
-import type {
-  PlatformLocale,
-  WritingEditorialWeight,
-  WritingKind,
+import {
+  parseWritingDocument,
+  writingDocumentFromPlainText,
+  type PlatformLocale,
+  type WritingDocument,
+  type WritingEditorialWeight,
+  type WritingKind,
 } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
@@ -27,6 +30,7 @@ export interface WritingPublicationSnapshot {
   title: string;
   summary: string;
   body: string | null;
+  document: WritingDocument;
   kind: WritingKind;
   editorialWeight: WritingEditorialWeight;
   editorialPosition: number;
@@ -77,17 +81,22 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
 
   const snapshot = value as Omit<
     WritingPublicationSnapshot,
-    'version' | 'categoryIds' | 'tagIds' | 'systemIds'
+    'version' | 'document' | 'categoryIds' | 'tagIds' | 'systemIds'
   > & {
     version?: number;
+    document?: unknown;
     categoryIds?: unknown;
     tagIds?: unknown;
     systemIds?: unknown;
   };
+  const document =
+    parseWritingDocument(snapshot.document) ??
+    writingDocumentFromPlainText(snapshot.body);
 
   return {
     ...snapshot,
     version: 4,
+    document,
     categoryIds: Array.isArray(snapshot.categoryIds)
       ? snapshot.categoryIds.filter(
           (categoryId): categoryId is string => typeof categoryId === 'string',
@@ -228,6 +237,7 @@ export async function publishWritingLocalization(
         'writing_localizations.title',
         'writing_localizations.summary',
         'writing_localizations.body',
+        'writing_localizations.editor_document',
       ])
       .where('writings.id', '=', input.writingId)
       .where('writing_localizations.locale', '=', input.locale)
@@ -266,6 +276,9 @@ export async function publishWritingLocalization(
       title: requiredText(row.title, 'title'),
       summary: requiredText(row.summary, 'summary'),
       body: row.body?.trim() || null,
+      document:
+        parseWritingDocument(row.editor_document) ??
+        writingDocumentFromPlainText(row.body),
       kind: row.kind,
       editorialWeight: row.editorial_weight,
       editorialPosition: row.editorial_position,
