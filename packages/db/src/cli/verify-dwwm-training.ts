@@ -50,16 +50,16 @@ try {
     english.title,
     'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
   );
-  assert.match(english.summary, /STUDI training currently in progress/);
-  assert.match(english.body ?? '', /Professional Title RNCP 37674/);
+  assert.match(english.summary, /level-5 Professional Title RNCP 37674/);
+  assert.match(english.body ?? '', /French Ministry of Labour Professional Title/);
   assert.equal(english.alternate?.slug, 'developpeur-web-web-mobile');
 
   assert.equal(
     french.title,
     'Développeur web et web mobile — Titre professionnel RNCP 37674',
   );
-  assert.match(french.summary, /Formation STUDI actuellement en cours/);
-  assert.match(french.body ?? '', /titre professionnel RNCP 37674/);
+  assert.match(french.summary, /titre professionnel Développeur web et web mobile de niveau 5/);
+  assert.match(french.body ?? '', /délivré par le ministère du Travail/);
   assert.equal(french.alternate?.slug, 'full-stack-web-mobile-developer');
 
   process.stdout.write(
