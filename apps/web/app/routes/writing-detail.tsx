@@ -29,6 +29,12 @@ function categoryHref(locale: 'en' | 'fr', slug: string): string {
     : `/en/writings/categories/${slug}`;
 }
 
+function tagHref(locale: 'en' | 'fr', slug: string): string {
+  return locale === 'fr'
+    ? `/fr/ecrits/tags/${slug}`
+    : `/en/writings/tags/${slug}`;
+}
+
 function kindLabel(kind: 'note' | 'article' | 'essay', locale: 'en' | 'fr') {
   if (kind === 'note') return 'Note';
   if (kind === 'article') return 'Article';
@@ -122,6 +128,24 @@ export default function WritingDetailRoute() {
                   key={category.categoryId}
                 >
                   {category.name}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
+
+          {writing.tags.length > 0 ? (
+            <nav
+              className="aks-proof-actions"
+              aria-label={
+                writing.locale === 'fr' ? 'Tags éditoriaux' : 'Editorial tags'
+              }
+            >
+              {writing.tags.map((tag) => (
+                <Link
+                  href={tagHref(writing.locale, tag.slug)}
+                  key={tag.tagId}
+                >
+                  {tag.name}
                 </Link>
               ))}
             </nav>
