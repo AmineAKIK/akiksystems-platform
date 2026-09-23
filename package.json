@@ -12,6 +12,7 @@
     "auth:bootstrap-admin": "pnpm --filter @akiksystems/web auth:bootstrap-admin",
     "auth:migrate": "pnpm --filter @akiksystems/web auth:migrate",
     "content:bootstrap-dwwm": "pnpm --filter @akiksystems/web content:bootstrap-dwwm",
+    "content:bootstrap-sentinel-dossier": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-dossier",
     "content:bootstrap-protocap": "pnpm --filter @akiksystems/web content:bootstrap-protocap",
     "content:bootstrap-oria": "pnpm --filter @akiksystems/web content:bootstrap-oria",
     "content:bootstrap-tugeres": "pnpm --filter @akiksystems/web content:bootstrap-tugeres",
@@ -64,6 +65,7 @@
     "db:bootstrap-credential-qualification": "pnpm --filter @akiksystems/db db:bootstrap-credential-qualification",
     "db:bootstrap-learning-artifact-qualification": "pnpm --filter @akiksystems/db db:bootstrap-learning-artifact-qualification",
     "db:verify-dwwm-training": "pnpm --filter @akiksystems/db db:verify-dwwm-training",
+    "db:verify-sentinel-dossier": "pnpm --filter @akiksystems/db db:verify-sentinel-dossier",
     "db:verify-credential-domain": "pnpm --filter @akiksystems/db db:verify-credential-domain",
     "db:verify-learning-artifact-domain": "pnpm --filter @akiksystems/db db:verify-learning-artifact-domain",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
