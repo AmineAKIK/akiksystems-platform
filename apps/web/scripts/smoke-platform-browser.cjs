@@ -1675,12 +1675,7 @@ async function assertWritingAdminAndPublic(page) {
   });
 
   let assetSection = writingCard().locator('[data-writing-assets]');
-  const upload = assetSection.locator('form').filter({
-    has: assetSection.getByRole('button', {
-      name: 'Upload Writing image',
-      exact: true,
-    }),
-  });
+  const upload = assetSection.locator('form[data-writing-asset-upload]');
   await upload.locator('input[name="file"]').setInputFiles({
     name: 'aks-107-contextual.png',
     mimeType: 'image/png',
