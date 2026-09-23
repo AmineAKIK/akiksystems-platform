@@ -7,6 +7,7 @@ export default [
   route('admin/security', 'routes/admin-security.tsx'),
   route('admin/profile', 'routes/admin-profile.tsx'),
   route('admin/learning', 'routes/admin-learning.tsx'),
+  route('admin/learning/trainings', 'routes/admin-learning-trainings.tsx'),
   route('admin/learning/credentials', 'routes/admin-learning-credentials.tsx'),
   route('admin/learning/artifacts', 'routes/admin-learning-artifacts.tsx'),
   route('admin/profile/preview/:locale', 'routes/admin-profile-preview.tsx'),
