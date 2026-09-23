@@ -238,7 +238,13 @@ export function WritingBodyEditor({
   });
 
   const insertBlock = (block: JSONContent) => {
-    editor?.chain().focus().insertContent(block).run();
+    if (editor === null) return;
+
+    const selection = editor.state.selection;
+    const position =
+      selection.$to.depth > 0 ? selection.$to.after(1) : selection.to;
+
+    editor.chain().focus().insertContentAt(position, block).run();
   };
 
   const labels =
