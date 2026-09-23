@@ -26,7 +26,7 @@ export async function bootstrapRendreAttentionEssay(
     .where('slug', '=', frenchSlug)
     .executeTakeFirst();
 
-  let writingId = existing?.writing_id ?? randomUUID();
+  const writingId = existing?.writing_id ?? randomUUID();
   let created = false;
   let editorialState = existing?.editorial_state ?? 'draft';
 
