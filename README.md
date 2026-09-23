@@ -195,10 +195,9 @@ AKS-110 turns the Writings destination into one living editorial surface. Note,
 Article, and Essay remain explicit forms in metadata and admin, but they are not
 split into separate public blogs, tabs, or route families. The overview, Category,
 and Tag surfaces all reuse the same ordered feed component and every item keeps
-its localized deep link. The living feed orders published snapshots newest-first by `publishedAt`, with a
-stable Writing-ID tie-breaker. That ordering is derived from publication state,
-not from separate Note/Article/Essay route families or admin-authored layout
-instructions.
+its localized deep link. The feed preserves the existing code-defined `editorialPosition` ordering
+contract from the Writing read model. Publication timestamps remain reader-facing
+metadata rather than becoming implicit layout instructions.
 
 `editorialWeight` remains part of the Writing publication model, but AKS-110
 does not expose it as a DOM hook, visual hierarchy, or reader-facing label.
