@@ -68,6 +68,70 @@
   border-block: 1px solid var(--aks-border-subtle);
 }
 
+/*
+ * Editorial weight is a content signal mapped to fixed product-owned
+ * compositions. Admin can choose the signal, but cannot author columns,
+ * templates, spacing, or arbitrary presentation.
+ */
+.aks-writings-feed-item[data-editorial-weight='featured']
+  .aks-writings-feed-entry {
+  grid-template-columns: minmax(6rem, 0.18fr) minmax(0, 1.2fr) auto;
+  column-gap: var(--aks-space-6);
+  padding-block: calc(var(--aks-space-6) + var(--aks-space-2));
+}
+
+.aks-writings-feed-item[data-editorial-weight='featured']
+  .aks-writings-feed-copy
+  .aks-heading {
+  font-size: clamp(1.2rem, 1.6vw, 1.45rem);
+  line-height: 1.2;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-entry {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--aks-space-6);
+  padding-block: calc(var(--aks-space-6) + var(--aks-space-4));
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2) var(--aks-space-4);
+  align-items: baseline;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-copy {
+  grid-column: 1;
+  max-width: 72ch;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-copy
+  .aks-heading {
+  font-size: clamp(1.55rem, 2.4vw, 2.2rem);
+  line-height: 1.12;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-summary {
+  max-width: 68ch;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-taxonomy {
+  grid-column: 1 / -1;
+}
+
+.aks-writings-feed-item[data-editorial-weight='major']
+  .aks-writings-feed-read {
+  grid-column: 2;
+  grid-row: 2;
+}
+
 @media (max-width: 48rem) {
   .aks-writings-feed-entry {
     grid-template-columns: minmax(0, 1fr);
@@ -89,5 +153,26 @@
   .aks-writings-feed-read {
     justify-self: start;
     white-space: normal;
+  }
+
+  .aks-writings-feed-item[data-editorial-weight='major']
+    .aks-writings-feed-entry,
+  .aks-writings-feed-item[data-editorial-weight='featured']
+    .aks-writings-feed-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-writings-feed-item[data-editorial-weight='major']
+    .aks-writings-feed-copy,
+  .aks-writings-feed-item[data-editorial-weight='major']
+    .aks-writings-feed-taxonomy,
+  .aks-writings-feed-item[data-editorial-weight='major']
+    .aks-writings-feed-read {
+    grid-column: 1;
+  }
+
+  .aks-writings-feed-item[data-editorial-weight='major']
+    .aks-writings-feed-read {
+    grid-row: auto;
   }
 }

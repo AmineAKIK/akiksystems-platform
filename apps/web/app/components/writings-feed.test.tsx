@@ -100,7 +100,7 @@ describe('WritingsFeed', () => {
     expect(html).not.toContain('/essays/');
   });
 
-  it('does not surface editorial weight before AKS-111 owns visual weighting', () => {
+  it('maps editorial weight to fixed composition hooks without reader-facing labels', () => {
     const html = renderToStaticMarkup(
       <WritingsFeed
         emptyMessage="No writing."
@@ -108,17 +108,35 @@ describe('WritingsFeed', () => {
         writings={[
           writing({
             writingId: '00000000-0000-4000-8000-000000000004',
-            kind: 'essay',
-            slug: 'essay',
-            title: 'Essay',
-            summary: 'Essay summary.',
+            kind: 'note',
+            slug: 'normal-note',
+            title: 'Normal Note',
+            summary: 'Normal composition.',
             publishedAt: new Date('2026-09-23T12:00:00.000Z'),
+          }),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000006',
+            kind: 'article',
+            slug: 'featured-article',
+            title: 'Featured Article',
+            summary: 'Featured composition.',
+            publishedAt: new Date('2026-09-22T12:00:00.000Z'),
+          }),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000007',
+            kind: 'essay',
+            slug: 'major-essay',
+            title: 'Major Essay',
+            summary: 'Major composition.',
+            publishedAt: new Date('2026-09-21T12:00:00.000Z'),
           }),
         ]}
       />,
     );
 
-    expect(html).not.toContain('data-editorial-weight');
+    expect(html).toContain('data-editorial-weight="normal"');
+    expect(html).toContain('data-editorial-weight="featured"');
+    expect(html).toContain('data-editorial-weight="major"');
     expect(html).not.toContain('Major weight');
     expect(html).not.toContain('Featured weight');
     expect(html).not.toContain('Normal weight');

@@ -1988,13 +1988,46 @@ async function assertWritingAdminAndPublic(page) {
     );
     assert.equal(
       await writingOverviewCard.getAttribute('data-editorial-weight'),
-      null,
-      'AKS-110 must not expose editorial weight as feed presentation before AKS-111.',
+      'major',
+      'Published editorial weight must select the fixed MAJOR feed composition.',
+    );
+    const compositionByWeight = await writingOverviewCard.evaluate((card) => {
+      const entry = card.querySelector('.aks-writings-feed-entry');
+      const heading = card.querySelector('.aks-heading');
+      if (!(entry instanceof HTMLElement) || !(heading instanceof HTMLElement)) {
+        throw new Error('Writing feed composition nodes are missing.');
+      }
+
+      const originalWeight = card.getAttribute('data-editorial-weight');
+      const result = {};
+      for (const weight of ['normal', 'featured', 'major']) {
+        card.setAttribute('data-editorial-weight', weight);
+        result[weight] = {
+          columns: getComputedStyle(entry).gridTemplateColumns,
+          headingSize: getComputedStyle(heading).fontSize,
+        };
+      }
+      if (originalWeight === null) {
+        card.removeAttribute('data-editorial-weight');
+      } else {
+        card.setAttribute('data-editorial-weight', originalWeight);
+      }
+      return result;
+    });
+    assert.equal(
+      new Set(Object.values(compositionByWeight).map((value) => value.columns)).size,
+      3,
+      'NORMAL, FEATURED, and MAJOR must map to three fixed code-defined feed compositions.',
+    );
+    assert.equal(
+      new Set(Object.values(compositionByWeight).map((value) => value.headingSize)).size,
+      3,
+      'Editorial weight must influence hierarchy without admin-authored styling.',
     );
     assert.equal(
       overviewText.includes('Major weight') || overviewText.includes('Poids majeur'),
       false,
-      'AKS-110 must not pre-empt AKS-111 by exposing editorial-weight labels as presentation.',
+      'Editorial weight must influence composition without becoming a reader-facing label.',
     );
     assert.equal(
       await writingOverviewCard

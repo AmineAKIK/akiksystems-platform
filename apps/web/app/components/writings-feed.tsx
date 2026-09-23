@@ -67,6 +67,7 @@ export function WritingsFeed({
       {writings.map((writing) => (
         <li
           className="aks-writings-feed-item"
+          data-editorial-weight={writing.editorialWeight}
           data-writing-kind={writing.kind}
           key={writing.writingId}
         >
