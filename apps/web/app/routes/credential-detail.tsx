@@ -4,14 +4,14 @@ import { data, useLoaderData } from 'react-router';
 
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
-import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
+import { buildLocalizedPublicMeta, buildNoIndexMeta, publicNotFound } from '../lib/public-seo';
 
 import type { Route } from './+types/credential-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
-    throw new Response('Credential not found.', { status: 404 });
+    throw publicNotFound('Credential not found.');
   }
   return value;
 }
@@ -43,7 +43,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const credential = await getPublishedCredential(appDb, { locale, slug });
 
   if (credential === null) {
-    throw new Response('Credential not found.', { status: 404 });
+    throw publicNotFound('Credential not found.');
   }
 
   return data(
