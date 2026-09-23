@@ -100,6 +100,16 @@ try {
     'The database must reject a non-document JSON payload.',
   );
 
+  await assert.rejects(
+    sql`
+      update writing_localizations
+      set editor_document = '{"type":"doc","content":[{"type":"paragraph"}]}'::jsonb
+      where writing_id = ${writingId}::uuid
+        and locale = 'en'
+    `.execute(db),
+    'The database must reject an unversioned Writing document envelope.',
+  );
+
   process.stdout.write(
     'AKS-106 Writing rich-content qualification passed: structured draft JSON persists, publication freezes schema v1, invalid top-level payloads are rejected, and the compatibility text projection remains available.\n',
   );
