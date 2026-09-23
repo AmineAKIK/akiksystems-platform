@@ -11,6 +11,7 @@ import type {
   TrainingState,
   WritingEditorialWeight,
   WritingKind,
+  WritingLifecycle,
 } from '@akiksystems/core';
 import type {
   ColumnType,
@@ -338,8 +339,10 @@ export interface LearningArtifactPublicationsTable {
 export interface WritingsTable {
   id: string;
   kind: WritingKind;
+  lifecycle: DefaultedColumn<WritingLifecycle>;
   editorial_weight: DefaultedColumn<WritingEditorialWeight>;
   editorial_position: DefaultedColumn<number>;
+  archived_at: NullableTimestampColumn;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
