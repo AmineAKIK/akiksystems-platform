@@ -1523,7 +1523,9 @@ async function assertTugeresStandardSystem(browser) {
 
 async function fillWritingBodyEditor(fieldset, body) {
   const shell = fieldset.locator('[data-writing-editor]');
-  await shell.locator('[data-editor-ready="true"]').waitFor();
+  await fieldset
+    .locator('[data-writing-editor][data-editor-ready="true"]')
+    .waitFor();
   const editor = shell.locator('[contenteditable="true"]');
   await editor.waitFor();
 
