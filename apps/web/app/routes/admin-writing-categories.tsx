@@ -226,6 +226,13 @@ export async function action({ request }: Route.ActionArgs) {
   return { ok: false, message: 'Unknown Category action.' };
 }
 
+export function meta() {
+  return [
+    { title: 'Writing categories · AkikSystems' },
+    { name: 'robots', content: 'noindex, nofollow, noarchive, nosnippet' },
+  ];
+}
+
 export default function AdminWritingCategoriesRoute() {
   const { categories } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
