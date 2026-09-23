@@ -2,6 +2,7 @@ import { getPublishedWriting } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
+import { SystemReference } from '../components/system-reference';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
 import { publicNotFound } from '../lib/public-seo';
@@ -149,6 +150,31 @@ export default function WritingDetailRoute() {
                 </Link>
               ))}
             </nav>
+          ) : null}
+
+          {writing.systems.length > 0 ? (
+            <section
+              className="aks-proof-stack"
+              aria-labelledby="writing-related-systems"
+            >
+              <div className="aks-profile-section-heading">
+                <Heading id="writing-related-systems" level={2} size="sm">
+                  {writing.locale === 'fr'
+                    ? 'Systèmes liés'
+                    : 'Related Systems'}
+                </Heading>
+                <Text size="sm" tone="muted">
+                  {writing.locale === 'fr'
+                    ? 'Références System publiées, résolues sans recopier leur contenu dans l’écrit.'
+                    : 'Published System references resolved without copying System content into the Writing.'}
+                </Text>
+              </div>
+              <div className="aks-system-reference-grid">
+                {writing.systems.map((system) => (
+                  <SystemReference key={system.id} reference={system} />
+                ))}
+              </div>
+            </section>
           ) : null}
 
           {paragraphs.length > 0 ? (
