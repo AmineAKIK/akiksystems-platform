@@ -198,25 +198,21 @@ export async function listPublishedCredentialsForTraining(
 ): Promise<PublishedCredentialListItem[]> {
   const rows = await db
     .selectFrom('credential_publications')
-    .innerJoin(
-      'credentials',
-      'credentials.id',
-      'credential_publications.credential_id',
-    )
-    .select([
-      'credential_publications.snapshot',
-      'credential_publications.published_at',
-    ])
-    .where('credential_publications.locale', '=', input.locale)
-    .where('credentials.training_id', '=', input.trainingId)
-    .orderBy('credentials.editorial_position')
-    .orderBy('credentials.created_at')
+    .select(['snapshot', 'published_at'])
+    .where('locale', '=', input.locale)
     .execute();
 
-  return rows.map((row) => ({
-    ...parseSnapshot(row.snapshot),
-    publishedAt: row.published_at,
-  }));
+  return rows
+    .map((row) => ({
+      ...parseSnapshot(row.snapshot),
+      publishedAt: row.published_at,
+    }))
+    .filter((credential) => credential.trainingId === input.trainingId)
+    .sort(
+      (left, right) =>
+        left.editorialPosition - right.editorialPosition ||
+        left.credentialId.localeCompare(right.credentialId),
+    );
 }
 
 export async function getPublishedCredential(

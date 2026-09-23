@@ -162,8 +162,8 @@ export function LearningOverview({
                 </Heading>
                 <Text>
                   {locale === 'fr'
-                    ? 'Les preuves peuvent être inspectées directement, puis replacées dans leur contexte de formation.'
-                    : 'Evidence can be inspected directly, then traced back to its Training context.'}
+                    ? 'Les preuves peuvent être inspectées directement puis, lorsque c’est pertinent, reliées à leur contexte de formation.'
+                    : 'Evidence can be inspected directly and, when relevant, traced back to its Training context.'}
                 </Text>
                 <Text size="sm" tone="muted">
                   {evidenceCount}{' '}
@@ -208,7 +208,10 @@ export function LearningOverview({
             ) : (
               <div className="aks-learning-evidence-grid">
                 {learningArtifacts.map((artifact) => {
-                  const training = trainingById.get(artifact.trainingId);
+                  const training =
+                    artifact.trainingId === null
+                      ? undefined
+                      : trainingById.get(artifact.trainingId);
 
                   return (
                     <article
@@ -228,9 +231,13 @@ export function LearningOverview({
                         <Text>{artifact.summary}</Text>
                         <Text size="sm" tone="muted">
                           {training === undefined
-                            ? locale === 'fr'
-                              ? 'Contexte de formation non publié dans cette langue'
-                              : 'Training context not published in this locale'
+                            ? artifact.trainingId === null
+                              ? locale === 'fr'
+                                ? 'Preuve d’apprentissage autonome'
+                                : 'Standalone learning evidence'
+                              : locale === 'fr'
+                                ? 'Contexte de formation non publié dans cette langue'
+                                : 'Training context not published in this locale'
                             : locale === 'fr'
                               ? `Contexte · ${training.title}`
                               : `Context · ${training.title}`}

@@ -131,6 +131,36 @@ try {
   );
 
   await db
+    .updateTable('credentials')
+    .set({ training_id: null, updated_at: new Date() })
+    .where('id', '=', credentialId)
+    .execute();
+
+  const relationBeforeRepublish = await listPublishedCredentialsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.deepEqual(
+    relationBeforeRepublish.map((credential) => credential.credentialId),
+    [credentialId],
+    'Draft Credential relationship changes must not leak into the published Training surface.',
+  );
+
+  await publishCredentialLocalization(db, { credentialId, locale: 'en' });
+
+  const relationAfterRepublish = await listPublishedCredentialsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.deepEqual(relationAfterRepublish, []);
+  const standaloneCredential = await getPublishedCredential(db, {
+    locale: 'en',
+    slug: 'qualified-credential',
+  });
+  assert.equal(standaloneCredential?.trainingId, null);
+  assert.equal(standaloneCredential?.training, null);
+
+  await db
     .updateTable('credential_localizations')
     .set({
       title: 'Draft changed credential',

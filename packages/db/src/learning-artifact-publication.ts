@@ -12,7 +12,7 @@ export interface LearningArtifactPublicationSnapshot {
   title: string;
   summary: string;
   body: string | null;
-  trainingId: string;
+  trainingId: string | null;
   systemId: string | null;
   sourceAssetId: string | null;
   editorialPosition: number;
@@ -252,25 +252,21 @@ export async function listPublishedLearningArtifactsForTraining(
 ): Promise<PublishedLearningArtifactListItem[]> {
   const rows = await db
     .selectFrom('learning_artifact_publications')
-    .innerJoin(
-      'learning_artifacts',
-      'learning_artifacts.id',
-      'learning_artifact_publications.learning_artifact_id',
-    )
-    .select([
-      'learning_artifact_publications.snapshot',
-      'learning_artifact_publications.published_at',
-    ])
-    .where('learning_artifact_publications.locale', '=', input.locale)
-    .where('learning_artifacts.training_id', '=', input.trainingId)
-    .orderBy('learning_artifacts.editorial_position')
-    .orderBy('learning_artifacts.created_at')
+    .select(['snapshot', 'published_at'])
+    .where('locale', '=', input.locale)
     .execute();
 
-  return rows.map((row) => ({
-    ...parseSnapshot(row.snapshot),
-    publishedAt: row.published_at,
-  }));
+  return rows
+    .map((row) => ({
+      ...parseSnapshot(row.snapshot),
+      publishedAt: row.published_at,
+    }))
+    .filter((artifact) => artifact.trainingId === input.trainingId)
+    .sort(
+      (left, right) =>
+        left.editorialPosition - right.editorialPosition ||
+        left.learningArtifactId.localeCompare(right.learningArtifactId),
+    );
 }
 
 export async function getPublishedLearningArtifact(
@@ -295,10 +291,12 @@ export async function getPublishedLearningArtifact(
       .where('learning_artifact_id', '=', row.learning_artifact_id)
       .where('locale', '=', alternateLocale)
       .executeTakeFirst(),
-    resolveTraining(db, {
-      locale: input.locale,
-      trainingId: snapshot.trainingId,
-    }),
+    snapshot.trainingId === null
+      ? Promise.resolve(null)
+      : resolveTraining(db, {
+          locale: input.locale,
+          trainingId: snapshot.trainingId,
+        }),
     snapshot.systemId === null
       ? Promise.resolve(null)
       : getPublishedSystemReferenceById(db, {

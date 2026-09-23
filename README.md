@@ -101,6 +101,15 @@ routes render a noindex fallback while still returning 404. Raw Credential and
 LearningArtifact source documents send an HTTP `X-Robots-Tag: noindex`
 directive so the autonomous HTML inspection route remains the search surface.
 
+AKS-100 closes the Learning architecture review by preserving three distinct
+domain boundaries: Training is context, while Credential and LearningArtifact
+are evidence. The review deliberately does not introduce an LMS layer or a
+generic Evidence supertype. LearningArtifact may now stand alone when relevant
+learning has no honest formal Training context; its Training, System, and source
+relations remain explicit and optional. Training detail pages resolve Credential
+and LearningArtifact relationships from publication snapshots, so draft relation
+changes cannot leak into the public experience before republication.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.

@@ -64,6 +64,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
     learningArtifact: {
       total: learningArtifacts.length,
+      connectedToTraining: learningArtifacts.filter(
+        (artifact) => artifact.training_id !== null,
+      ).length,
+      standalone: learningArtifacts.filter(
+        (artifact) => artifact.training_id === null,
+      ).length,
       connectedToSystem: learningArtifacts.filter(
         (artifact) => artifact.system_id !== null,
       ).length,
@@ -181,12 +187,14 @@ export default function AdminLearningRoute() {
                 </Text>
                 <PublicationSummary {...data.learningArtifact.published} />
                 <Text size="sm" tone="muted">
+                  {data.learningArtifact.connectedToTraining} connected to Training ·{' '}
+                  {data.learningArtifact.standalone} standalone ·{' '}
                   {data.learningArtifact.connectedToSystem} connected to System ·{' '}
                   {data.learningArtifact.withSourceDocument} with source document
                 </Text>
                 <Text tone="muted">
-                  First-class learning evidence with required Training context
-                  and optional System/source relationships.
+                  First-class learning evidence with optional Training/System
+                  context and optional source-document relationships.
                 </Text>
                 <Link href="/admin/learning/artifacts">
                   Manage LearningArtifacts
