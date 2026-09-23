@@ -530,6 +530,9 @@ export default function AdminLearningArtifactsRoute() {
                     locale === 'en'
                       ? artifact.published_slug_en
                       : artifact.published_slug_fr;
+                  const isNativeSentinelDossier =
+                    slug === 'sentinel-dwwm-project-dossier' ||
+                    slug === 'dossier-projet-dwwm-sentinel';
 
                   return (
                     <fieldset className="aks-admin-fieldset" key={locale}>
@@ -567,9 +570,17 @@ export default function AdminLearningArtifactsRoute() {
                           <textarea
                             defaultValue={body ?? ''}
                             name="body"
-                            rows={8}
+                            rows={isNativeSentinelDossier ? 28 : 8}
                           />
                         </label>
+                        {isNativeSentinelDossier ? (
+                          <Text size="sm" tone="muted">
+                            Native dossier format: keep the ten `##` section
+                            headings and use `-` lines for lists. Content
+                            remains editable here; the public hierarchy and
+                            layout stay code-owned.
+                          </Text>
+                        ) : null}
                         <Button type="submit">
                           Save {locale.toUpperCase()} draft
                         </Button>
