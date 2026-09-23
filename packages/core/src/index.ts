@@ -78,6 +78,13 @@ export type CredentialKind = (typeof credentialKinds)[number];
 export type CredentialId = string;
 export type LearningArtifactId = string;
 
+export const writingKinds = ['note', 'article', 'essay'] as const;
+export type WritingKind = (typeof writingKinds)[number];
+
+export const writingEditorialWeights = ['normal', 'featured', 'major'] as const;
+export type WritingEditorialWeight = (typeof writingEditorialWeights)[number];
+export type WritingId = string;
+
 export type TrainingId = string;
 
 export interface Training {
@@ -93,6 +100,28 @@ export interface Training {
 
 export interface TrainingLocalization {
   trainingId: TrainingId;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorialState: SystemEditorialState;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Writing {
+  id: WritingId;
+  kind: WritingKind;
+  editorialWeight: WritingEditorialWeight;
+  editorialPosition: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WritingLocalization {
+  writingId: WritingId;
   locale: PlatformLocale;
   slug: string | null;
   title: string | null;

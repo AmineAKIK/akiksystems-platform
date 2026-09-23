@@ -292,6 +292,7 @@ export default function Admin() {
               <div className="aks-proof-actions">
                 <Link href="/admin/profile">Professional identity</Link>
                 <Link href="/admin/learning">Learning</Link>
+                <Link href="/admin/writings">Writings</Link>
                 <Link href="/admin/security">Security settings</Link>
                 <Button disabled={pending} emphasis="quiet" onClick={signOut}>
                   {pending ? 'Signing out…' : 'Sign out'}
