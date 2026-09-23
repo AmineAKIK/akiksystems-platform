@@ -53,6 +53,10 @@ export default [
       'routes/writing-category-detail.tsx',
     ),
     route('writings/tags/:slug', 'routes/writing-tag-detail.tsx'),
+    route(
+      'writings/:slug/assets/:assetId',
+      'routes/writing-detail-asset.ts',
+    ),
     route('writings/:slug', 'routes/writing-detail.tsx'),
     route('ecrits', 'routes/writings-fr.tsx'),
     route(
@@ -60,6 +64,10 @@ export default [
       'routes/writing-category-detail-fr.tsx',
     ),
     route('ecrits/tags/:slug', 'routes/writing-tag-detail-fr.tsx'),
+    route(
+      'ecrits/:slug/assets/:assetId',
+      'routes/writing-detail-asset-fr.ts',
+    ),
     route('ecrits/:slug', 'routes/writing-detail-fr.tsx'),
     route('learning', 'routes/learning.tsx'),
     route('learning/credentials/:slug', 'routes/credential-detail.tsx'),

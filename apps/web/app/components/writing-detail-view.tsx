@@ -2,14 +2,17 @@ import type {
   PublicSystemReference,
   PublicWritingCategory,
   PublicWritingTag,
+  WritingPublicationAsset,
 } from '@akiksystems/db';
 import type {
   PlatformLocale,
+  WritingDocument,
   WritingKind,
 } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import { SystemReference } from './system-reference';
+import { WritingEditorialRenderer } from './writing-editorial-renderer';
 
 export interface WritingDetailViewModel {
   locale: PlatformLocale;
@@ -17,6 +20,8 @@ export interface WritingDetailViewModel {
   title: string;
   summary: string;
   body: string | null;
+  document: WritingDocument;
+  assets: WritingPublicationAsset[];
   categories: PublicWritingCategory[];
   tags: PublicWritingTag[];
   systems: PublicSystemReference[];
@@ -41,20 +46,18 @@ function kindLabel(kind: WritingKind, locale: PlatformLocale): string {
 }
 
 export function WritingDetailView({
+  assetHref,
   backHref,
   backLabel,
+  responsiveImages = false,
   writing,
 }: {
+  assetHref: (assetId: string, width?: number) => string;
   backHref: string;
   backLabel: string;
+  responsiveImages?: boolean;
   writing: WritingDetailViewModel;
 }) {
-  const paragraphs =
-    writing.body
-      ?.split(/\n\s*\n/)
-      .map((part) => part.trim())
-      .filter(Boolean) ?? [];
-
   return (
     <main className="aks-proof-page">
       <Container>
@@ -132,16 +135,18 @@ export function WritingDetailView({
             </section>
           ) : null}
 
-          {paragraphs.length > 0 ? (
-            <section
-              className="aks-proof-stack"
-              aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}
-            >
-              {paragraphs.map((paragraph, index) => (
-                <Text key={`${index}-${paragraph}`}>{paragraph}</Text>
-              ))}
-            </section>
-          ) : null}
+          <section
+            aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}
+            className="aks-writing-reader"
+          >
+            <WritingEditorialRenderer
+              assetHref={assetHref}
+              assets={writing.assets}
+              document={writing.document}
+              locale={writing.locale}
+              responsiveImages={responsiveImages}
+            />
+          </section>
 
           <Text size="sm" tone="muted">
             {writing.locale === 'fr'

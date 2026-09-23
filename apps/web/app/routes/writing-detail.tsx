@@ -78,10 +78,18 @@ export default function WritingDetailRoute() {
 
   return (
     <WritingDetailView
+      assetHref={(assetId, width) => {
+        const base =
+          writing.locale === 'fr'
+            ? `/fr/ecrits/${writing.slug}/assets/${assetId}`
+            : `/en/writings/${writing.slug}/assets/${assetId}`;
+        return width === undefined ? base : `${base}?width=${width}`;
+      }}
       backHref={overviewHref}
       backLabel={
         writing.locale === 'fr' ? 'Retour aux Écrits' : 'Back to Writings'
       }
+      responsiveImages
       writing={writing}
     />
   );
