@@ -366,6 +366,41 @@ export interface WritingPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface CategoriesTable {
+  id: string;
+  editorial_position: DefaultedColumn<number>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface CategoryLocalizationsTable {
+  category_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  name: string | null;
+  description: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface CategoryPublicationsTable {
+  category_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WritingCategoriesTable {
+  writing_id: string;
+  category_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -590,6 +625,22 @@ export type WritingPublicationRow = Selectable<WritingPublicationsTable>;
 export type NewWritingPublicationRow = Insertable<WritingPublicationsTable>;
 export type WritingPublicationUpdate = Updateable<WritingPublicationsTable>;
 
+export type CategoryRow = Selectable<CategoriesTable>;
+export type NewCategoryRow = Insertable<CategoriesTable>;
+export type CategoryUpdate = Updateable<CategoriesTable>;
+
+export type CategoryLocalizationRow = Selectable<CategoryLocalizationsTable>;
+export type NewCategoryLocalizationRow = Insertable<CategoryLocalizationsTable>;
+export type CategoryLocalizationUpdate = Updateable<CategoryLocalizationsTable>;
+
+export type CategoryPublicationRow = Selectable<CategoryPublicationsTable>;
+export type NewCategoryPublicationRow = Insertable<CategoryPublicationsTable>;
+export type CategoryPublicationUpdate = Updateable<CategoryPublicationsTable>;
+
+export type WritingCategoryRow = Selectable<WritingCategoriesTable>;
+export type NewWritingCategoryRow = Insertable<WritingCategoriesTable>;
+export type WritingCategoryUpdate = Updateable<WritingCategoriesTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -658,6 +709,10 @@ export interface Database {
   writings: WritingsTable;
   writing_localizations: WritingLocalizationsTable;
   writing_publications: WritingPublicationsTable;
+  categories: CategoriesTable;
+  category_localizations: CategoryLocalizationsTable;
+  category_publications: CategoryPublicationsTable;
+  writing_categories: WritingCategoriesTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;

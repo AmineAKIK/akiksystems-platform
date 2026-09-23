@@ -118,7 +118,51 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('writings.id')
     .execute();
 
-  return { writings };
+  const [categories, writingCategories] = await Promise.all([
+    appDb
+      .selectFrom('categories')
+      .leftJoin('category_localizations as en', (join) =>
+        join
+          .onRef('en.category_id', '=', 'categories.id')
+          .on('en.locale', '=', 'en'),
+      )
+      .leftJoin('category_localizations as fr', (join) =>
+        join
+          .onRef('fr.category_id', '=', 'categories.id')
+          .on('fr.locale', '=', 'fr'),
+      )
+      .select([
+        'categories.id',
+        'categories.editorial_position',
+        'en.name as name_en',
+        'fr.name as name_fr',
+      ])
+      .orderBy('categories.editorial_position')
+      .orderBy('categories.created_at')
+      .orderBy('categories.id')
+      .execute(),
+    appDb
+      .selectFrom('writing_categories')
+      .select(['writing_id', 'category_id', 'position'])
+      .orderBy('writing_id')
+      .orderBy('position')
+      .execute(),
+  ]);
+
+  const categoryIdsByWriting = new Map<string, string[]>();
+  for (const relation of writingCategories) {
+    const categoryIds = categoryIdsByWriting.get(relation.writing_id) ?? [];
+    categoryIds.push(relation.category_id);
+    categoryIdsByWriting.set(relation.writing_id, categoryIds);
+  }
+
+  return {
+    categories,
+    writings: writings.map((writing) => ({
+      ...writing,
+      categoryIds: categoryIdsByWriting.get(writing.id) ?? [],
+    })),
+  };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -180,6 +224,71 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (writing === undefined) {
     throw new Response('Writing not found.', { status: 404 });
+  }
+
+  if (intent === 'save-categories') {
+    const rawCategoryIds = form
+      .getAll('categoryId')
+      .filter((value): value is string => typeof value === 'string');
+    if (rawCategoryIds.some((categoryId) => !uuidPattern.test(categoryId))) {
+      throw new Response('Invalid Category selection.', { status: 400 });
+    }
+
+    const categoryIds = [...new Set(rawCategoryIds)];
+    if (categoryIds.length > 0) {
+      const existingCategories = await db
+        .selectFrom('categories')
+        .select('id')
+        .where('id', 'in', categoryIds)
+        .execute();
+      if (existingCategories.length !== categoryIds.length) {
+        throw new Response('Category not found.', { status: 404 });
+      }
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('writing_categories')
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      if (categoryIds.length > 0) {
+        await transaction
+          .insertInto('writing_categories')
+          .values(
+            categoryIds.map((categoryId, position) => ({
+              writing_id: writingId,
+              category_id: categoryId,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await transaction
+        .updateTable('writing_localizations')
+        .set({
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.categories_updated',
+        entityType: 'writing',
+        entityId: writingId,
+        metadata: { categoryIds },
+      });
+    });
+
+    return {
+      ok: true,
+      message: 'Writing categories saved as draft.',
+    };
   }
 
   if (intent === 'update-settings') {
@@ -330,6 +439,7 @@ export default function AdminWritingsRoute() {
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin">Administration</Link>
+                <Link href="/admin/writings/categories">Manage categories</Link>
                 <Link href="/en/writings">Open Writings</Link>
               </div>
               {actionData?.message ? <Text>{actionData.message}</Text> : null}
@@ -409,6 +519,46 @@ export default function AdminWritingsRoute() {
                   <Button emphasis="quiet" type="submit">
                     Save Writing settings
                   </Button>
+                </Form>
+
+                <Form method="post" className="aks-proof-stack">
+                  <input name="_intent" type="hidden" value="save-categories" />
+                  <input name="writingId" type="hidden" value={writing.id} />
+                  <fieldset className="aks-admin-card">
+                    <legend>Categories</legend>
+                    {data.categories.length === 0 ? (
+                      <Text size="sm" tone="muted">
+                        No Category exists yet. Create one from the Category
+                        administration surface.
+                      </Text>
+                    ) : (
+                      <div className="aks-proof-stack">
+                        {data.categories.map((category) => (
+                          <label key={category.id}>
+                            <input
+                              defaultChecked={writing.categoryIds.includes(
+                                category.id,
+                              )}
+                              name="categoryId"
+                              type="checkbox"
+                              value={category.id}
+                            />{' '}
+                            {category.name_en ??
+                              category.name_fr ??
+                              'Untitled Category'}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    <Text size="sm" tone="muted">
+                      Assignment order follows the controlled Category order.
+                      Saving marks both Writing localizations as draft; existing
+                      public snapshots remain unchanged until republished.
+                    </Text>
+                    <Button emphasis="quiet" type="submit">
+                      Save categories
+                    </Button>
+                  </fieldset>
                 </Form>
 
                 <div className="aks-proof-stack">

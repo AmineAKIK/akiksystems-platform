@@ -1570,14 +1570,16 @@ async function assertWritingAdminAndPublic(page) {
   );
 
   const saveLocale = async ({
-    index,
     locale,
     slug,
     title,
     summary,
     body,
   }) => {
-    let fieldset = writingCard().locator('fieldset').nth(index);
+    let fieldset = writingCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
     await fieldset.locator('input[name="slug"]').fill(slug);
     await fieldset.locator('input[name="title"]').fill(title);
     await fieldset.locator('textarea[name="summary"]').fill(summary);
@@ -1594,7 +1596,6 @@ async function assertWritingAdminAndPublic(page) {
   };
 
   await saveLocale({
-    index: 0,
     locale: 'EN',
     slug: 'architecture-without-page-builders',
     title: 'Architecture Without Page Builders',
@@ -1602,7 +1603,6 @@ async function assertWritingAdminAndPublic(page) {
     body: 'A Writing is content, not a layout definition.\n\nAKS-101 keeps the first renderer intentionally limited to controlled paragraphs.',
   });
   await saveLocale({
-    index: 1,
     locale: 'FR',
     slug: 'architecture-sans-page-builder',
     title: 'Architecture sans page builder',
@@ -1612,16 +1612,14 @@ async function assertWritingAdminAndPublic(page) {
 
   let card = writingCard();
   await card
-    .locator('fieldset')
-    .nth(0)
+    .getByRole('group', { name: 'EN', exact: true })
     .getByRole('button', { name: 'Publish EN', exact: true })
     .click();
   await page.getByText('EN Writing published.', { exact: true }).waitFor();
 
   card = writingCard();
   await card
-    .locator('fieldset')
-    .nth(1)
+    .getByRole('group', { name: 'FR', exact: true })
     .getByRole('button', { name: 'Publish FR', exact: true })
     .click();
   await page.getByText('FR Writing published.', { exact: true }).waitFor();
@@ -1729,6 +1727,287 @@ async function assertWritingAdminAndPublic(page) {
     assert.ok(
       html.includes(target.paragraphs[0]),
       'Writing deep content must be available in initial HTML.',
+    );
+  }
+}
+
+async function assertWritingCategories(page) {
+  await page.goto(origin + '/admin/writings');
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Manage categories', exact: true })
+      .getAttribute('href'),
+    '/admin/writings/categories',
+    'Writings administration must expose reusable Category management.',
+  );
+
+  await page.goto(origin + '/admin/writings/categories');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writing categories',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[name="layout"], [name="template"], [name="style"]').count(),
+    0,
+    'Category administration must not expose page-builder controls.',
+  );
+
+  await page
+    .getByRole('button', { name: 'Create Category', exact: true })
+    .click();
+  await page.getByText('Category created.', { exact: true }).waitFor();
+
+  const categoryCard = () =>
+    page.locator('section.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: /Engineering practice|Untitled Category/,
+      }),
+    }).last();
+
+  const saveCategoryLocale = async ({
+    locale,
+    slug,
+    name,
+    description,
+  }) => {
+    const fieldset = categoryCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
+    await fieldset.locator('input[name="slug"]').fill(slug);
+    await fieldset.locator('input[name="name"]').fill(name);
+    await fieldset.locator('textarea[name="description"]').fill(description);
+    await fieldset
+      .getByRole('button', {
+        name: 'Save ' + locale + ' Category draft',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByText(locale + ' Category draft saved.', { exact: true })
+      .waitFor();
+  };
+
+  await saveCategoryLocale({
+    locale: 'EN',
+    slug: 'engineering-practice',
+    name: 'Engineering practice',
+    description: 'Methods and architectural choices grounded in delivery.',
+  });
+  await saveCategoryLocale({
+    locale: 'FR',
+    slug: 'pratique-ingenierie',
+    name: 'Pratique d’ingénierie',
+    description: 'Méthodes et choix d’architecture ancrés dans la livraison.',
+  });
+
+  await categoryCard()
+    .getByRole('group', { name: 'EN', exact: true })
+    .getByRole('button', { name: 'Publish EN', exact: true })
+    .click();
+  await page.getByText('EN Category published.', { exact: true }).waitFor();
+
+  await categoryCard()
+    .getByRole('group', { name: 'FR', exact: true })
+    .getByRole('button', { name: 'Publish FR', exact: true })
+    .click();
+  await page.getByText('FR Category published.', { exact: true }).waitFor();
+
+  await page.goto(origin + '/admin/writings');
+  const writingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+
+  const categoryGroup = writingCard.getByRole('group', {
+    name: 'Categories',
+    exact: true,
+  });
+  const categoryCheckbox = categoryGroup.getByRole('checkbox', {
+    name: 'Engineering practice',
+    exact: true,
+  });
+  await categoryCheckbox.check();
+  await categoryGroup
+    .getByRole('button', { name: 'Save categories', exact: true })
+    .click();
+  await page
+    .getByText('Writing categories saved as draft.', { exact: true })
+    .waitFor();
+
+  const beforeRepublish = await page.goto(
+    origin + '/en/writings/architecture-without-page-builders',
+  );
+  assert.equal(beforeRepublish?.status(), 200);
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Engineering practice', exact: true })
+      .count(),
+    0,
+    'Draft Category assignments must not leak into an existing Writing snapshot.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  const refreshedWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+
+  await refreshedWritingCard
+    .getByRole('group', { name: 'EN', exact: true })
+    .getByRole('button', { name: 'Publish update EN', exact: true })
+    .click();
+  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+
+  const englishDetail =
+    '/en/writings/architecture-without-page-builders';
+  await page.goto(origin + englishDetail + '?category-publication=qualified');
+  const englishCategoryLink = page.getByRole('link', {
+    name: 'Engineering practice',
+    exact: true,
+  });
+  await englishCategoryLink.waitFor();
+  assert.equal(
+    await englishCategoryLink.getAttribute('href'),
+    '/en/writings/categories/engineering-practice',
+  );
+
+  await page.goto(
+    origin +
+      '/fr/ecrits/architecture-sans-page-builder?category-publication=en-only',
+  );
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Pratique d’ingénierie', exact: true })
+      .count(),
+    0,
+    'Publishing an EN Writing update must not mutate the FR Writing snapshot.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  const frenchWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await frenchWritingCard
+    .getByRole('group', { name: 'FR', exact: true })
+    .getByRole('button', { name: 'Publish update FR', exact: true })
+    .click();
+  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+
+  const targets = [
+    {
+      locale: 'en',
+      overview: '/en/writings',
+      writingTitle: 'Architecture Without Page Builders',
+      writingDetail: englishDetail,
+      categoryName: 'Engineering practice',
+      categoryDescription:
+        'Methods and architectural choices grounded in delivery.',
+      categoryPath: '/en/writings/categories/engineering-practice',
+      alternateLocale: 'fr',
+      alternatePath: '/fr/ecrits/categories/pratique-ingenierie',
+    },
+    {
+      locale: 'fr',
+      overview: '/fr/ecrits',
+      writingTitle: 'Architecture sans page builder',
+      writingDetail: '/fr/ecrits/architecture-sans-page-builder',
+      categoryName: 'Pratique d’ingénierie',
+      categoryDescription:
+        'Méthodes et choix d’architecture ancrés dans la livraison.',
+      categoryPath: '/fr/ecrits/categories/pratique-ingenierie',
+      alternateLocale: 'en',
+      alternatePath: '/en/writings/categories/engineering-practice',
+    },
+  ];
+
+  for (const target of targets) {
+    await page.goto(origin + target.overview);
+    const overviewCard = page.locator('article.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: target.writingTitle,
+        exact: true,
+      }),
+    });
+    const categoryLink = overviewCard.getByRole('link', {
+      name: target.categoryName,
+      exact: true,
+    });
+    await categoryLink.waitFor();
+    assert.equal(await categoryLink.getAttribute('href'), target.categoryPath);
+
+    await page.goto(
+      origin +
+        target.writingDetail +
+        '?category-publication=' +
+        encodeURIComponent(target.locale),
+    );
+    const detailCategoryLink = page.getByRole('link', {
+      name: target.categoryName,
+      exact: true,
+    });
+    await detailCategoryLink.waitFor();
+    assert.equal(
+      await detailCategoryLink.getAttribute('href'),
+      target.categoryPath,
+    );
+
+    const categoryResponse = await page.goto(origin + target.categoryPath);
+    assert.equal(categoryResponse?.status(), 200);
+    await page
+      .getByRole('heading', {
+        level: 1,
+        name: target.categoryName,
+        exact: true,
+      })
+      .waitFor();
+    assert.ok((await page.locator('body').innerText()).includes(target.categoryDescription));
+    const categoryWriting = page.locator('article.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: target.writingTitle,
+        exact: true,
+      }),
+    });
+    await categoryWriting.waitFor();
+    assert.equal(
+      await categoryWriting.getByRole('link', { name: /Lire|Read/ }).getAttribute('href'),
+      target.writingDetail,
+      'Category deep routes must resolve back to published Writings.',
+    );
+    assert.equal(
+      await page
+        .locator(
+          '.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]',
+        )
+        .getAttribute('href'),
+      target.alternatePath,
+      'Published Categories must expose their localized deep-route equivalent.',
+    );
+    await assertAxe(page);
+
+    const ssr = await page.context().request.get(origin + target.categoryPath);
+    assert.equal(ssr.status(), 200);
+    const html = await ssr.text();
+    assert.ok(
+      html.includes(target.categoryName) &&
+        html.includes(target.writingTitle),
+      'Category name and related Writing must be present in initial HTML.',
     );
   }
 }
@@ -5086,6 +5365,7 @@ async function assertAxe(page) {
     await assertOriaInteractiveEntry(browser);
     await assertTugeresStandardSystem(browser);
     await assertWritingAdminAndPublic(page);
+    await assertWritingCategories(page);
     await assertReusableSystemReferences(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
