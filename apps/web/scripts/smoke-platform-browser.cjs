@@ -2003,9 +2003,13 @@ async function assertLearningOverviewExperience(browser) {
         body.includes(target.contextCopy),
         target.path + ' must make the Training relationship legible beside evidence.',
       );
-      assert.match(
-        body,
-        /1 published evidence object|1 preuve publiée|2 published evidence objects|2 preuves publiées/,
+      assert.ok(
+        body.includes(
+          target.path === '/en/learning'
+            ? '2 published evidence objects'
+            : '2 preuves publiées',
+        ),
+        target.path + ' must surface both published evidence objects at overview depth.',
       );
       await assertAxe(page);
     }
