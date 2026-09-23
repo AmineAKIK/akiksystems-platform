@@ -47,6 +47,7 @@
     "db:bootstrap-protocap-qualification": "tsx src/cli/bootstrap-protocap-qualification.ts",
     "db:bootstrap-training-qualification": "tsx src/cli/bootstrap-training-qualification.ts",
     "db:bootstrap-credential-qualification": "tsx src/cli/bootstrap-credential-qualification.ts",
+    "db:bootstrap-learning-artifact-qualification": "tsx src/cli/bootstrap-learning-artifact-qualification.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts",
     "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts"
