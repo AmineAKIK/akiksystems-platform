@@ -1818,6 +1818,144 @@ async function assertCredentialAdmin(page) {
   );
 }
 
+function bootstrapL5LearningArtifactQualification() {
+  execFileSync('pnpm', ['db:bootstrap-learning-artifact-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertLearningArtifactPublicJourney(browser) {
+  bootstrapL5LearningArtifactQualification();
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        trainingPath: '/en/learning/qualified-training',
+        artifactPath: '/en/learning/artifacts/qualified-learning-artifact',
+        heading: 'Qualified Learning Artifact',
+        summary: 'Published first-class learning evidence.',
+        systemPath: '/en/systems/sentinel',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+        sourcePath: '/en/learning/artifacts/qualified-learning-artifact/source',
+      },
+      {
+        trainingPath: '/fr/apprentissage/formation-qualifiee',
+        artifactPath: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+        heading: 'Preuve d’apprentissage qualifiée',
+        summary: 'Preuve d’apprentissage de premier rang publiée.',
+        systemPath: '/fr/systems/sentinel',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/artifacts/qualified-learning-artifact',
+        sourcePath: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee/source',
+      },
+    ];
+
+    for (const target of targets) {
+      const trainingResponse = await page.goto(origin + target.trainingPath);
+      assert.equal(trainingResponse?.status(), 200);
+      assert.equal(
+        await page.locator('a[href="' + target.artifactPath + '"]').count(),
+        1,
+        target.trainingPath + ' must expose the connected published LearningArtifact.',
+      );
+
+      const artifactResponse = await page.goto(origin + target.artifactPath);
+      assert.equal(artifactResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+
+      const body = await page.locator('body').innerText();
+      assert.ok(
+        body.includes(target.summary),
+        target.artifactPath + ' must expose summary-depth evidence.',
+      );
+      assert.equal(
+        await page.locator('a[href="' + target.trainingPath + '"]').count(),
+        1,
+        'LearningArtifact must link back to its localized Training context.',
+      );
+      assert.equal(
+        await page.locator('a[href="' + target.systemPath + '"]').count(),
+        1,
+        'LearningArtifact must expose its optional published System relation.',
+      );
+      assert.equal(
+        await page
+          .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+          .getAttribute('href'),
+        target.alternatePath,
+        'LearningArtifact translations must switch to the equivalent localized deep route.',
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        'https://akiksystems.com' + target.artifactPath,
+      );
+
+      const sourceResponse = await desktop.request.get(origin + target.sourcePath);
+      assert.equal(
+        sourceResponse.status(),
+        404,
+        'A LearningArtifact without a source asset must not expose a fabricated document.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of [
+      '/en/learning/artifacts/qualified-learning-artifact',
+      '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+    ]) {
+      const response = await page.goto(origin + path);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        path + ' LearningArtifact surface must not overflow at 320px.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
+async function assertLearningArtifactAdmin(page) {
+  await page.goto(origin + '/admin/learning/artifacts');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'LearningArtifact administration',
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: 'Qualified Learning Artifact',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page
+      .getByRole('button', { name: 'Create LearningArtifact', exact: true })
+      .count(),
+    1,
+    'LearningArtifact must remain manageable from private Learning administration.',
+  );
+}
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -3240,6 +3378,8 @@ async function assertAxe(page) {
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
+    await assertLearningArtifactPublicJourney(browser);
+    await assertLearningArtifactAdmin(page);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);

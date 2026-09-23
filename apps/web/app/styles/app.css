@@ -10,6 +10,20 @@
   gap: var(--aks-space-5);
 }
 
+.aks-proof-page,
+.aks-proof-page .aks-container,
+.aks-proof-page .aks-proof-stack,
+.aks-proof-page section,
+.aks-proof-page article {
+  min-width: 0;
+}
+
+.aks-proof-page .aks-heading,
+.aks-proof-page .aks-text,
+.aks-proof-page .aks-link {
+  overflow-wrap: anywhere;
+}
+
 .aks-learning-overview,
 .aks-learning-overview .aks-container,
 .aks-learning-overview .aks-proof-stack,

@@ -391,6 +391,7 @@ export default function AdminLearningRoute() {
               <div className="aks-proof-actions">
                 <Link href="/admin">Back to administration</Link>
                 <Link href="/admin/learning/credentials">Credentials</Link>
+                <Link href="/admin/learning/artifacts">LearningArtifacts</Link>
                 <Link href="/en/learning">Public Learning</Link>
               </div>
             </div>

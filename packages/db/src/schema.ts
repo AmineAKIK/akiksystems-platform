@@ -301,6 +301,38 @@ export interface CredentialPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface LearningArtifactsTable {
+  id: string;
+  training_id: string;
+  system_id: string | null;
+  source_asset_id: string | null;
+  editorial_position: DefaultedColumn<number>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface LearningArtifactLocalizationsTable {
+  learning_artifact_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface LearningArtifactPublicationsTable {
+  learning_artifact_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -495,6 +527,24 @@ export type CredentialPublicationRow = Selectable<CredentialPublicationsTable>;
 export type NewCredentialPublicationRow = Insertable<CredentialPublicationsTable>;
 export type CredentialPublicationUpdate = Updateable<CredentialPublicationsTable>;
 
+export type LearningArtifactRow = Selectable<LearningArtifactsTable>;
+export type NewLearningArtifactRow = Insertable<LearningArtifactsTable>;
+export type LearningArtifactUpdate = Updateable<LearningArtifactsTable>;
+
+export type LearningArtifactLocalizationRow =
+  Selectable<LearningArtifactLocalizationsTable>;
+export type NewLearningArtifactLocalizationRow =
+  Insertable<LearningArtifactLocalizationsTable>;
+export type LearningArtifactLocalizationUpdate =
+  Updateable<LearningArtifactLocalizationsTable>;
+
+export type LearningArtifactPublicationRow =
+  Selectable<LearningArtifactPublicationsTable>;
+export type NewLearningArtifactPublicationRow =
+  Insertable<LearningArtifactPublicationsTable>;
+export type LearningArtifactPublicationUpdate =
+  Updateable<LearningArtifactPublicationsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -557,6 +607,9 @@ export interface Database {
   credentials: CredentialsTable;
   credential_localizations: CredentialLocalizationsTable;
   credential_publications: CredentialPublicationsTable;
+  learning_artifacts: LearningArtifactsTable;
+  learning_artifact_localizations: LearningArtifactLocalizationsTable;
+  learning_artifact_publications: LearningArtifactPublicationsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;

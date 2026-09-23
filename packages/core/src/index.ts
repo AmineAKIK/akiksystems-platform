@@ -76,6 +76,7 @@ export const credentialKinds = ['diploma', 'title', 'certification'] as const;
 
 export type CredentialKind = (typeof credentialKinds)[number];
 export type CredentialId = string;
+export type LearningArtifactId = string;
 
 export type TrainingId = string;
 

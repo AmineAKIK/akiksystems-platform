@@ -1,13 +1,9 @@
 import {
-  publishCredentialLocalization,
-  unpublishCredentialLocalization,
+  publishLearningArtifactLocalization,
+  unpublishLearningArtifactLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
-import {
-  credentialKinds,
-  type CredentialKind,
-  type PlatformLocale,
-} from '@akiksystems/core';
+import { type PlatformLocale } from '@akiksystems/core';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
@@ -15,7 +11,7 @@ import { Form, useActionData, useLoaderData } from 'react-router';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
-import type { Route } from './+types/admin-learning-credentials';
+import type { Route } from './+types/admin-learning-artifacts';
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -30,6 +26,22 @@ function nullable(value: string): string | null {
   return value === '' ? null : value;
 }
 
+function requiredId(form: FormData): string {
+  const id = field(form, 'learningArtifactId');
+  if (!uuidPattern.test(id)) {
+    throw new Response('LearningArtifact not found.', { status: 404 });
+  }
+  return id;
+}
+
+function requiredTrainingId(form: FormData): string {
+  const id = field(form, 'trainingId');
+  if (!uuidPattern.test(id)) {
+    throw new Response('A valid Training is required.', { status: 400 });
+  }
+  return id;
+}
+
 function optionalId(form: FormData, name: string): string | null {
   const value = field(form, name);
   if (value === '') return null;
@@ -37,14 +49,6 @@ function optionalId(form: FormData, name: string): string | null {
     throw new Response('Invalid linked resource.', { status: 400 });
   }
   return value;
-}
-
-function requiredId(form: FormData): string {
-  const id = field(form, 'credentialId');
-  if (!uuidPattern.test(id)) {
-    throw new Response('Credential not found.', { status: 404 });
-  }
-  return id;
 }
 
 function requiredLocale(form: FormData): PlatformLocale {
@@ -55,68 +59,46 @@ function requiredLocale(form: FormData): PlatformLocale {
   return locale;
 }
 
-function requiredKind(form: FormData): CredentialKind {
-  const kind = field(form, 'kind');
-  if (!credentialKinds.includes(kind as CredentialKind)) {
-    throw new Response('Invalid Credential kind.', { status: 400 });
-  }
-  return kind as CredentialKind;
-}
-
-function verificationUrl(form: FormData): string | null {
-  const value = field(form, 'verificationUrl');
-  if (value === '') return null;
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
-    throw new Response('Verification URL must be a valid HTTP(S) URL.', {
-      status: 400,
-    });
-  }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Response('Verification URL must be a valid HTTP(S) URL.', {
-      status: 400,
-    });
-  }
-  return url.toString();
-}
-
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdminSession(request);
 
-  const [credentials, trainings, assets] = await Promise.all([
+  const [learningArtifacts, trainings, systems, assets] = await Promise.all([
     appDb
-      .selectFrom('credentials')
-      .leftJoin('credential_localizations as en', (join) =>
+      .selectFrom('learning_artifacts')
+      .leftJoin('learning_artifact_localizations as en', (join) =>
         join
-          .onRef('en.credential_id', '=', 'credentials.id')
+          .onRef('en.learning_artifact_id', '=', 'learning_artifacts.id')
           .on('en.locale', '=', 'en'),
       )
-      .leftJoin('credential_localizations as fr', (join) =>
+      .leftJoin('learning_artifact_localizations as fr', (join) =>
         join
-          .onRef('fr.credential_id', '=', 'credentials.id')
+          .onRef('fr.learning_artifact_id', '=', 'learning_artifacts.id')
           .on('fr.locale', '=', 'fr'),
       )
-      .leftJoin('credential_publications as pub_en', (join) =>
+      .leftJoin('learning_artifact_publications as pub_en', (join) =>
         join
-          .onRef('pub_en.credential_id', '=', 'credentials.id')
+          .onRef(
+            'pub_en.learning_artifact_id',
+            '=',
+            'learning_artifacts.id',
+          )
           .on('pub_en.locale', '=', 'en'),
       )
-      .leftJoin('credential_publications as pub_fr', (join) =>
+      .leftJoin('learning_artifact_publications as pub_fr', (join) =>
         join
-          .onRef('pub_fr.credential_id', '=', 'credentials.id')
+          .onRef(
+            'pub_fr.learning_artifact_id',
+            '=',
+            'learning_artifacts.id',
+          )
           .on('pub_fr.locale', '=', 'fr'),
       )
       .select([
-        'credentials.id',
-        'credentials.kind',
-        'credentials.issuer',
-        'credentials.issued_on',
-        'credentials.training_id',
-        'credentials.source_asset_id',
-        'credentials.verification_url',
-        'credentials.editorial_position',
+        'learning_artifacts.id',
+        'learning_artifacts.training_id',
+        'learning_artifacts.system_id',
+        'learning_artifacts.source_asset_id',
+        'learning_artifacts.editorial_position',
         'en.slug as slug_en',
         'en.title as title_en',
         'en.summary as summary_en',
@@ -128,8 +110,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         'pub_en.slug as published_slug_en',
         'pub_fr.slug as published_slug_fr',
       ])
-      .orderBy('credentials.editorial_position')
-      .orderBy('credentials.created_at')
+      .orderBy('learning_artifacts.editorial_position')
+      .orderBy('learning_artifacts.created_at')
       .execute(),
     appDb
       .selectFrom('trainings')
@@ -152,13 +134,33 @@ export async function loader({ request }: Route.LoaderArgs) {
       .orderBy('trainings.editorial_position')
       .execute(),
     appDb
+      .selectFrom('systems')
+      .leftJoin('system_localizations as en', (join) =>
+        join
+          .onRef('en.system_id', '=', 'systems.id')
+          .on('en.locale', '=', 'en'),
+      )
+      .leftJoin('system_localizations as fr', (join) =>
+        join
+          .onRef('fr.system_id', '=', 'systems.id')
+          .on('fr.locale', '=', 'fr'),
+      )
+      .select([
+        'systems.id',
+        'en.title as title_en',
+        'fr.title as title_fr',
+      ])
+      .where('systems.lifecycle', '=', 'active')
+      .orderBy('systems.editorial_position')
+      .execute(),
+    appDb
       .selectFrom('assets')
       .select(['id', 'original_filename', 'mime_type'])
       .orderBy('created_at', 'desc')
       .execute(),
   ]);
 
-  return { assets, credentials, trainings };
+  return { assets, learningArtifacts, systems, trainings };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -167,17 +169,12 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = field(form, '_intent');
 
   if (intent === 'create') {
-    const issuer = field(form, 'issuer');
-    if (issuer === '') return { ok: false, message: 'Issuer is required.' };
-
-    const kind = requiredKind(form);
-    const trainingId = optionalId(form, 'trainingId');
+    const trainingId = requiredTrainingId(form);
+    const systemId = optionalId(form, 'systemId');
     const sourceAssetId = optionalId(form, 'sourceAssetId');
-    const url = verificationUrl(form);
-    const issuedOn = nullable(field(form, 'issuedOn'));
 
     const last = await appDb
-      .selectFrom('credentials')
+      .selectFrom('learning_artifacts')
       .select('editorial_position')
       .orderBy('editorial_position', 'desc')
       .executeTakeFirst();
@@ -187,103 +184,85 @@ export async function action({ request }: Route.ActionArgs) {
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
-        .insertInto('credentials')
+        .insertInto('learning_artifacts')
         .values({
           id,
-          kind,
-          issuer,
-          issued_on: issuedOn,
           training_id: trainingId,
+          system_id: systemId,
           source_asset_id: sourceAssetId,
-          verification_url: url,
           editorial_position: position,
         })
         .execute();
 
       await transaction
-        .insertInto('credential_localizations')
+        .insertInto('learning_artifact_localizations')
         .values([
-          { credential_id: id, locale: 'en' },
-          { credential_id: id, locale: 'fr' },
+          { learning_artifact_id: id, locale: 'en' },
+          { learning_artifact_id: id, locale: 'fr' },
         ])
         .execute();
 
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
-        action: 'credential.created',
-        entityType: 'credential',
+        action: 'learning_artifact.created',
+        entityType: 'learning_artifact',
         entityId: id,
         metadata: {
-          kind,
-          issuer,
           trainingId,
+          systemId,
           sourceAssetId,
-          hasVerificationUrl: url !== null,
+          editorialPosition: position,
         },
       });
     });
 
-    return { ok: true, message: 'Credential created.' };
+    return { ok: true, message: 'LearningArtifact created.' };
   }
 
-  const credentialId = requiredId(form);
+  const learningArtifactId = requiredId(form);
 
   if (intent === 'shared') {
-    const issuer = field(form, 'issuer');
-    if (issuer === '') return { ok: false, message: 'Issuer is required.' };
-
-    const kind = requiredKind(form);
-    const trainingId = optionalId(form, 'trainingId');
+    const trainingId = requiredTrainingId(form);
+    const systemId = optionalId(form, 'systemId');
     const sourceAssetId = optionalId(form, 'sourceAssetId');
-    const url = verificationUrl(form);
-    const issuedOn = nullable(field(form, 'issuedOn'));
 
     await appDb.transaction().execute(async (transaction) => {
       await transaction
-        .updateTable('credentials')
+        .updateTable('learning_artifacts')
         .set({
-          kind,
-          issuer,
-          issued_on: issuedOn,
           training_id: trainingId,
+          system_id: systemId,
           source_asset_id: sourceAssetId,
-          verification_url: url,
           updated_at: new Date(),
         })
-        .where('id', '=', credentialId)
+        .where('id', '=', learningArtifactId)
         .execute();
 
       await transaction
-        .updateTable('credential_localizations')
+        .updateTable('learning_artifact_localizations')
         .set({
           editorial_state: 'draft',
           published_at: null,
           updated_at: new Date(),
         })
-        .where('credential_id', '=', credentialId)
+        .where('learning_artifact_id', '=', learningArtifactId)
         .execute();
 
       await writeAdminAuditEvent(transaction, {
         actorUserId: session.user.id,
         actorEmail: session.user.email,
-        action: 'credential.shared_content_updated',
-        entityType: 'credential',
-        entityId: credentialId,
-        metadata: {
-          kind,
-          issuer,
-          trainingId,
-          sourceAssetId,
-          hasVerificationUrl: url !== null,
-        },
+        action: 'learning_artifact.shared_context_updated',
+        entityType: 'learning_artifact',
+        entityId: learningArtifactId,
+        metadata: { trainingId, systemId, sourceAssetId },
       });
     });
 
     return {
       ok: true,
       message:
-        'Shared Credential data saved. Public snapshots are unchanged until republished.',
+        'LearningArtifact relationships saved. Public snapshots are unchanged until republished.',
     };
   }
 
@@ -295,7 +274,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     await appDb
-      .updateTable('credential_localizations')
+      .updateTable('learning_artifact_localizations')
       .set({
         slug,
         title: nullable(field(form, 'title')),
@@ -305,77 +284,83 @@ export async function action({ request }: Route.ActionArgs) {
         published_at: null,
         updated_at: new Date(),
       })
-      .where('credential_id', '=', credentialId)
+      .where('learning_artifact_id', '=', learningArtifactId)
       .where('locale', '=', locale)
       .execute();
 
     await writeAdminAuditEvent(appDb, {
       actorUserId: session.user.id,
       actorEmail: session.user.email,
-      action: 'credential.localization_updated',
-      entityType: 'credential',
-      entityId: credentialId,
+      action: 'learning_artifact.localization_updated',
+      entityType: 'learning_artifact',
+      entityId: learningArtifactId,
       locale,
     });
 
     return {
       ok: true,
-      message: locale.toUpperCase() + ' Credential draft saved.',
+      message: locale.toUpperCase() + ' LearningArtifact draft saved.',
     };
   }
 
   if (intent === 'publish') {
     const locale = requiredLocale(form);
     try {
-      await publishCredentialLocalization(appDb, { credentialId, locale });
+      await publishLearningArtifactLocalization(appDb, {
+        learningArtifactId,
+        locale,
+      });
     } catch (error) {
       return {
         ok: false,
         message:
           error instanceof Error
             ? error.message
-            : 'Credential publication failed.',
+            : 'LearningArtifact publication failed.',
       };
     }
 
     await writeAdminAuditEvent(appDb, {
       actorUserId: session.user.id,
       actorEmail: session.user.email,
-      action: 'credential.published',
-      entityType: 'credential',
-      entityId: credentialId,
+      action: 'learning_artifact.published',
+      entityType: 'learning_artifact',
+      entityId: learningArtifactId,
       locale,
     });
 
     return {
       ok: true,
-      message: locale.toUpperCase() + ' Credential published.',
+      message: locale.toUpperCase() + ' LearningArtifact published.',
     };
   }
 
   if (intent === 'unpublish') {
     const locale = requiredLocale(form);
-    await unpublishCredentialLocalization(appDb, { credentialId, locale });
+    await unpublishLearningArtifactLocalization(appDb, {
+      learningArtifactId,
+      locale,
+    });
 
     await writeAdminAuditEvent(appDb, {
       actorUserId: session.user.id,
       actorEmail: session.user.email,
-      action: 'credential.unpublished',
-      entityType: 'credential',
-      entityId: credentialId,
+      action: 'learning_artifact.unpublished',
+      entityType: 'learning_artifact',
+      entityId: learningArtifactId,
       locale,
     });
 
     return {
       ok: true,
-      message: locale.toUpperCase() + ' Credential unpublished.',
+      message: locale.toUpperCase() + ' LearningArtifact unpublished.',
     };
   }
 
   return null;
 }
 
-export default function AdminLearningCredentialsRoute() {
+export default function AdminLearningArtifactsRoute() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
@@ -389,16 +374,16 @@ export default function AdminLearningCredentialsRoute() {
                 L5 · Learning
               </Text>
               <Heading level={1} size="md">
-                Credential administration
+                LearningArtifact administration
               </Heading>
               <Text tone="muted">
-                Credentials are evidence objects. They can connect to a Training,
-                a source document, a verification URL, or any combination of
-                those without becoming Training content.
+                LearningArtifacts are first-class evidence. Training remains
+                their required context; System and source-document links are
+                optional evidence relationships.
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin/learning">Training administration</Link>
-                <Link href="/admin/learning/artifacts">LearningArtifacts</Link>
+                <Link href="/admin/learning/credentials">Credentials</Link>
                 <Link href="/en/learning">Public Learning</Link>
               </div>
             </div>
@@ -416,35 +401,28 @@ export default function AdminLearningCredentialsRoute() {
             <Form className="aks-admin-form" method="post">
               <input name="_intent" type="hidden" value="create" />
               <Heading level={2} size="sm">
-                Create Credential
+                Create LearningArtifact
               </Heading>
               <label>
-                <span>Kind</span>
-                <select defaultValue="certification" name="kind">
-                  {credentialKinds.map((kind) => (
-                    <option key={kind} value={kind}>
-                      {kind}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Issuer</span>
-                <input name="issuer" required />
-              </label>
-              <label>
-                <span>Issued on</span>
-                <input name="issuedOn" type="date" />
-              </label>
-              <label>
-                <span>Connected Training (optional)</span>
-                <select defaultValue="" name="trainingId">
-                  <option value="">No Training</option>
+                <span>Training</span>
+                <select name="trainingId" required>
+                  <option value="">Select Training</option>
                   {data.trainings.map((training) => (
                     <option key={training.id} value={training.id}>
                       {training.title_en ??
                         training.title_fr ??
                         training.provider}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Connected System (optional)</span>
+                <select defaultValue="" name="systemId">
+                  <option value="">No System</option>
+                  {data.systems.map((system) => (
+                    <option key={system.id} value={system.id}>
+                      {system.title_en ?? system.title_fr ?? system.id}
                     </option>
                   ))}
                 </select>
@@ -460,66 +438,36 @@ export default function AdminLearningCredentialsRoute() {
                   ))}
                 </select>
               </label>
-              <label>
-                <span>Verification URL (optional)</span>
-                <input name="verificationUrl" type="url" />
-              </label>
-              <Button type="submit">Create Credential</Button>
+              <Button type="submit">Create LearningArtifact</Button>
             </Form>
           </section>
 
-          {data.credentials.map((credential) => (
-            <section className="aks-admin-card" key={credential.id}>
+          {data.learningArtifacts.map((artifact) => (
+            <section className="aks-admin-card" key={artifact.id}>
               <div className="aks-proof-stack">
                 <Heading level={2} size="sm">
-                  {credential.title_en ??
-                    credential.title_fr ??
-                    'Untitled Credential'}
+                  {artifact.title_en ??
+                    artifact.title_fr ??
+                    'Untitled LearningArtifact'}
                 </Heading>
                 <Text size="sm" tone="muted">
-                  {credential.kind} · {credential.issuer} · {credential.id}
+                  {artifact.id}
                 </Text>
 
                 <Form className="aks-admin-form" method="post">
                   <input name="_intent" type="hidden" value="shared" />
                   <input
-                    name="credentialId"
+                    name="learningArtifactId"
                     type="hidden"
-                    value={credential.id}
+                    value={artifact.id}
                   />
                   <label>
-                    <span>Kind</span>
-                    <select defaultValue={credential.kind} name="kind">
-                      {credentialKinds.map((kind) => (
-                        <option key={kind} value={kind}>
-                          {kind}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Issuer</span>
-                    <input
-                      defaultValue={credential.issuer}
-                      name="issuer"
-                      required
-                    />
-                  </label>
-                  <label>
-                    <span>Issued on</span>
-                    <input
-                      defaultValue={credential.issued_on ?? ''}
-                      name="issuedOn"
-                      type="date"
-                    />
-                  </label>
-                  <label>
-                    <span>Connected Training</span>
+                    <span>Training</span>
                     <select
-                      defaultValue={credential.training_id ?? ''}
+                      defaultValue={artifact.training_id}
                       name="trainingId"
+                      required
                     >
-                      <option value="">No Training</option>
                       {data.trainings.map((training) => (
                         <option key={training.id} value={training.id}>
                           {training.title_en ??
@@ -530,9 +478,23 @@ export default function AdminLearningCredentialsRoute() {
                     </select>
                   </label>
                   <label>
+                    <span>Connected System</span>
+                    <select
+                      defaultValue={artifact.system_id ?? ''}
+                      name="systemId"
+                    >
+                      <option value="">No System</option>
+                      {data.systems.map((system) => (
+                        <option key={system.id} value={system.id}>
+                          {system.title_en ?? system.title_fr ?? system.id}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
                     <span>Source document</span>
                     <select
-                      defaultValue={credential.source_asset_id ?? ''}
+                      defaultValue={artifact.source_asset_id ?? ''}
                       name="sourceAssetId"
                     >
                       <option value="">No source document</option>
@@ -543,34 +505,24 @@ export default function AdminLearningCredentialsRoute() {
                       ))}
                     </select>
                   </label>
-                  <label>
-                    <span>Verification URL</span>
-                    <input
-                      defaultValue={credential.verification_url ?? ''}
-                      name="verificationUrl"
-                      type="url"
-                    />
-                  </label>
-                  <Button type="submit">Save shared evidence data</Button>
+                  <Button type="submit">Save evidence relationships</Button>
                 </Form>
 
                 {(['en', 'fr'] as const).map((locale) => {
                   const slug =
-                    locale === 'en' ? credential.slug_en : credential.slug_fr;
+                    locale === 'en' ? artifact.slug_en : artifact.slug_fr;
                   const title =
-                    locale === 'en'
-                      ? credential.title_en
-                      : credential.title_fr;
+                    locale === 'en' ? artifact.title_en : artifact.title_fr;
                   const summary =
                     locale === 'en'
-                      ? credential.summary_en
-                      : credential.summary_fr;
+                      ? artifact.summary_en
+                      : artifact.summary_fr;
                   const body =
-                    locale === 'en' ? credential.body_en : credential.body_fr;
+                    locale === 'en' ? artifact.body_en : artifact.body_fr;
                   const publishedSlug =
                     locale === 'en'
-                      ? credential.published_slug_en
-                      : credential.published_slug_fr;
+                      ? artifact.published_slug_en
+                      : artifact.published_slug_fr;
 
                   return (
                     <fieldset className="aks-admin-fieldset" key={locale}>
@@ -582,9 +534,9 @@ export default function AdminLearningCredentialsRoute() {
                           value="localization"
                         />
                         <input
-                          name="credentialId"
+                          name="learningArtifactId"
                           type="hidden"
-                          value={credential.id}
+                          value={artifact.id}
                         />
                         <input name="locale" type="hidden" value={locale} />
                         <label>
@@ -608,7 +560,7 @@ export default function AdminLearningCredentialsRoute() {
                           <textarea
                             defaultValue={body ?? ''}
                             name="body"
-                            rows={6}
+                            rows={8}
                           />
                         </label>
                         <Button type="submit">
@@ -624,9 +576,9 @@ export default function AdminLearningCredentialsRoute() {
                             value="publish"
                           />
                           <input
-                            name="credentialId"
+                            name="learningArtifactId"
                             type="hidden"
-                            value={credential.id}
+                            value={artifact.id}
                           />
                           <input name="locale" type="hidden" value={locale} />
                           <Button emphasis="quiet" type="submit">
@@ -646,9 +598,9 @@ export default function AdminLearningCredentialsRoute() {
                                 value="unpublish"
                               />
                               <input
-                                name="credentialId"
+                                name="learningArtifactId"
                                 type="hidden"
-                                value={credential.id}
+                                value={artifact.id}
                               />
                               <input
                                 name="locale"
@@ -662,8 +614,8 @@ export default function AdminLearningCredentialsRoute() {
                             <Link
                               href={
                                 locale === 'fr'
-                                  ? '/fr/apprentissage/justificatifs/' + publishedSlug
-                                  : '/en/learning/credentials/' + publishedSlug
+                                  ? '/fr/apprentissage/preuves/' + publishedSlug
+                                  : '/en/learning/artifacts/' + publishedSlug
                               }
                             >
                               Open public
