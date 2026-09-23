@@ -114,8 +114,8 @@ AKS-101 establishes Writings as one editorial domain rather than three separate
 content systems. A single Writing identity carries a kind (`note`, `article`,
 or `essay`) and editorial weight (`normal`, `featured`, or `major`), while
 localized EN/FR drafts publish independently to immutable public snapshots.
-Editorial weight is modeled now but does not yet alter layout; that composition
-belongs to later L6 work. The initial renderer intentionally accepts plain text
+Editorial weight remains a controlled domain signal; AKS-111 maps it to fixed
+feed compositions while keeping layout code-owned. The initial renderer intentionally accepts plain text
 paragraphs only, keeping page semantics code-owned until the Tiptap and
 rich-content schema tickets earn a broader controlled document model.
 
@@ -199,11 +199,22 @@ its localized deep link. The feed preserves the existing code-defined `editorial
 contract from the Writing read model. Publication timestamps remain reader-facing
 metadata rather than becoming implicit layout instructions.
 
-`editorialWeight` remains part of the Writing publication model, but AKS-110
-does not expose it as a DOM hook, visual hierarchy, or reader-facing label.
-That presentation decision belongs to AKS-111, keeping the admin from becoming
-a page builder and preserving the rule that structure is code-defined while
-content is data-managed.
+AKS-110 deliberately leaves `editorialWeight` out of presentation. AKS-111
+owns that next step: the published weight becomes a private composition hook
+without becoming a reader-facing label.
+
+AKS-111 maps `normal`, `featured`, and `major` onto three fixed,
+product-owned feed compositions. NORMAL keeps the baseline row, FEATURED gives
+the editorial copy more visual room and hierarchy, and MAJOR uses a broader
+desktop composition that collapses back to one safe column on narrow screens.
+The same semantic list/article structure, localized deep links, taxonomy links,
+and publication ordering remain intact across all three variants.
+
+The admin still authors only the existing editorial-weight enum. It does not
+expose layout, template, style, column, spacing, or arbitrary presentation
+controls. Category and Tag routes reuse the same feed component, so a published
+Writing carries one editorial signal consistently across the editorial surface
+without turning content management into page building.
 
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
