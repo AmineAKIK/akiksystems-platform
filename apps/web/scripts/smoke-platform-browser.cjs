@@ -1818,6 +1818,181 @@ async function assertCredentialAdmin(page) {
   );
 }
 
+async function assertFutureCredentialExtensibility(page) {
+  await page.goto(origin + '/admin/learning/credentials');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Credential administration',
+      exact: true,
+    })
+    .waitFor();
+
+  const createForm = page.locator('form').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Credential',
+      exact: true,
+    }),
+  });
+
+  assert.deepEqual(
+    await createForm.locator('select[name="kind"] option').allTextContents(),
+    ['diploma', 'title', 'certification'],
+    'Future diploma/title/certification evidence must use the same admin model.',
+  );
+
+  await createForm.locator('select[name="kind"]').selectOption('diploma');
+  await createForm.locator('input[name="issuer"]').fill('Future Credential Authority');
+  await createForm.locator('input[name="issuedOn"]').fill('2026-09-01');
+  await createForm
+    .locator('select[name="trainingId"]')
+    .selectOption({ label: 'Qualified Training' });
+  await createForm.getByRole('button', { name: 'Create Credential', exact: true }).click();
+  await page.getByText('Credential created.', { exact: true }).waitFor();
+
+  const futureCard = () =>
+    page
+      .locator('section.aks-admin-card')
+      .filter({ hasText: 'Future Credential Authority' })
+      .last();
+
+  await futureCard().waitFor();
+  assert.ok(
+    (await futureCard().innerText()).includes('diploma · Future Credential Authority'),
+    'The future Credential must be created as generic diploma evidence.',
+  );
+  assert.ok(
+    (await futureCard().innerText()).includes('Training connected'),
+    'The future Credential must keep Training as an optional connected context.',
+  );
+
+  const fillLocalization = async ({
+    index,
+    locale,
+    slug,
+    title,
+    summary,
+    body,
+  }) => {
+    let fieldset = futureCard().locator('fieldset').nth(index);
+    await fieldset.locator('input[name="slug"]').fill(slug);
+    await fieldset.locator('input[name="title"]').fill(title);
+    await fieldset.locator('textarea[name="summary"]').fill(summary);
+    await fieldset.locator('textarea[name="body"]').fill(body);
+    await fieldset
+      .getByRole('button', { name: 'Save ' + locale + ' draft', exact: true })
+      .click();
+    await page
+      .getByText(locale + ' Credential draft saved.', { exact: true })
+      .waitFor();
+
+    fieldset = futureCard().locator('fieldset').nth(index);
+    await fieldset
+      .getByRole('button', { name: 'Publish ' + locale, exact: true })
+      .click();
+    await page
+      .getByText(locale + ' Credential published.', { exact: true })
+      .waitFor();
+  };
+
+  await fillLocalization({
+    index: 0,
+    locale: 'EN',
+    slug: 'future-platform-diploma',
+    title: 'Future Platform Diploma',
+    summary: 'Future diploma added through the existing Learning administration.',
+    body: 'Inspection depth for a future diploma created without credential-specific application code.',
+  });
+
+  await fillLocalization({
+    index: 1,
+    locale: 'FR',
+    slug: 'futur-diplome-plateforme',
+    title: 'Futur diplôme plateforme',
+    summary: 'Futur diplôme ajouté depuis l’administration Learning existante.',
+    body: 'Niveau d’inspection pour un futur diplôme créé sans code applicatif spécifique au justificatif.',
+  });
+
+  const publishedAdminText = await futureCard().innerText();
+  assert.ok(publishedAdminText.includes('EN Published · FR Published'));
+  assert.ok(publishedAdminText.includes('Training connected'));
+
+  const targets = [
+    {
+      overviewPath: '/en/learning',
+      credentialPath: '/en/learning/credentials/future-platform-diploma',
+      title: 'Future Platform Diploma',
+      summary: 'Future diploma added through the existing Learning administration.',
+      detail: 'Inspection depth for a future diploma created without credential-specific application code.',
+      kind: 'Diploma',
+      trainingPath: '/en/learning/qualified-training',
+      trainingTitle: 'Qualified Training',
+      alternateLocale: 'fr',
+      alternatePath: '/fr/apprentissage/justificatifs/futur-diplome-plateforme',
+    },
+    {
+      overviewPath: '/fr/apprentissage',
+      credentialPath: '/fr/apprentissage/justificatifs/futur-diplome-plateforme',
+      title: 'Futur diplôme plateforme',
+      summary: 'Futur diplôme ajouté depuis l’administration Learning existante.',
+      detail: 'Niveau d’inspection pour un futur diplôme créé sans code applicatif spécifique au justificatif.',
+      kind: 'Diplôme',
+      trainingPath: '/fr/apprentissage/formation-qualifiee',
+      trainingTitle: 'Formation qualifiée',
+      alternateLocale: 'en',
+      alternatePath: '/en/learning/credentials/future-platform-diploma',
+    },
+  ];
+
+  for (const target of targets) {
+    const overviewResponse = await page.goto(origin + target.overviewPath);
+    assert.equal(overviewResponse?.status(), 200);
+    await page
+      .getByRole('heading', { level: 3, name: target.title, exact: true })
+      .waitFor();
+    assert.equal(
+      await page.locator('a[href="' + target.credentialPath + '"]').count(),
+      1,
+      'A future Credential must appear at Learning summary depth without a dedicated renderer.',
+    );
+    const overviewText = await page.locator('body').innerText();
+    assert.ok(overviewText.includes(target.summary));
+    assert.ok(overviewText.includes(target.trainingTitle));
+
+    const detailResponse = await page.goto(origin + target.credentialPath);
+    assert.equal(detailResponse?.status(), 200);
+    await page
+      .getByRole('heading', { level: 1, name: target.title, exact: true })
+      .waitFor();
+
+    const detailText = await page.locator('body').innerText();
+    assert.ok(detailText.includes(target.summary));
+    assert.ok(detailText.includes(target.detail));
+    assert.ok(detailText.includes(target.kind));
+    assert.ok(detailText.includes('Future Credential Authority'));
+    assert.equal(
+      await page
+        .getByRole('link', { name: target.trainingTitle, exact: true })
+        .getAttribute('href'),
+      target.trainingPath,
+      'Future evidence must keep its Training context distinct and connected.',
+    );
+    assert.equal(
+      await page
+        .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+        .getAttribute('href'),
+      target.alternatePath,
+      'Future Credentials must be bilingual and switch to the equivalent deep route.',
+    );
+    assert.equal(
+      await page.locator('link[rel="canonical"]').getAttribute('href'),
+      'https://akiksystems.com' + target.credentialPath,
+    );
+    await assertAxe(page);
+  }
+}
+
 function bootstrapL5LearningArtifactQualification() {
   execFileSync('pnpm', ['db:bootstrap-learning-artifact-qualification'], {
     cwd: process.cwd(),
@@ -4054,6 +4229,7 @@ async function assertAxe(page) {
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
+    await assertFutureCredentialExtensibility(page);
     await assertLearningArtifactPublicJourney(browser);
     await assertLearningOverviewExperience(browser);
     await assertLearningArtifactAdmin(page);
