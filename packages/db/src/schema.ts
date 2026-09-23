@@ -9,6 +9,8 @@ import type {
   SystemLinkKind,
   SystemPresentationKind,
   TrainingState,
+  WritingEditorialWeight,
+  WritingKind,
 } from '@akiksystems/core';
 import type {
   ColumnType,
@@ -333,6 +335,37 @@ export interface LearningArtifactPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface WritingsTable {
+  id: string;
+  kind: WritingKind;
+  editorial_weight: DefaultedColumn<WritingEditorialWeight>;
+  editorial_position: DefaultedColumn<number>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WritingLocalizationsTable {
+  writing_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WritingPublicationsTable {
+  writing_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -545,6 +578,18 @@ export type NewLearningArtifactPublicationRow =
 export type LearningArtifactPublicationUpdate =
   Updateable<LearningArtifactPublicationsTable>;
 
+export type WritingRow = Selectable<WritingsTable>;
+export type NewWritingRow = Insertable<WritingsTable>;
+export type WritingUpdate = Updateable<WritingsTable>;
+
+export type WritingLocalizationRow = Selectable<WritingLocalizationsTable>;
+export type NewWritingLocalizationRow = Insertable<WritingLocalizationsTable>;
+export type WritingLocalizationUpdate = Updateable<WritingLocalizationsTable>;
+
+export type WritingPublicationRow = Selectable<WritingPublicationsTable>;
+export type NewWritingPublicationRow = Insertable<WritingPublicationsTable>;
+export type WritingPublicationUpdate = Updateable<WritingPublicationsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -610,6 +655,9 @@ export interface Database {
   learning_artifacts: LearningArtifactsTable;
   learning_artifact_localizations: LearningArtifactLocalizationsTable;
   learning_artifact_publications: LearningArtifactPublicationsTable;
+  writings: WritingsTable;
+  writing_localizations: WritingLocalizationsTable;
+  writing_publications: WritingPublicationsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;
