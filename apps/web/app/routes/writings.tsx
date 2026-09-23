@@ -1,7 +1,4 @@
-import {
-  listPublishedSystemReferences,
-  listPublishedWritings,
-} from '@akiksystems/db';
+import { listPublishedWritings } from '@akiksystems/db';
 import { type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { WritingsOverview } from '../components/writings-overview';
@@ -12,19 +9,12 @@ import type { Route } from './+types/writings';
 
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'en');
-  const [writings, systemReferences] = await Promise.all([
-    listPublishedWritings(appDb, locale),
-    listPublishedSystemReferences(appDb, {
-      locale,
-      limit: 2,
-    }),
-  ]);
+  const writings = await listPublishedWritings(appDb, locale);
   return {
     writings: writings.map((writing) => ({
       ...writing,
       publishedAt: writing.publishedAt.toISOString(),
     })),
-    systemReferences,
   };
 }
 
@@ -33,7 +23,7 @@ export function meta(): MetaDescriptor[] {
 }
 
 export default function GlobalDestinationRoute() {
-  const { writings, systemReferences } = useLoaderData<typeof loader>();
+  const { writings } = useLoaderData<typeof loader>();
   return (
     <WritingsOverview
       locale="en"
@@ -41,7 +31,6 @@ export default function GlobalDestinationRoute() {
         ...writing,
         publishedAt: new Date(writing.publishedAt),
       }))}
-      systemReferences={systemReferences}
     />
   );
 }

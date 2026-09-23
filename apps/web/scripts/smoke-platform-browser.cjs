@@ -1859,9 +1859,34 @@ async function assertWritingAdminAndPublic(page) {
       name: locale,
       exact: true,
     });
-    const persistedDocument = JSON.parse(
-      await fieldset.locator('input[name="editorDocument"]').inputValue(),
-    );
+    await fieldset
+      .locator('[data-writing-editor][data-editor-ready="true"]')
+      .waitFor();
+
+    const expectedNodeTypes = [
+      'heading',
+      'bulletList',
+      'orderedList',
+      'blockquote',
+      'codeBlock',
+      'callout',
+    ];
+    let persistedDocument = null;
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      persistedDocument = JSON.parse(
+        await fieldset.locator('input[name="editorDocument"]').inputValue(),
+      );
+      const hasAsset = persistedDocument.content.some(
+        (node) =>
+          node.type === 'image' && node.attrs?.assetId === assetId,
+      );
+      const hasRichBlocks = expectedNodeTypes.every((nodeType) =>
+        persistedDocument.content.some((node) => node.type === nodeType),
+      );
+      if (hasAsset && hasRichBlocks) break;
+      await sleep(100);
+    }
+
     assert.ok(
       persistedDocument.content.some(
         (node) =>
@@ -1869,14 +1894,7 @@ async function assertWritingAdminAndPublic(page) {
       ),
       `${locale} contextual image must survive the admin round-trip.`,
     );
-    for (const nodeType of [
-      'heading',
-      'bulletList',
-      'orderedList',
-      'blockquote',
-      'codeBlock',
-      'callout',
-    ]) {
+    for (const nodeType of expectedNodeTypes) {
       assert.ok(
         persistedDocument.content.some((node) => node.type === nodeType),
         `${locale} controlled ${nodeType} must survive the admin round-trip.`,
@@ -1912,7 +1930,7 @@ async function assertWritingAdminAndPublic(page) {
       alternateLocale: 'fr',
       alternatePath: '/fr/ecrits/architecture-sans-page-builder',
       kind: 'Essay',
-      weight: 'Major weight',
+      feedHeading: 'Editorial feed',
       richHeading: 'Section heading',
       calloutText: 'Important context',
     },
@@ -1929,7 +1947,7 @@ async function assertWritingAdminAndPublic(page) {
       alternateLocale: 'en',
       alternatePath: '/en/writings/architecture-without-page-builders',
       kind: 'Essai',
-      weight: 'Poids majeur',
+      feedHeading: 'Flux éditorial',
       richHeading: 'Titre de section',
       calloutText: 'Contexte important',
     },
@@ -1942,28 +1960,46 @@ async function assertWritingAdminAndPublic(page) {
       .getByRole('heading', { level: 1, name: target.heading, exact: true })
       .waitFor();
 
-    const writingOverviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.title,
-        exact: true,
-      }),
-    });
+    await page
+      .getByRole('heading', { level: 2, name: target.feedHeading, exact: true })
+      .waitFor();
+    assert.equal(
+      await page.locator('[data-unified-editorial-surface] [data-writing-feed]').count(),
+      1,
+      'Notes, Articles, and Essays must share one public editorial feed.',
+    );
+
+    const writingOverviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.title,
+          exact: true,
+        }),
+      });
     await writingOverviewCard.waitFor();
     const overviewText = await writingOverviewCard.innerText();
     assert.ok(overviewText.includes(target.summary));
     assert.ok(
       overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
         .includes(target.kind.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
-      'Writing kind must remain visible regardless of presentational text transform.',
-    );
-    assert.ok(
-      overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
-        .includes(target.weight.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
-      'Editorial weight must remain visible regardless of presentational text transform.',
+      'Writing kind must remain visible inside the unified feed.',
     );
     assert.equal(
-      await writingOverviewCard.locator('a').getAttribute('href'),
+      await writingOverviewCard.getAttribute('data-editorial-weight'),
+      null,
+      'AKS-110 must not expose editorial weight as feed presentation before AKS-111.',
+    );
+    assert.equal(
+      overviewText.includes('Major weight') || overviewText.includes('Poids majeur'),
+      false,
+      'AKS-110 must not pre-empt AKS-111 by exposing editorial-weight labels as presentation.',
+    );
+    assert.equal(
+      await writingOverviewCard
+        .getByRole('link', { name: target.title, exact: true })
+        .getAttribute('href'),
       target.detail,
       'Each published Writing must remain independently deep-linkable.',
     );
@@ -2316,13 +2352,15 @@ async function assertWritingCategories(page) {
 
   for (const target of targets) {
     await page.goto(origin + target.overview);
-    const overviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const overviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     const categoryLink = overviewCard.getByRole('link', {
       name: target.categoryName,
       exact: true,
@@ -2356,13 +2394,15 @@ async function assertWritingCategories(page) {
       })
       .waitFor();
     assert.ok((await page.locator('body').innerText()).includes(target.categoryDescription));
-    const categoryWriting = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const categoryWriting = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     await categoryWriting.waitFor();
     assert.equal(
       await categoryWriting.getByRole('link', { name: /Lire|Read/ }).getAttribute('href'),
@@ -2603,13 +2643,15 @@ async function assertWritingTags(page) {
 
   for (const target of targets) {
     await page.goto(origin + target.overview + '?tag-publication=' + target.locale);
-    const overviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const overviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     const overviewTagLink = overviewCard.getByRole('link', {
       name: target.tagName,
       exact: true,
@@ -2639,13 +2681,15 @@ async function assertWritingTags(page) {
         exact: true,
       })
       .waitFor();
-    const tagWriting = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const tagWriting = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     await tagWriting.waitFor();
     assert.equal(
       await tagWriting
@@ -2896,36 +2940,25 @@ async function assertWritingSystemRelations(page) {
   }
 }
 
-async function assertReusableSystemReferences(browser) {
+async function assertWritingsOverviewIsolation(browser) {
+  const targets = [
+    { path: '/en/writings', heading: 'Writings' },
+    { path: '/fr/ecrits', heading: 'Écrits' },
+  ];
+
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
     const page = await desktop.newPage();
-    for (const target of [
-      { path: '/en/writings', locale: 'en', heading: 'Writings' },
-      { path: '/fr/ecrits', locale: 'fr', heading: 'Écrits' },
-    ]) {
+    for (const target of targets) {
       const response = await page.goto(`${origin}${target.path}`);
       assert.equal(response?.status(), 200);
       await page.getByRole('heading', { level: 1, name: target.heading, exact: true }).waitFor();
-
-      const references = page.locator('.aks-system-reference');
-      assert.ok(
-        (await references.count()) >= 2,
-        `${target.path} must demonstrate at least two published reusable System references.`,
+      await page.locator('[data-unified-editorial-surface] [data-writing-feed]').waitFor();
+      assert.equal(
+        await page.locator('.aks-system-reference').count(),
+        0,
+        `${target.path} must not reintroduce unrelated generic System references into the unified editorial surface.`,
       );
-      const first = references.first();
-      assert.match(await first.innerText(), /Role|Rôle/i);
-      assert.match(await first.innerText(), /Maturity|Maturité/i);
-
-      const hrefs = await references.locator('a').evaluateAll((links) =>
-        links.map((link) => link.getAttribute('href')),
-      );
-      for (const href of hrefs) {
-        assert.ok(
-          typeof href === 'string' && href.startsWith(`/${target.locale}/systems/`),
-          `${target.path} must use locale-safe System deep links, received ${href}.`,
-        );
-      }
       await assertAxe(page);
     }
   } finally {
@@ -2935,16 +2968,21 @@ async function assertReusableSystemReferences(browser) {
   const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
   try {
     const page = await mobile.newPage();
-    for (const path of ['/en/writings', '/fr/ecrits']) {
-      const response = await page.goto(`${origin}${path}`);
+    for (const target of targets) {
+      const response = await page.goto(`${origin}${target.path}`);
       assert.equal(response?.status(), 200);
-      await page.locator('.aks-system-reference').first().waitFor();
+      await page.locator('[data-unified-editorial-surface] [data-writing-feed]').waitFor();
+      assert.equal(
+        await page.locator('.aks-system-reference').count(),
+        0,
+        `${target.path} must keep generic System references outside the unified editorial surface on mobile.`,
+      );
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         ),
         true,
-        `${path} reusable System references must not overflow at 320px.`,
+        `${target.path} unified editorial surface must not overflow at 320px.`,
       );
       await assertAxe(page);
     }
@@ -6265,7 +6303,7 @@ async function assertAxe(page) {
     await assertWritingCategories(page);
     await assertWritingTags(page);
     await assertWritingSystemRelations(page);
-    await assertReusableSystemReferences(browser);
+    await assertWritingsOverviewIsolation(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);

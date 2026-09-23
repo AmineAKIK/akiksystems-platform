@@ -1196,9 +1196,10 @@ export default function AdminWritingsRoute() {
                 Writings administration
               </Heading>
               <Text tone="muted">
-                One Writing entity serves Notes, Articles, and Essays. Editorial
-                weight is modeled now but visual prominence remains code-owned
-                and is applied by later Writings work.
+                One Writing entity serves Notes, Articles, and Essays, and all
+                three publish into the same public editorial feed. Editorial
+                weight is modeled but its visual treatment remains code-owned
+                by the next Writings step rather than configurable here.
               </Text>
               <Text size="sm" tone="muted">
                 AKS-106 defines a versioned rich-content vocabulary for

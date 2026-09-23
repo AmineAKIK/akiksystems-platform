@@ -51,6 +51,7 @@
     "db:verify-writing-editor-document": "tsx src/cli/verify-writing-editor-document.ts",
     "db:verify-writing-assets": "tsx src/cli/verify-writing-assets.ts",
     "db:verify-writing-editorial-lifecycle": "tsx src/cli/verify-writing-editorial-lifecycle.ts",
+    "db:verify-writing-unified-feed": "tsx src/cli/verify-writing-unified-feed.ts",
     "db:verify-system-publication-snapshots": "tsx src/cli/verify-system-publication-snapshots.ts",
     "db:bootstrap-tugeres-qualification": "tsx src/cli/bootstrap-tugeres-qualification.ts",
     "db:bootstrap-oria-qualification": "tsx src/cli/bootstrap-oria-qualification.ts",

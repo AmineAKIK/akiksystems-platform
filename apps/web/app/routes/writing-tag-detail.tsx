@@ -5,6 +5,7 @@ import {
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
+import { WritingsFeed } from '../components/writings-feed';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
 import { publicNotFound } from '../lib/public-seo';
@@ -24,12 +25,6 @@ function tagHref(locale: 'en' | 'fr', slug: string): string {
   return locale === 'fr'
     ? `/fr/ecrits/tags/${slug}`
     : `/en/writings/tags/${slug}`;
-}
-
-function writingHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/${slug}`
-    : `/en/writings/${slug}`;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -126,29 +121,18 @@ export default function WritingTagDetailRoute() {
               </Text>
             </div>
 
-            {writings.length === 0 ? (
-              <Text tone="muted">
-                {tag.locale === 'fr'
+            <WritingsFeed
+              emptyMessage={
+                tag.locale === 'fr'
                   ? 'Aucun écrit publié avec ce tag.'
-                  : 'No published Writing with this tag.'}
-              </Text>
-            ) : (
-              <div className="aks-proof-stack">
-                {writings.map((writing) => (
-                  <article className="aks-admin-card" key={writing.writingId}>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {writing.title}
-                      </Heading>
-                      <Text>{writing.summary}</Text>
-                      <Link href={writingHref(tag.locale, writing.slug)}>
-                        {tag.locale === 'fr' ? 'Lire' : 'Read'}
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+                  : 'No published Writing with this tag.'
+              }
+              locale={tag.locale}
+              writings={writings.map((writing) => ({
+                ...writing,
+                publishedAt: new Date(writing.publishedAt),
+              }))}
+            />
           </section>
 
           <Link href={overviewHref}>
