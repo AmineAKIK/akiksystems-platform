@@ -22,6 +22,19 @@ export type {
   PublishedCredentialListItem,
   PublicCredentialTraining,
 } from './credential-publication.js';
+export {
+  getPublishedLearningArtifact,
+  listPublishedLearningArtifactsForTraining,
+  publishLearningArtifactLocalization,
+  unpublishLearningArtifactLocalization,
+} from './learning-artifact-publication.js';
+export type {
+  LearningArtifactPublicationSnapshot,
+  PublishedLearningArtifact,
+  PublishedLearningArtifactListItem,
+  PublicLearningArtifactSystem,
+  PublicLearningArtifactTraining,
+} from './learning-artifact-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
 export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
 export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
@@ -98,6 +111,15 @@ export type {
   CredentialRow,
   CredentialsTable,
   CredentialUpdate,
+  LearningArtifactLocalizationRow,
+  LearningArtifactLocalizationsTable,
+  LearningArtifactLocalizationUpdate,
+  LearningArtifactPublicationRow,
+  LearningArtifactPublicationsTable,
+  LearningArtifactPublicationUpdate,
+  LearningArtifactRow,
+  LearningArtifactsTable,
+  LearningArtifactUpdate,
   Database,
   ExperienceLocalizationRow,
   ExperienceLocalizationUpdate,
@@ -111,6 +133,9 @@ export type {
   NewCredentialLocalizationRow,
   NewCredentialPublicationRow,
   NewCredentialRow,
+  NewLearningArtifactLocalizationRow,
+  NewLearningArtifactPublicationRow,
+  NewLearningArtifactRow,
   NewExperienceLocalizationRow,
   NewExperienceRow,
   NewProfileCapabilityGroupLocalizationRow,
