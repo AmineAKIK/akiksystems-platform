@@ -382,7 +382,8 @@ export default function AdminLearningArtifactsRoute() {
                 optional evidence relationships.
               </Text>
               <div className="aks-proof-actions">
-                <Link href="/admin/learning">Training administration</Link>
+                <Link href="/admin/learning">Learning hub</Link>
+                <Link href="/admin/learning/trainings">Trainings</Link>
                 <Link href="/admin/learning/credentials">Credentials</Link>
                 <Link href="/en/learning">Public Learning</Link>
               </div>
@@ -452,6 +453,12 @@ export default function AdminLearningArtifactsRoute() {
                 </Heading>
                 <Text size="sm" tone="muted">
                   {artifact.id}
+                </Text>
+                <Text size="sm" tone="muted">
+                  EN {artifact.published_slug_en === null ? 'Draft' : 'Published'} · FR{' '}
+                  {artifact.published_slug_fr === null ? 'Draft' : 'Published'} · Training connected ·{' '}
+                  {artifact.system_id === null ? 'No System' : 'System connected'} ·{' '}
+                  {artifact.source_asset_id === null ? 'No source document' : 'Source attached'}
                 </Text>
 
                 <Form className="aks-admin-form" method="post">

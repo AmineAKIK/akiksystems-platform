@@ -1956,6 +1956,99 @@ async function assertLearningArtifactAdmin(page) {
     'LearningArtifact must remain manageable from private Learning administration.',
   );
 }
+async function assertLearningAdminWorkspace(page) {
+  await page.goto(origin + '/admin/learning');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Learning administration',
+      exact: true,
+    })
+    .waitFor();
+
+  for (const domain of [
+    {
+      heading: 'Trainings',
+      href: '/admin/learning/trainings',
+      link: 'Manage Trainings',
+    },
+    {
+      heading: 'Credentials',
+      href: '/admin/learning/credentials',
+      link: 'Manage Credentials',
+    },
+    {
+      heading: 'LearningArtifacts',
+      href: '/admin/learning/artifacts',
+      link: 'Manage LearningArtifacts',
+    },
+  ]) {
+    await page
+      .getByRole('heading', { level: 2, name: domain.heading, exact: true })
+      .waitFor();
+    assert.equal(
+      await page.getByRole('link', { name: domain.link, exact: true }).getAttribute('href'),
+      domain.href,
+      domain.heading + ' must keep a dedicated admin workspace.',
+    );
+  }
+
+  const hubText = await page.locator('body').innerText();
+  assert.match(
+    hubText,
+    /Training is context\. Credentials and LearningArtifacts are evidence\./,
+  );
+  assert.ok(
+    (hubText.match(/Published snapshots · EN 1 · FR 1/g) ?? []).length >= 3,
+    'Learning hub must summarize bilingual publication state for all three domain types.',
+  );
+  assert.match(hubText, /1 connected to Training · 0 standalone/);
+  assert.match(hubText, /1 connected to System · 0 with source document/);
+  assert.equal(
+    await page.getByRole('button', { name: 'Create Training', exact: true }).count(),
+    0,
+    'The Learning hub must not collapse Training editing into a generic CMS surface.',
+  );
+
+  await page.goto(origin + '/admin/learning/trainings');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Training administration',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.getByRole('button', { name: 'Create Training', exact: true }).count(),
+    1,
+    'Training must remain manageable from its dedicated workspace.',
+  );
+  assert.equal(
+    await page.getByRole('link', { name: 'Learning hub', exact: true }).getAttribute('href'),
+    '/admin/learning',
+  );
+
+  await page.goto(origin + '/admin/learning/credentials');
+  assert.equal(
+    await page.getByRole('link', { name: 'Learning hub', exact: true }).getAttribute('href'),
+    '/admin/learning',
+  );
+  assert.equal(
+    await page.getByRole('link', { name: 'Trainings', exact: true }).getAttribute('href'),
+    '/admin/learning/trainings',
+  );
+
+  await page.goto(origin + '/admin/learning/artifacts');
+  assert.equal(
+    await page.getByRole('link', { name: 'Learning hub', exact: true }).getAttribute('href'),
+    '/admin/learning',
+  );
+  assert.equal(
+    await page.getByRole('link', { name: 'Trainings', exact: true }).getAttribute('href'),
+    '/admin/learning/trainings',
+  );
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -3380,6 +3473,7 @@ async function assertAxe(page) {
     await assertCredentialAdmin(page);
     await assertLearningArtifactPublicJourney(browser);
     await assertLearningArtifactAdmin(page);
+    await assertLearningAdminWorkspace(page);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
