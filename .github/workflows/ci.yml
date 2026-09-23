@@ -144,6 +144,9 @@ jobs:
       - name: Verify L6 Writing domain
         run: pnpm --filter @akiksystems/db db:verify-writing-domain
 
+      - name: Verify L6 localized Writing categories
+        run: pnpm --filter @akiksystems/db db:verify-writing-categories
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
