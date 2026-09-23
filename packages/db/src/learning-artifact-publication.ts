@@ -223,6 +223,17 @@ export async function listPublishedLearningArtifacts(
   }));
 }
 
+export async function listPublishedLearningArtifactsForSystem(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; systemId: string },
+): Promise<PublishedLearningArtifactListItem[]> {
+  const published = await listPublishedLearningArtifacts(db, input.locale);
+
+  return published.filter(
+    (artifact) => artifact.systemId === input.systemId,
+  );
+}
+
 export async function listPublishedLearningArtifactsForTraining(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; trainingId: string },
