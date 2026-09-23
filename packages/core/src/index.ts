@@ -81,6 +81,9 @@ export type LearningArtifactId = string;
 export const writingKinds = ['note', 'article', 'essay'] as const;
 export type WritingKind = (typeof writingKinds)[number];
 
+export const writingLifecycles = ['active', 'archived'] as const;
+export type WritingLifecycle = (typeof writingLifecycles)[number];
+
 export const writingEditorialWeights = ['normal', 'featured', 'major'] as const;
 export type WritingEditorialWeight = (typeof writingEditorialWeights)[number];
 export type WritingId = string;
@@ -175,8 +178,10 @@ export interface TrainingLocalization {
 export interface Writing {
   id: WritingId;
   kind: WritingKind;
+  lifecycle: WritingLifecycle;
   editorialWeight: WritingEditorialWeight;
   editorialPosition: number;
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
