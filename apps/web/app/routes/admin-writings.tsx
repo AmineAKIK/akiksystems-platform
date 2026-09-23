@@ -980,6 +980,48 @@ export async function action({ request }: Route.ActionArgs) {
     const summary = nullableField(form, 'summary');
     const editorDocument = requiredEditorDocument(form);
     const body = writingEditorDocumentToPlainText(editorDocument) || null;
+    const documentAssetIds = writingDocumentAssetIds(editorDocument);
+
+    if (documentAssetIds.length > 0) {
+      const linkedAssets = await db
+        .selectFrom('writing_assets')
+        .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+        .leftJoin('asset_localizations', (join) =>
+          join
+            .onRef('asset_localizations.asset_id', '=', 'assets.id')
+            .on('asset_localizations.locale', '=', locale),
+        )
+        .select([
+          'assets.id',
+          'assets.mime_type',
+          'asset_localizations.alt_text',
+        ])
+        .where('writing_assets.writing_id', '=', writingId)
+        .where('writing_assets.asset_id', 'in', documentAssetIds)
+        .execute();
+      const linkedById = new Map(linkedAssets.map((asset) => [asset.id, asset]));
+
+      for (const assetId of documentAssetIds) {
+        const asset = linkedById.get(assetId);
+        if (asset === undefined) {
+          throw new Response(
+            'Writing document references media outside this Writing context.',
+            { status: 400 },
+          );
+        }
+        if (!asset.mime_type.startsWith('image/')) {
+          throw new Response('Writing document media must be an image.', {
+            status: 400,
+          });
+        }
+        if ((asset.alt_text?.trim() ?? '') === '') {
+          throw new Response(
+            `${locale.toUpperCase()} alt text is required for every image used in the Writing.`,
+            { status: 400 },
+          );
+        }
+      }
+    }
 
     await db.transaction().execute(async (transaction) => {
       await transaction
@@ -1012,6 +1054,7 @@ export async function action({ request }: Route.ActionArgs) {
           hasSummary: summary !== null,
           hasBody: body !== null,
           hasEditorDocument: true,
+          assetIds: documentAssetIds,
         },
       });
     });
