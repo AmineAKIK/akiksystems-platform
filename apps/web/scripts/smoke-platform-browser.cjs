@@ -2065,6 +2065,70 @@ async function assertWritingAdminAndPublic(page) {
       target.alternatePath,
       'Bilingual Writing deep routes must expose their published equivalent.',
     );
+    assert.equal(
+      await page.locator('.aks-experience-shell').getAttribute('data-mode'),
+      'reading',
+      'Writing deep links must keep global navigation in the discreet reading shell mode.',
+    );
+
+    const readerMetrics = await page.locator('[data-long-form-reader]').evaluate((reader) => {
+      const paragraph = reader.querySelector('[data-writing-node="paragraph"]');
+      const code = reader.querySelector('[data-writing-node="codeBlock"]');
+      const media = reader.querySelector('[data-writing-node="image"]');
+      if (
+        !(reader instanceof HTMLElement) ||
+        !(paragraph instanceof HTMLElement) ||
+        !(code instanceof HTMLElement) ||
+        !(media instanceof HTMLElement)
+      ) {
+        throw new Error('Long-form reader qualification nodes are missing.');
+      }
+
+      const codeStyle = getComputedStyle(code);
+      return {
+        readerWidth: reader.getBoundingClientRect().width,
+        paragraphWidth: paragraph.getBoundingClientRect().width,
+        codeWidth: code.getBoundingClientRect().width,
+        mediaWidth: media.getBoundingClientRect().width,
+        paragraphLineHeight: Number.parseFloat(getComputedStyle(paragraph).lineHeight),
+        paragraphFontSize: Number.parseFloat(getComputedStyle(paragraph).fontSize),
+        codeOverflowX: codeStyle.overflowX,
+        codeWhiteSpace: codeStyle.whiteSpace,
+      };
+    });
+    assert.ok(
+      readerMetrics.paragraphWidth <= 704.5,
+      'Long-form paragraphs must stay within the controlled 44rem reading measure.',
+    );
+    assert.ok(
+      readerMetrics.readerWidth > readerMetrics.paragraphWidth,
+      'The long-form reader must preserve room for wider non-prose blocks.',
+    );
+    assert.ok(
+      readerMetrics.codeWidth > readerMetrics.paragraphWidth &&
+        readerMetrics.mediaWidth > readerMetrics.paragraphWidth,
+      'Code and media must use the wider reader track on desktop.',
+    );
+    assert.ok(
+      readerMetrics.paragraphLineHeight / readerMetrics.paragraphFontSize >= 1.7,
+      'Long-form body copy must keep a calm reading line-height.',
+    );
+    assert.equal(
+      readerMetrics.codeOverflowX,
+      'auto',
+      'Long code must scroll inside its block instead of widening the page.',
+    );
+    assert.equal(
+      readerMetrics.codeWhiteSpace,
+      'pre',
+      'Code formatting must preserve authored whitespace.',
+    );
+    assert.ok(
+      (await page.locator('.aks-experience-shell').evaluate(
+        (shell) => shell.getBoundingClientRect().height,
+      )) <= 64,
+      'Reading mode must reduce the desktop global shell footprint.',
+    );
     await assertAxe(page);
 
     const ssr = await page.context().request.get(origin + target.detail);
@@ -2116,6 +2180,38 @@ async function assertWritingAdminAndPublic(page) {
       'Published Writing media may use public caching only after publication.',
     );
   }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const target of targets) {
+    const mobileResponse = await page.goto(origin + target.detail);
+    assert.equal(mobileResponse?.status(), 200);
+    await page.locator('[data-long-form-reader]').waitFor();
+    assert.equal(
+      await page.locator('.aks-experience-shell').getAttribute('data-mode'),
+      'reading',
+      'Mobile Writing deep links must preserve reading shell mode.',
+    );
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      `${target.detail} long-form reader must not overflow at 390px.`,
+    );
+    const mobileCodeStyle = await page
+      .locator('[data-writing-node="codeBlock"]')
+      .evaluate((code) => ({
+        overflowX: getComputedStyle(code).overflowX,
+        width: code.getBoundingClientRect().width,
+      }));
+    assert.equal(mobileCodeStyle.overflowX, 'auto');
+    assert.ok(
+      mobileCodeStyle.width <= 342.5,
+      'Mobile code blocks must stay inside the reader viewport gutter.',
+    );
+    await assertAxe(page);
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
 
   await page.goto(origin + '/admin/writings');
   await writingCard()
