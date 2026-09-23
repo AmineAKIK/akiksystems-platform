@@ -162,6 +162,9 @@ jobs:
       - name: Verify L6 Writing editorial lifecycle
         run: pnpm --filter @akiksystems/db db:verify-writing-editorial-lifecycle
 
+      - name: Verify L6 unified Writing editorial surface
+        run: pnpm --filter @akiksystems/db db:verify-writing-unified-feed
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
