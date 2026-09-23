@@ -84,6 +84,33 @@ export type WritingKind = (typeof writingKinds)[number];
 export const writingEditorialWeights = ['normal', 'featured', 'major'] as const;
 export type WritingEditorialWeight = (typeof writingEditorialWeights)[number];
 export type WritingId = string;
+export type CategoryId = string;
+
+export interface Category {
+  id: CategoryId;
+  editorialPosition: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CategoryLocalization {
+  categoryId: CategoryId;
+  locale: PlatformLocale;
+  slug: string | null;
+  name: string | null;
+  description: string | null;
+  editorialState: SystemEditorialState;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WritingCategory {
+  writingId: WritingId;
+  categoryId: CategoryId;
+  position: number;
+  createdAt: Date;
+}
 
 export type TrainingId = string;
 
