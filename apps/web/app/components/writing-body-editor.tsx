@@ -10,6 +10,13 @@ import {
   type WritingEditorDocument,
 } from '../lib/writing-editor';
 
+function editorJson(document: WritingEditorDocument) {
+  return {
+    type: document.type,
+    content: document.content,
+  };
+}
+
 export function WritingBodyEditor({
   initialDocument,
   locale,
@@ -19,14 +26,11 @@ export function WritingBodyEditor({
 }) {
   const documentInput = useRef<HTMLInputElement>(null);
   const bodyInput = useRef<HTMLInputElement>(null);
-  const label =
-    locale === 'fr'
-      ? 'Corps de l’écrit'
-      : 'Writing body';
+  const label = locale === 'fr' ? 'Corps de l’écrit' : 'Writing body';
 
   const editor = useEditor({
     extensions: [Document, Paragraph, TextNode],
-    content: initialDocument,
+    content: editorJson(initialDocument),
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -35,7 +39,10 @@ export function WritingBodyEditor({
       },
     },
     onUpdate({ editor: currentEditor }) {
-      const document = parseWritingEditorDocument(currentEditor.getJSON());
+      const document = parseWritingEditorDocument({
+        ...currentEditor.getJSON(),
+        version: 1,
+      });
       if (document === null) return;
 
       if (documentInput.current !== null) {
@@ -60,8 +67,8 @@ export function WritingBodyEditor({
         <span>{label}</span>
         <span className="aks-writing-editor-contract">
           {locale === 'fr'
-            ? 'Tiptap · paragraphes contrôlés'
-            : 'Tiptap · controlled paragraphs'}
+            ? 'Schéma v1 · édition contrôlée'
+            : 'Schema v1 · controlled editing'}
         </span>
       </div>
       <EditorContent editor={editor} />
@@ -79,8 +86,8 @@ export function WritingBodyEditor({
       />
       <p className="aks-writing-editor-note">
         {locale === 'fr'
-          ? 'AKS-105 installe l’éditeur headless et sa persistance. Le vocabulaire riche reste volontairement limité jusqu’au schéma AKS-106.'
-          : 'AKS-105 installs the headless editor and persistence. Rich vocabulary stays intentionally limited until the AKS-106 schema.'}
+          ? 'AKS-106 versionne le contrat de contenu riche sans transformer cet écran en page builder. Les contrôles éditoriaux riches restent découplés des prochains travaux L6.'
+          : 'AKS-106 versions the rich-content contract without turning this screen into a page builder. Rich authoring controls stay decoupled from the following L6 work.'}
       </p>
     </div>
   );

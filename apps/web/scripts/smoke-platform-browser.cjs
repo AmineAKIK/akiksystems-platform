@@ -1542,6 +1542,7 @@ async function fillWritingBodyEditor(fieldset, body) {
   const document = JSON.parse(
     await fieldset.locator('input[name="editorDocument"]').inputValue(),
   );
+  assert.equal(document.version, 1, 'Writing editor documents must use schema v1.');
   assert.equal(document.type, 'doc');
   assert.equal(
     document.content.length,
@@ -1594,12 +1595,10 @@ async function assertWritingAdminAndPublic(page) {
   await page.getByText('Writing created.', { exact: true }).waitFor();
 
   const writingCard = () =>
-    page.locator('section.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 2,
-        name: /Architecture Without Page Builders|Untitled Writing/,
-      }),
-    }).last();
+    page
+      .locator('section.aks-admin-card')
+      .filter({ has: page.locator('input[name="writingId"]') })
+      .last();
 
   await writingCard().waitFor();
   assert.match(

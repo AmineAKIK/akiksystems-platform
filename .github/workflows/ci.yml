@@ -153,7 +153,7 @@ jobs:
       - name: Verify L6 Writing and System relations
         run: pnpm --filter @akiksystems/db db:verify-writing-systems
 
-      - name: Verify L6 Tiptap Writing editor persistence
+      - name: Verify L6 Writing rich-content schema and persistence
         run: pnpm --filter @akiksystems/db db:verify-writing-editor-document
 
       - name: Bootstrap browser-smoke administrator

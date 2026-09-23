@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./writing-document": {
+      "types": "./src/writing-document.ts",
+      "default": "./src/writing-document.ts"
     }
   },
   "types": "./dist/index.d.ts",

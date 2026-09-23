@@ -671,9 +671,11 @@ export default function AdminWritingsRoute() {
                 and is applied by later Writings work.
               </Text>
               <Text size="sm" tone="muted">
-                AKS-105 uses a headless Tiptap editor with a deliberately
-                constrained paragraph document. AKS-106 owns the richer content
-                vocabulary; this surface still cannot build arbitrary layouts.
+                AKS-106 defines a versioned rich-content vocabulary for
+                paragraphs, H2/H3 headings, lists, quotations, code, callouts,
+                images, and galleries. The vocabulary remains semantic and
+                bounded: no raw HTML, arbitrary styling, templates, columns, or
+                page-builder controls.
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin">Administration</Link>

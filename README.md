@@ -154,15 +154,28 @@ System title or summary is reflected through System-owned publication data
 without republishing related Writings.
 
 AKS-105 integrates Tiptap as a headless Writing editor inside the existing
-AkikSystems admin instead of adding a generic CMS surface. Each localized draft
-can persist an `editor_document` JSONB payload, validated server-side against a
-deliberately minimal Tiptap vocabulary: `doc`, `paragraph`, and `text` only.
-The admin derives the legacy plain-text `body` projection from that validated
-document, so current public Writing rendering and publication snapshots remain
-stable while existing plain-text drafts upgrade into Tiptap transparently on
-first edit. Unknown nodes, marks, attributes, raw layout controls, and arbitrary
-page composition are rejected or unavailable. AKS-106 owns the versioned rich
-content schema and is the only place where the editorial vocabulary broadens.
+AkikSystems admin instead of adding a generic CMS surface.
+
+AKS-106 turns that draft payload into the shared, versioned Writing rich-content
+contract. Schema v1 supports paragraphs, H2/H3 headings, ordered and unordered
+lists, quotations, code blocks, callouts, contextual image references, and
+galleries. Images point to Asset UUIDs; AKS-107 owns contextual upload, localized
+alt text/captions, and the final media-management workflow. Tables are deliberately
+not in v1 because no current real Writing case justifies their complexity.
+
+The document carries `version: 1`, is validated through the shared core contract,
+and is persisted under `writing_localizations.editor_document`. PostgreSQL
+enforces the versioned document envelope while the application validator rejects
+unknown nodes, marks, raw HTML, arbitrary attributes, styles, templates, columns,
+and other page-builder semantics. Existing AKS-105 documents are migrated to
+`version: 1`.
+
+Publishing freezes the validated rich document into the Writing publication
+snapshot and also keeps the plain-text `body` projection for compatibility.
+Older snapshots without the rich document remain readable by deriving schema v1
+from their stored body. AKS-109 owns the final public semantic renderer; until
+then the current public Writing route can continue using the compatibility text
+projection without losing the structured publication source.
 
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System

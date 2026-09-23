@@ -8,13 +8,14 @@ import {
   writingEditorDocumentToPlainText,
 } from './writing-editor';
 
-describe('Writing Tiptap draft document boundary', () => {
-  it('converts the legacy paragraph body into the minimal Tiptap document', () => {
+describe('Writing editor document boundary', () => {
+  it('upgrades legacy paragraph bodies into schema v1', () => {
     const document = writingEditorDocumentFromPlainText(
       'First paragraph.\n\nSecond\nline.',
     );
 
     expect(document).toEqual({
+      version: 1,
       type: 'doc',
       content: [
         {
@@ -32,14 +33,25 @@ describe('Writing Tiptap draft document boundary', () => {
     );
   });
 
-  it('accepts only doc, paragraph, and text nodes before AKS-106', () => {
+  it('accepts controlled rich blocks and rejects page-builder controls', () => {
     expect(
       parseWritingEditorDocument({
+        version: 1,
         type: 'doc',
         content: [
           {
-            type: 'paragraph',
-            content: [{ type: 'text', text: 'Controlled copy.' }],
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'Controlled heading.' }],
+          },
+          {
+            type: 'callout',
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: 'Controlled context.' }],
+              },
+            ],
           },
         ],
       }),
@@ -47,13 +59,7 @@ describe('Writing Tiptap draft document boundary', () => {
 
     expect(
       parseWritingEditorDocument({
-        type: 'doc',
-        content: [{ type: 'heading', attrs: { level: 2 } }],
-      }),
-    ).toBeNull();
-
-    expect(
-      parseWritingEditorDocument({
+        version: 1,
         type: 'doc',
         content: [
           {
@@ -67,19 +73,16 @@ describe('Writing Tiptap draft document boundary', () => {
 
     expect(
       parseWritingEditorDocument({
+        version: 1,
         type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: 'No marks before the schema ticket.',
-                marks: [{ type: 'bold' }],
-              },
-            ],
-          },
-        ],
+        content: [{ type: 'table', content: [] }],
+      }),
+    ).toBeNull();
+
+    expect(
+      parseWritingEditorDocument({
+        type: 'doc',
+        content: [{ type: 'paragraph' }],
       }),
     ).toBeNull();
   });
@@ -102,6 +105,7 @@ describe('Writing Tiptap draft document boundary', () => {
     const document = writingEditorDocumentFromPlainText(null);
 
     expect(document).toEqual({
+      version: 1,
       type: 'doc',
       content: [{ type: 'paragraph' }],
     });
