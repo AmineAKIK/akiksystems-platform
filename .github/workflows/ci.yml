@@ -123,6 +123,9 @@ jobs:
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
 
+      - name: Verify L5 Training domain
+        run: pnpm --filter @akiksystems/db db:verify-training-domain
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 

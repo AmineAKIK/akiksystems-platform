@@ -68,6 +68,36 @@ export interface SystemTechnology {
   position: number;
 }
 
+export const trainingStates = ['planned', 'in_progress', 'completed'] as const;
+
+export type TrainingState = (typeof trainingStates)[number];
+
+export type TrainingId = string;
+
+export interface Training {
+  id: TrainingId;
+  provider: string;
+  state: TrainingState;
+  startDate: string | null;
+  endDate: string | null;
+  editorialPosition: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrainingLocalization {
+  trainingId: TrainingId;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorialState: SystemEditorialState;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type ExperienceId = string;
 
 export interface Experience {
