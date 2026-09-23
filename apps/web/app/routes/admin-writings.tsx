@@ -118,8 +118,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('writings.id')
     .execute();
 
-  const [categories, tags, writingCategories, writingTags] =
-    await Promise.all([
+  const [
+    categories,
+    tags,
+    systems,
+    writingCategories,
+    writingTags,
+    writingSystems,
+  ] = await Promise.all([
       appDb
         .selectFrom('categories')
         .leftJoin('category_localizations as en', (join) =>
@@ -164,6 +170,29 @@ export async function loader({ request }: Route.LoaderArgs) {
         .orderBy('tags.id')
         .execute(),
       appDb
+        .selectFrom('systems')
+        .leftJoin('system_localizations as en', (join) =>
+          join
+            .onRef('en.system_id', '=', 'systems.id')
+            .on('en.locale', '=', 'en'),
+        )
+        .leftJoin('system_localizations as fr', (join) =>
+          join
+            .onRef('fr.system_id', '=', 'systems.id')
+            .on('fr.locale', '=', 'fr'),
+        )
+        .select([
+          'systems.id',
+          'systems.editorial_position',
+          'en.title as title_en',
+          'fr.title as title_fr',
+        ])
+        .where('systems.lifecycle', '=', 'active')
+        .orderBy('systems.editorial_position')
+        .orderBy('systems.created_at')
+        .orderBy('systems.id')
+        .execute(),
+      appDb
         .selectFrom('writing_categories')
         .select(['writing_id', 'category_id', 'position'])
         .orderBy('writing_id')
@@ -172,6 +201,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       appDb
         .selectFrom('writing_tags')
         .select(['writing_id', 'tag_id', 'position'])
+        .orderBy('writing_id')
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('writing_systems')
+        .select(['writing_id', 'system_id', 'position'])
         .orderBy('writing_id')
         .orderBy('position')
         .execute(),
@@ -191,13 +226,22 @@ export async function loader({ request }: Route.LoaderArgs) {
     tagIdsByWriting.set(relation.writing_id, tagIds);
   }
 
+  const systemIdsByWriting = new Map<string, string[]>();
+  for (const relation of writingSystems) {
+    const systemIds = systemIdsByWriting.get(relation.writing_id) ?? [];
+    systemIds.push(relation.system_id);
+    systemIdsByWriting.set(relation.writing_id, systemIds);
+  }
+
   return {
     categories,
     tags,
+    systems,
     writings: writings.map((writing) => ({
       ...writing,
       categoryIds: categoryIdsByWriting.get(writing.id) ?? [],
       tagIds: tagIdsByWriting.get(writing.id) ?? [],
+      systemIds: systemIdsByWriting.get(writing.id) ?? [],
     })),
   };
 }
@@ -390,6 +434,72 @@ export async function action({ request }: Route.ActionArgs) {
     return {
       ok: true,
       message: 'Writing tags saved as draft.',
+    };
+  }
+
+  if (intent === 'save-systems') {
+    const rawSystemIds = form
+      .getAll('systemId')
+      .filter((value): value is string => typeof value === 'string');
+    if (rawSystemIds.some((systemId) => !uuidPattern.test(systemId))) {
+      throw new Response('Invalid System selection.', { status: 400 });
+    }
+
+    const systemIds = [...new Set(rawSystemIds)];
+    if (systemIds.length > 0) {
+      const existingSystems = await db
+        .selectFrom('systems')
+        .select('id')
+        .where('id', 'in', systemIds)
+        .where('lifecycle', '=', 'active')
+        .execute();
+      if (existingSystems.length !== systemIds.length) {
+        throw new Response('System not found.', { status: 404 });
+      }
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('writing_systems')
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      if (systemIds.length > 0) {
+        await transaction
+          .insertInto('writing_systems')
+          .values(
+            systemIds.map((systemId, position) => ({
+              writing_id: writingId,
+              system_id: systemId,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await transaction
+        .updateTable('writing_localizations')
+        .set({
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.systems_updated',
+        entityType: 'writing',
+        entityId: writingId,
+        metadata: { systemIds },
+      });
+    });
+
+    return {
+      ok: true,
+      message: 'Writing systems saved as draft.',
     };
   }
 
@@ -698,6 +808,46 @@ export default function AdminWritingsRoute() {
                     </Text>
                     <Button emphasis="quiet" type="submit">
                       Save tags
+                    </Button>
+                  </fieldset>
+                </Form>
+
+                <Form method="post" className="aks-proof-stack">
+                  <input name="_intent" type="hidden" value="save-systems" />
+                  <input name="writingId" type="hidden" value={writing.id} />
+                  <fieldset className="aks-admin-card">
+                    <legend>Systems</legend>
+                    {data.systems.length === 0 ? (
+                      <Text size="sm" tone="muted">
+                        No active System exists yet.
+                      </Text>
+                    ) : (
+                      <div className="aks-proof-stack">
+                        {data.systems.map((system) => (
+                          <label key={system.id}>
+                            <input
+                              defaultChecked={writing.systemIds.includes(
+                                system.id,
+                              )}
+                              name="systemId"
+                              type="checkbox"
+                              value={system.id}
+                            />{' '}
+                            {system.title_en ??
+                              system.title_fr ??
+                              'Untitled System'}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    <Text size="sm" tone="muted">
+                      The Writing owns this relation. Saving marks both Writing
+                      localizations as draft; public System pages keep reading
+                      the previous Writing snapshots until each locale is
+                      republished.
+                    </Text>
+                    <Button emphasis="quiet" type="submit">
+                      Save systems
                     </Button>
                   </fieldset>
                 </Form>
