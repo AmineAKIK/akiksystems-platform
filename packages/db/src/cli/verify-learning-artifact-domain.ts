@@ -256,6 +256,17 @@ try {
     .set({ training_id: null, updated_at: new Date() })
     .where('id', '=', learningArtifactId)
     .execute();
+
+  const relationBeforeRepublish = await listPublishedLearningArtifactsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.deepEqual(
+    relationBeforeRepublish.map((artifact) => artifact.learningArtifactId),
+    [learningArtifactId],
+    'Draft LearningArtifact relationship changes must not leak into the published Training surface.',
+  );
+
   await publishLearningArtifactLocalization(db, {
     learningArtifactId,
     locale: 'en',
