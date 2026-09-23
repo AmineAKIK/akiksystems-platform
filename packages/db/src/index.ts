@@ -1,3 +1,5 @@
+export { bootstrapDwwmTraining } from './dwwm-bootstrap.js';
+export type { BootstrapDwwmTrainingResult } from './dwwm-bootstrap.js';
 export {
   getPublishedTraining,
   listPublishedTrainings,
