@@ -5,7 +5,7 @@ import {
   validateWritingDocument,
   writingDocumentFromPlainText,
   writingDocumentToPlainText,
-} from './writing-document';
+} from './writing-document.js';
 
 const assetA = '11111111-1111-4111-8111-111111111111';
 const assetB = '22222222-2222-4222-8222-222222222222';
