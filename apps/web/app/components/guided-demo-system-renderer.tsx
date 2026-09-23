@@ -6,6 +6,7 @@ import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
+import { SystemLearningEvidence } from './system-learning-evidence';
 import {
   PresentationBlockView,
   type SystemDetailAsset,
@@ -79,6 +80,7 @@ export function GuidedDemoSystemRenderer({
   originSummary,
   links,
   assets,
+  learningEvidence = [],
   preview = false,
 }: SystemDetailViewProps) {
   const { lead, sections } = splitPresentation(presentationDocument.blocks);
@@ -191,6 +193,11 @@ export function GuidedDemoSystemRenderer({
               </section>
             ))}
           </div>
+
+          <SystemLearningEvidence
+            items={learningEvidence}
+            locale={locale}
+          />
 
           <footer className="aks-guided-demo-footer">
             {technologies.length > 0 ? (
