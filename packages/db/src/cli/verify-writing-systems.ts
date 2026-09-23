@@ -58,9 +58,25 @@ function systemSnapshot(
 }
 
 try {
+  const [systemPositionRow, writingPositionRow] = await Promise.all([
+    db
+      .selectFrom('systems')
+      .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
+      .executeTakeFirst(),
+    db
+      .selectFrom('writings')
+      .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
+      .executeTakeFirst(),
+  ]);
+  const systemPosition = (systemPositionRow?.max_position ?? -1) + 1;
+  const writingPosition = (writingPositionRow?.max_position ?? -1) + 1;
+
   await db
     .insertInto('systems')
-    .values([{ id: systemA }, { id: systemB }])
+    .values([
+      { id: systemA, editorial_position: systemPosition },
+      { id: systemB, editorial_position: systemPosition + 1 },
+    ])
     .execute();
 
   const now = new Date();
@@ -70,12 +86,12 @@ try {
       {
         system_id: systemA,
         locale: 'en',
-        slug: 'sentinel',
+        slug: 'aks104-system-a',
         snapshot: systemSnapshot(
           systemA,
           'en',
-          'sentinel',
-          'Sentinel',
+          'aks104-system-a',
+          'AKS-104 System A',
           'Published Sentinel system summary.',
         ) as unknown as Record<string, unknown>,
         published_at: now,
@@ -84,12 +100,12 @@ try {
       {
         system_id: systemA,
         locale: 'fr',
-        slug: 'sentinel',
+        slug: 'aks104-system-a',
         snapshot: systemSnapshot(
           systemA,
           'fr',
-          'sentinel',
-          'Sentinel',
+          'aks104-system-a',
+          'AKS-104 Système A',
           'Résumé publié du système Sentinel.',
         ) as unknown as Record<string, unknown>,
         published_at: now,
@@ -98,12 +114,12 @@ try {
       {
         system_id: systemB,
         locale: 'en',
-        slug: 'protocap',
+        slug: 'aks104-system-b',
         snapshot: systemSnapshot(
           systemB,
           'en',
-          'protocap',
-          'ProtoCap',
+          'aks104-system-b',
+          'AKS-104 System B',
           'Published ProtoCap system summary.',
         ) as unknown as Record<string, unknown>,
         published_at: now,
@@ -119,13 +135,13 @@ try {
         id: writingA,
         kind: 'essay',
         editorial_weight: 'major',
-        editorial_position: 0,
+        editorial_position: writingPosition,
       },
       {
         id: writingB,
         kind: 'article',
         editorial_weight: 'normal',
-        editorial_position: 1,
+        editorial_position: writingPosition + 1,
       },
     ])
     .execute();
@@ -196,12 +212,12 @@ try {
     [
       {
         id: systemA,
-        title: 'Sentinel',
+        title: 'AKS-104 System A',
         summary: 'Published Sentinel system summary.',
       },
       {
         id: systemB,
-        title: 'ProtoCap',
+        title: 'AKS-104 System B',
         summary: 'Published ProtoCap system summary.',
       },
     ],
@@ -326,8 +342,8 @@ try {
       snapshot: systemSnapshot(
         systemB,
         'en',
-        'protocap',
-        'ProtoCap',
+        'aks104-system-b',
+        'AKS-104 System B',
         'Updated System-owned summary after Writing publication.',
       ) as unknown as Record<string, unknown>,
       updated_at: new Date(),
