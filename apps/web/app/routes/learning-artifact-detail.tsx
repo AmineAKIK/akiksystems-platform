@@ -164,9 +164,13 @@ export default function LearningArtifactDetailRoute() {
               </div>
             ) : (
               <Text tone="muted">
-                {artifact.locale === 'fr'
-                  ? 'Le contexte de formation lié n’est pas publié dans cette langue.'
-                  : 'The connected Training context is not published in this locale.'}
+                {artifact.trainingId === null
+                  ? artifact.locale === 'fr'
+                    ? 'Preuve d’apprentissage autonome, sans formation formelle requise.'
+                    : 'Standalone learning evidence; no formal Training is required.'
+                  : artifact.locale === 'fr'
+                    ? 'Le contexte de formation lié n’est pas publié dans cette langue.'
+                    : 'The connected Training context is not published in this locale.'}
               </Text>
             )}
 
