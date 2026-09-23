@@ -2459,6 +2459,129 @@ async function assertSentinelDossierJourney(browser, adminPage) {
   assert.ok(adminText.includes('System connected'));
   assert.ok(adminText.includes('No source document'));
   assert.ok(adminText.includes('Native dossier format'));
+
+  const sourceInput = dossierCard.locator(
+    'input[type="file"][accept="application/pdf"]',
+  );
+  await sourceInput.setInputFiles({
+    name: 'qualification-sentinel-dossier.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from(
+      '%PDF-1.7\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<<>>\n%%EOF\n',
+    ),
+  });
+  await dossierCard
+    .getByRole('button', { name: 'Upload source PDF', exact: true })
+    .click();
+  await adminPage
+    .getByText(
+      'Source PDF uploaded. Republish EN/FR to expose it publicly.',
+      { exact: true },
+    )
+    .waitFor();
+
+  for (const path of [
+    '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
+    '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+  ]) {
+    const response = await adminPage.context().request.get(origin + path);
+    assert.equal(
+      response.status(),
+      404,
+      'A newly uploaded source PDF must remain private until its locale is republished.',
+    );
+  }
+
+  const localeFieldsets = dossierCard.locator('fieldset');
+  await localeFieldsets
+    .nth(0)
+    .getByRole('button', { name: 'Publish update EN', exact: true })
+    .click();
+  await adminPage
+    .getByText('EN LearningArtifact published.', { exact: true })
+    .waitFor();
+
+  const englishSource = await adminPage.context().request.get(
+    origin + '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
+  );
+  assert.equal(englishSource.status(), 200);
+  assert.equal(
+    englishSource.headers()['content-type'],
+    'application/pdf',
+    'Published Sentinel source must be served as PDF.',
+  );
+  assert.match(
+    englishSource.headers()['content-disposition'] ?? '',
+    /qualification-sentinel-dossier\.pdf/,
+  );
+  assert.match((await englishSource.body()).toString('utf8'), /^%PDF-/);
+
+  const frenchBeforePublish = await adminPage.context().request.get(
+    origin + '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+  );
+  assert.equal(
+    frenchBeforePublish.status(),
+    404,
+    'EN publication must not leak the PDF into the still-stale FR snapshot.',
+  );
+
+  await localeFieldsets
+    .nth(1)
+    .getByRole('button', { name: 'Publish update FR', exact: true })
+    .click();
+  await adminPage
+    .getByText('FR LearningArtifact published.', { exact: true })
+    .waitFor();
+
+  const frenchSource = await adminPage.context().request.get(
+    origin + '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+  );
+  assert.equal(frenchSource.status(), 200);
+  assert.equal(frenchSource.headers()['content-type'], 'application/pdf');
+
+  for (const path of [
+    '/en/learning/artifacts/sentinel-dwwm-project-dossier',
+    '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+  ]) {
+    const localePage = await adminPage.context().newPage();
+    try {
+      const response = await localePage.goto(origin + path);
+      assert.equal(response?.status(), 200);
+      await localePage
+        .getByRole('link', {
+          name: path.startsWith('/fr/')
+            ? 'Ouvrir le PDF original'
+            : 'Open original PDF',
+          exact: true,
+        })
+        .waitFor();
+    } finally {
+      await localePage.close();
+    }
+  }
+
+  await dossierCard
+    .getByRole('button', { name: 'Remove source from draft', exact: true })
+    .click();
+  await adminPage
+    .getByText(
+      'Source PDF removed from the draft. Existing public snapshots stay unchanged until republished.',
+      { exact: true },
+    )
+    .waitFor();
+
+  for (const path of [
+    '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
+    '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+  ]) {
+    const response = await adminPage.context().request.get(origin + path);
+    assert.equal(
+      response.status(),
+      200,
+      'Removing the draft source must not break already-published source snapshots.',
+    );
+  }
+
   for (const textarea of await dossierCard.locator('textarea[name="body"]').all()) {
     assert.equal(
       await textarea.getAttribute('rows'),
