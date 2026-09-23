@@ -1859,9 +1859,34 @@ async function assertWritingAdminAndPublic(page) {
       name: locale,
       exact: true,
     });
-    const persistedDocument = JSON.parse(
-      await fieldset.locator('input[name="editorDocument"]').inputValue(),
-    );
+    await fieldset
+      .locator('[data-writing-editor][data-editor-ready="true"]')
+      .waitFor();
+
+    const expectedNodeTypes = [
+      'heading',
+      'bulletList',
+      'orderedList',
+      'blockquote',
+      'codeBlock',
+      'callout',
+    ];
+    let persistedDocument = null;
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      persistedDocument = JSON.parse(
+        await fieldset.locator('input[name="editorDocument"]').inputValue(),
+      );
+      const hasAsset = persistedDocument.content.some(
+        (node) =>
+          node.type === 'image' && node.attrs?.assetId === assetId,
+      );
+      const hasRichBlocks = expectedNodeTypes.every((nodeType) =>
+        persistedDocument.content.some((node) => node.type === nodeType),
+      );
+      if (hasAsset && hasRichBlocks) break;
+      await sleep(100);
+    }
+
     assert.ok(
       persistedDocument.content.some(
         (node) =>
@@ -1869,14 +1894,7 @@ async function assertWritingAdminAndPublic(page) {
       ),
       `${locale} contextual image must survive the admin round-trip.`,
     );
-    for (const nodeType of [
-      'heading',
-      'bulletList',
-      'orderedList',
-      'blockquote',
-      'codeBlock',
-      'callout',
-    ]) {
+    for (const nodeType of expectedNodeTypes) {
       assert.ok(
         persistedDocument.content.some((node) => node.type === nodeType),
         `${locale} controlled ${nodeType} must survive the admin round-trip.`,
