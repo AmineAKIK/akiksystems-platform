@@ -2,6 +2,10 @@ import { getPublishedLearningArtifact } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, type MetaDescriptor, useLoaderData } from 'react-router';
 
+import {
+  isSentinelDossierArtifact,
+  SentinelDossierPresentation,
+} from '../components/sentinel-dossier-presentation';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
 
@@ -100,6 +104,18 @@ export default function LearningArtifactDetailRoute() {
   const { artifact } = useLoaderData<typeof loader>();
   const overviewHref =
     artifact.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
+  const sourceHref = `${artifactHref(artifact.locale, artifact.slug)}/source`;
+
+  if (isSentinelDossierArtifact(artifact.locale, artifact.slug)) {
+    return (
+      <SentinelDossierPresentation
+        artifact={artifact}
+        overviewHref={overviewHref}
+        sourceHref={sourceHref}
+      />
+    );
+  }
+
   const paragraphs =
     artifact.body
       ?.split(/\n\s*\n/)
@@ -174,7 +190,7 @@ export default function LearningArtifactDetailRoute() {
               <Heading level={2} size="sm">
                 {artifact.locale === 'fr' ? 'Source' : 'Source'}
               </Heading>
-              <Link href={`${artifactHref(artifact.locale, artifact.slug)}/source`}>
+              <Link href={sourceHref}>
                 {artifact.locale === 'fr'
                   ? 'Ouvrir le document source'
                   : 'Open source document'}
