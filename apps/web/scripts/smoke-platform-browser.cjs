@@ -1581,12 +1581,17 @@ async function assertReusableSystemReferences(browser) {
 
 function assertHtmlTagAttributes(html, tagName, attributes, message) {
   const tags = html.match(new RegExp('<' + tagName + '\\b[^>]*>', 'gi')) ?? [];
-  const found = tags.some((tag) =>
-    Object.entries(attributes).every(([name, value]) =>
-      tag.includes(name + '="' + value + '"') ||
-      tag.includes(name + "='" + value + "'"),
-    ),
-  );
+  const found = tags.some((tag) => {
+    const normalizedTag = tag.toLowerCase();
+    return Object.entries(attributes).every(([name, value]) => {
+      const normalizedName = name.toLowerCase();
+      const normalizedValue = String(value).toLowerCase();
+      return (
+        normalizedTag.includes(normalizedName + '="' + normalizedValue + '"') ||
+        normalizedTag.includes(normalizedName + "='" + normalizedValue + "'")
+      );
+    });
+  });
   assert.equal(found, true, message);
 }
 
