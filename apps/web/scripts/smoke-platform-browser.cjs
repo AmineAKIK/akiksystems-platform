@@ -1970,8 +1970,8 @@ async function assertWritingAdminAndPublic(page) {
     );
     assert.equal(
       await writingOverviewCard.getAttribute('data-editorial-weight'),
-      'major',
-      'Editorial weight stays available as structured data for AKS-111 without becoming an admin-authored layout.',
+      null,
+      'AKS-110 must not expose editorial weight as feed presentation before AKS-111.',
     );
     assert.equal(
       overviewText.includes('Major weight') || overviewText.includes('Poids majeur'),
