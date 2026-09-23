@@ -1,9 +1,12 @@
 import {
+  parseWritingPublicationSnapshot,
   publishWritingLocalization,
   unpublishWritingLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
 import {
+  parseWritingDocument,
+  writingDocumentAssetIds,
   writingEditorialWeights,
   writingKinds,
   type PlatformLocale,
@@ -16,7 +19,14 @@ import { Form, useActionData, useLoaderData } from 'react-router';
 
 import { WritingBodyEditor } from '../components/writing-body-editor';
 import { requireAdminSession } from '../lib/admin.server';
+import {
+  assetExtensionForMimeType,
+  deleteAssetObject,
+  putAssetObject,
+  validateAssetUpload,
+} from '../lib/asset-storage.server';
 import { appDb } from '../lib/db.server';
+import { imageDimensions } from '../lib/image-dimensions.server';
 import {
   parseWritingEditorDocumentJson,
   writingEditorDocumentForDraft,
@@ -36,6 +46,26 @@ function field(form: FormData, name: string): string {
 function nullableField(form: FormData, name: string): string | null {
   const value = field(form, name);
   return value === '' ? null : value;
+}
+
+function requiredAssetAlt(
+  form: FormData,
+  name: 'altEn' | 'altFr',
+  label: string,
+): string {
+  const value = field(form, name);
+  if (value === '') {
+    throw new Response(`${label} alt text is required.`, { status: 400 });
+  }
+  return value;
+}
+
+function requiredAssetId(form: FormData): string {
+  const assetId = field(form, 'assetId');
+  if (!uuidPattern.test(assetId)) {
+    throw new Response('Writing asset not found.', { status: 404 });
+  }
+  return assetId;
 }
 
 function requiredEditorDocument(form: FormData) {
@@ -147,6 +177,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     writingCategories,
     writingTags,
     writingSystems,
+    writingAssets,
   ] = await Promise.all([
       appDb
         .selectFrom('categories')
@@ -232,6 +263,35 @@ export async function loader({ request }: Route.LoaderArgs) {
         .orderBy('writing_id')
         .orderBy('position')
         .execute(),
+      appDb
+        .selectFrom('writing_assets')
+        .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+        .leftJoin('asset_localizations as asset_en', (join) =>
+          join
+            .onRef('asset_en.asset_id', '=', 'assets.id')
+            .on('asset_en.locale', '=', 'en'),
+        )
+        .leftJoin('asset_localizations as asset_fr', (join) =>
+          join
+            .onRef('asset_fr.asset_id', '=', 'assets.id')
+            .on('asset_fr.locale', '=', 'fr'),
+        )
+        .select([
+          'writing_assets.writing_id',
+          'assets.id',
+          'assets.original_filename',
+          'assets.mime_type',
+          'assets.byte_size',
+          'assets.width',
+          'assets.height',
+          'asset_en.alt_text as alt_en',
+          'asset_en.caption as caption_en',
+          'asset_fr.alt_text as alt_fr',
+          'asset_fr.caption as caption_fr',
+        ])
+        .orderBy('writing_assets.created_at')
+        .orderBy('assets.id')
+        .execute(),
     ]);
 
   const categoryIdsByWriting = new Map<string, string[]>();
@@ -255,6 +315,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     systemIdsByWriting.set(relation.writing_id, systemIds);
   }
 
+  const assetsByWriting = new Map<string, typeof writingAssets>();
+  for (const asset of writingAssets) {
+    const assets = assetsByWriting.get(asset.writing_id) ?? [];
+    assets.push(asset);
+    assetsByWriting.set(asset.writing_id, assets);
+  }
+
   return {
     categories,
     tags,
@@ -264,6 +331,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       categoryIds: categoryIdsByWriting.get(writing.id) ?? [],
       tagIds: tagIdsByWriting.get(writing.id) ?? [],
       systemIds: systemIdsByWriting.get(writing.id) ?? [],
+      assets: assetsByWriting.get(writing.id) ?? [],
     })),
   };
 }
