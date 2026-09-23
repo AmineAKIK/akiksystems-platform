@@ -1801,7 +1801,7 @@ async function assertWritingAdminAndPublic(page) {
       })
       .click();
 
-    const insertedDocument = JSON.parse(
+    let insertedDocument = JSON.parse(
       await fieldset.locator('input[name="editorDocument"]').inputValue(),
     );
     assert.ok(
@@ -1811,6 +1811,33 @@ async function assertWritingAdminAndPublic(page) {
       ),
       `${locale} Writing editor must insert the contextual image by asset id.`,
     );
+
+    const blockButtons =
+      locale === 'FR'
+        ? ['Titre H2', 'Titre H3', 'Liste', 'Étapes', 'Citation', 'Code', 'Encadré']
+        : ['H2 heading', 'H3 heading', 'List', 'Steps', 'Quote', 'Code', 'Callout'];
+    for (const buttonName of blockButtons) {
+      await fieldset
+        .getByRole('button', { name: buttonName, exact: true })
+        .click();
+    }
+
+    insertedDocument = JSON.parse(
+      await fieldset.locator('input[name="editorDocument"]').inputValue(),
+    );
+    for (const nodeType of [
+      'heading',
+      'bulletList',
+      'orderedList',
+      'blockquote',
+      'codeBlock',
+      'callout',
+    ]) {
+      assert.ok(
+        insertedDocument.content.some((node) => node.type === nodeType),
+        `${locale} Writing editor must author the controlled ${nodeType} block.`,
+      );
+    }
 
     await fieldset
       .getByRole('button', {
@@ -1836,6 +1863,19 @@ async function assertWritingAdminAndPublic(page) {
       ),
       `${locale} contextual image must survive the admin round-trip.`,
     );
+    for (const nodeType of [
+      'heading',
+      'bulletList',
+      'orderedList',
+      'blockquote',
+      'codeBlock',
+      'callout',
+    ]) {
+      assert.ok(
+        persistedDocument.content.some((node) => node.type === nodeType),
+        `${locale} controlled ${nodeType} must survive the admin round-trip.`,
+      );
+    }
   }
 
   let card = writingCard();
@@ -1867,6 +1907,8 @@ async function assertWritingAdminAndPublic(page) {
       alternatePath: '/fr/ecrits/architecture-sans-page-builder',
       kind: 'Essay',
       weight: 'Major weight',
+      richHeading: 'Section heading',
+      calloutText: 'Important context',
     },
     {
       overview: '/fr/ecrits',
@@ -1882,6 +1924,8 @@ async function assertWritingAdminAndPublic(page) {
       alternatePath: '/en/writings/architecture-without-page-builders',
       kind: 'Essai',
       weight: 'Poids majeur',
+      richHeading: 'Titre de section',
+      calloutText: 'Contexte important',
     },
   ];
 
@@ -1955,6 +1999,46 @@ async function assertWritingAdminAndPublic(page) {
     assert.ok(
       html.includes(target.paragraphs[0]),
       'Writing deep content must be available in initial HTML.',
+    );
+    assert.match(
+      html,
+      new RegExp('<h2[^>]*>' + target.richHeading + '</h2>'),
+      'Writing headings must render as semantic H2 elements in SSR.',
+    );
+    assert.ok(
+      html.includes('data-writing-node="bulletList"') &&
+        html.includes('data-writing-node="orderedList"') &&
+        html.includes('data-writing-node="blockquote"') &&
+        html.includes('data-writing-node="codeBlock"') &&
+        html.includes('data-writing-node="callout"'),
+      'Structured Writing blocks must render through the controlled semantic renderer.',
+    );
+    assert.ok(
+      html.includes(target.calloutText),
+      'Localized rich content must survive publication.',
+    );
+    assert.ok(
+      html.includes(
+        target.detail.startsWith('/fr/')
+          ? 'alt="Image contextuelle dans l’écrit français"'
+          : 'alt="Contextual image in the English Writing"',
+      ),
+      'Published Writing media must render localized alt text from the snapshot.',
+    );
+
+    const publicAsset = await page.context().request.get(
+      origin + target.detail + '/assets/' + assetId,
+    );
+    assert.equal(
+      publicAsset.status(),
+      200,
+      'Published Writing media must resolve through the public snapshot route.',
+    );
+    assert.equal(publicAsset.headers()['content-type'], 'image/png');
+    assert.match(
+      publicAsset.headers()['cache-control'] ?? '',
+      /public/,
+      'Published Writing media may use public caching only after publication.',
     );
   }
 
