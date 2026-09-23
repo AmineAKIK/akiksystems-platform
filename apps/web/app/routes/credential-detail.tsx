@@ -1,15 +1,14 @@
 import { getPublishedCredential } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
-import { data, type MetaDescriptor, useLoaderData } from 'react-router';
+import { data, useLoaderData } from 'react-router';
 
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
+import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
 
 import type { Route } from './+types/credential-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const canonicalOrigin = 'https://akiksystems.com';
-
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
     throw new Response('Credential not found.', { status: 404 });
@@ -72,40 +71,28 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
+export function meta({ loaderData }: Route.MetaArgs) {
   if (loaderData === undefined) {
-    return [{ title: 'Learning · AkikSystems' }];
+    return buildNoIndexMeta('Learning · AkikSystems');
   }
 
   const credential = loaderData.credential;
-  const canonicalPath = credentialHref(credential.locale, credential.slug);
-  const canonicalUrl = `${canonicalOrigin}${canonicalPath}`;
-  const descriptors: MetaDescriptor[] = [
-    { title: `${credential.title} · AkikSystems` },
-    { name: 'description', content: credential.summary },
-    { name: 'robots', content: 'index, follow, max-snippet:-1' },
-    { tagName: 'link', rel: 'canonical', href: canonicalUrl },
-    {
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: credential.locale,
-      href: canonicalUrl,
-    },
-  ];
-
-  if (credential.alternate !== null) {
-    descriptors.push({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: credential.alternate.locale,
-      href: `${canonicalOrigin}${credentialHref(
-        credential.alternate.locale,
-        credential.alternate.slug,
-      )}`,
-    });
-  }
-
-  return descriptors;
+  return buildLocalizedPublicMeta({
+    title: credential.title,
+    description: credential.summary,
+    locale: credential.locale,
+    canonicalPath: credentialHref(credential.locale, credential.slug),
+    alternate:
+      credential.alternate === null
+        ? null
+        : {
+            locale: credential.alternate.locale,
+            path: credentialHref(
+              credential.alternate.locale,
+              credential.alternate.slug,
+            ),
+          },
+  });
 }
 
 export default function CredentialDetailRoute() {
