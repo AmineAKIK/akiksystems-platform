@@ -84,6 +84,17 @@ Markdown dossier and is not stored in the Sentinel Git repository or its
 actual original PDF through the admin; a rendered substitute must not be
 presented as the original source.
 
+AKS-096 keeps Learning and Systems connected without duplicating evidence into
+the System domain. LearningArtifact remains the owner of its optional System
+relation and the private LearningArtifact admin remains the management surface.
+Public System pages resolve only localized published LearningArtifact snapshots
+whose `systemId` points to that System, then render concise evidence cards that
+deep-link back to Learning. Draft relation or ordering changes do not affect the
+System page until that LearningArtifact locale is republished. The reverse
+LearningArtifact → System link continues to resolve from the same published
+snapshot, so the navigation is bilingual and bidirectional while Training
+context remains a distinct Learning concern.
+
 A production recovery is expected to restore PostgreSQL and object storage
 together; bootstrap scripts are not a substitute for a content backup or
 restore procedure.
