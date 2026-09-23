@@ -1,5 +1,6 @@
 import {
   parseWritingDocument,
+  writingDocumentAssetIds,
   writingDocumentFromPlainText,
   type PlatformLocale,
   type WritingDocument,
@@ -22,8 +23,17 @@ import {
 } from './system-reference.js';
 import type { Database } from './schema.js';
 
+export interface WritingPublicationAsset {
+  id: string;
+  mimeType: string;
+  altText: string;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+}
+
 export interface WritingPublicationSnapshot {
-  version: 4;
+  version: 5;
   writingId: string;
   locale: PlatformLocale;
   slug: string;
@@ -37,6 +47,7 @@ export interface WritingPublicationSnapshot {
   categoryIds: string[];
   tagIds: string[];
   systemIds: string[];
+  assets: WritingPublicationAsset[];
 }
 
 export interface PublicWritingCategory {
@@ -74,20 +85,57 @@ function requiredText(value: string | null, label: string): string {
   return normalized;
 }
 
-function parseSnapshot(value: unknown): WritingPublicationSnapshot {
+function parsePublicationAssets(value: unknown): WritingPublicationAsset[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((candidate) => {
+    if (
+      candidate === null ||
+      typeof candidate !== 'object' ||
+      Array.isArray(candidate)
+    ) {
+      return [];
+    }
+
+    const asset = candidate as Record<string, unknown>;
+    if (
+      typeof asset.id !== 'string' ||
+      typeof asset.mimeType !== 'string' ||
+      typeof asset.altText !== 'string'
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: asset.id,
+        mimeType: asset.mimeType,
+        altText: asset.altText,
+        caption: typeof asset.caption === 'string' ? asset.caption : null,
+        width: typeof asset.width === 'number' ? asset.width : null,
+        height: typeof asset.height === 'number' ? asset.height : null,
+      },
+    ];
+  });
+}
+
+export function parseWritingPublicationSnapshot(
+  value: unknown,
+): WritingPublicationSnapshot {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Invalid Writing publication snapshot.');
   }
 
   const snapshot = value as Omit<
     WritingPublicationSnapshot,
-    'version' | 'document' | 'categoryIds' | 'tagIds' | 'systemIds'
+    'version' | 'document' | 'categoryIds' | 'tagIds' | 'systemIds' | 'assets'
   > & {
     version?: number;
     document?: unknown;
     categoryIds?: unknown;
     tagIds?: unknown;
     systemIds?: unknown;
+    assets?: unknown;
   };
   const document =
     parseWritingDocument(snapshot.document) ??
@@ -95,7 +143,7 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
 
   return {
     ...snapshot,
-    version: 4,
+    version: 5,
     document,
     categoryIds: Array.isArray(snapshot.categoryIds)
       ? snapshot.categoryIds.filter(
@@ -112,6 +160,7 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
           (systemId): systemId is string => typeof systemId === 'string',
         )
       : [],
+    assets: parsePublicationAssets(snapshot.assets),
   };
 }
 
@@ -247,7 +296,12 @@ export async function publishWritingLocalization(
       throw new Error('Writing localization not found.');
     }
 
-    const [categoryRows, tagRows, systemRows] = await Promise.all([
+    const document =
+      parseWritingDocument(row.editor_document) ??
+      writingDocumentFromPlainText(row.body);
+    const documentAssetIds = writingDocumentAssetIds(document);
+
+    const [categoryRows, tagRows, systemRows, assetRows] = await Promise.all([
       transaction
         .selectFrom('writing_categories')
         .select('category_id')
@@ -266,25 +320,69 @@ export async function publishWritingLocalization(
         .where('writing_id', '=', input.writingId)
         .orderBy('position')
         .execute(),
+      transaction
+        .selectFrom('writing_assets')
+        .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+        .leftJoin('asset_localizations', (join) =>
+          join
+            .onRef('asset_localizations.asset_id', '=', 'assets.id')
+            .on('asset_localizations.locale', '=', input.locale),
+        )
+        .select([
+          'assets.id',
+          'assets.mime_type',
+          'assets.width',
+          'assets.height',
+          'asset_localizations.alt_text',
+          'asset_localizations.caption',
+        ])
+        .where('writing_assets.writing_id', '=', input.writingId)
+        .execute(),
     ]);
 
+    const assetsById = new Map(assetRows.map((asset) => [asset.id, asset]));
+    const assets = documentAssetIds.map((assetId): WritingPublicationAsset => {
+      const asset = assetsById.get(assetId);
+      if (asset === undefined) {
+        throw new Error(
+          `Writing document references asset ${assetId} outside its Writing context.`,
+        );
+      }
+      if (!asset.mime_type.startsWith('image/')) {
+        throw new Error(
+          `Writing document asset ${assetId} must be an image.`,
+        );
+      }
+
+      return {
+        id: asset.id,
+        mimeType: asset.mime_type,
+        altText: requiredText(
+          asset.alt_text,
+          `${input.locale.toUpperCase()} alt text for asset ${assetId}`,
+        ),
+        caption: asset.caption?.trim() || null,
+        width: asset.width,
+        height: asset.height,
+      };
+    });
+
     const snapshot: WritingPublicationSnapshot = {
-      version: 4,
+      version: 5,
       writingId: row.id,
       locale: input.locale,
       slug: requiredText(row.slug, 'slug'),
       title: requiredText(row.title, 'title'),
       summary: requiredText(row.summary, 'summary'),
       body: row.body?.trim() || null,
-      document:
-        parseWritingDocument(row.editor_document) ??
-        writingDocumentFromPlainText(row.body),
+      document,
       kind: row.kind,
       editorialWeight: row.editorial_weight,
       editorialPosition: row.editorial_position,
       categoryIds: categoryRows.map((category) => category.category_id),
       tagIds: tagRows.map((tag) => tag.tag_id),
       systemIds: systemRows.map((system) => system.system_id),
+      assets,
     };
     const now = new Date();
     const snapshotJson = snapshot as unknown as Record<string, unknown>;
@@ -357,7 +455,7 @@ export async function listPublishedWritings(
     .execute();
 
   const parsed = rows.map((row) => ({
-    snapshot: parseSnapshot(row.snapshot),
+    snapshot: parseWritingPublicationSnapshot(row.snapshot),
     publishedAt: row.published_at,
   }));
   const [categoriesById, tagsById, systemsById] = await Promise.all([
@@ -459,7 +557,7 @@ export async function getPublishedWriting(
 
   if (row === undefined) return null;
 
-  const snapshot = parseSnapshot(row.snapshot);
+  const snapshot = parseWritingPublicationSnapshot(row.snapshot);
   const [categoriesById, tagsById, systemsById] = await Promise.all([
     publishedCategoryMap(db, input.locale, snapshot.categoryIds),
     publishedTagMap(db, input.locale, snapshot.tagIds),
