@@ -117,9 +117,159 @@ try {
   assert.equal(english.sourceAssetId, null);
   assert.equal(english.alternate?.slug, 'dossier-projet-dwwm-sentinel');
   assert.match(english.body ?? '', /v1\.0\.0-rc\.9/);
+  for (const heading of [
+    'Context',
+    'Objectives',
+    'Architecture',
+    'Design choices',
+    'Security',
+    'Tests',
+    'Difficulties',
+    'Results',
+    'Limits',
+    'Evidence',
+  ]) {
+    assert.match(english.body ?? '', new RegExp('^## ' + heading + '
+
+  assert.equal(french.training?.trainingId, trainingId);
+  assert.equal(french.training?.slug, 'developpeur-web-web-mobile');
+  assert.equal(french.system?.systemId, systemId);
+  assert.equal(french.system?.href, '/fr/systems/sentinel');
+  assert.equal(french.sourceAssetId, null);
+  assert.equal(french.alternate?.slug, 'sentinel-dwwm-project-dossier');
+  assert.match(french.body ?? '', /ed26a25e3c005cabb0da30a4553dfbbee03afe81/);
+  for (const heading of [
+    'Contexte',
+    'Objectifs',
+    'Architecture',
+    'Choix de conception',
+    'Sécurité',
+    'Tests',
+    'Difficultés',
+    'Résultats',
+    'Limites',
+    'Preuves',
+  ]) {
+    assert.match(french.body ?? '', new RegExp('^## ' + heading + '
+
+  const connected = await listPublishedLearningArtifactsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.ok(
+    connected.some((artifact) => artifact.learningArtifactId === learningArtifactId),
+  );
+
+  process.stdout.write(
+    'AKS-093/094 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, structured into the ten native Web reading sections, and explicitly keeps the source PDF out of scope.\n',
+  );
+} finally {
+  if (learningArtifactId !== null) {
+    await db
+      .deleteFrom('learning_artifacts')
+      .where('id', '=', learningArtifactId)
+      .execute();
+  }
+  await db
+    .deleteFrom('system_publications')
+    .where('system_id', '=', systemId)
+    .execute();
+  await db.deleteFrom('systems').where('id', '=', systemId).execute();
+  if (trainingId !== null) {
+    await db.deleteFrom('trainings').where('id', '=', trainingId).execute();
+  }
+  await db.destroy();
+}
+, 'm'));
+  }
+  assert.equal((english.body ?? '').match(/^## /gm)?.length, 10);
   assert.match(
     english.body ?? '',
-    /does not claim that the final submitted PDF is already attached/,
+    /This Web presentation does not claim that the final submitted PDF is already attached/,
+  );
+
+  assert.equal(french.training?.trainingId, trainingId);
+  assert.equal(french.training?.slug, 'developpeur-web-web-mobile');
+  assert.equal(french.system?.systemId, systemId);
+  assert.equal(french.system?.href, '/fr/systems/sentinel');
+  assert.equal(french.sourceAssetId, null);
+  assert.equal(french.alternate?.slug, 'sentinel-dwwm-project-dossier');
+  assert.match(french.body ?? '', /ed26a25e3c005cabb0da30a4553dfbbee03afe81/);
+  assert.match(
+    french.body ?? '',
+    /ne prétend donc ni que le PDF final remis est déjà joint/,
+  );
+
+  const connected = await listPublishedLearningArtifactsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.ok(
+    connected.some((artifact) => artifact.learningArtifactId === learningArtifactId),
+  );
+
+  process.stdout.write(
+    'AKS-093 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, and explicitly keeps the source PDF out of scope.\n',
+  );
+} finally {
+  if (learningArtifactId !== null) {
+    await db
+      .deleteFrom('learning_artifacts')
+      .where('id', '=', learningArtifactId)
+      .execute();
+  }
+  await db
+    .deleteFrom('system_publications')
+    .where('system_id', '=', systemId)
+    .execute();
+  await db.deleteFrom('systems').where('id', '=', systemId).execute();
+  if (trainingId !== null) {
+    await db.deleteFrom('trainings').where('id', '=', trainingId).execute();
+  }
+  await db.destroy();
+}
+, 'm'));
+  }
+  assert.equal((french.body ?? '').match(/^## /gm)?.length, 10);
+  assert.match(
+    french.body ?? '',
+    /Cette présentation Web ne prétend pas que le PDF final remis est déjà joint/,
+  );
+
+  const connected = await listPublishedLearningArtifactsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.ok(
+    connected.some((artifact) => artifact.learningArtifactId === learningArtifactId),
+  );
+
+  process.stdout.write(
+    'AKS-093 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, and explicitly keeps the source PDF out of scope.\n',
+  );
+} finally {
+  if (learningArtifactId !== null) {
+    await db
+      .deleteFrom('learning_artifacts')
+      .where('id', '=', learningArtifactId)
+      .execute();
+  }
+  await db
+    .deleteFrom('system_publications')
+    .where('system_id', '=', systemId)
+    .execute();
+  await db.deleteFrom('systems').where('id', '=', systemId).execute();
+  if (trainingId !== null) {
+    await db.deleteFrom('trainings').where('id', '=', trainingId).execute();
+  }
+  await db.destroy();
+}
+, 'm'));
+  }
+  assert.equal((english.body ?? '').match(/^## /gm)?.length, 10);
+  assert.match(
+    english.body ?? '',
+    /This Web presentation does not claim that the final submitted PDF is already attached/,
   );
 
   assert.equal(french.training?.trainingId, trainingId);
