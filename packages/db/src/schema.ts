@@ -253,6 +253,7 @@ export interface TrainingLocalizationsTable {
   title: string | null;
   summary: string | null;
   body: string | null;
+  editor_document: Record<string, unknown> | null;
   editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
   created_at: TimestampColumn;
