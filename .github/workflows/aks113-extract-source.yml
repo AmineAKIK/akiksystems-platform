@@ -23,8 +23,10 @@ jobs:
       - name: Extract canonical essay text
         run: |
           mkdir -p .tmp/extracted
+          pdfinfo .tmp/aks113-source.pdf | sed -n 's/^Pages:[[:space:]]*/Pages: /p' > .tmp/extracted/rendre-l-attention-au-reel-layout.txt
+          pdftotext -layout .tmp/aks113-source.pdf - >> .tmp/extracted/rendre-l-attention-au-reel-layout.txt
           pdfinfo .tmp/aks113-source.pdf | sed -n 's/^Pages:[[:space:]]*/Pages: /p' > .tmp/extracted/rendre-l-attention-au-reel.txt
-          pdftotext -layout .tmp/aks113-source.pdf - >> .tmp/extracted/rendre-l-attention-au-reel.txt
+          pdftotext -nopgbrk .tmp/aks113-source.pdf - >> .tmp/extracted/rendre-l-attention-au-reel.txt
 
       - name: Upload extracted essay source
         uses: actions/upload-artifact@v4
