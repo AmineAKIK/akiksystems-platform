@@ -39,6 +39,13 @@ function parseSnapshot(value: unknown): TrainingPublicationSnapshot {
   return value as TrainingPublicationSnapshot;
 }
 
+function dateOnly(value: unknown): string | null {
+  if (value === null) return null;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'string') return value.slice(0, 10);
+  throw new Error('Invalid Training date value.');
+}
+
 export async function publishTrainingLocalization(
   db: Kysely<Database>,
   input: { trainingId: string; locale: PlatformLocale },
@@ -75,8 +82,8 @@ export async function publishTrainingLocalization(
       body: row.body?.trim() || null,
       provider: requiredText(row.provider, 'provider'),
       state: row.state,
-      startDate: row.start_date,
-      endDate: row.end_date,
+      startDate: dateOnly(row.start_date),
+      endDate: dateOnly(row.end_date),
       editorialPosition: row.editorial_position,
     };
     const now = new Date();

@@ -1601,6 +1601,7 @@ async function assertTrainingPublicJourney(browser) {
         detailPath: '/en/learning/qualified-training',
         detailHeading: 'Qualified Training',
         summary: 'Published Training context.',
+        dateRange: '2025-01-01 → 2025-06-30',
         alternateLocale: 'fr',
         alternatePath: '/fr/apprentissage/formation-qualifiee',
       },
@@ -1611,6 +1612,7 @@ async function assertTrainingPublicJourney(browser) {
         detailPath: '/fr/apprentissage/formation-qualifiee',
         detailHeading: 'Formation qualifiée',
         summary: 'Contexte de formation publié.',
+        dateRange: '2025-01-01 → 2025-06-30',
         alternateLocale: 'en',
         alternatePath: '/en/learning/qualified-training',
       },
@@ -1630,7 +1632,7 @@ async function assertTrainingPublicJourney(browser) {
         1,
         `${target.overviewPath} must link to the published Training deep route.`,
       );
-      assert.match(await page.locator('body').innerText(), /Qualification Provider/);
+      assert.match(await page.locator('body').innerText(), /Qualification Provider/i);
       await assertAxe(page);
 
       const detailResponse = await page.goto(`${origin}${target.detailPath}`);
@@ -1639,10 +1641,14 @@ async function assertTrainingPublicJourney(browser) {
         .getByRole('heading', { level: 1, name: target.detailHeading, exact: true })
         .waitFor();
       const body = await page.locator('body').innerText();
-      assert.match(body, /Qualification Provider/);
+      assert.match(body, /Qualification Provider/i);
       assert.ok(
         body.includes(target.summary),
         `${target.detailPath} must expose the published Training summary.`,
+      );
+      assert.ok(
+        body.includes(target.dateRange),
+        `${target.detailPath} must expose stable date-only Training boundaries.`,
       );
       assert.equal(
         await page
