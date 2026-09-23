@@ -69,6 +69,7 @@
     "db:verify-credential-domain": "pnpm --filter @akiksystems/db db:verify-credential-domain",
     "db:verify-learning-artifact-domain": "pnpm --filter @akiksystems/db db:verify-learning-artifact-domain",
     "db:verify-learning-system-navigation": "pnpm --filter @akiksystems/db db:verify-learning-system-navigation",
+    "db:verify-writing-domain": "pnpm --filter @akiksystems/db db:verify-writing-domain",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
