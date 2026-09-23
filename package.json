@@ -74,6 +74,7 @@
     "db:verify-writing-tags": "pnpm --filter @akiksystems/db db:verify-writing-tags",
     "db:verify-writing-systems": "pnpm --filter @akiksystems/db db:verify-writing-systems",
     "db:verify-writing-editor-document": "pnpm --filter @akiksystems/db db:verify-writing-editor-document",
+    "db:verify-writing-assets": "pnpm --filter @akiksystems/db db:verify-writing-assets",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
