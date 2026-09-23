@@ -1580,9 +1580,12 @@ async function assertReusableSystemReferences(browser) {
 
 
 function escapeRegex(value) {
-  return value.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\
-
-function bootstrapL5TrainingQualification() {');
+  const specialCharacters = '\\^$.*+?()[]{}|';
+  return [...value]
+    .map((character) =>
+      specialCharacters.includes(character) ? '\\' + character : character,
+    )
+    .join('');
 }
 
 function assertHtmlTagAttributes(html, tagName, attributes, message) {
