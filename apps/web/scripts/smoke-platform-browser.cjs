@@ -2292,7 +2292,8 @@ async function assertSentinelDossierJourney(browser, adminPage) {
         artifactPath: '/en/learning/artifacts/sentinel-dwwm-project-dossier',
         heading: 'Sentinel — DWWM Project Dossier',
         summary: 'First-class learning evidence connecting the DWWM training to Sentinel through problem framing, architecture, implementation, security, testing, deployment, and documented limits.',
-        inspection: 'The examination baseline documented by the Sentinel repository is the immutable release v1.0.0-rc.9',
+        inspection: 'The repository documents an immutable examination baseline at release v1.0.0-rc.9',
+        sections: ['Context', 'Objectives', 'Architecture', 'Design choices', 'Security', 'Tests', 'Difficulties', 'Results', 'Limits', 'Evidence'],
         trainingTitle: 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
         systemPath: '/en/systems/sentinel',
         alternateLocale: 'fr',
@@ -2305,7 +2306,8 @@ async function assertSentinelDossierJourney(browser, adminPage) {
         artifactPath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
         heading: 'Sentinel — dossier de projet DWWM',
         summary: 'Preuve d’apprentissage de premier rang reliant la formation DWWM à Sentinel à travers le cadrage du besoin, l’architecture, l’implémentation, la sécurité, les tests, le déploiement et les limites documentées.',
-        inspection: 'La base d’examen documentée par le dépôt Sentinel est la release immuable v1.0.0-rc.9',
+        inspection: 'Le dépôt documente une baseline d’examen immuable à la release v1.0.0-rc.9',
+        sections: ['Contexte', 'Objectifs', 'Architecture', 'Choix de conception', 'Sécurité', 'Tests', 'Difficultés', 'Résultats', 'Limites', 'Preuves'],
         trainingTitle: 'Développeur web et web mobile — Titre professionnel RNCP 37674',
         systemPath: '/fr/systems/sentinel',
         alternateLocale: 'en',
@@ -2344,6 +2346,48 @@ async function assertSentinelDossierJourney(browser, adminPage) {
       assert.ok(body.includes(target.inspection));
       assert.ok(body.includes('ed26a25e3c005cabb0da30a4553dfbbee03afe81'));
       assert.equal(
+        await page.locator('.aks-dossier-section').count(),
+        10,
+        'Sentinel dossier must expose all ten native inspection sections.',
+      );
+      for (const [index, section] of target.sections.entries()) {
+        await page
+          .getByRole('heading', { level: 2, name: section, exact: true })
+          .waitFor();
+        assert.equal(
+          await page
+            .locator('.aks-dossier-nav a[href="#dossier-' + [
+              'context',
+              'objectives',
+              'architecture',
+              'design',
+              'security',
+              'tests',
+              'difficulties',
+              'results',
+              'limits',
+              'evidence',
+            ][index] + '"]')
+            .count(),
+          1,
+          'Native dossier contents must link directly to ' + section + '.',
+        );
+      }
+      assert.ok(
+        body.includes(
+          target.artifactPath.startsWith('/fr/')
+            ? 'Contexte distinct, preuve connectée'
+            : 'Distinct context, connected evidence',
+        ),
+      );
+      assert.ok(
+        body.includes(
+          target.artifactPath.startsWith('/fr/')
+            ? 'Le PDF original sera publié séparément.'
+            : 'The original PDF will be published separately.',
+        ),
+      );
+      assert.equal(
         await page.getByRole('link', { name: target.trainingTitle, exact: true }).getAttribute('href'),
         target.trainingPath,
         'Sentinel dossier must link back to its real DWWM Training context.',
@@ -2368,7 +2412,7 @@ async function assertSentinelDossierJourney(browser, adminPage) {
       assert.equal(
         sourceResponse.status(),
         404,
-        'AKS-093 must not expose a fabricated dossier PDF before AKS-095.',
+        'AKS-094 must keep the native Web reading independent from the AKS-095 source PDF.',
       );
       await assertAxe(page);
     }
@@ -2411,6 +2455,14 @@ async function assertSentinelDossierJourney(browser, adminPage) {
   assert.ok(adminText.includes('Training connected'));
   assert.ok(adminText.includes('System connected'));
   assert.ok(adminText.includes('No source document'));
+  assert.ok(adminText.includes('Native dossier format'));
+  for (const textarea of await dossierCard.locator('textarea[name="body"]').all()) {
+    assert.equal(
+      await textarea.getAttribute('rows'),
+      '28',
+      'Native dossier inspection content must remain comfortably manageable from admin.',
+    );
+  }
 }
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
