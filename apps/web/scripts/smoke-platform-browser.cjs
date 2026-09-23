@@ -2387,15 +2387,18 @@ async function assertSentinelDossierJourney(browser, adminPage) {
             : 'The original PDF will be published separately.',
         ),
       );
+      const relationshipSurface = page.locator('.aks-dossier-context');
       assert.equal(
-        await page.getByRole('link', { name: target.trainingTitle, exact: true }).getAttribute('href'),
+        await relationshipSurface
+          .getByRole('link', { name: target.trainingTitle, exact: true })
+          .getAttribute('href'),
         target.trainingPath,
         'Sentinel dossier must link back to its real DWWM Training context.',
       );
       assert.equal(
-        await page.locator('a[href="' + target.systemPath + '"]').count(),
+        await relationshipSurface.locator('a[href="' + target.systemPath + '"]').count(),
         1,
-        'Sentinel dossier must link to the published Sentinel System.',
+        'Sentinel dossier relationship surface must link to the published Sentinel System.',
       );
       assert.equal(
         await page
