@@ -71,6 +71,14 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
+
+export function headers({
+  loaderHeaders,
+  errorHeaders,
+}: Route.HeadersArgs): Headers {
+  return errorHeaders ?? loaderHeaders;
+}
+
 export function meta({ loaderData }: Route.MetaArgs) {
   if (loaderData === undefined) {
     return buildNoIndexMeta('Learning · AkikSystems');
