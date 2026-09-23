@@ -2514,6 +2514,169 @@ async function assertLearningArtifactAdmin(page) {
     'LearningArtifact must remain manageable from private Learning administration.',
   );
 }
+
+async function assertStandaloneLearningArtifactExtensibility(page) {
+  await page.goto(origin + '/admin/learning/artifacts');
+
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create LearningArtifact',
+      exact: true,
+    }),
+  });
+  const createForm = createCard.locator('form');
+
+  assert.equal(
+    (await createForm.locator('select[name="trainingId"] option').first().textContent())?.trim(),
+    'No Training',
+    'LearningArtifact admin must not force evidence into a fake Training context.',
+  );
+  await createForm.locator('select[name="trainingId"]').selectOption('');
+  await createForm.getByRole('button', { name: 'Create LearningArtifact', exact: true }).click();
+  await page.getByText('LearningArtifact created.', { exact: true }).waitFor();
+
+  const standaloneCard = () =>
+    page
+      .locator('section.aks-admin-card')
+      .filter({ hasText: 'Standalone evidence' })
+      .last();
+
+  await standaloneCard().waitFor();
+  assert.ok(
+    (await standaloneCard().innerText()).includes('Standalone evidence'),
+    'A LearningArtifact with no Training must remain explicit in admin.',
+  );
+
+  const fillLocalization = async ({
+    index,
+    locale,
+    slug,
+    title,
+    summary,
+    body,
+  }) => {
+    let fieldset = standaloneCard().locator('fieldset').nth(index);
+    await fieldset.locator('input[name="slug"]').fill(slug);
+    await fieldset.locator('input[name="title"]').fill(title);
+    await fieldset.locator('textarea[name="summary"]').fill(summary);
+    await fieldset.locator('textarea[name="body"]').fill(body);
+    await fieldset
+      .getByRole('button', { name: 'Save ' + locale + ' draft', exact: true })
+      .click();
+    await page
+      .getByText(locale + ' LearningArtifact draft saved.', { exact: true })
+      .waitFor();
+
+    fieldset = standaloneCard().locator('fieldset').nth(index);
+    await fieldset
+      .getByRole('button', { name: 'Publish ' + locale, exact: true })
+      .click();
+    await page
+      .getByText(locale + ' LearningArtifact published.', { exact: true })
+      .waitFor();
+  };
+
+  await fillLocalization({
+    index: 0,
+    locale: 'EN',
+    slug: 'standalone-learning-note',
+    title: 'Standalone Learning Note',
+    summary: 'Independent learning evidence without a formal Training wrapper.',
+    body: 'This artifact records relevant learning directly without inventing a course or curriculum.',
+  });
+
+  await fillLocalization({
+    index: 1,
+    locale: 'FR',
+    slug: 'note-apprentissage-autonome',
+    title: 'Note d’apprentissage autonome',
+    summary: 'Preuve d’apprentissage indépendante sans formation formelle artificielle.',
+    body: 'Cet artifact consigne un apprentissage pertinent sans inventer de cursus ni de formation.',
+  });
+
+  const targets = [
+    {
+      overviewPath: '/en/learning',
+      artifactPath: '/en/learning/artifacts/standalone-learning-note',
+      title: 'Standalone Learning Note',
+      summary: 'Independent learning evidence without a formal Training wrapper.',
+      body: 'This artifact records relevant learning directly without inventing a course or curriculum.',
+      standaloneLabel: 'Standalone learning evidence',
+      alternateLocale: 'fr',
+      alternatePath: '/fr/apprentissage/preuves/note-apprentissage-autonome',
+      trainingTitle: 'Qualified Training',
+    },
+    {
+      overviewPath: '/fr/apprentissage',
+      artifactPath: '/fr/apprentissage/preuves/note-apprentissage-autonome',
+      title: 'Note d’apprentissage autonome',
+      summary: 'Preuve d’apprentissage indépendante sans formation formelle artificielle.',
+      body: 'Cet artifact consigne un apprentissage pertinent sans inventer de cursus ni de formation.',
+      standaloneLabel: 'Preuve d’apprentissage autonome',
+      alternateLocale: 'en',
+      alternatePath: '/en/learning/artifacts/standalone-learning-note',
+      trainingTitle: 'Formation qualifiée',
+    },
+  ];
+
+  for (const target of targets) {
+    const overviewResponse = await page.goto(origin + target.overviewPath);
+    assert.equal(overviewResponse?.status(), 200);
+    const overviewCard = page
+      .locator('.aks-learning-evidence-card[data-evidence-kind="learning-artifact"]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.title,
+          exact: true,
+        }),
+      });
+    await overviewCard.waitFor();
+    const overviewText = await overviewCard.innerText();
+    assert.ok(overviewText.includes(target.summary));
+    assert.ok(
+      overviewText.includes(target.standaloneLabel),
+      'Standalone Learning evidence must be explicit at summary depth.',
+    );
+    assert.equal(
+      await overviewCard.locator('a[href="' + target.artifactPath + '"]').count(),
+      1,
+      'Standalone Learning evidence must keep an autonomous deep link.',
+    );
+
+    const detailResponse = await page.goto(origin + target.artifactPath);
+    assert.equal(detailResponse?.status(), 200);
+    await page
+      .getByRole('heading', { level: 1, name: target.title, exact: true })
+      .waitFor();
+    const detailText = await page.locator('body').innerText();
+    assert.ok(detailText.includes(target.summary));
+    assert.ok(detailText.includes(target.body));
+    assert.ok(
+      detailText.includes(
+        target.overviewPath.startsWith('/fr/')
+          ? 'Preuve d’apprentissage autonome, sans formation formelle requise.'
+          : 'Standalone learning evidence; no formal Training is required.',
+      ),
+      'Standalone Learning evidence must not masquerade as a Training.',
+    );
+    assert.equal(
+      await page.getByRole('link', { name: target.trainingTitle, exact: true }).count(),
+      0,
+      'Standalone Learning evidence must not fabricate a Training relationship.',
+    );
+    assert.equal(
+      await page
+        .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+        .getAttribute('href'),
+      target.alternatePath,
+      'Standalone Learning evidence must remain bilingual on equivalent deep routes.',
+    );
+    await assertAxe(page);
+  }
+}
+
 async function assertLearningAdminWorkspace(page) {
   await page.goto(origin + '/admin/learning');
   await page
@@ -2597,12 +2760,14 @@ async function assertLearningAdminWorkspace(page) {
     'Credential relationship summary must include both connected evidence objects.',
   );
   assert.ok(
-    (await artifactCard.innerText()).includes('Published snapshots · EN 1 · FR 1'),
-    'LearningArtifact publication summary must remain bilingual.',
+    (await artifactCard.innerText()).includes('Published snapshots · EN 2 · FR 2'),
+    'LearningArtifact publication summary must include standalone evidence.',
   );
   assert.ok(
-    (await artifactCard.innerText()).includes('1 connected to System · 0 with source document'),
-    'LearningArtifact relationship summary must remain intact.',
+    (await artifactCard.innerText()).includes(
+      '1 connected to Training · 1 standalone · 1 connected to System · 0 with source document',
+    ),
+    'LearningArtifact relationship summary must distinguish optional Training context.',
   );
   assert.equal(
     await page.getByRole('button', { name: 'Create Training', exact: true }).count(),
@@ -4717,6 +4882,7 @@ async function assertAxe(page) {
     await assertLearningOverviewExperience(browser);
     await assertLearningSeo(browser);
     await assertLearningArtifactAdmin(page);
+    await assertStandaloneLearningArtifactExtensibility(page);
     await assertLearningAdminWorkspace(page);
     await assertDwwmTrainingJourney(browser, page);
     await assertSentinelDossierJourney(browser, page);
