@@ -156,6 +156,9 @@ jobs:
       - name: Verify L6 Writing rich-content schema and persistence
         run: pnpm --filter @akiksystems/db db:verify-writing-editor-document
 
+      - name: Verify L6 contextual Writing assets
+        run: pnpm --filter @akiksystems/db db:verify-writing-assets
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 

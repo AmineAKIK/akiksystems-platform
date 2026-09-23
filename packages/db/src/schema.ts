@@ -443,6 +443,12 @@ export interface WritingSystemsTable {
   created_at: TimestampColumn;
 }
 
+export interface WritingAssetsTable {
+  writing_id: string;
+  asset_id: string;
+  created_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -703,6 +709,10 @@ export type WritingSystemRow = Selectable<WritingSystemsTable>;
 export type NewWritingSystemRow = Insertable<WritingSystemsTable>;
 export type WritingSystemUpdate = Updateable<WritingSystemsTable>;
 
+export type WritingAssetRow = Selectable<WritingAssetsTable>;
+export type NewWritingAssetRow = Insertable<WritingAssetsTable>;
+export type WritingAssetUpdate = Updateable<WritingAssetsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -780,6 +790,7 @@ export interface Database {
   tag_publications: TagPublicationsTable;
   writing_tags: WritingTagsTable;
   writing_systems: WritingSystemsTable;
+  writing_assets: WritingAssetsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;

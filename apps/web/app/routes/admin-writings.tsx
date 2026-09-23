@@ -1,9 +1,12 @@
 import {
+  parseWritingPublicationSnapshot,
   publishWritingLocalization,
   unpublishWritingLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
 import {
+  parseWritingDocument,
+  writingDocumentAssetIds,
   writingEditorialWeights,
   writingKinds,
   type PlatformLocale,
@@ -16,7 +19,14 @@ import { Form, useActionData, useLoaderData } from 'react-router';
 
 import { WritingBodyEditor } from '../components/writing-body-editor';
 import { requireAdminSession } from '../lib/admin.server';
+import {
+  assetExtensionForMimeType,
+  deleteAssetObject,
+  putAssetObject,
+  validateAssetUpload,
+} from '../lib/asset-storage.server';
 import { appDb } from '../lib/db.server';
+import { imageDimensions } from '../lib/image-dimensions.server';
 import {
   parseWritingEditorDocumentJson,
   writingEditorDocumentForDraft,
@@ -36,6 +46,26 @@ function field(form: FormData, name: string): string {
 function nullableField(form: FormData, name: string): string | null {
   const value = field(form, name);
   return value === '' ? null : value;
+}
+
+function requiredAssetAlt(
+  form: FormData,
+  name: 'altEn' | 'altFr',
+  label: string,
+): string {
+  const value = field(form, name);
+  if (value === '') {
+    throw new Response(`${label} alt text is required.`, { status: 400 });
+  }
+  return value;
+}
+
+function requiredAssetId(form: FormData): string {
+  const assetId = field(form, 'assetId');
+  if (!uuidPattern.test(assetId)) {
+    throw new Response('Writing asset not found.', { status: 404 });
+  }
+  return assetId;
 }
 
 function requiredEditorDocument(form: FormData) {
@@ -147,6 +177,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     writingCategories,
     writingTags,
     writingSystems,
+    writingAssets,
   ] = await Promise.all([
       appDb
         .selectFrom('categories')
@@ -232,6 +263,35 @@ export async function loader({ request }: Route.LoaderArgs) {
         .orderBy('writing_id')
         .orderBy('position')
         .execute(),
+      appDb
+        .selectFrom('writing_assets')
+        .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+        .leftJoin('asset_localizations as asset_en', (join) =>
+          join
+            .onRef('asset_en.asset_id', '=', 'assets.id')
+            .on('asset_en.locale', '=', 'en'),
+        )
+        .leftJoin('asset_localizations as asset_fr', (join) =>
+          join
+            .onRef('asset_fr.asset_id', '=', 'assets.id')
+            .on('asset_fr.locale', '=', 'fr'),
+        )
+        .select([
+          'writing_assets.writing_id',
+          'assets.id',
+          'assets.original_filename',
+          'assets.mime_type',
+          'assets.byte_size',
+          'assets.width',
+          'assets.height',
+          'asset_en.alt_text as alt_en',
+          'asset_en.caption as caption_en',
+          'asset_fr.alt_text as alt_fr',
+          'asset_fr.caption as caption_fr',
+        ])
+        .orderBy('writing_assets.created_at')
+        .orderBy('assets.id')
+        .execute(),
     ]);
 
   const categoryIdsByWriting = new Map<string, string[]>();
@@ -255,6 +315,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     systemIdsByWriting.set(relation.writing_id, systemIds);
   }
 
+  const assetsByWriting = new Map<string, typeof writingAssets>();
+  for (const asset of writingAssets) {
+    const assets = assetsByWriting.get(asset.writing_id) ?? [];
+    assets.push(asset);
+    assetsByWriting.set(asset.writing_id, assets);
+  }
+
   return {
     categories,
     tags,
@@ -264,6 +331,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       categoryIds: categoryIdsByWriting.get(writing.id) ?? [],
       tagIds: tagIdsByWriting.get(writing.id) ?? [],
       systemIds: systemIdsByWriting.get(writing.id) ?? [],
+      assets: assetsByWriting.get(writing.id) ?? [],
     })),
   };
 }
@@ -327,6 +395,348 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (writing === undefined) {
     throw new Response('Writing not found.', { status: 404 });
+  }
+
+  if (intent === 'upload-asset') {
+    const file = form.get('file');
+    if (!(file instanceof File)) {
+      return { ok: false, message: 'Choose an image to upload.' };
+    }
+    if (!file.type.startsWith('image/')) {
+      return {
+        ok: false,
+        message: 'Writing media must be JPEG, PNG, WebP, or AVIF.',
+      };
+    }
+
+    try {
+      validateAssetUpload(file);
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : 'Invalid image.',
+      };
+    }
+
+    const altEn = requiredAssetAlt(form, 'altEn', 'English');
+    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const captionEn = nullableField(form, 'captionEn');
+    const captionFr = nullableField(form, 'captionFr');
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const dimensions = imageDimensions(file.type, bytes);
+    const assetId = randomUUID();
+    const extension = assetExtensionForMimeType(file.type);
+    const storageKey = `writings/${writingId}/${assetId}.${extension}`;
+
+    try {
+      await putAssetObject(storageKey, file);
+
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('assets')
+          .values({
+            id: assetId,
+            storage_key: storageKey,
+            original_filename: file.name,
+            mime_type: file.type,
+            byte_size: file.size,
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+          })
+          .execute();
+
+        await transaction
+          .insertInto('asset_localizations')
+          .values([
+            {
+              asset_id: assetId,
+              locale: 'en',
+              alt_text: altEn,
+              caption: captionEn,
+            },
+            {
+              asset_id: assetId,
+              locale: 'fr',
+              alt_text: altFr,
+              caption: captionFr,
+            },
+          ])
+          .execute();
+
+        await transaction
+          .insertInto('writing_assets')
+          .values({
+            writing_id: writingId,
+            asset_id: assetId,
+          })
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'writing.asset_uploaded',
+          entityType: 'asset',
+          entityId: assetId,
+          metadata: {
+            writingId,
+            mimeType: file.type,
+            byteSize: file.size,
+            localizedMetadata: ['en', 'fr'],
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+          },
+        });
+      });
+    } catch (error) {
+      try {
+        await deleteAssetObject(storageKey);
+      } catch {
+        // Best-effort compensation when storage or metadata persistence fails.
+      }
+
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Writing media upload could not be completed.',
+      };
+    }
+
+    return {
+      ok: true,
+      message: 'Writing image uploaded. Insert it from the EN or FR editor.',
+    };
+  }
+
+  if (intent === 'update-asset-metadata') {
+    const assetId = requiredAssetId(form);
+    const linked = await db
+      .selectFrom('writing_assets')
+      .select('asset_id')
+      .where('writing_id', '=', writingId)
+      .where('asset_id', '=', assetId)
+      .executeTakeFirst();
+    if (linked === undefined) {
+      throw new Response('Writing asset not found.', { status: 404 });
+    }
+
+    const altEn = requiredAssetAlt(form, 'altEn', 'English');
+    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const captionEn = nullableField(form, 'captionEn');
+    const captionFr = nullableField(form, 'captionFr');
+    const localizations = await db
+      .selectFrom('writing_localizations')
+      .select(['locale', 'editor_document'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const referencedLocales = localizations.flatMap((localization) => {
+      const document = parseWritingDocument(localization.editor_document);
+      return document !== null &&
+        writingDocumentAssetIds(document).includes(assetId)
+        ? [localization.locale]
+        : [];
+    });
+
+    await db.transaction().execute(async (transaction) => {
+      for (const localized of [
+        { locale: 'en' as const, altText: altEn, caption: captionEn },
+        { locale: 'fr' as const, altText: altFr, caption: captionFr },
+      ]) {
+        await transaction
+          .insertInto('asset_localizations')
+          .values({
+            asset_id: assetId,
+            locale: localized.locale,
+            alt_text: localized.altText,
+            caption: localized.caption,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['asset_id', 'locale']).doUpdateSet({
+              alt_text: localized.altText,
+              caption: localized.caption,
+              updated_at: new Date(),
+            }),
+          )
+          .execute();
+      }
+
+      if (referencedLocales.length > 0) {
+        await transaction
+          .updateTable('writing_localizations')
+          .set({
+            editorial_state: 'draft',
+            published_at: null,
+            updated_at: new Date(),
+          })
+          .where('writing_id', '=', writingId)
+          .where('locale', 'in', referencedLocales)
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.asset_metadata_updated',
+        entityType: 'asset',
+        entityId: assetId,
+        metadata: {
+          writingId,
+          localizedMetadata: ['en', 'fr'],
+          draftLocales: referencedLocales,
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message:
+        referencedLocales.length === 0
+          ? 'Writing image metadata updated.'
+          : 'Writing image metadata updated; referenced locale drafts must be republished.',
+    };
+  }
+
+  if (intent === 'delete-asset') {
+    const assetId = requiredAssetId(form);
+    const asset = await db
+      .selectFrom('writing_assets')
+      .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+      .select(['assets.id', 'assets.storage_key'])
+      .where('writing_assets.writing_id', '=', writingId)
+      .where('writing_assets.asset_id', '=', assetId)
+      .executeTakeFirst();
+    if (asset === undefined) {
+      throw new Response('Writing asset not found.', { status: 404 });
+    }
+
+    const draftLocalizations = await db
+      .selectFrom('writing_localizations')
+      .select(['locale', 'editor_document'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const draftReferences = draftLocalizations.flatMap((localization) => {
+      const document = parseWritingDocument(localization.editor_document);
+      return document !== null &&
+        writingDocumentAssetIds(document).includes(assetId)
+        ? [localization.locale]
+        : [];
+    });
+    if (draftReferences.length > 0) {
+      return {
+        ok: false,
+        message:
+          `Remove this image from the ${draftReferences.join(', ').toUpperCase()} editor and save the draft before deleting it.`,
+      };
+    }
+
+    const publications = await db
+      .selectFrom('writing_publications')
+      .select(['locale', 'snapshot'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const publishedReferences = publications.flatMap((publication) => {
+      const snapshot = parseWritingPublicationSnapshot(publication.snapshot);
+      const referenced =
+        snapshot.assets.some((candidate) => candidate.id === assetId) ||
+        writingDocumentAssetIds(snapshot.document).includes(assetId);
+      return referenced ? [publication.locale] : [];
+    });
+    if (publishedReferences.length > 0) {
+      return {
+        ok: false,
+        message:
+          `Deletion blocked: published snapshot(s) ${publishedReferences.join(', ').toUpperCase()} still reference this image. Republish or unpublish them first.`,
+      };
+    }
+
+    const [
+      writingReferences,
+      systemReferences,
+      profileReferences,
+      credentialReferences,
+      learningArtifactReferences,
+    ] = await Promise.all([
+      db
+        .selectFrom('writing_assets')
+        .select('writing_id')
+        .where('asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('system_assets')
+        .select('system_id')
+        .where('asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('profiles')
+        .select(['portrait_asset_id', 'source_cv_asset_id'])
+        .execute(),
+      db
+        .selectFrom('credentials')
+        .select('id')
+        .where('source_asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('learning_artifacts')
+        .select('id')
+        .where('source_asset_id', '=', assetId)
+        .execute(),
+    ]);
+    const sharedReference =
+      writingReferences.some((reference) => reference.writing_id !== writingId) ||
+      systemReferences.length > 0 ||
+      profileReferences.some(
+        (profile) =>
+          profile.portrait_asset_id === assetId ||
+          profile.source_cv_asset_id === assetId,
+      ) ||
+      credentialReferences.length > 0 ||
+      learningArtifactReferences.length > 0;
+    if (sharedReference) {
+      return {
+        ok: false,
+        message: 'Deletion blocked: this asset is still used by another context.',
+      };
+    }
+
+    try {
+      await deleteAssetObject(asset.storage_key);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
+            : 'Storage deletion failed; metadata was kept so the operation can be retried.',
+      };
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('writing_assets')
+        .where('writing_id', '=', writingId)
+        .where('asset_id', '=', assetId)
+        .execute();
+
+      await transaction
+        .deleteFrom('assets')
+        .where('id', '=', assetId)
+        .executeTakeFirstOrThrow();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.asset_deleted',
+        entityType: 'asset',
+        entityId: assetId,
+        metadata: {
+          writingId,
+          storageObjectDeleted: true,
+        },
+      });
+    });
+
+    return { ok: true, message: 'Writing image removed from storage.' };
   }
 
   if (intent === 'save-categories') {
@@ -570,6 +980,48 @@ export async function action({ request }: Route.ActionArgs) {
     const summary = nullableField(form, 'summary');
     const editorDocument = requiredEditorDocument(form);
     const body = writingEditorDocumentToPlainText(editorDocument) || null;
+    const documentAssetIds = writingDocumentAssetIds(editorDocument);
+
+    if (documentAssetIds.length > 0) {
+      const linkedAssets = await db
+        .selectFrom('writing_assets')
+        .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+        .leftJoin('asset_localizations', (join) =>
+          join
+            .onRef('asset_localizations.asset_id', '=', 'assets.id')
+            .on('asset_localizations.locale', '=', locale),
+        )
+        .select([
+          'assets.id',
+          'assets.mime_type',
+          'asset_localizations.alt_text',
+        ])
+        .where('writing_assets.writing_id', '=', writingId)
+        .where('writing_assets.asset_id', 'in', documentAssetIds)
+        .execute();
+      const linkedById = new Map(linkedAssets.map((asset) => [asset.id, asset]));
+
+      for (const assetId of documentAssetIds) {
+        const asset = linkedById.get(assetId);
+        if (asset === undefined) {
+          throw new Response(
+            'Writing document references media outside this Writing context.',
+            { status: 400 },
+          );
+        }
+        if (!asset.mime_type.startsWith('image/')) {
+          throw new Response('Writing document media must be an image.', {
+            status: 400,
+          });
+        }
+        if ((asset.alt_text?.trim() ?? '') === '') {
+          throw new Response(
+            `${locale.toUpperCase()} alt text is required for every image used in the Writing.`,
+            { status: 400 },
+          );
+        }
+      }
+    }
 
     await db.transaction().execute(async (transaction) => {
       await transaction
@@ -602,6 +1054,7 @@ export async function action({ request }: Route.ActionArgs) {
           hasSummary: summary !== null,
           hasBody: body !== null,
           hasEditorDocument: true,
+          assetIds: documentAssetIds,
         },
       });
     });
@@ -720,7 +1173,11 @@ export default function AdminWritingsRoute() {
           </section>
 
           {data.writings.map((writing) => (
-            <section className="aks-admin-card" key={writing.id}>
+            <section
+              className="aks-admin-card"
+              data-writing-card={writing.id}
+              key={writing.id}
+            >
               <div className="aks-proof-stack">
                 <Heading level={2} size="sm">
                   {writing.title_en ?? writing.title_fr ?? 'Untitled Writing'}
@@ -880,6 +1337,167 @@ export default function AdminWritingsRoute() {
                   </fieldset>
                 </Form>
 
+                <section className="aks-admin-card" data-writing-assets>
+                  <div className="aks-proof-stack">
+                    <Heading level={3} size="sm">
+                      Contextual media
+                    </Heading>
+                    <Text size="sm" tone="muted">
+                      Upload images inside this Writing context. Alt text is
+                      localized and required in EN and FR; captions are optional.
+                      There is no global media-library workflow.
+                    </Text>
+
+                    <Form
+                      className="aks-admin-form"
+                      data-writing-asset-upload
+                      encType="multipart/form-data"
+                      method="post"
+                    >
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value="upload-asset"
+                      />
+                      <input name="writingId" type="hidden" value={writing.id} />
+                      <label>
+                        <span>Image</span>
+                        <input
+                          accept="image/jpeg,image/png,image/webp,image/avif"
+                          name="file"
+                          required
+                          type="file"
+                        />
+                      </label>
+                      <label>
+                        <span>English alt text</span>
+                        <input name="altEn" required type="text" />
+                      </label>
+                      <label>
+                        <span>English caption</span>
+                        <textarea name="captionEn" rows={2} />
+                      </label>
+                      <label>
+                        <span>French alt text</span>
+                        <input name="altFr" required type="text" />
+                      </label>
+                      <label>
+                        <span>French caption</span>
+                        <textarea name="captionFr" rows={2} />
+                      </label>
+                      <Text size="sm" tone="muted">
+                        JPEG, PNG, WebP, or AVIF · maximum 10 MiB.
+                      </Text>
+                      <Button emphasis="quiet" type="submit">
+                        Upload Writing image
+                      </Button>
+                    </Form>
+
+                    {writing.assets.length === 0 ? (
+                      <Text size="sm" tone="muted">
+                        No contextual media is linked to this Writing yet.
+                      </Text>
+                    ) : (
+                      <div className="aks-admin-asset-list">
+                        {writing.assets.map((asset) => (
+                          <article className="aks-admin-asset" key={asset.id}>
+                            <div className="aks-proof-stack">
+                              <Text tone="strong">
+                                {asset.original_filename}
+                              </Text>
+                              <Text size="sm" tone="muted">
+                                {asset.mime_type} · {asset.byte_size} bytes
+                                {asset.width !== null && asset.height !== null
+                                  ? ` · ${asset.width}×${asset.height}`
+                                  : ''}
+                              </Text>
+                              <Link
+                                href={`/admin/writings/${writing.id}/assets/${asset.id}`}
+                              >
+                                Inspect private image
+                              </Link>
+
+                              <Form method="post" className="aks-admin-form">
+                                <input
+                                  name="_intent"
+                                  type="hidden"
+                                  value="update-asset-metadata"
+                                />
+                                <input
+                                  name="writingId"
+                                  type="hidden"
+                                  value={writing.id}
+                                />
+                                <input
+                                  name="assetId"
+                                  type="hidden"
+                                  value={asset.id}
+                                />
+                                <label>
+                                  <span>English alt text</span>
+                                  <input
+                                    defaultValue={asset.alt_en ?? ''}
+                                    name="altEn"
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  <span>English caption</span>
+                                  <textarea
+                                    defaultValue={asset.caption_en ?? ''}
+                                    name="captionEn"
+                                    rows={2}
+                                  />
+                                </label>
+                                <label>
+                                  <span>French alt text</span>
+                                  <input
+                                    defaultValue={asset.alt_fr ?? ''}
+                                    name="altFr"
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  <span>French caption</span>
+                                  <textarea
+                                    defaultValue={asset.caption_fr ?? ''}
+                                    name="captionFr"
+                                    rows={2}
+                                  />
+                                </label>
+                                <Button emphasis="quiet" type="submit">
+                                  Save image metadata
+                                </Button>
+                              </Form>
+
+                              <Form method="post">
+                                <input
+                                  name="_intent"
+                                  type="hidden"
+                                  value="delete-asset"
+                                />
+                                <input
+                                  name="writingId"
+                                  type="hidden"
+                                  value={writing.id}
+                                />
+                                <input
+                                  name="assetId"
+                                  type="hidden"
+                                  value={asset.id}
+                                />
+                                <Button emphasis="quiet" type="submit">
+                                  Delete unused image
+                                </Button>
+                              </Form>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
                 <div className="aks-proof-stack">
                   {(['en', 'fr'] as const).map((locale) => {
                     const slug =
@@ -954,6 +1572,16 @@ export default function AdminWritingsRoute() {
                             />
                           </label>
                           <WritingBodyEditor
+                            assets={writing.assets.map((asset) => ({
+                              id: asset.id,
+                              label: asset.original_filename,
+                              altText:
+                                locale === 'en' ? asset.alt_en : asset.alt_fr,
+                              caption:
+                                locale === 'en'
+                                  ? asset.caption_en
+                                  : asset.caption_fr,
+                            }))}
                             initialDocument={editorDocument}
                             locale={locale}
                           />

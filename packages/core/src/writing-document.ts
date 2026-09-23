@@ -460,6 +460,29 @@ export function parseWritingDocument(value: unknown): WritingDocument | null {
   return validation.success ? (value as WritingDocument) : null;
 }
 
+export function writingDocumentAssetIds(document: WritingDocument): string[] {
+  const ids: string[] = [];
+  const seen = new Set<string>();
+
+  const add = (assetId: string) => {
+    if (seen.has(assetId)) return;
+    seen.add(assetId);
+    ids.push(assetId);
+  };
+
+  for (const block of document.content) {
+    if (block.type === 'image') {
+      add(block.attrs.assetId);
+    } else if (block.type === 'gallery') {
+      for (const image of block.content) {
+        add(image.attrs.assetId);
+      }
+    }
+  }
+
+  return ids;
+}
+
 export function writingDocumentFromPlainText(
   value: string | null | undefined,
 ): WritingDocument {

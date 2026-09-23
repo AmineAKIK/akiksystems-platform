@@ -1594,11 +1594,7 @@ async function assertWritingAdminAndPublic(page) {
     .click();
   await page.getByText('Writing created.', { exact: true }).waitFor();
 
-  const writingCard = () =>
-    page
-      .locator('section.aks-admin-card')
-      .filter({ has: page.locator('input[name="writingId"]') })
-      .last();
+  const writingCard = () => page.locator('[data-writing-card]').last();
 
   await writingCard().waitFor();
   assert.match(
@@ -1677,6 +1673,112 @@ async function assertWritingAdminAndPublic(page) {
     summary: 'Le contenu éditorial reste administrable tandis que la sémantique de page reste définie dans le code.',
     body: 'Un Writing décrit du contenu, pas une mise en page.\n\nAKS-101 limite volontairement le premier renderer à des paragraphes contrôlés.',
   });
+
+  let assetSection = writingCard().locator('[data-writing-assets]');
+  const upload = assetSection.locator('form[data-writing-asset-upload]');
+  await upload.locator('input[name="file"]').setInputFiles({
+    name: 'aks-107-contextual.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8YQAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
+  await upload
+    .locator('input[name="altEn"]')
+    .fill('Contextual image in the English Writing');
+  await upload
+    .locator('textarea[name="captionEn"]')
+    .fill('English contextual caption');
+  await upload
+    .locator('input[name="altFr"]')
+    .fill('Image contextuelle dans l’écrit français');
+  await upload
+    .locator('textarea[name="captionFr"]')
+    .fill('Légende contextuelle française');
+  await upload
+    .getByRole('button', { name: 'Upload Writing image', exact: true })
+    .click();
+  await page
+    .getByText(
+      'Writing image uploaded. Insert it from the EN or FR editor.',
+      { exact: true },
+    )
+    .waitFor();
+
+  assetSection = writingCard().locator('[data-writing-assets]');
+  const privateAssetLink = assetSection.getByRole('link', {
+    name: 'Inspect private image',
+    exact: true,
+  });
+  const privateAssetHref = await privateAssetLink.getAttribute('href');
+  assert.ok(
+    privateAssetHref?.startsWith('/admin/writings/'),
+    'Contextual Writing media must stay behind an authenticated admin route.',
+  );
+  const privateAssetResponse = await page.context().request.get(
+    origin + privateAssetHref,
+  );
+  assert.equal(privateAssetResponse.status(), 200);
+  assert.equal(privateAssetResponse.headers()['content-type'], 'image/png');
+  assert.match(
+    privateAssetResponse.headers()['cache-control'] ?? '',
+    /no-store/i,
+    'Private Writing media must not be cached publicly.',
+  );
+  const assetId = privateAssetHref.split('/').at(-1);
+  assert.ok(assetId, 'The private Writing asset route must expose an asset id.');
+
+  for (const locale of ['EN', 'FR']) {
+    let fieldset = writingCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
+    await fieldset
+      .getByRole('button', {
+        name:
+          (locale === 'FR' ? 'Insérer' : 'Insert') +
+          ' · aks-107-contextual.png',
+        exact: true,
+      })
+      .click();
+
+    const insertedDocument = JSON.parse(
+      await fieldset.locator('input[name="editorDocument"]').inputValue(),
+    );
+    assert.ok(
+      insertedDocument.content.some(
+        (node) =>
+          node.type === 'image' && node.attrs?.assetId === assetId,
+      ),
+      `${locale} Writing editor must insert the contextual image by asset id.`,
+    );
+
+    await fieldset
+      .getByRole('button', {
+        name: 'Save ' + locale + ' draft',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByText(locale + ' Writing draft saved.', { exact: true })
+      .waitFor();
+
+    fieldset = writingCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
+    const persistedDocument = JSON.parse(
+      await fieldset.locator('input[name="editorDocument"]').inputValue(),
+    );
+    assert.ok(
+      persistedDocument.content.some(
+        (node) =>
+          node.type === 'image' && node.attrs?.assetId === assetId,
+      ),
+      `${locale} contextual image must survive the admin round-trip.`,
+    );
+  }
 
   let card = writingCard();
   await card

@@ -69,6 +69,7 @@ export {
   listPublishedWritingsForCategory,
   listPublishedWritingsForTag,
   listPublishedWritingsForSystem,
+  parseWritingPublicationSnapshot,
   publishWritingLocalization,
   unpublishWritingLocalization,
 } from './writing-publication.js';
@@ -77,6 +78,7 @@ export type {
   PublishedWritingListItem,
   PublicWritingCategory,
   PublicWritingTag,
+  WritingPublicationAsset,
   WritingPublicationSnapshot,
 } from './writing-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
