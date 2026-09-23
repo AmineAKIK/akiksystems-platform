@@ -1,22 +1,16 @@
-import type {
-  PublishedWritingListItem,
-  PublicSystemReference,
-} from '@akiksystems/db';
+import type { PublishedWritingListItem } from '@akiksystems/db';
 import { Container, Heading, Text } from '@akiksystems/ui';
 
 import { destinationById } from '../i18n/global-destinations';
 import type { Locale } from '../i18n/locales';
-import { SystemReference } from './system-reference';
 import { WritingsFeed } from './writings-feed';
 
 export function WritingsOverview({
   locale,
   writings,
-  systemReferences,
 }: {
   locale: Locale;
   writings: PublishedWritingListItem[];
-  systemReferences: PublicSystemReference[];
 }) {
   const destination = destinationById('writings');
 
@@ -61,28 +55,6 @@ export function WritingsOverview({
             />
           </section>
 
-          {systemReferences.length > 0 ? (
-            <section
-              aria-labelledby="writings-system-references"
-              className="aks-related-system-references"
-            >
-              <div className="aks-profile-section-heading">
-                <Heading id="writings-system-references" level={2} size="sm">
-                  {locale === 'fr' ? 'Systèmes liés' : 'Related Systems'}
-                </Heading>
-                <Text size="sm" tone="muted">
-                  {locale === 'fr'
-                    ? 'Références publiées réutilisant le même contrat de preuve.'
-                    : 'Published references using the same evidence contract.'}
-                </Text>
-              </div>
-              <div className="aks-system-reference-grid">
-                {systemReferences.map((reference) => (
-                  <SystemReference key={reference.id} reference={reference} />
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
       </Container>
     </main>
