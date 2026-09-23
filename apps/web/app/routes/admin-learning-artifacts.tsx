@@ -39,14 +39,6 @@ function requiredId(form: FormData): string {
   return id;
 }
 
-function requiredTrainingId(form: FormData): string {
-  const id = field(form, 'trainingId');
-  if (!uuidPattern.test(id)) {
-    throw new Response('A valid Training is required.', { status: 400 });
-  }
-  return id;
-}
-
 function optionalId(form: FormData, name: string): string | null {
   const value = field(form, name);
   if (value === '') return null;
@@ -174,7 +166,7 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = field(form, '_intent');
 
   if (intent === 'create') {
-    const trainingId = requiredTrainingId(form);
+    const trainingId = optionalId(form, 'trainingId');
     const systemId = optionalId(form, 'systemId');
     const sourceAssetId = optionalId(form, 'sourceAssetId');
 
@@ -402,7 +394,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   if (intent === 'shared') {
-    const trainingId = requiredTrainingId(form);
+    const trainingId = optionalId(form, 'trainingId');
     const systemId = optionalId(form, 'systemId');
     const sourceAssetId = optionalId(form, 'sourceAssetId');
 
@@ -556,9 +548,9 @@ export default function AdminLearningArtifactsRoute() {
                 LearningArtifact administration
               </Heading>
               <Text tone="muted">
-                LearningArtifacts are first-class evidence. Training remains
-                their required context; System and source-document links are
-                optional evidence relationships.
+                LearningArtifacts are first-class evidence. Training and
+                System are optional context relationships; source documents
+                remain optional original-evidence links.
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin/learning">Learning hub</Link>
@@ -584,9 +576,9 @@ export default function AdminLearningArtifactsRoute() {
                 Create LearningArtifact
               </Heading>
               <label>
-                <span>Training</span>
-                <select name="trainingId" required>
-                  <option value="">Select Training</option>
+                <span>Connected Training (optional)</span>
+                <select defaultValue="" name="trainingId">
+                  <option value="">No Training</option>
                   {data.trainings.map((training) => (
                     <option key={training.id} value={training.id}>
                       {training.title_en ??
@@ -635,7 +627,8 @@ export default function AdminLearningArtifactsRoute() {
                 </Text>
                 <Text size="sm" tone="muted">
                   EN {artifact.published_slug_en === null ? 'Draft' : 'Published'} · FR{' '}
-                  {artifact.published_slug_fr === null ? 'Draft' : 'Published'} · Training connected ·{' '}
+                  {artifact.published_slug_fr === null ? 'Draft' : 'Published'} ·{' '}
+                  {artifact.training_id === null ? 'Standalone evidence' : 'Training connected'} ·{' '}
                   {artifact.system_id === null ? 'No System' : 'System connected'} ·{' '}
                   {artifact.source_asset_id === null ? 'No source document' : 'Source attached'}
                 </Text>
@@ -718,12 +711,12 @@ export default function AdminLearningArtifactsRoute() {
                     value={artifact.id}
                   />
                   <label>
-                    <span>Training</span>
+                    <span>Connected Training (optional)</span>
                     <select
-                      defaultValue={artifact.training_id}
+                      defaultValue={artifact.training_id ?? ''}
                       name="trainingId"
-                      required
                     >
+                      <option value="">No Training</option>
                       {data.trainings.map((training) => (
                         <option key={training.id} value={training.id}>
                           {training.title_en ??
