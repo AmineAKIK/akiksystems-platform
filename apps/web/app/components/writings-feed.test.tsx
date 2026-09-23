@@ -49,7 +49,7 @@ function writing(
 }
 
 describe('WritingsFeed', () => {
-  it('keeps Note, Article, and Essay in one newest-first editorial feed', () => {
+  it('keeps Note, Article, and Essay in one ordered editorial feed', () => {
     const html = renderToStaticMarkup(
       <WritingsFeed
         emptyMessage="No writing is published yet."
@@ -77,7 +77,7 @@ describe('WritingsFeed', () => {
             slug: 'middle-article',
             title: 'Middle Article',
             summary: 'A developed explanation.',
-            publishedAt: new Date('2026-09-22T12:00:00.000Z'),
+            publishedAt: new Date('2026-09-21T12:00:00.000Z'),
           }),
         ]}
       />,
@@ -89,8 +89,8 @@ describe('WritingsFeed', () => {
     expect(html).toContain('data-writing-kind="article"');
     expect(html).toContain('data-writing-kind="essay"');
 
+    expect(html.indexOf('Deep Essay')).toBeLessThan(html.indexOf('Fresh Note'));
     expect(html.indexOf('Fresh Note')).toBeLessThan(html.indexOf('Middle Article'));
-    expect(html.indexOf('Middle Article')).toBeLessThan(html.indexOf('Deep Essay'));
 
     expect(html).toContain('href="/en/writings/fresh-note"');
     expect(html).toContain('href="/en/writings/middle-article"');
