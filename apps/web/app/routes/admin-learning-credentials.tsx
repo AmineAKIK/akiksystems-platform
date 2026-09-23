@@ -419,6 +419,12 @@ export default function AdminLearningCredentialsRoute() {
               <Heading level={2} size="sm">
                 Create Credential
               </Heading>
+              <Text size="sm" tone="muted">
+                Add future diplomas, professional titles, and certifications
+                through this same evidence model. Training context, source
+                evidence, and issuer verification stay optional and can evolve
+                without a credential-specific page or schema change.
+              </Text>
               <label>
                 <span>Kind</span>
                 <select defaultValue="certification" name="kind">
