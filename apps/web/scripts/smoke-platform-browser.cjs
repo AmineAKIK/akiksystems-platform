@@ -1521,6 +1521,210 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+async function assertWritingAdminAndPublic(page) {
+  await page.goto(origin + '/admin');
+  assert.equal(
+    await page.getByRole('link', { name: 'Writings', exact: true }).getAttribute('href'),
+    '/admin/writings',
+    'Private administration must expose the Writings workspace.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writings administration',
+      exact: true,
+    })
+    .waitFor();
+
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Writing',
+      exact: true,
+    }),
+  });
+  await createCard.locator('select[name="kind"]').selectOption('essay');
+  await createCard
+    .locator('select[name="editorialWeight"]')
+    .selectOption('major');
+  await createCard
+    .getByRole('button', { name: 'Create Writing', exact: true })
+    .click();
+  await page.getByText('Writing created.', { exact: true }).waitFor();
+
+  const writingCard = () =>
+    page.locator('section.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: /Architecture Without Page Builders|Untitled Writing/,
+      }),
+    }).last();
+
+  await writingCard().waitFor();
+  assert.match(
+    await writingCard().innerText(),
+    /ESSAY · MAJOR/,
+    'Writing kind and editorial weight must be explicit domain fields in admin.',
+  );
+
+  const saveLocale = async ({
+    index,
+    locale,
+    slug,
+    title,
+    summary,
+    body,
+  }) => {
+    let fieldset = writingCard().locator('fieldset').nth(index);
+    await fieldset.locator('input[name="slug"]').fill(slug);
+    await fieldset.locator('input[name="title"]').fill(title);
+    await fieldset.locator('textarea[name="summary"]').fill(summary);
+    await fieldset.locator('textarea[name="body"]').fill(body);
+    await fieldset
+      .getByRole('button', {
+        name: 'Save ' + locale + ' draft',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByText(locale + ' Writing draft saved.', { exact: true })
+      .waitFor();
+  };
+
+  await saveLocale({
+    index: 0,
+    locale: 'EN',
+    slug: 'architecture-without-page-builders',
+    title: 'Architecture Without Page Builders',
+    summary: 'Editorial content stays data-managed while page semantics remain code-defined.',
+    body: 'A Writing is content, not a layout definition.\n\nAKS-101 keeps the first renderer intentionally limited to controlled paragraphs.',
+  });
+  await saveLocale({
+    index: 1,
+    locale: 'FR',
+    slug: 'architecture-sans-page-builder',
+    title: 'Architecture sans page builder',
+    summary: 'Le contenu éditorial reste administrable tandis que la sémantique de page reste définie dans le code.',
+    body: 'Un Writing décrit du contenu, pas une mise en page.\n\nAKS-101 limite volontairement le premier renderer à des paragraphes contrôlés.',
+  });
+
+  let card = writingCard();
+  await card
+    .locator('fieldset')
+    .nth(0)
+    .getByRole('button', { name: 'Publish EN', exact: true })
+    .click();
+  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+
+  card = writingCard();
+  await card
+    .locator('fieldset')
+    .nth(1)
+    .getByRole('button', { name: 'Publish FR', exact: true })
+    .click();
+  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+
+  const targets = [
+    {
+      overview: '/en/writings',
+      detail: '/en/writings/architecture-without-page-builders',
+      heading: 'Writings',
+      title: 'Architecture Without Page Builders',
+      summary: 'Editorial content stays data-managed while page semantics remain code-defined.',
+      paragraphs: [
+        'A Writing is content, not a layout definition.',
+        'AKS-101 keeps the first renderer intentionally limited to controlled paragraphs.',
+      ],
+      alternateLocale: 'fr',
+      alternatePath: '/fr/ecrits/architecture-sans-page-builder',
+      kind: 'Essay',
+      weight: 'Major weight',
+    },
+    {
+      overview: '/fr/ecrits',
+      detail: '/fr/ecrits/architecture-sans-page-builder',
+      heading: 'Écrits',
+      title: 'Architecture sans page builder',
+      summary: 'Le contenu éditorial reste administrable tandis que la sémantique de page reste définie dans le code.',
+      paragraphs: [
+        'Un Writing décrit du contenu, pas une mise en page.',
+        'AKS-101 limite volontairement le premier renderer à des paragraphes contrôlés.',
+      ],
+      alternateLocale: 'en',
+      alternatePath: '/en/writings/architecture-without-page-builders',
+      kind: 'Essai',
+      weight: 'Poids majeur',
+    },
+  ];
+
+  for (const target of targets) {
+    const overviewResponse = await page.goto(origin + target.overview);
+    assert.equal(overviewResponse?.status(), 200);
+    await page
+      .getByRole('heading', { level: 1, name: target.heading, exact: true })
+      .waitFor();
+
+    const writingOverviewCard = page.locator('article.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: target.title,
+        exact: true,
+      }),
+    });
+    await writingOverviewCard.waitFor();
+    const overviewText = await writingOverviewCard.innerText();
+    assert.ok(overviewText.includes(target.summary));
+    assert.ok(overviewText.includes(target.kind));
+    assert.ok(overviewText.includes(target.weight));
+    assert.equal(
+      await writingOverviewCard.locator('a').getAttribute('href'),
+      target.detail,
+      'Each published Writing must remain independently deep-linkable.',
+    );
+
+    const detailResponse = await page.goto(origin + target.detail);
+    assert.equal(detailResponse?.status(), 200);
+    await page
+      .getByRole('heading', { level: 1, name: target.title, exact: true })
+      .waitFor();
+    const detailText = await page.locator('body').innerText();
+    assert.ok(detailText.includes(target.summary));
+    for (const paragraph of target.paragraphs) {
+      assert.ok(
+        detailText.includes(paragraph),
+        'Controlled Writing paragraphs must survive publication.',
+      );
+    }
+    assert.ok(
+      detailText.includes(
+        target.detail.startsWith('/fr/')
+          ? 'Structure contrôlée par le produit · contenu éditorial administrable.'
+          : 'Product-controlled structure · admin-managed editorial content.',
+      ),
+      'AKS-101 must expose a controlled renderer rather than arbitrary page composition.',
+    );
+    assert.equal(
+      await page
+        .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+        .getAttribute('href'),
+      target.alternatePath,
+      'Bilingual Writing deep routes must expose their published equivalent.',
+    );
+    await assertAxe(page);
+
+    const ssr = await page.context().request.get(origin + target.detail);
+    assert.equal(ssr.status(), 200);
+    const html = await ssr.text();
+    assert.match(html, new RegExp('<h1[^>]*>' + target.title));
+    assert.ok(
+      html.includes(target.paragraphs[0]),
+      'Writing deep content must be available in initial HTML.',
+    );
+  }
+}
+
 async function assertReusableSystemReferences(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
@@ -4873,6 +5077,7 @@ async function assertAxe(page) {
     await assertProtoCapGuidedDemo(browser);
     await assertOriaInteractiveEntry(browser);
     await assertTugeresStandardSystem(browser);
+    await assertWritingAdminAndPublic(page);
     await assertReusableSystemReferences(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
