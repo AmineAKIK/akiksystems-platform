@@ -38,6 +38,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
       'Content-Type': asset.mime_type,
       'Content-Disposition': `inline; filename="${safeFilename}"`,
+      'X-Robots-Tag': 'noindex, noarchive, nosnippet',
     },
   });
 }
