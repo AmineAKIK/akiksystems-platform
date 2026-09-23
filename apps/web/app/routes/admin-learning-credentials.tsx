@@ -397,7 +397,8 @@ export default function AdminLearningCredentialsRoute() {
                 those without becoming Training content.
               </Text>
               <div className="aks-proof-actions">
-                <Link href="/admin/learning">Training administration</Link>
+                <Link href="/admin/learning">Learning hub</Link>
+                <Link href="/admin/learning/trainings">Trainings</Link>
                 <Link href="/admin/learning/artifacts">LearningArtifacts</Link>
                 <Link href="/en/learning">Public Learning</Link>
               </div>
@@ -478,6 +479,12 @@ export default function AdminLearningCredentialsRoute() {
                 </Heading>
                 <Text size="sm" tone="muted">
                   {credential.kind} · {credential.issuer} · {credential.id}
+                </Text>
+                <Text size="sm" tone="muted">
+                  EN {credential.published_slug_en === null ? 'Draft' : 'Published'} · FR{' '}
+                  {credential.published_slug_fr === null ? 'Draft' : 'Published'} ·{' '}
+                  {credential.training_id === null ? 'Standalone' : 'Training connected'} ·{' '}
+                  {credential.source_asset_id === null ? 'No source document' : 'Source attached'}
                 </Text>
 
                 <Form className="aks-admin-form" method="post">
