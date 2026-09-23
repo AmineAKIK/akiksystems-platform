@@ -1350,6 +1350,7 @@ export default function AdminWritingsRoute() {
 
                     <Form
                       className="aks-admin-form"
+                      data-writing-asset-upload
                       encType="multipart/form-data"
                       method="post"
                     >
