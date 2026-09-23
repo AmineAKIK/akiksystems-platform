@@ -1,6 +1,6 @@
 import { getPublishedLearningArtifact } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
-import { data, type MetaDescriptor, useLoaderData } from 'react-router';
+import { data, useLoaderData } from 'react-router';
 
 import {
   isSentinelDossierArtifact,
@@ -8,12 +8,11 @@ import {
 } from '../components/sentinel-dossier-presentation';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
+import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
 
 import type { Route } from './+types/learning-artifact-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const canonicalOrigin = 'https://akiksystems.com';
-
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
     throw new Response('Learning artifact not found.', { status: 404 });
@@ -64,40 +63,28 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
+export function meta({ loaderData }: Route.MetaArgs) {
   if (loaderData === undefined) {
-    return [{ title: 'Learning · AkikSystems' }];
+    return buildNoIndexMeta('Learning · AkikSystems');
   }
 
   const artifact = loaderData.artifact;
-  const canonicalPath = artifactHref(artifact.locale, artifact.slug);
-  const canonicalUrl = `${canonicalOrigin}${canonicalPath}`;
-  const descriptors: MetaDescriptor[] = [
-    { title: `${artifact.title} · AkikSystems` },
-    { name: 'description', content: artifact.summary },
-    { name: 'robots', content: 'index, follow, max-snippet:-1' },
-    { tagName: 'link', rel: 'canonical', href: canonicalUrl },
-    {
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: artifact.locale,
-      href: canonicalUrl,
-    },
-  ];
-
-  if (artifact.alternate !== null) {
-    descriptors.push({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: artifact.alternate.locale,
-      href: `${canonicalOrigin}${artifactHref(
-        artifact.alternate.locale,
-        artifact.alternate.slug,
-      )}`,
-    });
-  }
-
-  return descriptors;
+  return buildLocalizedPublicMeta({
+    title: artifact.title,
+    description: artifact.summary,
+    locale: artifact.locale,
+    canonicalPath: artifactHref(artifact.locale, artifact.slug),
+    alternate:
+      artifact.alternate === null
+        ? null
+        : {
+            locale: artifact.alternate.locale,
+            path: artifactHref(
+              artifact.alternate.locale,
+              artifact.alternate.slug,
+            ),
+          },
+  });
 }
 
 export default function LearningArtifactDetailRoute() {
