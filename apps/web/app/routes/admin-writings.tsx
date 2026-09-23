@@ -1333,6 +1333,166 @@ export default function AdminWritingsRoute() {
                   </fieldset>
                 </Form>
 
+                <section className="aks-admin-card" data-writing-assets>
+                  <div className="aks-proof-stack">
+                    <Heading level={3} size="sm">
+                      Contextual media
+                    </Heading>
+                    <Text size="sm" tone="muted">
+                      Upload images inside this Writing context. Alt text is
+                      localized and required in EN and FR; captions are optional.
+                      There is no global media-library workflow.
+                    </Text>
+
+                    <Form
+                      className="aks-admin-form"
+                      encType="multipart/form-data"
+                      method="post"
+                    >
+                      <input
+                        name="_intent"
+                        type="hidden"
+                        value="upload-asset"
+                      />
+                      <input name="writingId" type="hidden" value={writing.id} />
+                      <label>
+                        <span>Image</span>
+                        <input
+                          accept="image/jpeg,image/png,image/webp,image/avif"
+                          name="file"
+                          required
+                          type="file"
+                        />
+                      </label>
+                      <label>
+                        <span>English alt text</span>
+                        <input name="altEn" required type="text" />
+                      </label>
+                      <label>
+                        <span>English caption</span>
+                        <textarea name="captionEn" rows={2} />
+                      </label>
+                      <label>
+                        <span>French alt text</span>
+                        <input name="altFr" required type="text" />
+                      </label>
+                      <label>
+                        <span>French caption</span>
+                        <textarea name="captionFr" rows={2} />
+                      </label>
+                      <Text size="sm" tone="muted">
+                        JPEG, PNG, WebP, or AVIF · maximum 10 MiB.
+                      </Text>
+                      <Button emphasis="quiet" type="submit">
+                        Upload Writing image
+                      </Button>
+                    </Form>
+
+                    {writing.assets.length === 0 ? (
+                      <Text size="sm" tone="muted">
+                        No contextual media is linked to this Writing yet.
+                      </Text>
+                    ) : (
+                      <div className="aks-admin-asset-list">
+                        {writing.assets.map((asset) => (
+                          <article className="aks-admin-asset" key={asset.id}>
+                            <div className="aks-proof-stack">
+                              <Text tone="strong">
+                                {asset.original_filename}
+                              </Text>
+                              <Text size="sm" tone="muted">
+                                {asset.mime_type} · {asset.byte_size} bytes
+                                {asset.width !== null && asset.height !== null
+                                  ? ` · ${asset.width}×${asset.height}`
+                                  : ''}
+                              </Text>
+                              <Link
+                                href={`/admin/writings/${writing.id}/assets/${asset.id}`}
+                              >
+                                Inspect private image
+                              </Link>
+
+                              <Form method="post" className="aks-admin-form">
+                                <input
+                                  name="_intent"
+                                  type="hidden"
+                                  value="update-asset-metadata"
+                                />
+                                <input
+                                  name="writingId"
+                                  type="hidden"
+                                  value={writing.id}
+                                />
+                                <input
+                                  name="assetId"
+                                  type="hidden"
+                                  value={asset.id}
+                                />
+                                <label>
+                                  <span>English alt text</span>
+                                  <input
+                                    defaultValue={asset.alt_en ?? ''}
+                                    name="altEn"
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  <span>English caption</span>
+                                  <textarea
+                                    defaultValue={asset.caption_en ?? ''}
+                                    name="captionEn"
+                                    rows={2}
+                                  />
+                                </label>
+                                <label>
+                                  <span>French alt text</span>
+                                  <input
+                                    defaultValue={asset.alt_fr ?? ''}
+                                    name="altFr"
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  <span>French caption</span>
+                                  <textarea
+                                    defaultValue={asset.caption_fr ?? ''}
+                                    name="captionFr"
+                                    rows={2}
+                                  />
+                                </label>
+                                <Button emphasis="quiet" type="submit">
+                                  Save image metadata
+                                </Button>
+                              </Form>
+
+                              <Form method="post">
+                                <input
+                                  name="_intent"
+                                  type="hidden"
+                                  value="delete-asset"
+                                />
+                                <input
+                                  name="writingId"
+                                  type="hidden"
+                                  value={writing.id}
+                                />
+                                <input
+                                  name="assetId"
+                                  type="hidden"
+                                  value={asset.id}
+                                />
+                                <Button emphasis="quiet" type="submit">
+                                  Delete unused image
+                                </Button>
+                              </Form>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
                 <div className="aks-proof-stack">
                   {(['en', 'fr'] as const).map((locale) => {
                     const slug =
@@ -1407,6 +1567,16 @@ export default function AdminWritingsRoute() {
                             />
                           </label>
                           <WritingBodyEditor
+                            assets={writing.assets.map((asset) => ({
+                              id: asset.id,
+                              label: asset.original_filename,
+                              altText:
+                                locale === 'en' ? asset.alt_en : asset.alt_fr,
+                              caption:
+                                locale === 'en'
+                                  ? asset.caption_en
+                                  : asset.caption_fr,
+                            }))}
                             initialDocument={editorDocument}
                             locale={locale}
                           />
