@@ -1653,9 +1653,14 @@ async function assertWritingAdminAndPublic(page) {
       'The persisted draft must reload as a Tiptap document.',
     );
     assert.equal(
-      persistedDocument.content.length,
-      body.split(/\n\s*\n/).length,
-      'The persisted Tiptap draft must survive the admin round-trip.',
+      persistedDocument.version,
+      1,
+      'The persisted Tiptap draft must remain on Writing schema v1.',
+    );
+    assert.equal(
+      await fieldset.locator('input[name="body"]').inputValue(),
+      body,
+      'The persisted Writing text projection must survive the admin round-trip.',
     );
   };
 
