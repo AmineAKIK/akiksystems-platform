@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   parseWritingDocument,
   validateWritingDocument,
+  writingDocumentAssetIds,
   writingDocumentFromPlainText,
   writingDocumentToPlainText,
 } from './writing-document.js';
@@ -91,6 +92,9 @@ describe('Writing rich-content schema v1', () => {
     };
 
     expect(parseWritingDocument(document)).toEqual(document);
+    expect(
+      writingDocumentAssetIds(document as ReturnType<typeof parseWritingDocument> & {}),
+    ).toEqual([assetA, assetB]);
   });
 
   it('rejects page-builder semantics, marks, h1, and unjustified tables', () => {
