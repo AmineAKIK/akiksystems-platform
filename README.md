@@ -119,6 +119,18 @@ belongs to later L6 work. The initial renderer intentionally accepts plain text
 paragraphs only, keeping page semantics code-owned until the Tiptap and
 rich-content schema tickets earn a broader controlled document model.
 
+AKS-102 adds reusable editorial Categories as their own stable identities rather
+than copying category labels into individual Writings. Category slug, name,
+description, and publication are localized independently in EN/FR; the
+Writing↔Category relation is ordered and many-to-many. A Writing publication
+snapshot captures the Category identities assigned at publication time, while
+current published Category snapshots resolve the localized labels and deep
+routes. This keeps draft assignment edits isolated until the Writing is
+republished, keeps draft Category copy isolated until that Category locale is
+published, and prevents missing French Category copy from falling back to
+English. Category routes organize published Writings without introducing a
+generic filter UI, styling controls, or page-builder semantics.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
