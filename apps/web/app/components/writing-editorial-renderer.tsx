@@ -78,7 +78,11 @@ function WritingImage({
         decoding="async"
         height={asset.height ?? undefined}
         loading="lazy"
-        sizes={srcSet === undefined ? undefined : '(max-width: 48rem) 100vw, 48rem'}
+        sizes={
+          srcSet === undefined
+            ? undefined
+            : '(max-width: 48rem) calc(100vw - 3rem), 64rem'
+        }
         src={assetHref(asset.id)}
         srcSet={srcSet}
         width={asset.width ?? undefined}

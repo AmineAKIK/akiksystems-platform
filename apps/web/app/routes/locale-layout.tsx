@@ -15,6 +15,7 @@ interface ExperienceMatchData {
   localContext?: {
     title: string;
     alternateHref?: string | null;
+    shellMode?: 'reading';
   };
 }
 
@@ -29,9 +30,11 @@ function localContext(matches: ReturnType<typeof useMatches>) {
   return {
     title: null,
     alternateHref: undefined,
+    shellMode: undefined,
   } satisfies {
     title: string | null;
     alternateHref?: string | null;
+    shellMode?: 'reading';
   };
 }
 
@@ -46,6 +49,7 @@ export default function LocaleLayout() {
       alternateHref={context.alternateHref}
       currentTitle={context.title}
       locale={locale as Locale}
+      mode={context.shellMode ?? 'default'}
       pathname={location.pathname}
     >
       <Outlet />

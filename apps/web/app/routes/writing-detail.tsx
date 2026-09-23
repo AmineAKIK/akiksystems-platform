@@ -40,6 +40,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       },
       localContext: {
         title: writing.title,
+        shellMode: 'reading' as const,
         alternateHref:
           writing.alternate === null
             ? null
