@@ -12,7 +12,7 @@ export interface LearningArtifactPublicationSnapshot {
   title: string;
   summary: string;
   body: string | null;
-  trainingId: string;
+  trainingId: string | null;
   systemId: string | null;
   sourceAssetId: string | null;
   editorialPosition: number;
@@ -295,10 +295,12 @@ export async function getPublishedLearningArtifact(
       .where('learning_artifact_id', '=', row.learning_artifact_id)
       .where('locale', '=', alternateLocale)
       .executeTakeFirst(),
-    resolveTraining(db, {
-      locale: input.locale,
-      trainingId: snapshot.trainingId,
-    }),
+    snapshot.trainingId === null
+      ? Promise.resolve(null)
+      : resolveTraining(db, {
+          locale: input.locale,
+          trainingId: snapshot.trainingId,
+        }),
     snapshot.systemId === null
       ? Promise.resolve(null)
       : getPublishedSystemReferenceById(db, {
