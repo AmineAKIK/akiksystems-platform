@@ -216,6 +216,26 @@ controls. Category and Tag routes reuse the same feed component, so a published
 Writing carries one editorial signal consistently across the editorial surface
 without turning content management into page building.
 
+AKS-112 gives Writing deep links a dedicated long-form reading composition.
+The page uses the wide platform container only as an outer canvas: prose remains
+on a controlled 44rem measure with increased line-height, while code, contextual
+media, and galleries can use a wider 64rem track. Code preserves whitespace and
+scrolls inside its own block rather than widening the document; published images
+keep responsive source variants, intrinsic dimensions, lazy loading, localized
+alt text, and captions.
+
+The reader is one semantic article on desktop and mobile. Its title, summary,
+taxonomy, controlled rich document, publication boundary note, and return path
+retain the existing bilingual deep-route contract. Related Systems move after
+the reading flow so supporting evidence does not interrupt the article itself.
+
+Writing detail routes also opt the existing global Experience Shell into a
+`reading` mode. The same Home/destination navigation, local context, locale
+switch, skip link, and mobile disclosure remain available, but the desktop shell
+uses a smaller fixed footprint so navigation stays present without competing
+with the article. The admin preview reuses the same reader component, preserving
+preview/public rendering parity without adding a second presentation system.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
