@@ -9,6 +9,19 @@ export type {
   PublishedTrainingListItem,
   TrainingPublicationSnapshot,
 } from './training-publication.js';
+export {
+  getPublishedCredential,
+  listPublishedCredentials,
+  listPublishedCredentialsForTraining,
+  publishCredentialLocalization,
+  unpublishCredentialLocalization,
+} from './credential-publication.js';
+export type {
+  CredentialPublicationSnapshot,
+  PublishedCredential,
+  PublishedCredentialListItem,
+  PublicCredentialTraining,
+} from './credential-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
 export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
 export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
@@ -76,6 +89,15 @@ export type {
   AssetRow,
   AssetsTable,
   AssetUpdate,
+  CredentialLocalizationRow,
+  CredentialLocalizationsTable,
+  CredentialLocalizationUpdate,
+  CredentialPublicationRow,
+  CredentialPublicationsTable,
+  CredentialPublicationUpdate,
+  CredentialRow,
+  CredentialsTable,
+  CredentialUpdate,
   Database,
   ExperienceLocalizationRow,
   ExperienceLocalizationUpdate,
@@ -86,6 +108,9 @@ export type {
   NewAdminAuditEventRow,
   NewAssetLocalizationRow,
   NewAssetRow,
+  NewCredentialLocalizationRow,
+  NewCredentialPublicationRow,
+  NewCredentialRow,
   NewExperienceLocalizationRow,
   NewExperienceRow,
   NewProfileCapabilityGroupLocalizationRow,
