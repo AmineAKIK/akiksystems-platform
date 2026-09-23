@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality:
@@ -50,6 +50,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -69,11 +71,18 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Export generated lockfile for AKS-105
-        uses: actions/upload-artifact@v4
-        with:
-          name: aks105-pnpm-lock
-          path: pnpm-lock.yaml
+      - name: Commit generated lockfile for AKS-105
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "pnpm-lock.yaml is already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "Regenerate pnpm lockfile for Tiptap (AKS-105)"
+          git push origin HEAD:${GITHUB_HEAD_REF}
 
       - name: Verify configuration contracts
         run: pnpm config:verify
