@@ -60,6 +60,7 @@
     "db:bootstrap-oria-qualification": "pnpm --filter @akiksystems/db db:bootstrap-oria-qualification",
     "db:bootstrap-protocap-qualification": "pnpm --filter @akiksystems/db db:bootstrap-protocap-qualification",
     "db:bootstrap-training-qualification": "pnpm --filter @akiksystems/db db:bootstrap-training-qualification",
+    "db:verify-credential-domain": "pnpm --filter @akiksystems/db db:verify-credential-domain",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
