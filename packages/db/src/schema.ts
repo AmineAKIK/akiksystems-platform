@@ -435,6 +435,13 @@ export interface WritingTagsTable {
   created_at: TimestampColumn;
 }
 
+export interface WritingSystemsTable {
+  writing_id: string;
+  system_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -691,6 +698,10 @@ export type WritingTagRow = Selectable<WritingTagsTable>;
 export type NewWritingTagRow = Insertable<WritingTagsTable>;
 export type WritingTagUpdate = Updateable<WritingTagsTable>;
 
+export type WritingSystemRow = Selectable<WritingSystemsTable>;
+export type NewWritingSystemRow = Insertable<WritingSystemsTable>;
+export type WritingSystemUpdate = Updateable<WritingSystemsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -767,6 +778,7 @@ export interface Database {
   tag_localizations: TagLocalizationsTable;
   tag_publications: TagPublicationsTable;
   writing_tags: WritingTagsTable;
+  writing_systems: WritingSystemsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;
