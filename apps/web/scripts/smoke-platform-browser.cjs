@@ -3106,6 +3106,190 @@ async function assertSentinelDossierJourney(browser, adminPage) {
     );
   }
 }
+
+
+async function assertLearningInspectionDepth(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await context.newPage();
+    const targets = [
+      {
+        locale: 'en',
+        overviewPath: '/en/learning',
+        artifactPath: '/en/learning/artifacts/sentinel-dwwm-project-dossier',
+        sourcePath: '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
+        systemPath: '/en/systems/sentinel',
+        heading: 'Sentinel — DWWM Project Dossier',
+        summary:
+          'First-class learning evidence connecting the DWWM training to Sentinel through problem framing, architecture, implementation, security, testing, deployment, and documented limits.',
+        inspection:
+          'The repository documents an immutable examination baseline at release v1.0.0-rc.9',
+        inspectLabel: 'Inspect evidence',
+        sourceLabel: 'Open original PDF',
+        systemEvidenceHeading: 'Connected learning evidence',
+        systemInspectLabel: 'Inspect learning evidence',
+      },
+      {
+        locale: 'fr',
+        overviewPath: '/fr/apprentissage',
+        artifactPath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+        sourcePath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+        systemPath: '/fr/systems/sentinel',
+        heading: 'Sentinel — dossier de projet DWWM',
+        summary:
+          'Preuve d’apprentissage de premier rang reliant la formation DWWM à Sentinel à travers le cadrage du besoin, l’architecture, l’implémentation, la sécurité, les tests, le déploiement et les limites documentées.',
+        inspection:
+          'Le dépôt documente une baseline d’examen immuable à la release v1.0.0-rc.9',
+        inspectLabel: 'Inspecter la preuve',
+        sourceLabel: 'Ouvrir le PDF original',
+        systemEvidenceHeading: 'Preuves d’apprentissage liées',
+        systemInspectLabel: 'Inspecter la preuve',
+      },
+    ];
+
+    for (const target of targets) {
+      const implicitSourceRequests = [];
+      const sourceUrl = origin + target.sourcePath;
+      const onRequest = (request) => {
+        if (request.url() === sourceUrl) {
+          implicitSourceRequests.push(request.url());
+        }
+      };
+      page.on('request', onRequest);
+
+      const overviewResponse = await page.goto(origin + target.overviewPath);
+      assert.equal(overviewResponse?.status(), 200);
+
+      const overviewCard = page
+        .locator('.aks-learning-evidence-card[data-evidence-kind="learning-artifact"]')
+        .filter({
+          has: page.getByRole('heading', {
+            level: 3,
+            name: target.heading,
+            exact: true,
+          }),
+        });
+      await overviewCard.waitFor();
+      assert.ok(
+        (await overviewCard.innerText()).includes(target.summary),
+        target.overviewPath +
+          ' must give a hurried visitor useful Sentinel substance before opening the evidence.',
+      );
+      assert.equal(
+        await overviewCard
+          .getByRole('link', { name: target.inspectLabel, exact: true })
+          .getAttribute('href'),
+        target.artifactPath,
+        target.overviewPath +
+          ' must offer an explicit transition from summary depth to inspection depth.',
+      );
+      assert.equal(
+        implicitSourceRequests.length,
+        0,
+        target.overviewPath +
+          ' must not fetch the source PDF while the visitor stays at summary depth.',
+      );
+
+      const artifactResponse = await page.goto(origin + target.artifactPath);
+      assert.equal(artifactResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+
+      const artifactText = await page.locator('body').innerText();
+      assert.ok(
+        artifactText.includes(target.summary) && artifactText.includes(target.inspection),
+        target.artifactPath +
+          ' must provide substantial native Web inspection before the original PDF is opened.',
+      );
+      assert.equal(
+        await page.locator('.aks-dossier-section').count(),
+        10,
+        target.artifactPath +
+          ' must retain the complete native ten-section inspection path.',
+      );
+      assert.equal(
+        implicitSourceRequests.length,
+        0,
+        target.artifactPath +
+          ' must not fetch the source PDF implicitly while rendering native inspection depth.',
+      );
+
+      const sourceLink = page.getByRole('link', {
+        name: target.sourceLabel,
+        exact: true,
+      });
+      await sourceLink.waitFor();
+      assert.equal(
+        await sourceLink.getAttribute('href'),
+        target.sourcePath,
+        target.artifactPath +
+          ' must expose the original PDF as an explicit deeper-inspection choice.',
+      );
+      assert.equal(
+        await page.locator('.aks-dossier-context a[href="' + target.systemPath + '"]').count(),
+        1,
+        target.artifactPath +
+          ' must expose the connected Sentinel System without collapsing it into Learning.',
+      );
+
+      const sourceResponse = await context.request.get(sourceUrl);
+      assert.equal(
+        sourceResponse.status(),
+        200,
+        target.sourcePath + ' must remain available to a deep evaluator.',
+      );
+      assert.equal(
+        sourceResponse.headers()['content-type'],
+        'application/pdf',
+        target.sourcePath + ' must remain the original-document surface.',
+      );
+      assert.match(
+        sourceResponse.headers()['x-robots-tag'] ?? '',
+        /noindex/i,
+        target.sourcePath +
+          ' must remain subordinate to the autonomous HTML inspection route.',
+      );
+
+      const systemResponse = await page.goto(origin + target.systemPath);
+      assert.equal(systemResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: 'Sentinel', exact: true })
+        .waitFor();
+      await page
+        .getByRole('heading', {
+          level: 2,
+          name: target.systemEvidenceHeading,
+          exact: true,
+        })
+        .waitFor();
+      const systemEvidence = page
+        .locator('.aks-system-learning-evidence-card')
+        .filter({
+          has: page.getByRole('heading', {
+            level: 3,
+            name: target.heading,
+            exact: true,
+          }),
+        });
+      await systemEvidence.waitFor();
+      assert.equal(
+        await systemEvidence
+          .getByRole('link', { name: target.systemInspectLabel, exact: true })
+          .getAttribute('href'),
+        target.artifactPath,
+        target.systemPath +
+          ' must let the deep evaluator return to the same published Learning evidence.',
+      );
+
+      page.off('request', onRequest);
+      await assertAxe(page);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -4536,6 +4720,7 @@ async function assertAxe(page) {
     await assertLearningAdminWorkspace(page);
     await assertDwwmTrainingJourney(browser, page);
     await assertSentinelDossierJourney(browser, page);
+    await assertLearningInspectionDepth(browser);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
