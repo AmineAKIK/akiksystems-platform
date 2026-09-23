@@ -29,9 +29,25 @@ pnpm content:bootstrap-l4-reference-systems
 
 That command provisions ProtoCap, Oria Nutrition, and Tugères and publishes
 their EN/FR snapshots. Sentinel remains domain/admin content rather than a
-migration fixture. A production recovery is expected to restore PostgreSQL and
-object storage together; bootstrap scripts are not a substitute for a content
-backup or restore procedure.
+migration fixture.
+
+The verified DWWM Training can be provisioned independently and idempotently
+with:
+
+```sh
+pnpm content:bootstrap-dwwm
+```
+
+This creates the STUDI Full-Stack Web & Mobile Developer / Développeur web et
+web mobile Training for the level-5 Professional Title RNCP 37674, publishes EN/FR, keeps
+the state as in progress, and intentionally leaves dates unset because the
+current internal source does not establish reliable start/end dates. The
+command does not create the Sentinel dossier; that remains separate
+LearningArtifact content.
+
+A production recovery is expected to restore PostgreSQL and object storage
+together; bootstrap scripts are not a substitute for a content backup or
+restore procedure.
 
 ## Continuous integration
 

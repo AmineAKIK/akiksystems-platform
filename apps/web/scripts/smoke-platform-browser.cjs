@@ -2154,6 +2154,123 @@ async function assertLearningAdminWorkspace(page) {
   );
 }
 
+function bootstrapL5DwwmTraining() {
+  execFileSync('pnpm', ['content:bootstrap-dwwm'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertDwwmTrainingJourney(browser, adminPage) {
+  bootstrapL5DwwmTraining();
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        overviewPath: '/en/learning',
+        detailPath: '/en/learning/full-stack-web-mobile-developer',
+        heading: 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
+        summary: 'STUDI training currently in progress toward the level-5 Professional Title RNCP 37674 in web and web-mobile development.',
+        metadata: 'Dates not specified · In progress',
+        body: 'This STUDI training prepares the French Ministry of Labour Professional Title',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/developpeur-web-web-mobile',
+        emptyEvidence: 'No published evidence is connected to this Training yet.',
+      },
+      {
+        overviewPath: '/fr/apprentissage',
+        detailPath: '/fr/apprentissage/developpeur-web-web-mobile',
+        heading: 'Développeur web et web mobile — Titre professionnel RNCP 37674',
+        summary: 'Formation STUDI actuellement en cours vers le titre professionnel Développeur web et web mobile de niveau 5 (RNCP 37674).',
+        metadata: 'Dates non renseignées · En cours',
+        body: 'Cette formation STUDI prépare au titre professionnel « Développeur web et web mobile »',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/full-stack-web-mobile-developer',
+        emptyEvidence: 'Aucune preuve publiée n’est encore reliée à cette formation.',
+      },
+    ];
+
+    for (const target of targets) {
+      const overviewResponse = await page.goto(origin + target.overviewPath);
+      assert.equal(overviewResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 3, name: target.heading, exact: true })
+        .waitFor();
+      assert.equal(
+        await page.locator('a[href="' + target.detailPath + '"]').count(),
+        1,
+        target.overviewPath + ' must expose the real DWWM Training deep link.',
+      );
+
+      const detailResponse = await page.goto(origin + target.detailPath);
+      assert.equal(detailResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+      const detailText = await page.locator('body').innerText();
+      assert.ok(detailText.includes('STUDI'));
+      assert.ok(detailText.includes(target.summary));
+      assert.ok(detailText.includes(target.metadata));
+      assert.ok(detailText.includes(target.body));
+      assert.ok(
+        detailText.includes(target.emptyEvidence),
+        'AKS-092 must integrate Training context without fabricating AKS-093 evidence.',
+      );
+      assert.equal(
+        await page
+          .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+          .getAttribute('href'),
+        target.alternatePath,
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        'https://akiksystems.com' + target.detailPath,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of [
+      '/en/learning/full-stack-web-mobile-developer',
+      '/fr/apprentissage/developpeur-web-web-mobile',
+    ]) {
+      const response = await page.goto(origin + path);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        path + ' DWWM Training detail must not overflow at 320px.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+
+  await adminPage.goto(origin + '/admin/learning/trainings');
+  const dwwmCard = adminPage.locator('section').filter({
+    has: adminPage.getByRole('heading', {
+      level: 2,
+      name: 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
+      exact: true,
+    }),
+  });
+  await dwwmCard.waitFor();
+  assert.equal(await dwwmCard.locator('input[name="provider"]').first().inputValue(), 'STUDI');
+  assert.equal(await dwwmCard.locator('select[name="state"]').first().inputValue(), 'in_progress');
+  assert.equal(await dwwmCard.locator('input[name="startDate"]').first().inputValue(), '');
+  assert.equal(await dwwmCard.locator('input[name="endDate"]').first().inputValue(), '');
+}
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -3580,6 +3697,7 @@ async function assertAxe(page) {
     await assertLearningOverviewExperience(browser);
     await assertLearningArtifactAdmin(page);
     await assertLearningAdminWorkspace(page);
+    await assertDwwmTrainingJourney(browser, page);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);

@@ -27,6 +27,48 @@ function trainingHref(locale: 'en' | 'fr', slug: string): string {
     : `/${locale}/learning/${slug}`;
 }
 
+
+function trainingDateRange(
+  training: {
+    locale: 'en' | 'fr';
+    startDate: string | null;
+    endDate: string | null;
+  },
+): string {
+  if (training.startDate === null && training.endDate === null) {
+    return training.locale === 'fr'
+      ? 'Dates non renseignées'
+      : 'Dates not specified';
+  }
+
+  if (training.startDate !== null && training.endDate !== null) {
+    return `${training.startDate} → ${training.endDate}`;
+  }
+
+  if (training.startDate !== null) {
+    return training.locale === 'fr'
+      ? `Depuis ${training.startDate}`
+      : `Since ${training.startDate}`;
+  }
+
+  return training.locale === 'fr'
+    ? `Jusqu’au ${training.endDate}`
+    : `Until ${training.endDate}`;
+}
+
+function trainingStateLabel(
+  state: 'planned' | 'in_progress' | 'completed',
+  locale: 'en' | 'fr',
+): string {
+  const labels = {
+    planned: locale === 'fr' ? 'Prévue' : 'Planned',
+    in_progress: locale === 'fr' ? 'En cours' : 'In progress',
+    completed: locale === 'fr' ? 'Terminée' : 'Completed',
+  } as const;
+
+  return labels[state];
+}
+
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
@@ -137,8 +179,8 @@ export default function LearningDetailRoute() {
             </Heading>
             <Text>{training.summary}</Text>
             <Text size="sm" tone="muted">
-              {training.startDate ?? '—'} → {training.endDate ?? '—'} ·{' '}
-              {training.state}
+              {trainingDateRange(training)} ·{' '}
+              {trainingStateLabel(training.state, training.locale)}
             </Text>
           </section>
 

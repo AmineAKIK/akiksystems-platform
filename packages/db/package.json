@@ -39,6 +39,7 @@
     "db:verify-system-proof-transparency": "tsx src/cli/verify-system-proof-transparency.ts",
     "db:verify-system-references": "tsx src/cli/verify-system-references.ts",
     "db:verify-training-domain": "tsx src/cli/verify-training-domain.ts",
+    "db:verify-dwwm-training": "tsx src/cli/verify-dwwm-training.ts",
     "db:verify-credential-domain": "tsx src/cli/verify-credential-domain.ts",
     "db:verify-learning-artifact-domain": "tsx src/cli/verify-learning-artifact-domain.ts",
     "db:verify-system-publication-snapshots": "tsx src/cli/verify-system-publication-snapshots.ts",
