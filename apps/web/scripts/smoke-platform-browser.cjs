@@ -1969,7 +1969,11 @@ async function assertFutureCredentialExtensibility(page) {
     const detailText = await page.locator('body').innerText();
     assert.ok(detailText.includes(target.summary));
     assert.ok(detailText.includes(target.detail));
-    assert.ok(detailText.includes(target.kind));
+    assert.equal(
+      (await page.locator('.aks-proof-eyebrow').first().textContent())?.trim(),
+      target.kind,
+      'The generic Credential renderer must expose the localized evidence kind.',
+    );
     assert.ok(detailText.includes('Future Credential Authority'));
     assert.equal(
       await page
