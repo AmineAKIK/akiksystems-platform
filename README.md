@@ -173,9 +173,23 @@ and other page-builder semantics. Existing AKS-105 documents are migrated to
 Publishing freezes the validated rich document into the Writing publication
 snapshot and also keeps the plain-text `body` projection for compatibility.
 Older snapshots without the rich document remain readable by deriving schema v1
-from their stored body. AKS-109 owns the final public semantic renderer; until
-then the current public Writing route can continue using the compatibility text
-projection without losing the structured publication source.
+from their stored body.
+
+AKS-109 makes the structured document the public rendering source. One shared
+React renderer maps schema v1 to controlled semantic HTML: paragraphs, H2/H3,
+ordered and unordered lists, block quotations, code blocks, callouts, images,
+and galleries. Public and authenticated preview routes use the same renderer.
+Text is rendered as React text content rather than injected HTML, and the schema
+still rejects marks, raw HTML, arbitrary attributes, styles, columns, and
+templates.
+
+Writing media stays private in object storage. Public image routes only serve an
+Asset UUID when that UUID is frozen into the requested localized Writing
+publication snapshot; authenticated previews use the private admin asset route.
+The renderer consumes the frozen localized alt text/caption and dimensions from
+the snapshot, so editorial metadata cannot drift after publication. The admin
+Tiptap surface exposes only schema-v1 block controls and therefore remains an
+editor, not a page builder.
 
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
