@@ -10,6 +10,20 @@
   gap: var(--aks-space-5);
 }
 
+.aks-learning-overview,
+.aks-learning-overview .aks-container,
+.aks-learning-overview .aks-proof-stack,
+.aks-learning-overview section,
+.aks-learning-overview article {
+  min-width: 0;
+}
+
+.aks-learning-overview .aks-heading,
+.aks-learning-overview .aks-text,
+.aks-learning-overview .aks-link {
+  overflow-wrap: anywhere;
+}
+
 .aks-proof-eyebrow {
   text-transform: uppercase;
   letter-spacing: var(--aks-tracking-label);
