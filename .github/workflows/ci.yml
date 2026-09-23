@@ -67,7 +67,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libvips-tools
 
       - name: Install locked dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Export generated lockfile for AKS-105
+        uses: actions/upload-artifact@v4
+        with:
+          name: aks105-pnpm-lock
+          path: pnpm-lock.yaml
 
       - name: Verify configuration contracts
         run: pnpm config:verify
