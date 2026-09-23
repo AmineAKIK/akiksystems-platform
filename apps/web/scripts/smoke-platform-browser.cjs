@@ -2012,6 +2012,290 @@ async function assertWritingCategories(page) {
   }
 }
 
+async function assertWritingTags(page) {
+  await page.goto(origin + '/admin/writings');
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Manage tags', exact: true })
+      .getAttribute('href'),
+    '/admin/writings/tags',
+    'Writings administration must expose reusable Tag management.',
+  );
+
+  await page.goto(origin + '/admin/writings/tags');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writing tags',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[name="layout"], [name="template"], [name="style"]').count(),
+    0,
+    'Tag administration must not expose page-builder controls.',
+  );
+
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Tag',
+      exact: true,
+    }),
+  });
+  await createCard.locator('input[name="canonicalKey"]').fill('software-architecture');
+  await createCard
+    .getByRole('button', { name: 'Create Tag', exact: true })
+    .click();
+  await page.getByText('Tag created.', { exact: true }).waitFor();
+
+  const tagCard = () =>
+    page.locator('section.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: /Software architecture|software-architecture/,
+      }),
+    }).last();
+
+  await tagCard().waitFor();
+
+  await createCard.locator('input[name="canonicalKey"]').fill('software-architecture');
+  await createCard
+    .getByRole('button', { name: 'Create Tag', exact: true })
+    .click();
+  await page
+    .getByText('A Tag with this canonical key already exists.', { exact: true })
+    .waitFor();
+
+  assert.equal(
+    await page.locator('section.aks-admin-card').filter({
+      has: page.getByText('Canonical key · software-architecture', {
+        exact: true,
+      }),
+    }).count(),
+    1,
+    'Canonical Tag identity must be deduplicated in admin.',
+  );
+
+  const saveTagLocale = async ({ locale, slug, name }) => {
+    const fieldset = tagCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
+    await fieldset.locator('input[name="slug"]').fill(slug);
+    await fieldset.locator('input[name="name"]').fill(name);
+    await fieldset
+      .getByRole('button', {
+        name: 'Save ' + locale + ' Tag draft',
+        exact: true,
+      })
+      .click();
+    await page.getByText(locale + ' Tag draft saved.', { exact: true }).waitFor();
+  };
+
+  await saveTagLocale({
+    locale: 'EN',
+    slug: 'software-architecture',
+    name: 'Software architecture',
+  });
+  await saveTagLocale({
+    locale: 'FR',
+    slug: 'architecture-logicielle',
+    name: 'Architecture logicielle',
+  });
+
+  await tagCard()
+    .getByRole('group', { name: 'EN', exact: true })
+    .getByRole('button', { name: 'Publish EN', exact: true })
+    .click();
+  await page.getByText('EN Tag published.', { exact: true }).waitFor();
+
+  await tagCard()
+    .getByRole('group', { name: 'FR', exact: true })
+    .getByRole('button', { name: 'Publish FR', exact: true })
+    .click();
+  await page.getByText('FR Tag published.', { exact: true }).waitFor();
+  await assertAxe(page);
+
+  await page.goto(origin + '/admin/writings');
+  const writingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  const tagGroup = writingCard.getByRole('group', {
+    name: 'Tags',
+    exact: true,
+  });
+  const tagCheckbox = tagGroup.getByRole('checkbox', {
+    name: 'Software architecture',
+    exact: true,
+  });
+  await tagCheckbox.check();
+  await tagGroup
+    .getByRole('button', { name: 'Save tags', exact: true })
+    .click();
+  await page.getByText('Writing tags saved as draft.', { exact: true }).waitFor();
+
+  const englishDetail = '/en/writings/architecture-without-page-builders';
+  const frenchDetail = '/fr/ecrits/architecture-sans-page-builder';
+
+  await page.goto(origin + englishDetail + '?tag-publication=before-republish');
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Software architecture', exact: true })
+      .count(),
+    0,
+    'Draft Tag assignments must not leak into an existing Writing snapshot.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  let refreshedWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await refreshedWritingCard
+    .getByRole('group', { name: 'EN', exact: true })
+    .getByRole('button', { name: 'Publish update EN', exact: true })
+    .click();
+  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+
+  await page.goto(origin + englishDetail + '?tag-publication=en');
+  const englishTagLink = page.getByRole('link', {
+    name: 'Software architecture',
+    exact: true,
+  });
+  await englishTagLink.waitFor();
+  assert.equal(
+    await englishTagLink.getAttribute('href'),
+    '/en/writings/tags/software-architecture',
+  );
+
+  await page.goto(origin + frenchDetail + '?tag-publication=en-only');
+  assert.equal(
+    await page
+      .getByRole('link', { name: 'Architecture logicielle', exact: true })
+      .count(),
+    0,
+    'Publishing an EN Writing Tag update must not mutate the FR Writing snapshot.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  refreshedWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await refreshedWritingCard
+    .getByRole('group', { name: 'FR', exact: true })
+    .getByRole('button', { name: 'Publish update FR', exact: true })
+    .click();
+  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+
+  const targets = [
+    {
+      locale: 'en',
+      overview: '/en/writings',
+      writingTitle: 'Architecture Without Page Builders',
+      writingDetail: englishDetail,
+      tagName: 'Software architecture',
+      tagPath: '/en/writings/tags/software-architecture',
+      alternateLocale: 'fr',
+      alternatePath: '/fr/ecrits/tags/architecture-logicielle',
+    },
+    {
+      locale: 'fr',
+      overview: '/fr/ecrits',
+      writingTitle: 'Architecture sans page builder',
+      writingDetail: frenchDetail,
+      tagName: 'Architecture logicielle',
+      tagPath: '/fr/ecrits/tags/architecture-logicielle',
+      alternateLocale: 'en',
+      alternatePath: '/en/writings/tags/software-architecture',
+    },
+  ];
+
+  for (const target of targets) {
+    await page.goto(origin + target.overview + '?tag-publication=' + target.locale);
+    const overviewCard = page.locator('article.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: target.writingTitle,
+        exact: true,
+      }),
+    });
+    const overviewTagLink = overviewCard.getByRole('link', {
+      name: target.tagName,
+      exact: true,
+    });
+    await overviewTagLink.waitFor();
+    assert.equal(await overviewTagLink.getAttribute('href'), target.tagPath);
+
+    await page.goto(
+      origin +
+        target.writingDetail +
+        '?tag-publication=' +
+        encodeURIComponent(target.locale),
+    );
+    const detailTagLink = page.getByRole('link', {
+      name: target.tagName,
+      exact: true,
+    });
+    await detailTagLink.waitFor();
+    assert.equal(await detailTagLink.getAttribute('href'), target.tagPath);
+
+    const tagResponse = await page.goto(origin + target.tagPath);
+    assert.equal(tagResponse?.status(), 200);
+    await page
+      .getByRole('heading', {
+        level: 1,
+        name: target.tagName,
+        exact: true,
+      })
+      .waitFor();
+    const tagWriting = page.locator('article.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 3,
+        name: target.writingTitle,
+        exact: true,
+      }),
+    });
+    await tagWriting.waitFor();
+    assert.equal(
+      await tagWriting
+        .getByRole('link', { name: /Lire|Read/ })
+        .getAttribute('href'),
+      target.writingDetail,
+      'Tag deep routes must resolve back to published Writings.',
+    );
+    assert.equal(
+      await page
+        .locator(
+          '.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]',
+        )
+        .getAttribute('href'),
+      target.alternatePath,
+      'Published Tags must expose their localized deep-route equivalent.',
+    );
+    await assertAxe(page);
+
+    const ssr = await page.context().request.get(origin + target.tagPath);
+    assert.equal(ssr.status(), 200);
+    const html = await ssr.text();
+    assert.ok(
+      html.includes(target.tagName) && html.includes(target.writingTitle),
+      'Tag name and related Writing must be present in initial HTML.',
+    );
+  }
+}
+
 async function assertReusableSystemReferences(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
@@ -5366,6 +5650,7 @@ async function assertAxe(page) {
     await assertTugeresStandardSystem(browser);
     await assertWritingAdminAndPublic(page);
     await assertWritingCategories(page);
+    await assertWritingTags(page);
     await assertReusableSystemReferences(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
