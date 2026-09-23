@@ -48,6 +48,26 @@ describe('ExperienceShell', () => {
     expect(html).toContain('<main><h1>Sentinel</h1></main>');
   });
 
+  it('keeps global navigation available in compact reading mode', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/writings/long-form']}>
+        <ExperienceShell
+          currentTitle="Long form"
+          locale="en"
+          mode="reading"
+          pathname="/en/writings/long-form"
+        >
+          <main><h1>Long form</h1></main>
+        </ExperienceShell>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('data-destination="writings" data-mode="reading"');
+    expect(html).toContain('aria-label="Primary navigation"');
+    expect(html).toContain('href="/en/writings" data-discover="true">Writings</a>');
+    expect(html).toContain('class="aks-experience-mobile-menu"');
+  });
+
   it('derives the equivalent localized first-level destination when no override is supplied', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
