@@ -2296,6 +2296,227 @@ async function assertWritingTags(page) {
   }
 }
 
+async function assertWritingSystemRelations(page) {
+  const englishWriting = '/en/writings/architecture-without-page-builders';
+  const frenchWriting = '/fr/ecrits/architecture-sans-page-builder';
+  const englishSystem = '/en/systems/protocap';
+  const frenchSystem = '/fr/systems/protocap';
+
+  await page.goto(origin + '/admin/writings');
+  const writingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+
+  const systemsGroup = writingCard.getByRole('group', {
+    name: 'Systems',
+    exact: true,
+  });
+  const protoCap = systemsGroup.getByRole('checkbox', {
+    name: 'ProtoCap',
+    exact: true,
+  });
+  await protoCap.check();
+  await systemsGroup
+    .getByRole('button', { name: 'Save systems', exact: true })
+    .click();
+  await page
+    .getByText('Writing systems saved as draft.', { exact: true })
+    .waitFor();
+
+  await page.goto(origin + englishWriting + '?system-relation=draft');
+  assert.equal(
+    await page
+      .locator('.aks-system-reference')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: 'ProtoCap',
+          exact: true,
+        }),
+      })
+      .count(),
+    0,
+    'Draft Writing→System relations must not leak before Writing republication.',
+  );
+
+  await page.goto(origin + englishSystem + '?writing-relation=draft');
+  assert.equal(
+    await page
+      .getByRole('link', {
+        name: 'Architecture Without Page Builders',
+        exact: true,
+      })
+      .count(),
+    0,
+    'Draft Writing→System relations must not leak onto the public System page.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  let refreshedWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await refreshedWritingCard
+    .getByRole('group', { name: 'EN', exact: true })
+    .getByRole('button', { name: 'Publish update EN', exact: true })
+    .click();
+  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+
+  await page.goto(origin + englishWriting + '?system-relation=en');
+  const englishReference = page.locator('.aks-system-reference').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'ProtoCap',
+      exact: true,
+    }),
+  });
+  await englishReference.waitFor();
+  assert.equal(
+    await englishReference
+      .getByRole('link', { name: 'Inspect System', exact: true })
+      .getAttribute('href'),
+    englishSystem,
+    'Published Writing must deep-link to the related EN System.',
+  );
+
+  await page.goto(origin + englishSystem + '?writing-relation=en');
+  const englishRelatedWriting = page.locator('article.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await englishRelatedWriting.waitFor();
+  assert.equal(
+    await englishRelatedWriting
+      .getByRole('link', { name: 'Read', exact: true })
+      .getAttribute('href'),
+    englishWriting,
+    'Published System must deep-link back to the related EN Writing.',
+  );
+  await assertAxe(page);
+
+  await page.goto(origin + frenchWriting + '?system-relation=en-only');
+  assert.equal(
+    await page
+      .locator('.aks-system-reference')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: 'ProtoCap',
+          exact: true,
+        }),
+      })
+      .count(),
+    0,
+    'Publishing EN must not mutate the still-published FR Writing snapshot.',
+  );
+
+  await page.goto(origin + frenchSystem + '?writing-relation=en-only');
+  assert.equal(
+    await page
+      .getByRole('link', {
+        name: 'Architecture sans page builder',
+        exact: true,
+      })
+      .count(),
+    0,
+    'Publishing EN must not mutate the FR System→Writing relation.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  refreshedWritingCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    }),
+  });
+  await refreshedWritingCard
+    .getByRole('group', { name: 'FR', exact: true })
+    .getByRole('button', { name: 'Publish update FR', exact: true })
+    .click();
+  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+
+  await page.goto(origin + frenchWriting + '?system-relation=fr');
+  const frenchReference = page.locator('.aks-system-reference').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'ProtoCap',
+      exact: true,
+    }),
+  });
+  await frenchReference.waitFor();
+  assert.equal(
+    await frenchReference
+      .getByRole('link', { name: 'Inspecter le système', exact: true })
+      .getAttribute('href'),
+    frenchSystem,
+    'Published Writing must deep-link to the related FR System.',
+  );
+
+  await page.goto(origin + frenchSystem + '?writing-relation=fr');
+  const frenchRelatedWriting = page.locator('article.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'Architecture sans page builder',
+      exact: true,
+    }),
+  });
+  await frenchRelatedWriting.waitFor();
+  assert.equal(
+    await frenchRelatedWriting
+      .getByRole('link', { name: 'Lire', exact: true })
+      .getAttribute('href'),
+    frenchWriting,
+    'Published System must deep-link back to the related FR Writing.',
+  );
+  await assertAxe(page);
+
+  for (const target of [
+    {
+      writingPath: englishWriting,
+      systemPath: englishSystem,
+      writingTitle: 'Architecture Without Page Builders',
+      systemTitle: 'ProtoCap',
+    },
+    {
+      writingPath: frenchWriting,
+      systemPath: frenchSystem,
+      writingTitle: 'Architecture sans page builder',
+      systemTitle: 'ProtoCap',
+    },
+  ]) {
+    const writingResponse = await page.context().request.get(
+      origin + target.writingPath + '?system-relation=ssr',
+    );
+    assert.equal(writingResponse.status(), 200);
+    const writingHtml = await writingResponse.text();
+    assert.ok(
+      writingHtml.includes(target.systemTitle),
+      'Related System must be present in initial Writing HTML.',
+    );
+
+    const systemResponse = await page.context().request.get(
+      origin + target.systemPath + '?writing-relation=ssr',
+    );
+    assert.equal(systemResponse.status(), 200);
+    const systemHtml = await systemResponse.text();
+    assert.ok(
+      systemHtml.includes(target.writingTitle),
+      'Related Writing must be present in initial System HTML.',
+    );
+  }
+}
+
 async function assertReusableSystemReferences(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
@@ -5651,6 +5872,7 @@ async function assertAxe(page) {
     await assertWritingAdminAndPublic(page);
     await assertWritingCategories(page);
     await assertWritingTags(page);
+    await assertWritingSystemRelations(page);
     await assertReusableSystemReferences(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);

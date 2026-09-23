@@ -4,6 +4,7 @@ import { Link as RouterLink } from 'react-router';
 import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
 import { SystemLearningEvidence } from './system-learning-evidence';
+import { SystemRelatedWritings } from './system-related-writings';
 import {
   SystemPresentation,
   type SystemDetailViewProps,
@@ -19,6 +20,7 @@ export function InteractiveEntrySystemRenderer({
   links,
   assets,
   learningEvidence = [],
+  relatedWritings = [],
   preview = false,
 }: SystemDetailViewProps) {
   const live = links.find((link) => link.kind === 'live') ?? null;
@@ -113,6 +115,8 @@ export function InteractiveEntrySystemRenderer({
             items={learningEvidence}
             locale={locale}
           />
+
+          <SystemRelatedWritings items={relatedWritings} locale={locale} />
 
           <footer className="aks-interactive-entry-footer">
             {technologies.length > 0 ? (

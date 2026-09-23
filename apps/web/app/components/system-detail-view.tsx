@@ -15,6 +15,10 @@ import {
   SystemLearningEvidence,
   type SystemLearningEvidenceItem,
 } from './system-learning-evidence';
+import {
+  SystemRelatedWritings,
+  type SystemRelatedWritingItem,
+} from './system-related-writings';
 
 export interface SystemDetailTechnology {
   id: string;
@@ -51,6 +55,7 @@ export interface SystemDetailViewProps {
   links: SystemDetailLink[];
   assets: SystemDetailAsset[];
   learningEvidence?: SystemLearningEvidenceItem[];
+  relatedWritings?: SystemRelatedWritingItem[];
   preview?: boolean;
 }
 
@@ -201,6 +206,7 @@ export function StandardSystemRenderer({
   links,
   assets,
   learningEvidence = [],
+  relatedWritings = [],
   preview = false,
 }: SystemDetailViewProps) {
   return (
@@ -280,6 +286,8 @@ export function StandardSystemRenderer({
               items={learningEvidence}
               locale={locale}
             />
+
+            <SystemRelatedWritings items={relatedWritings} locale={locale} />
           </article>
         </Container>
     </main>

@@ -13,10 +13,14 @@ import {
   parseTagPublicationSnapshot,
   type TagPublicationSnapshot,
 } from './tag-publication.js';
+import {
+  listPublishedSystemReferences,
+  type PublicSystemReference,
+} from './system-reference.js';
 import type { Database } from './schema.js';
 
 export interface WritingPublicationSnapshot {
-  version: 3;
+  version: 4;
   writingId: string;
   locale: PlatformLocale;
   slug: string;
@@ -28,6 +32,7 @@ export interface WritingPublicationSnapshot {
   editorialPosition: number;
   categoryIds: string[];
   tagIds: string[];
+  systemIds: string[];
 }
 
 export interface PublicWritingCategory {
@@ -50,6 +55,7 @@ export interface PublishedWritingListItem extends WritingPublicationSnapshot {
   publishedAt: Date;
   categories: PublicWritingCategory[];
   tags: PublicWritingTag[];
+  systems: PublicSystemReference[];
 }
 
 export interface PublishedWriting extends PublishedWritingListItem {
@@ -71,16 +77,17 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
 
   const snapshot = value as Omit<
     WritingPublicationSnapshot,
-    'version' | 'categoryIds' | 'tagIds'
+    'version' | 'categoryIds' | 'tagIds' | 'systemIds'
   > & {
     version?: number;
     categoryIds?: unknown;
     tagIds?: unknown;
+    systemIds?: unknown;
   };
 
   return {
     ...snapshot,
-    version: 3,
+    version: 4,
     categoryIds: Array.isArray(snapshot.categoryIds)
       ? snapshot.categoryIds.filter(
           (categoryId): categoryId is string => typeof categoryId === 'string',
@@ -89,6 +96,11 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
     tagIds: Array.isArray(snapshot.tagIds)
       ? snapshot.tagIds.filter(
           (tagId): tagId is string => typeof tagId === 'string',
+        )
+      : [],
+    systemIds: Array.isArray(snapshot.systemIds)
+      ? snapshot.systemIds.filter(
+          (systemId): systemId is string => typeof systemId === 'string',
         )
       : [],
   };
@@ -173,6 +185,28 @@ function resolveTags(
   });
 }
 
+async function publishedSystemMap(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+  systemIds: string[],
+): Promise<Map<string, PublicSystemReference>> {
+  const references = await listPublishedSystemReferences(db, {
+    locale,
+    ids: [...new Set(systemIds)],
+  });
+  return new Map(references.map((reference) => [reference.id, reference]));
+}
+
+function resolveSystems(
+  systemIds: string[],
+  systemsById: Map<string, PublicSystemReference>,
+): PublicSystemReference[] {
+  return systemIds.flatMap((systemId) => {
+    const system = systemsById.get(systemId);
+    return system === undefined ? [] : [system];
+  });
+}
+
 export async function publishWritingLocalization(
   db: Kysely<Database>,
   input: { writingId: string; locale: PlatformLocale },
@@ -203,7 +237,7 @@ export async function publishWritingLocalization(
       throw new Error('Writing localization not found.');
     }
 
-    const [categoryRows, tagRows] = await Promise.all([
+    const [categoryRows, tagRows, systemRows] = await Promise.all([
       transaction
         .selectFrom('writing_categories')
         .select('category_id')
@@ -216,10 +250,16 @@ export async function publishWritingLocalization(
         .where('writing_id', '=', input.writingId)
         .orderBy('position')
         .execute(),
+      transaction
+        .selectFrom('writing_systems')
+        .select('system_id')
+        .where('writing_id', '=', input.writingId)
+        .orderBy('position')
+        .execute(),
     ]);
 
     const snapshot: WritingPublicationSnapshot = {
-      version: 3,
+      version: 4,
       writingId: row.id,
       locale: input.locale,
       slug: requiredText(row.slug, 'slug'),
@@ -231,6 +271,7 @@ export async function publishWritingLocalization(
       editorialPosition: row.editorial_position,
       categoryIds: categoryRows.map((category) => category.category_id),
       tagIds: tagRows.map((tag) => tag.tag_id),
+      systemIds: systemRows.map((system) => system.system_id),
     };
     const now = new Date();
     const snapshotJson = snapshot as unknown as Record<string, unknown>;
@@ -306,7 +347,7 @@ export async function listPublishedWritings(
     snapshot: parseSnapshot(row.snapshot),
     publishedAt: row.published_at,
   }));
-  const [categoriesById, tagsById] = await Promise.all([
+  const [categoriesById, tagsById, systemsById] = await Promise.all([
     publishedCategoryMap(
       db,
       locale,
@@ -317,6 +358,11 @@ export async function listPublishedWritings(
       locale,
       parsed.flatMap((row) => row.snapshot.tagIds),
     ),
+    publishedSystemMap(
+      db,
+      locale,
+      parsed.flatMap((row) => row.snapshot.systemIds),
+    ),
   ]);
 
   return parsed
@@ -325,6 +371,7 @@ export async function listPublishedWritings(
       publishedAt,
       categories: resolveCategories(snapshot.categoryIds, categoriesById),
       tags: resolveTags(snapshot.tagIds, tagsById),
+      systems: resolveSystems(snapshot.systemIds, systemsById),
     }))
     .sort(
       (left, right) =>
@@ -369,6 +416,23 @@ export async function listPublishedWritingsForTag(
   return writings.filter((writing) => writing.tagIds.includes(input.tagId));
 }
 
+export async function listPublishedWritingsForSystem(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; systemId: string },
+): Promise<PublishedWritingListItem[]> {
+  const system = await db
+    .selectFrom('system_publications')
+    .select('system_id')
+    .where('system_id', '=', input.systemId)
+    .where('locale', '=', input.locale)
+    .executeTakeFirst();
+
+  if (system === undefined) return [];
+
+  const writings = await listPublishedWritings(db, input.locale);
+  return writings.filter((writing) => writing.systemIds.includes(input.systemId));
+}
+
 export async function getPublishedWriting(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; slug: string },
@@ -383,9 +447,10 @@ export async function getPublishedWriting(
   if (row === undefined) return null;
 
   const snapshot = parseSnapshot(row.snapshot);
-  const [categoriesById, tagsById] = await Promise.all([
+  const [categoriesById, tagsById, systemsById] = await Promise.all([
     publishedCategoryMap(db, input.locale, snapshot.categoryIds),
     publishedTagMap(db, input.locale, snapshot.tagIds),
+    publishedSystemMap(db, input.locale, snapshot.systemIds),
   ]);
   const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
   const alternate = await db
@@ -400,6 +465,7 @@ export async function getPublishedWriting(
     publishedAt: row.published_at,
     categories: resolveCategories(snapshot.categoryIds, categoriesById),
     tags: resolveTags(snapshot.tagIds, tagsById),
+    systems: resolveSystems(snapshot.systemIds, systemsById),
     alternate:
       alternate === undefined
         ? null

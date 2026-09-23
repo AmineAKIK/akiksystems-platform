@@ -72,6 +72,7 @@
     "db:verify-writing-domain": "pnpm --filter @akiksystems/db db:verify-writing-domain",
     "db:verify-writing-categories": "pnpm --filter @akiksystems/db db:verify-writing-categories",
     "db:verify-writing-tags": "pnpm --filter @akiksystems/db db:verify-writing-tags",
+    "db:verify-writing-systems": "pnpm --filter @akiksystems/db db:verify-writing-systems",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {

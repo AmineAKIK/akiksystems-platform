@@ -139,6 +139,13 @@ export interface WritingTag {
   createdAt: Date;
 }
 
+export interface WritingSystem {
+  writingId: WritingId;
+  systemId: SystemId;
+  position: number;
+  createdAt: Date;
+}
+
 export type TrainingId = string;
 
 export interface Training {

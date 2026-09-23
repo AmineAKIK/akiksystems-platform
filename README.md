@@ -141,6 +141,18 @@ assignment changes cannot leak and missing French labels never fall back to
 English. Tag deep routes make the taxonomy inspectable and future-ready for
 search/filter work without introducing the filter UI early.
 
+AKS-104 relates Writings to Systems without copying System-owned content into
+the editorial relation. The private Writing admin owns an ordered many-to-many
+Writing↔System relation; publishing a Writing locale captures only the stable
+System identities in that Writing snapshot. Public Writing pages resolve those
+identities through current published System references for the requested locale,
+while public System pages resolve Writings whose published snapshots reference
+that System. Draft relation changes remain invisible until the corresponding
+Writing locale is republished, EN/FR remain independent, and a missing localized
+System publication never falls back across languages. Updating a published
+System title or summary is reflected through System-owned publication data
+without republishing related Writings.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
