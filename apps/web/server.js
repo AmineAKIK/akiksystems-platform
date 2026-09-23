@@ -33,7 +33,7 @@ const app = express();
 
 app.disable('x-powered-by');
 
-const noIndexDirective = noIndexDirective;
+const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
 const contentSecurityPolicy = [
   "default-src 'self'",
