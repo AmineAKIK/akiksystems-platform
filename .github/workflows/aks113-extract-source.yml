@@ -1,0 +1,35 @@
+name: AKS-113 source extraction
+
+on:
+  pull_request:
+    paths:
+      - '.tmp/aks113-source.pdf'
+      - '.github/workflows/aks113-extract-source.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PDF text tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+
+      - name: Extract canonical essay text
+        run: |
+          mkdir -p .tmp/extracted
+          pdfinfo .tmp/aks113-source.pdf | sed -n 's/^Pages:[[:space:]]*/Pages: /p' > .tmp/extracted/rendre-l-attention-au-reel.txt
+          pdftotext -layout .tmp/aks113-source.pdf - >> .tmp/extracted/rendre-l-attention-au-reel.txt
+
+      - name: Upload extracted essay source
+        uses: actions/upload-artifact@v4
+        with:
+          name: aks113-source-text
+          path: .tmp/extracted/rendre-l-attention-au-reel.txt
+          if-no-files-found: error
+          retention-days: 1
