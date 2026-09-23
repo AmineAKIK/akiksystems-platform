@@ -1,6 +1,7 @@
 import {
   getPublishedTraining,
   listPublishedCredentialsForTraining,
+  listPublishedLearningArtifactsForTraining,
 } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, type MetaDescriptor, useLoaderData } from 'react-router';
@@ -35,16 +36,26 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Training not found.', { status: 404 });
   }
 
-  const credentials = await listPublishedCredentialsForTraining(appDb, {
-    locale,
-    trainingId: training.trainingId,
-  });
+  const [credentials, learningArtifacts] = await Promise.all([
+    listPublishedCredentialsForTraining(appDb, {
+      locale,
+      trainingId: training.trainingId,
+    }),
+    listPublishedLearningArtifactsForTraining(appDb, {
+      locale,
+      trainingId: training.trainingId,
+    }),
+  ]);
 
   return data(
     {
       credentials: credentials.map((credential) => ({
         ...credential,
         publishedAt: credential.publishedAt.toISOString(),
+      })),
+      learningArtifacts: learningArtifacts.map((artifact) => ({
+        ...artifact,
+        publishedAt: artifact.publishedAt.toISOString(),
       })),
       training: {
         ...training,
@@ -103,7 +114,8 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 }
 
 export default function LearningDetailRoute() {
-  const { credentials, training } = useLoaderData<typeof loader>();
+  const { credentials, learningArtifacts, training } =
+    useLoaderData<typeof loader>();
   const overviewHref =
     training.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
   const paragraphs =
@@ -147,11 +159,11 @@ export default function LearningDetailRoute() {
                 ? 'Preuves liées'
                 : 'Connected evidence'}
             </Heading>
-            {credentials.length === 0 ? (
+            {credentials.length === 0 && learningArtifacts.length === 0 ? (
               <Text tone="muted">
                 {training.locale === 'fr'
-                  ? 'Aucun justificatif publié n’est encore relié à cette formation.'
-                  : 'No published Credential is connected to this Training yet.'}
+                  ? 'Aucune preuve publiée n’est encore reliée à cette formation.'
+                  : 'No published evidence is connected to this Training yet.'}
               </Text>
             ) : (
               <div className="aks-admin-asset-list">
@@ -175,6 +187,33 @@ export default function LearningDetailRoute() {
                         {training.locale === 'fr'
                           ? 'Inspecter le justificatif'
                           : 'Inspect Credential'}
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+
+                {learningArtifacts.map((artifact) => (
+                  <article className="aks-admin-asset" key={artifact.learningArtifactId}>
+                    <div className="aks-proof-stack">
+                      <Text size="sm" tone="muted">
+                        {training.locale === 'fr'
+                          ? 'Preuve d’apprentissage'
+                          : 'Learning artifact'}
+                      </Text>
+                      <Heading level={3} size="sm">
+                        {artifact.title}
+                      </Heading>
+                      <Text>{artifact.summary}</Text>
+                      <Link
+                        href={
+                          training.locale === 'fr'
+                            ? `/fr/apprentissage/preuves/${artifact.slug}`
+                            : `/en/learning/artifacts/${artifact.slug}`
+                        }
+                      >
+                        {training.locale === 'fr'
+                          ? 'Inspecter la preuve'
+                          : 'Inspect learning artifact'}
                       </Link>
                     </div>
                   </article>
