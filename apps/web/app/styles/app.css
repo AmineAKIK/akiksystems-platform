@@ -1995,3 +1995,245 @@
     width: 100%;
   }
 }
+
+/* AKS-094: Sentinel dossier is an autonomous native Web reading, not a PDF-shaped page. */
+.aks-dossier-page {
+  align-items: start;
+}
+
+.aks-dossier {
+  display: grid;
+  gap: clamp(var(--aks-space-7), 7vw, 6rem);
+  min-width: 0;
+}
+
+.aks-dossier-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+  gap: clamp(var(--aks-space-6), 6vw, var(--aks-space-8));
+  align-items: end;
+  padding-block: clamp(var(--aks-space-6), 8vh, var(--aks-space-8));
+  border-bottom: 1px solid var(--aks-border-subtle);
+}
+
+.aks-dossier-hero .aks-proof-stack {
+  max-width: 52rem;
+}
+
+.aks-dossier-lead {
+  max-width: 52ch;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.65;
+}
+
+.aks-dossier-facts {
+  display: grid;
+  gap: var(--aks-space-4);
+  margin: 0;
+}
+
+.aks-dossier-facts > div {
+  display: grid;
+  gap: var(--aks-space-1);
+  padding-block-start: var(--aks-space-3);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-dossier-facts dt {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-dossier-facts dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+.aks-dossier-context {
+  display: grid;
+  gap: var(--aks-space-5);
+}
+
+.aks-dossier-section-heading {
+  display: grid;
+  gap: var(--aks-space-2);
+  max-width: 42rem;
+}
+
+.aks-dossier-context-grid,
+.aks-dossier-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-dossier-context-card,
+.aks-dossier-evidence-card {
+  display: grid;
+  gap: var(--aks-space-2);
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-raised);
+}
+
+.aks-dossier-reading-layout {
+  display: grid;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  gap: clamp(var(--aks-space-6), 6vw, var(--aks-space-8));
+  align-items: start;
+  min-width: 0;
+}
+
+.aks-dossier-nav {
+  position: sticky;
+  top: var(--aks-space-6);
+  display: grid;
+  gap: var(--aks-space-4);
+  min-width: 0;
+}
+
+.aks-dossier-nav-list {
+  display: grid;
+  gap: var(--aks-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aks-dossier-nav-list a {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: var(--aks-space-2);
+  min-height: 2.75rem;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--aks-border-subtle);
+}
+
+.aks-dossier-nav-list a:hover,
+.aks-dossier-nav-list a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.aks-dossier-nav-list span {
+  color: var(--aks-text-muted);
+  font-family: var(--aks-font-mono);
+  font-size: var(--aks-font-size-xs);
+}
+
+.aks-dossier-sections {
+  display: grid;
+  min-width: 0;
+}
+
+.aks-dossier-section {
+  scroll-margin-top: var(--aks-space-7);
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: var(--aks-space-5);
+  min-width: 0;
+  padding-block: clamp(var(--aks-space-6), 5vw, var(--aks-space-8));
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-dossier-section:first-child {
+  border-top-width: 2px;
+  border-top-color: var(--aks-text-primary);
+}
+
+.aks-dossier-section-number {
+  color: var(--aks-text-muted);
+  font-family: var(--aks-font-mono);
+  font-size: var(--aks-font-size-sm);
+  padding-top: 0.4rem;
+}
+
+.aks-dossier-section-content {
+  display: grid;
+  gap: var(--aks-space-4);
+  min-width: 0;
+  max-width: 52rem;
+}
+
+.aks-dossier-section-content > .aks-text {
+  max-width: 68ch;
+  line-height: 1.7;
+}
+
+.aks-dossier-list {
+  display: grid;
+  gap: var(--aks-space-3);
+  margin: 0;
+  padding-inline-start: 1.3rem;
+  max-width: 68ch;
+}
+
+.aks-dossier-list .aks-text {
+  line-height: 1.65;
+}
+
+.aks-dossier-evidence-grid {
+  padding-top: var(--aks-space-3);
+}
+
+.aks-dossier-footer {
+  padding-block: var(--aks-space-6);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+@media (max-width: 64rem) {
+  .aks-dossier-reading-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-dossier-nav {
+    position: static;
+  }
+
+  .aks-dossier-nav-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-dossier {
+    gap: var(--aks-space-7);
+  }
+
+  .aks-dossier-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--aks-space-6);
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-dossier-context-grid,
+  .aks-dossier-evidence-grid,
+  .aks-dossier-nav-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-dossier-section {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: var(--aks-space-3);
+  }
+
+  .aks-dossier-context-card,
+  .aks-dossier-evidence-card {
+    padding: var(--aks-space-4);
+  }
+}
+
+@media (max-width: 30rem) {
+  .aks-dossier-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-dossier-section-number {
+    padding-top: 0;
+  }
+}
+

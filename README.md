@@ -50,12 +50,24 @@ the verified Sentinel project dossier can be provisioned independently with:
 pnpm content:bootstrap-sentinel-dossier
 ```
 
-The command creates one bilingual LearningArtifact connected to both DWWM and
-Sentinel. Its inspection copy is grounded in the Sentinel dossier source and
-the documented examination baseline `v1.0.0-rc.9` /
-`ed26a25e3c005cabb0da30a4553dfbbee03afe81`. The source document still carries
-explicit finalization markers, so AKS-093 does not attach or imply a finalized
-PDF. Source-document publication remains a separate qualification step.
+The command creates or synchronizes one bilingual LearningArtifact connected to
+both DWWM and Sentinel. Its inspection copy is grounded in the Sentinel dossier
+source and the documented examination baseline `v1.0.0-rc.9` /
+`ed26a25e3c005cabb0da30a4553dfbbee03afe81`.
+
+AKS-094 renders this artifact as an autonomous native Web dossier rather than a
+PDF-shaped page. The LearningArtifact body remains editable from the existing
+admin and uses a constrained content contract: ten `##` sections — context,
+objectives, architecture, design choices, security, tests, difficulties,
+results, limits, and evidence — plus optional `-` list items. Code owns the
+reading hierarchy, table of contents, responsive composition, evidence cards,
+and relationship surfaces; admin owns the evolving copy. Generic
+LearningArtifacts keep their existing renderer.
+
+The source document still carries explicit finalization markers, so the Web
+reading does not attach or imply a finalized PDF. Source-document publication
+remains a separate qualification step, and re-running the dossier bootstrap
+preserves any source asset that may be attached later.
 
 A production recovery is expected to restore PostgreSQL and object storage
 together; bootstrap scripts are not a substitute for a content backup or

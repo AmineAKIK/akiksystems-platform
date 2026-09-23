@@ -54,6 +54,22 @@ function systemSnapshot(locale: 'en' | 'fr') {
   };
 }
 
+function assertNativeSections(
+  body: string | null,
+  headings: readonly string[],
+): void {
+  assert.ok(body);
+  assert.equal(
+    body.match(/^## /gm)?.length,
+    headings.length,
+    'The dossier body must expose exactly the native Web section contract.',
+  );
+
+  for (const heading of headings) {
+    assert.match(body, new RegExp('^## ' + heading + '$', 'm'));
+  }
+}
+
 try {
   const training = await bootstrapDwwmTraining(db);
   trainingId = training.trainingId;
@@ -96,6 +112,13 @@ try {
     systemId,
   });
 
+  const artifactCount = await db
+    .selectFrom('learning_artifacts')
+    .select(({ fn }) => fn.countAll<number>().as('count'))
+    .where('id', '=', learningArtifactId)
+    .executeTakeFirstOrThrow();
+  assert.equal(Number(artifactCount.count), 1);
+
   const [english, french] = await Promise.all([
     getPublishedLearningArtifact(db, {
       locale: 'en',
@@ -119,8 +142,20 @@ try {
   assert.match(english.body ?? '', /v1\.0\.0-rc\.9/);
   assert.match(
     english.body ?? '',
-    /does not claim that the final submitted PDF is already attached/,
+    /This Web presentation does not claim that the final submitted PDF is already attached/,
   );
+  assertNativeSections(english.body, [
+    'Context',
+    'Objectives',
+    'Architecture',
+    'Design choices',
+    'Security',
+    'Tests',
+    'Difficulties',
+    'Results',
+    'Limits',
+    'Evidence',
+  ]);
 
   assert.equal(french.training?.trainingId, trainingId);
   assert.equal(french.training?.slug, 'developpeur-web-web-mobile');
@@ -131,19 +166,33 @@ try {
   assert.match(french.body ?? '', /ed26a25e3c005cabb0da30a4553dfbbee03afe81/);
   assert.match(
     french.body ?? '',
-    /ne prétend donc ni que le PDF final remis est déjà joint/,
+    /Cette présentation Web ne prétend pas que le PDF final remis est déjà joint/,
   );
+  assertNativeSections(french.body, [
+    'Contexte',
+    'Objectifs',
+    'Architecture',
+    'Choix de conception',
+    'Sécurité',
+    'Tests',
+    'Difficultés',
+    'Résultats',
+    'Limites',
+    'Preuves',
+  ]);
 
   const connected = await listPublishedLearningArtifactsForTraining(db, {
     locale: 'en',
     trainingId,
   });
   assert.ok(
-    connected.some((artifact) => artifact.learningArtifactId === learningArtifactId),
+    connected.some(
+      (artifact) => artifact.learningArtifactId === learningArtifactId,
+    ),
   );
 
   process.stdout.write(
-    'AKS-093 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, and explicitly keeps the source PDF out of scope.\n',
+    'AKS-093/094 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, structured into the ten native Web reading sections, and explicitly keeps the source PDF out of scope.\n',
   );
 } finally {
   if (learningArtifactId !== null) {
