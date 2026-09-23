@@ -7,6 +7,8 @@ import type {
 } from '@akiksystems/core';
 import { Heading, Text } from '@akiksystems/ui';
 
+import './writing-editorial-renderer.css';
+
 const imageVariantWidths = [320, 640, 960, 1280] as const;
 
 function textContent(content: WritingTextNode[] | undefined): string {
