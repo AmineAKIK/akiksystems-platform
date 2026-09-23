@@ -1280,6 +1280,134 @@ function bootstrapL4QualificationSystems() {
   }
 }
 
+
+function bootstrapL6RendreAttentionEssay() {
+  execFileSync('pnpm', ['content:bootstrap-rendre-attention-essay'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertRendreAttentionEssay(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await context.newPage();
+    const detailPath = '/fr/ecrits/rendre-l-attention-au-reel';
+
+    const overviewResponse = await page.goto(origin + '/fr/ecrits');
+    assert.equal(overviewResponse?.status(), 200);
+    const card = page
+      .locator('[data-writing-feed] [data-writing-kind="essay"]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: 'Rendre l’attention au réel',
+          exact: true,
+        }),
+      });
+    await card.waitFor();
+    assert.equal(
+      await card.getAttribute('data-editorial-weight'),
+      'major',
+      'The real essay must exercise the fixed MAJOR feed composition.',
+    );
+    assert.equal(
+      await card.locator('time').getAttribute('datetime'),
+      '2026-09-16T10:25:02.000Z',
+      'The native Writing must retain the original ProtoCap publication date.',
+    );
+    assert.equal(
+      await card
+        .getByRole('link', { name: 'Rendre l’attention au réel', exact: true })
+        .getAttribute('href'),
+      detailPath,
+    );
+
+    const detailResponse = await page.goto(origin + detailPath);
+    assert.equal(detailResponse?.status(), 200);
+    await page
+      .getByRole('heading', {
+        level: 1,
+        name: 'Rendre l’attention au réel',
+        exact: true,
+      })
+      .waitFor();
+    assert.equal(
+      await page.locator('.aks-writing-detail-page').getAttribute('data-writing-kind'),
+      'essay',
+    );
+    assert.equal(
+      await page.locator('.aks-experience-shell').getAttribute('data-mode'),
+      'reading',
+      'The real essay must use the discreet long-form reading shell.',
+    );
+    assert.equal(
+      await page.locator('[data-long-form-reader] h2').count(),
+      13,
+      'The native reader must preserve the reflection overview and twelve essay chapters.',
+    );
+    assert.ok(
+      (await page.locator('[data-long-form-reader] [data-writing-node="paragraph"]').count()) >= 180,
+      'The 25-page essay must remain genuine long-form content after native conversion.',
+    );
+
+    const text = await page.locator('[data-long-form-reader]').innerText();
+    for (const excerpt of [
+      'Elles consommaient de l’attention, et cette différence change presque tout.',
+      'ProtoCap : matérialiser des hypothèses',
+      'L’IA et la répartition des responsabilités',
+      'l’attention peut retourner là où tout avait commencé : dans le réel.',
+    ]) {
+      assert.ok(text.includes(excerpt), 'Canonical essay excerpt must survive publication: ' + excerpt);
+    }
+
+    await page
+      .getByRole('heading', { level: 2, name: 'Systèmes liés', exact: true })
+      .waitFor();
+    const protoCap = page.getByRole('link', { name: 'ProtoCap', exact: true });
+    assert.equal(await protoCap.getAttribute('href'), '/fr/systems/protocap');
+
+    assert.equal(
+      await page.locator('.aks-experience-meta a[hreflang="en"]').count(),
+      0,
+      'The original French essay must not fabricate an English alternate.',
+    );
+    const missingEnglish = await page.context().request.get(
+      origin + '/en/writings/rendre-l-attention-au-reel',
+    );
+    assert.equal(missingEnglish.status(), 404);
+
+    const ssr = await page.context().request.get(origin + detailPath);
+    assert.equal(ssr.status(), 200);
+    const html = await ssr.text();
+    assert.ok(html.includes('Elles consommaient de l’attention'));
+    assert.ok(html.includes('data-long-form-reader'));
+    await assertAxe(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileResponse = await page.goto(origin + detailPath);
+    assert.equal(mobileResponse?.status(), 200);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+      'The real 25-page essay must not overflow at 390px.',
+    );
+    await page
+      .getByRole('heading', {
+        level: 1,
+        name: 'Rendre l’attention au réel',
+        exact: true,
+      })
+      .waitFor();
+    await assertAxe(page);
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertProtoCapGuidedDemo(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
@@ -6423,8 +6551,10 @@ async function assertAxe(page) {
     ]);
 
     bootstrapL4QualificationSystems();
+    bootstrapL6RendreAttentionEssay();
 
     await assertSystemsOverview(browser);
+    await assertRendreAttentionEssay(browser);
     await assertProtoCapGuidedDemo(browser);
     await assertOriaInteractiveEntry(browser);
     await assertTugeresStandardSystem(browser);
