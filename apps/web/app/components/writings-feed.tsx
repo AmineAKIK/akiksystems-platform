@@ -37,6 +37,7 @@ function publishedDate(date: Date, locale: Locale): string {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
+    timeZone: 'UTC',
   }).format(date);
 }
 
@@ -57,16 +58,21 @@ export function WritingsFeed({
     );
   }
 
+  const orderedWritings = [...writings].sort(
+    (left, right) =>
+      right.publishedAt.getTime() - left.publishedAt.getTime() ||
+      left.writingId.localeCompare(right.writingId),
+  );
+
   return (
     <ol
       aria-label={locale === 'fr' ? 'Flux éditorial' : 'Editorial feed'}
       className="aks-writings-feed"
       data-writing-feed
     >
-      {writings.map((writing) => (
+      {orderedWritings.map((writing) => (
         <li
           className="aks-writings-feed-item"
-          data-editorial-weight={writing.editorialWeight}
           data-writing-kind={writing.kind}
           key={writing.writingId}
         >
