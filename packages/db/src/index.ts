@@ -29,6 +29,7 @@ export type {
 export {
   getPublishedLearningArtifact,
   listPublishedLearningArtifacts,
+  listPublishedLearningArtifactsForSystem,
   listPublishedLearningArtifactsForTraining,
   publishLearningArtifactLocalization,
   unpublishLearningArtifactLocalization,
