@@ -58,19 +58,13 @@ export function WritingsFeed({
     );
   }
 
-  const orderedWritings = [...writings].sort(
-    (left, right) =>
-      right.publishedAt.getTime() - left.publishedAt.getTime() ||
-      left.writingId.localeCompare(right.writingId),
-  );
-
   return (
     <ol
       aria-label={locale === 'fr' ? 'Flux éditorial' : 'Editorial feed'}
       className="aks-writings-feed"
       data-writing-feed
     >
-      {orderedWritings.map((writing) => (
+      {writings.map((writing) => (
         <li
           className="aks-writings-feed-item"
           data-writing-kind={writing.kind}
