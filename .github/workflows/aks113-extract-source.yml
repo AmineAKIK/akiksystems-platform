@@ -24,21 +24,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y poppler-utils
 
-      - name: Extract canonical essay text
+      - name: Generate canonical Writing document from PDF layout
         run: |
           mkdir -p .tmp/extracted
-          pdfinfo .tmp/aks113-source.pdf | sed -n 's/^Pages:[[:space:]]*/Pages: /p' > .tmp/extracted/rendre-l-attention-au-reel.txt
-          pdftotext -nopgbrk .tmp/aks113-source.pdf - >> .tmp/extracted/rendre-l-attention-au-reel.txt
-
-      - name: Build native Writing v1 document from canonical source
-        run: |
+          pdftotext -bbox-layout .tmp/aks113-source.pdf .tmp/extracted/essay.xhtml
           python - <<'PY'
           from pathlib import Path
           import json
           import re
+          import xml.etree.ElementTree as ET
 
-          source = Path('.tmp/extracted/rendre-l-attention-au-reel.txt')
-          lines = source.read_text(encoding='utf-8').splitlines()
           chapters = [
               ('01', 'Le travail ordinaire comme point de départ'),
               ('02', 'L’attention et la construction de la maîtrise'),
@@ -54,15 +49,25 @@ jobs:
               ('12', 'Revenir au réel'),
           ]
           chapter_by_number = dict(chapters)
-          heading_fragments = {
-              '01': {'Le travail ordinaire comme point de', 'départ'},
-              '02': {'L’attention et la construction de la', 'maîtrise'},
-              '03': {'ProtoCap : matérialiser des', 'hypothèses'},
-              '04': {'Un outil discret, un système', 'intelligible'},
-              '08': {'Indicateurs, marges et', 'apprentissage'},
-              '09': {'Raccourcir la boucle de', 'transformation'},
-              '10': {'L’IA et la répartition des', 'responsabilités'},
-          }
+
+          root = ET.parse('.tmp/extracted/essay.xhtml').getroot()
+          namespace = ''
+          if root.tag.startswith('{'):
+              namespace = root.tag.split('}', 1)[0] + '}'
+
+          def block_text(block):
+              words = [
+                  (word.text or '').strip()
+                  for word in block.iter(namespace + 'word')
+                  if (word.text or '').strip()
+              ]
+              return re.sub(r'\s+', ' ', ' '.join(words)).strip()
+
+          blocks = []
+          for block in root.iter(namespace + 'block'):
+              text = block_text(block)
+              if text:
+                  blocks.append(text)
 
           def text_node(text):
               return {'type': 'text', 'text': text}
@@ -96,323 +101,68 @@ jobs:
           ]
 
           current = None
-          buffer = []
-
-          def flush():
-              nonlocal_buffer = None
-              if buffer:
-                  text = ' '.join(part.strip() for part in buffer).replace('  ', ' ').strip()
-                  if text:
-                      content.append(paragraph(text))
-                  buffer.clear()
-
-          for raw in lines:
-              line = raw.strip()
-              if not line:
-                  continue
-
-              marker = re.match(r'^(\d{2}) / RÉFLEXION, line)
-              if marker:
-                  flush()
-                  current = marker.group(1)
-                  content.append(
-                      {
-                          'type': 'heading',
-                          'attrs': {'level': 2},
-                          'content': [text_node(chapter_by_number[current])],
-                      }
-                  )
+          for text in blocks:
+              marker = None
+              if text.endswith(' / RÉFLEXION') and len(text) >= 13:
+                  prefix = text.split(' / ', 1)[0]
+                  if prefix in chapter_by_number:
+                      marker = prefix
+              if marker is not None:
+                  current = marker
+                  content.append({
+                      'type': 'heading',
+                      'attrs': {'level': 2},
+                      'content': [text_node(chapter_by_number[current])],
+                  })
                   continue
 
               if current is None:
                   continue
 
               if (
-                  line in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI'}
-                  or line == 'AKIK Mohamed Amine / AkikSystems'
-                  or re.match(r'^\d{2} / 25, line)
+                  text in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI', 'AKIK Mohamed Amine / AkikSystems'}
+                  or re.fullmatch(r'\d{2} / 25', text)
               ):
-                  flush()
                   continue
 
               title = chapter_by_number[current]
-              if (
-                  line == title
-                  or line == title + ' · suite'
-                  or line in heading_fragments.get(current, set())
-                  or (line.endswith(' · suite') and line[:-8].strip() == title)
-              ):
+              if text == title or text == title + ' · suite':
                   continue
 
-              if line.startswith('http://') or line.startswith('https://'):
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              if current == '12' and line in {
+              if current == '12' and text in {
                   'ProtoCap — dépôt public :',
                   'Démonstration en ligne :',
+                  'https://github.com/AmineAKIK/protocap',
+                  'https://protocap-production.up.railway.app/',
               }:
-                  flush()
-                  content.append(paragraph(line))
+                  content.append(paragraph(text))
                   continue
 
-              buffer.append(line)
-              if re.search(r'[.!?…»]$', line):
-                  flush()
+              content.append(paragraph(text))
 
-          flush()
+          if len(content) < 50 or len(content) > 250:
+              raise SystemExit(f'Unexpected Writing block count: {len(content)}')
 
           document = {'version': 1, 'type': 'doc', 'content': content}
-          if len(content) != 213:
-              raise SystemExit(f'Unexpected block count: {len(content)}')
-
-          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
-          output = Path('packages/db/src/rendre-attention-essay-document.json')
-          output.write_text(serialized, encoding='utf-8')
-          print(f'Generated {len(content)} blocks at {output}.')
+          target = Path('packages/db/src/rendre-attention-essay-document.ts')
+          target.write_text(
+              "import type { WritingDocument } from '@akiksystems/core';\n\n"
+              + 'export const rendreAttentionEssayDocument = '
+              + json.dumps(document, ensure_ascii=False, indent=2)
+              + ' satisfies WritingDocument;\n',
+              encoding='utf-8',
+          )
+          print(f'Generated {len(content)} Writing blocks.')
           PY
 
       - name: Commit generated canonical document
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/db/src/rendre-attention-essay-document.json
+          git add packages/db/src/rendre-attention-essay-document.ts
           if git diff --cached --quiet; then
             echo "Canonical document already up to date."
             exit 0
           fi
           git commit -m "Add canonical AKS-113 essay document"
           git push origin HEAD:${{ github.ref_name }}
-
-      - name: Upload extracted essay source
-        uses: actions/upload-artifact@v4
-        with:
-          name: aks113-source-text
-          path: .tmp/extracted/rendre-l-attention-au-reel.txt
-          if-no-files-found: error
-          retention-days: 1
-, line)
-              if marker:
-                  flush()
-                  current = marker.group(1)
-                  content.append(
-                      {
-                          'type': 'heading',
-                          'attrs': {'level': 2},
-                          'content': [text_node(chapter_by_number[current])],
-                      }
-                  )
-                  continue
-
-              if current is None:
-                  continue
-
-              if (
-                  line in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI'}
-                  or line == 'AKIK Mohamed Amine / AkikSystems'
-                  or re.match(r'^\\d{2} / 25$', line)
-              ):
-                  flush()
-                  continue
-
-              title = chapter_by_number[current]
-              if (
-                  line == title
-                  or line == title + ' · suite'
-                  or line in heading_fragments.get(current, set())
-                  or (line.endswith(' · suite') and line[:-8].strip() == title)
-              ):
-                  continue
-
-              if line.startswith('http://') or line.startswith('https://'):
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              if current == '12' and line in {
-                  'ProtoCap — dépôt public :',
-                  'Démonstration en ligne :',
-              }:
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              buffer.append(line)
-              if re.search(r'[.!?…»]$', line):
-                  flush()
-
-          flush()
-
-          document = {'version': 1, 'type': 'doc', 'content': content}
-          if len(content) != 213:
-              raise SystemExit(f'Unexpected block count: {len(content)}')
-
-          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
-          output = Path('packages/db/src/rendre-attention-essay-document.json')
-          output.write_text(serialized, encoding='utf-8')
-          print(f'Generated {len(content)} blocks at {output}.')
-          PY
-
-      - name: Commit generated canonical document
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/db/src/rendre-attention-essay-document.json
-          if git diff --cached --quiet; then
-            echo "Canonical document already up to date."
-            exit 0
-          fi
-          git commit -m "Add canonical AKS-113 essay document"
-          git push origin HEAD:${{ github.head_ref }}
-
-      - name: Upload extracted essay source
-        uses: actions/upload-artifact@v4
-        with:
-          name: aks113-source-text
-          path: .tmp/extracted/rendre-l-attention-au-reel.txt
-          if-no-files-found: error
-          retention-days: 1
-, line)
-              ):
-                  flush()
-                  continue
-
-              title = chapter_by_number[current]
-              if (
-                  line == title
-                  or line == title + ' · suite'
-                  or line in heading_fragments.get(current, set())
-                  or (line.endswith(' · suite') and line[:-8].strip() == title)
-              ):
-                  continue
-
-              if line.startswith('http://') or line.startswith('https://'):
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              if current == '12' and line in {
-                  'ProtoCap — dépôt public :',
-                  'Démonstration en ligne :',
-              }:
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              buffer.append(line)
-              if re.search(r'[.!?…»]$', line):
-                  flush()
-
-          flush()
-
-          document = {'version': 1, 'type': 'doc', 'content': content}
-          if len(content) != 213:
-              raise SystemExit(f'Unexpected block count: {len(content)}')
-
-          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
-          output = Path('packages/db/src/rendre-attention-essay-document.json')
-          output.write_text(serialized, encoding='utf-8')
-          print(f'Generated {len(content)} blocks at {output}.')
-          PY
-
-      - name: Commit generated canonical document
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/db/src/rendre-attention-essay-document.json
-          if git diff --cached --quiet; then
-            echo "Canonical document already up to date."
-            exit 0
-          fi
-          git commit -m "Add canonical AKS-113 essay document"
-          git push origin HEAD:${{ github.head_ref }}
-
-      - name: Upload extracted essay source
-        uses: actions/upload-artifact@v4
-        with:
-          name: aks113-source-text
-          path: .tmp/extracted/rendre-l-attention-au-reel.txt
-          if-no-files-found: error
-          retention-days: 1
-, line)
-              if marker:
-                  flush()
-                  current = marker.group(1)
-                  content.append(
-                      {
-                          'type': 'heading',
-                          'attrs': {'level': 2},
-                          'content': [text_node(chapter_by_number[current])],
-                      }
-                  )
-                  continue
-
-              if current is None:
-                  continue
-
-              if (
-                  line in {'RENDRE L’ATTENTION AU RÉEL', 'ESSAI'}
-                  or line == 'AKIK Mohamed Amine / AkikSystems'
-                  or re.match(r'^\\d{2} / 25$', line)
-              ):
-                  flush()
-                  continue
-
-              title = chapter_by_number[current]
-              if (
-                  line == title
-                  or line == title + ' · suite'
-                  or line in heading_fragments.get(current, set())
-                  or (line.endswith(' · suite') and line[:-8].strip() == title)
-              ):
-                  continue
-
-              if line.startswith('http://') or line.startswith('https://'):
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              if current == '12' and line in {
-                  'ProtoCap — dépôt public :',
-                  'Démonstration en ligne :',
-              }:
-                  flush()
-                  content.append(paragraph(line))
-                  continue
-
-              buffer.append(line)
-              if re.search(r'[.!?…»]$', line):
-                  flush()
-
-          flush()
-
-          document = {'version': 1, 'type': 'doc', 'content': content}
-          if len(content) != 213:
-              raise SystemExit(f'Unexpected block count: {len(content)}')
-
-          serialized = json.dumps(document, ensure_ascii=False, indent=2) + '\\n'
-          output = Path('packages/db/src/rendre-attention-essay-document.json')
-          output.write_text(serialized, encoding='utf-8')
-          print(f'Generated {len(content)} blocks at {output}.')
-          PY
-
-      - name: Commit generated canonical document
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/db/src/rendre-attention-essay-document.json
-          if git diff --cached --quiet; then
-            echo "Canonical document already up to date."
-            exit 0
-          fi
-          git commit -m "Add canonical AKS-113 essay document"
-          git push origin HEAD:${{ github.head_ref }}
-
-      - name: Upload extracted essay source
-        uses: actions/upload-artifact@v4
-        with:
-          name: aks113-source-text
-          path: .tmp/extracted/rendre-l-attention-au-reel.txt
-          if-no-files-found: error
-          retention-days: 1
