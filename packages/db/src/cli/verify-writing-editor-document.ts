@@ -19,6 +19,7 @@ try {
   const editorialPosition = (positionRow?.max_position ?? -1) + 1;
 
   const editorDocument = {
+    version: 1,
     type: 'doc',
     content: [
       {
@@ -83,11 +84,10 @@ try {
     'First Tiptap paragraph.\n\nSecond Tiptap paragraph.',
     'AKS-105 must keep the existing controlled public paragraph projection.',
   );
-  assert.equal(
-    'editorDocument' in publication.snapshot ||
-      'editor_document' in publication.snapshot,
-    false,
-    'The draft Tiptap payload must not become an unversioned public content schema before AKS-106.',
+  assert.deepEqual(
+    publication.snapshot.document,
+    editorDocument,
+    'AKS-106 must freeze the validated versioned rich-content document in the publication snapshot.',
   );
 
   await assert.rejects(
@@ -101,7 +101,7 @@ try {
   );
 
   process.stdout.write(
-    'AKS-105 Tiptap editor persistence qualification passed: structured draft JSON persists, invalid top-level payloads are rejected, and publication remains on the controlled plain-text projection until AKS-106.\n',
+    'AKS-106 Writing rich-content qualification passed: structured draft JSON persists, publication freezes schema v1, invalid top-level payloads are rejected, and the compatibility text projection remains available.\n',
   );
 } finally {
   await db.deleteFrom('writings').where('id', '=', writingId).execute();
