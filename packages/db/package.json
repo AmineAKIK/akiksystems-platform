@@ -61,7 +61,8 @@
     "db:bootstrap-learning-artifact-qualification": "tsx src/cli/bootstrap-learning-artifact-qualification.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts",
-    "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts"
+    "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts",
+    "db:verify-rendre-attention-essay": "tsx src/cli/verify-rendre-attention-essay.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
