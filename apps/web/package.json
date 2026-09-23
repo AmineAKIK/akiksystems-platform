@@ -7,6 +7,7 @@
     "auth:bootstrap-admin": "tsx scripts/bootstrap-admin.ts",
     "auth:migrate": "tsx scripts/auth-migrate.ts",
     "content:bootstrap-dwwm": "tsx scripts/bootstrap-dwwm.ts",
+    "content:bootstrap-sentinel-dossier": "tsx scripts/bootstrap-sentinel-dossier.ts",
     "content:bootstrap-protocap": "tsx scripts/bootstrap-protocap.ts",
     "content:bootstrap-oria": "tsx scripts/bootstrap-oria.ts",
     "content:bootstrap-tugeres": "tsx scripts/bootstrap-tugeres.ts",

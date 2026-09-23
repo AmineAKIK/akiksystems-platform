@@ -1,5 +1,7 @@
 export { bootstrapDwwmTraining } from './dwwm-bootstrap.js';
 export type { BootstrapDwwmTrainingResult } from './dwwm-bootstrap.js';
+export { bootstrapSentinelDossier } from './sentinel-dossier-bootstrap.js';
+export type { BootstrapSentinelDossierResult } from './sentinel-dossier-bootstrap.js';
 export {
   getPublishedTraining,
   listPublishedTrainings,

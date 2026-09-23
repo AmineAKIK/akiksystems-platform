@@ -41,9 +41,21 @@ pnpm content:bootstrap-dwwm
 This creates the STUDI Full-Stack Web & Mobile Developer / Développeur web et
 web mobile Training for the level-5 Professional Title RNCP 37674, publishes EN/FR, keeps
 the state as in progress, and intentionally leaves dates unset because the
-current internal source does not establish reliable start/end dates. The
-command does not create the Sentinel dossier; that remains separate
-LearningArtifact content.
+current internal source does not establish reliable start/end dates.
+
+Once the DWWM Training and the bilingual Sentinel System are both published,
+the verified Sentinel project dossier can be provisioned independently with:
+
+```sh
+pnpm content:bootstrap-sentinel-dossier
+```
+
+The command creates one bilingual LearningArtifact connected to both DWWM and
+Sentinel. Its inspection copy is grounded in the Sentinel dossier source and
+the documented examination baseline `v1.0.0-rc.9` /
+`ed26a25e3c005cabb0da30a4553dfbbee03afe81`. The source document still carries
+explicit finalization markers, so AKS-093 does not attach or imply a finalized
+PDF. Source-document publication remains a separate qualification step.
 
 A production recovery is expected to restore PostgreSQL and object storage
 together; bootstrap scripts are not a substitute for a content backup or
