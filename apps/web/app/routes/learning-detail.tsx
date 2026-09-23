@@ -8,14 +8,14 @@ import { data, useLoaderData } from 'react-router';
 
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
-import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
+import { buildLocalizedPublicMeta, buildNoIndexMeta, publicNotFound } from '../lib/public-seo';
 
 import type { Route } from './+types/learning-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
-    throw new Response('Training not found.', { status: 404 });
+    throw publicNotFound('Training not found.');
   }
   return value;
 }
@@ -74,7 +74,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const training = await getPublishedTraining(appDb, { locale, slug });
 
   if (training === null) {
-    throw new Response('Training not found.', { status: 404 });
+    throw publicNotFound('Training not found.');
   }
 
   const [credentials, learningArtifacts] = await Promise.all([
