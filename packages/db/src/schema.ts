@@ -401,6 +401,40 @@ export interface WritingCategoriesTable {
   created_at: TimestampColumn;
 }
 
+export interface TagsTable {
+  id: string;
+  canonical_key: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface TagLocalizationsTable {
+  tag_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  name: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface TagPublicationsTable {
+  tag_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WritingTagsTable {
+  writing_id: string;
+  tag_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -641,6 +675,22 @@ export type WritingCategoryRow = Selectable<WritingCategoriesTable>;
 export type NewWritingCategoryRow = Insertable<WritingCategoriesTable>;
 export type WritingCategoryUpdate = Updateable<WritingCategoriesTable>;
 
+export type TagRow = Selectable<TagsTable>;
+export type NewTagRow = Insertable<TagsTable>;
+export type TagUpdate = Updateable<TagsTable>;
+
+export type TagLocalizationRow = Selectable<TagLocalizationsTable>;
+export type NewTagLocalizationRow = Insertable<TagLocalizationsTable>;
+export type TagLocalizationUpdate = Updateable<TagLocalizationsTable>;
+
+export type TagPublicationRow = Selectable<TagPublicationsTable>;
+export type NewTagPublicationRow = Insertable<TagPublicationsTable>;
+export type TagPublicationUpdate = Updateable<TagPublicationsTable>;
+
+export type WritingTagRow = Selectable<WritingTagsTable>;
+export type NewWritingTagRow = Insertable<WritingTagsTable>;
+export type WritingTagUpdate = Updateable<WritingTagsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -713,6 +763,10 @@ export interface Database {
   category_localizations: CategoryLocalizationsTable;
   category_publications: CategoryPublicationsTable;
   writing_categories: WritingCategoriesTable;
+  tags: TagsTable;
+  tag_localizations: TagLocalizationsTable;
+  tag_publications: TagPublicationsTable;
+  writing_tags: WritingTagsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;
