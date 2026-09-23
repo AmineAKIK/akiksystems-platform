@@ -2237,3 +2237,46 @@
   }
 }
 
+/* AKS-096: public System -> Learning evidence navigation without content duplication. */
+.aks-system-learning-evidence {
+  display: grid;
+  gap: var(--aks-space-5);
+  padding-block-start: var(--aks-space-5);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+.aks-system-learning-evidence-heading {
+  display: grid;
+  gap: var(--aks-space-2);
+  max-width: 48rem;
+}
+
+.aks-system-learning-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-system-learning-evidence-card {
+  min-width: 0;
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-system-learning-evidence-card .aks-heading,
+.aks-system-learning-evidence-card .aks-text,
+.aks-system-learning-evidence-card .aks-link {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 48rem) {
+  .aks-system-learning-evidence-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-system-learning-evidence-card {
+    padding: var(--aks-space-4);
+  }
+}
