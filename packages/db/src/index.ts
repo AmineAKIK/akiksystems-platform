@@ -42,14 +42,27 @@ export type {
   PublicLearningArtifactTraining,
 } from './learning-artifact-publication.js';
 export {
+  getPublishedCategory,
+  listPublishedCategories,
+  parseCategoryPublicationSnapshot,
+  publishCategoryLocalization,
+  unpublishCategoryLocalization,
+} from './category-publication.js';
+export type {
+  CategoryPublicationSnapshot,
+  PublishedCategory,
+} from './category-publication.js';
+export {
   getPublishedWriting,
   listPublishedWritings,
+  listPublishedWritingsForCategory,
   publishWritingLocalization,
   unpublishWritingLocalization,
 } from './writing-publication.js';
 export type {
   PublishedWriting,
   PublishedWritingListItem,
+  PublicWritingCategory,
   WritingPublicationSnapshot,
 } from './writing-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
@@ -128,6 +141,15 @@ export type {
   CredentialRow,
   CredentialsTable,
   CredentialUpdate,
+  CategoryLocalizationRow,
+  CategoryLocalizationsTable,
+  CategoryLocalizationUpdate,
+  CategoryPublicationRow,
+  CategoryPublicationsTable,
+  CategoryPublicationUpdate,
+  CategoryRow,
+  CategoriesTable,
+  CategoryUpdate,
   LearningArtifactLocalizationRow,
   LearningArtifactLocalizationsTable,
   LearningArtifactLocalizationUpdate,
@@ -146,6 +168,9 @@ export type {
   WritingRow,
   WritingsTable,
   WritingUpdate,
+  WritingCategoryRow,
+  WritingCategoriesTable,
+  WritingCategoryUpdate,
   Database,
   ExperienceLocalizationRow,
   ExperienceLocalizationUpdate,
@@ -159,12 +184,16 @@ export type {
   NewCredentialLocalizationRow,
   NewCredentialPublicationRow,
   NewCredentialRow,
+  NewCategoryLocalizationRow,
+  NewCategoryPublicationRow,
+  NewCategoryRow,
   NewLearningArtifactLocalizationRow,
   NewLearningArtifactPublicationRow,
   NewLearningArtifactRow,
   NewWritingLocalizationRow,
   NewWritingPublicationRow,
   NewWritingRow,
+  NewWritingCategoryRow,
   NewExperienceLocalizationRow,
   NewExperienceRow,
   NewProfileCapabilityGroupLocalizationRow,
