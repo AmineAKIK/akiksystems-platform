@@ -10,6 +10,111 @@
   gap: var(--aks-space-5);
 }
 
+
+/* AKS-112: calm long-form Writing reader. */
+.aks-writing-detail-page {
+  min-height: calc(100dvh - 3.75rem);
+  padding-block: clamp(var(--aks-space-7), 6vw, var(--aks-space-9));
+}
+
+.aks-writing-detail-page,
+.aks-writing-detail-page .aks-container,
+.aks-writing-detail-layout,
+.aks-writing-article,
+.aks-writing-related-systems {
+  min-width: 0;
+}
+
+.aks-writing-detail-layout {
+  display: grid;
+  gap: clamp(var(--aks-space-8), 8vw, 7rem);
+}
+
+.aks-writing-article {
+  display: grid;
+  gap: clamp(var(--aks-space-7), 6vw, var(--aks-space-9));
+}
+
+.aks-writing-detail-header {
+  width: min(100%, 50rem);
+  display: grid;
+  gap: var(--aks-space-4);
+  margin-inline: auto;
+}
+
+.aks-writing-detail-title {
+  max-width: 18ch;
+  font-size: clamp(2.35rem, 1.75rem + 3.2vw, 4.35rem);
+  line-height: 1.04;
+}
+
+.aks-writing-detail-summary {
+  max-width: 58ch;
+  color: var(--aks-text-muted);
+  font-size: clamp(1.08rem, 1rem + 0.45vw, 1.35rem);
+  line-height: 1.65;
+}
+
+.aks-writing-taxonomy {
+  display: grid;
+  gap: var(--aks-space-3);
+  padding-block-start: var(--aks-space-3);
+  border-block-start: 1px solid var(--aks-border-subtle);
+}
+
+.aks-writing-taxonomy-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2) var(--aks-space-4);
+  align-items: center;
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-writing-detail-footer {
+  width: min(100%, 44rem);
+  display: grid;
+  gap: var(--aks-space-4);
+  margin-inline: auto;
+  padding-block-start: var(--aks-space-5);
+  border-block-start: 1px solid var(--aks-border-subtle);
+}
+
+.aks-writing-related-systems {
+  display: grid;
+  gap: var(--aks-space-5);
+  padding-block-start: var(--aks-space-7);
+  border-block-start: 1px solid var(--aks-border-subtle);
+}
+
+.aks-writing-related-heading {
+  display: grid;
+  gap: var(--aks-space-3);
+  max-width: 44rem;
+}
+
+@media (max-width: 48rem) {
+  .aks-writing-detail-page {
+    padding-block: var(--aks-space-7);
+  }
+
+  .aks-writing-detail-layout,
+  .aks-writing-article {
+    gap: var(--aks-space-7);
+  }
+
+  .aks-writing-detail-title {
+    font-size: clamp(2.15rem, 10vw, 3.2rem);
+  }
+
+  .aks-writing-taxonomy {
+    padding-block-start: var(--aks-space-2);
+  }
+
+  .aks-writing-related-systems {
+    padding-block-start: var(--aks-space-6);
+  }
+}
+
 .aks-proof-page,
 .aks-proof-page .aks-container,
 .aks-proof-page .aks-proof-stack,
@@ -607,6 +712,22 @@
   display: none;
 }
 
+
+.aks-experience-shell[data-mode='reading'] .aks-experience-shell-inner {
+  min-height: 3.75rem;
+  gap: var(--aks-space-4);
+}
+
+.aks-experience-shell[data-mode='reading'] .aks-brand-signature,
+.aks-experience-shell[data-mode='reading'] .aks-experience-nav,
+.aks-experience-shell[data-mode='reading'] .aks-experience-meta {
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-experience-shell[data-mode='reading'] .aks-experience-nav {
+  gap: clamp(var(--aks-space-2), 1.2vw, var(--aks-space-4));
+}
+
 .aks-experience-mobile-menu-trigger {
   min-height: 2.75rem;
   cursor: pointer;
@@ -720,6 +841,11 @@
   .aks-experience-mobile-menu {
     display: block;
     min-width: 0;
+  }
+
+  .aks-experience-shell[data-mode='reading'] .aks-experience-shell-inner {
+    gap: var(--aks-space-2);
+    padding-block: var(--aks-space-2);
   }
 
   .aks-experience-mobile-menu-trigger {
