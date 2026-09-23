@@ -23,24 +23,6 @@ function writingHref(locale: 'en' | 'fr', slug: string): string {
     : `/en/writings/${slug}`;
 }
 
-function categoryHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/categories/${slug}`
-    : `/en/writings/categories/${slug}`;
-}
-
-function tagHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/tags/${slug}`
-    : `/en/writings/tags/${slug}`;
-}
-
-function kindLabel(kind: 'note' | 'article' | 'essay', locale: 'en' | 'fr') {
-  if (kind === 'note') return 'Note';
-  if (kind === 'article') return 'Article';
-  return locale === 'fr' ? 'Essai' : 'Essay';
-}
-
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
