@@ -2,46 +2,12 @@ import type {
   PublishedWritingListItem,
   PublicSystemReference,
 } from '@akiksystems/db';
-import { Container, Heading, Link, Text } from '@akiksystems/ui';
+import { Container, Heading, Text } from '@akiksystems/ui';
 
 import { destinationById } from '../i18n/global-destinations';
 import type { Locale } from '../i18n/locales';
 import { SystemReference } from './system-reference';
-
-function writingHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/${slug}`
-    : `/en/writings/${slug}`;
-}
-
-function categoryHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/categories/${slug}`
-    : `/en/writings/categories/${slug}`;
-}
-
-function tagHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/tags/${slug}`
-    : `/en/writings/tags/${slug}`;
-}
-
-function kindLabel(kind: PublishedWritingListItem['kind'], locale: Locale): string {
-  if (kind === 'note') return locale === 'fr' ? 'Note' : 'Note';
-  if (kind === 'article') return locale === 'fr' ? 'Article' : 'Article';
-  return locale === 'fr' ? 'Essai' : 'Essay';
-}
-
-function weightLabel(
-  weight: PublishedWritingListItem['editorialWeight'],
-  locale: Locale,
-): string {
-  if (weight === 'major') return locale === 'fr' ? 'Poids majeur' : 'Major weight';
-  if (weight === 'featured') {
-    return locale === 'fr' ? 'Mis en avant' : 'Featured weight';
-  }
-  return locale === 'fr' ? 'Poids normal' : 'Normal weight';
-}
+import { WritingsFeed } from './writings-feed';
 
 export function WritingsOverview({
   locale,
@@ -68,85 +34,31 @@ export function WritingsOverview({
             {destination.description[locale]}
           </Text>
 
-          <section className="aks-proof-stack" aria-labelledby="published-writings">
+          <section
+            className="aks-proof-stack"
+            aria-labelledby="published-writings"
+            data-unified-editorial-surface
+          >
             <div className="aks-profile-section-heading">
               <Heading id="published-writings" level={2} size="sm">
-                {locale === 'fr' ? 'Écrits publiés' : 'Published writings'}
+                {locale === 'fr' ? 'Flux éditorial' : 'Editorial feed'}
               </Heading>
               <Text size="sm" tone="muted">
                 {locale === 'fr'
-                  ? 'Notes, articles et essais partagent un même modèle éditorial et des routes autonomes.'
-                  : 'Notes, articles, and essays share one editorial model and autonomous routes.'}
+                  ? 'Notes, articles et essais coexistent dans un seul flux vivant. La forme reste visible, sans créer trois blogs séparés.'
+                  : 'Notes, articles, and essays coexist in one living feed. Form stays visible without creating three separate blogs.'}
               </Text>
             </div>
 
-            {writings.length === 0 ? (
-              <Text tone="muted">
-                {locale === 'fr'
+            <WritingsFeed
+              emptyMessage={
+                locale === 'fr'
                   ? 'Aucun écrit n’est encore publié.'
-                  : 'No writing is published yet.'}
-              </Text>
-            ) : (
-              <div className="aks-proof-stack">
-                {writings.map((writing) => (
-                  <article className="aks-admin-card" key={writing.writingId}>
-                    <div className="aks-proof-stack">
-                      <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                        {kindLabel(writing.kind, locale)}
-                      </Text>
-                      <Heading level={3} size="sm">
-                        {writing.title}
-                      </Heading>
-                      <Text>{writing.summary}</Text>
-                      <Text size="sm" tone="muted">
-                        {weightLabel(writing.editorialWeight, locale)}
-                      </Text>
-                      <Link href={writingHref(locale, writing.slug)}>
-                        {locale === 'fr' ? 'Lire' : 'Read'}
-                      </Link>
-                      {writing.categories.length > 0 ? (
-                        <div
-                          className="aks-proof-actions"
-                          aria-label={
-                            locale === 'fr'
-                              ? 'Catégories éditoriales'
-                              : 'Editorial categories'
-                          }
-                        >
-                          {writing.categories.map((category) => (
-                            <Link
-                              href={categoryHref(locale, category.slug)}
-                              key={category.categoryId}
-                            >
-                              {category.name}
-                            </Link>
-                          ))}
-                        </div>
-                      ) : null}
-                      {writing.tags.length > 0 ? (
-                        <div
-                          className="aks-proof-actions"
-                          aria-label={
-                            locale === 'fr'
-                              ? 'Tags éditoriaux'
-                              : 'Editorial tags'
-                          }
-                        >
-                          {writing.tags.map((tag) => (
-                            <Link
-                              href={tagHref(locale, tag.slug)}
-                              key={tag.tagId}
-                            >
-                              {tag.name}
-                            </Link>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+                  : 'No writing is published yet.'
+              }
+              locale={locale}
+              writings={writings}
+            />
           </section>
 
           {systemReferences.length > 0 ? (
