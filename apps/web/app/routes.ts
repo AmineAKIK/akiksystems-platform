@@ -12,6 +12,7 @@ export default [
   route('admin/learning/artifacts', 'routes/admin-learning-artifacts.tsx'),
   route('admin/writings', 'routes/admin-writings.tsx'),
   route('admin/writings/categories', 'routes/admin-writing-categories.tsx'),
+  route('admin/writings/tags', 'routes/admin-writing-tags.tsx'),
   route('admin/profile/preview/:locale', 'routes/admin-profile-preview.tsx'),
   route('admin/systems/:systemId', 'routes/admin-system.tsx'),
   route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
