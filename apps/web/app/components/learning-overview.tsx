@@ -27,7 +27,7 @@ export function LearningOverview({ locale, trainings }: LearningOverviewProps) {
     locale === 'fr' ? `/${locale}/apprentissage` : `/${locale}/learning`;
 
   return (
-    <main className="aks-proof-page">
+    <main className="aks-proof-page aks-learning-overview">
       <Container>
         <div className="aks-proof-stack">
           <section className="aks-proof-hero">
