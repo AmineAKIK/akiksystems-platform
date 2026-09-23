@@ -153,6 +153,17 @@ System publication never falls back across languages. Updating a published
 System title or summary is reflected through System-owned publication data
 without republishing related Writings.
 
+AKS-105 integrates Tiptap as a headless Writing editor inside the existing
+AkikSystems admin instead of adding a generic CMS surface. Each localized draft
+can persist an `editor_document` JSONB payload, validated server-side against a
+deliberately minimal Tiptap vocabulary: `doc`, `paragraph`, and `text` only.
+The admin derives the legacy plain-text `body` projection from that validated
+document, so current public Writing rendering and publication snapshots remain
+stable while existing plain-text drafts upgrade into Tiptap transparently on
+first edit. Unknown nodes, marks, attributes, raw layout controls, and arbitrary
+page composition are rejected or unavailable. AKS-106 owns the versioned rich
+content schema and is the only place where the editorial vocabulary broadens.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
