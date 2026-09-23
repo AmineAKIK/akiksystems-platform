@@ -110,6 +110,15 @@ relations remain explicit and optional. Training detail pages resolve Credential
 and LearningArtifact relationships from publication snapshots, so draft relation
 changes cannot leak into the public experience before republication.
 
+AKS-101 establishes Writings as one editorial domain rather than three separate
+content systems. A single Writing identity carries a kind (`note`, `article`,
+or `essay`) and editorial weight (`normal`, `featured`, or `major`), while
+localized EN/FR drafts publish independently to immutable public snapshots.
+Editorial weight is modeled now but does not yet alter layout; that composition
+belongs to later L6 work. The initial renderer intentionally accepts plain text
+paragraphs only, keeping page semantics code-owned until the Tiptap and
+rich-content schema tickets earn a broader controlled document model.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
