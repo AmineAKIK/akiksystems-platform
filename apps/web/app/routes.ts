@@ -39,8 +39,16 @@ export default [
     route('profil/cv', 'routes/profile-cv-fr.ts'),
     route('systems', 'routes/systems.tsx'),
     route('writings', 'routes/writings.tsx'),
+    route(
+      'writings/categories/:slug',
+      'routes/writing-category-detail.tsx',
+    ),
     route('writings/:slug', 'routes/writing-detail.tsx'),
     route('ecrits', 'routes/writings-fr.tsx'),
+    route(
+      'ecrits/categories/:slug',
+      'routes/writing-category-detail-fr.tsx',
+    ),
     route('ecrits/:slug', 'routes/writing-detail-fr.tsx'),
     route('learning', 'routes/learning.tsx'),
     route('learning/credentials/:slug', 'routes/credential-detail.tsx'),
