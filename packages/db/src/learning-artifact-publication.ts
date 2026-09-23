@@ -223,6 +223,29 @@ export async function listPublishedLearningArtifacts(
   }));
 }
 
+export async function listPublishedLearningArtifactsForSystem(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; systemId: string },
+): Promise<PublishedLearningArtifactListItem[]> {
+  const rows = await db
+    .selectFrom('learning_artifact_publications')
+    .select(['snapshot', 'published_at'])
+    .where('locale', '=', input.locale)
+    .execute();
+
+  return rows
+    .map((row) => ({
+      ...parseSnapshot(row.snapshot),
+      publishedAt: row.published_at,
+    }))
+    .filter((artifact) => artifact.systemId === input.systemId)
+    .sort(
+      (left, right) =>
+        left.editorialPosition - right.editorialPosition ||
+        left.learningArtifactId.localeCompare(right.learningArtifactId),
+    );
+}
+
 export async function listPublishedLearningArtifactsForTraining(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; trainingId: string },

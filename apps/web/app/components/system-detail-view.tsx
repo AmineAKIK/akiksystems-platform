@@ -11,6 +11,10 @@ import {
   SystemProofTransparency,
   type SystemProofTransparencyData,
 } from './system-proof-transparency';
+import {
+  SystemLearningEvidence,
+  type SystemLearningEvidenceItem,
+} from './system-learning-evidence';
 
 export interface SystemDetailTechnology {
   id: string;
@@ -46,6 +50,7 @@ export interface SystemDetailViewProps {
   originSummary: string | null;
   links: SystemDetailLink[];
   assets: SystemDetailAsset[];
+  learningEvidence?: SystemLearningEvidenceItem[];
   preview?: boolean;
 }
 
@@ -195,6 +200,7 @@ export function StandardSystemRenderer({
   originSummary,
   links,
   assets,
+  learningEvidence = [],
   preview = false,
 }: SystemDetailViewProps) {
   return (
@@ -267,6 +273,11 @@ export function StandardSystemRenderer({
             <SystemPresentation
               assets={assets}
               document={presentationDocument}
+              locale={locale}
+            />
+
+            <SystemLearningEvidence
+              items={learningEvidence}
               locale={locale}
             />
           </article>

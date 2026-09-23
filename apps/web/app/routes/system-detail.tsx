@@ -1,4 +1,7 @@
-import { getPublishedSystem } from '@akiksystems/db';
+import {
+  getPublishedSystem,
+  listPublishedLearningArtifactsForSystem,
+} from '@akiksystems/db';
 import {
   data,
   useLoaderData,
@@ -28,6 +31,12 @@ function publicSystemUrl(locale: 'en' | 'fr', slug: string): string {
   return `${canonicalOrigin}/${locale}/systems/${slug}`;
 }
 
+function learningArtifactHref(locale: 'en' | 'fr', slug: string): string {
+  return locale === 'fr'
+    ? `/${locale}/apprentissage/preuves/${slug}`
+    : `/${locale}/learning/artifacts/${slug}`;
+}
+
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
@@ -39,11 +48,22 @@ export async function loader({ params }: Route.LoaderArgs) {
       throw new Response('System not found.', { status: 404 });
     }
 
+    const learningEvidence = await listPublishedLearningArtifactsForSystem(db, {
+      locale,
+      systemId: system.id,
+    });
+
     return data(
       {
         system: {
           ...system,
           publishedAt: system.publishedAt.toISOString(),
+          learningEvidence: learningEvidence.map((artifact) => ({
+            id: artifact.learningArtifactId,
+            title: artifact.title,
+            summary: artifact.summary,
+            href: learningArtifactHref(locale, artifact.slug),
+          })),
           media: system.media.map((asset) => ({
             ...asset,
             url: `/${locale}/systems/${slug}/assets/${asset.id}`,
@@ -147,6 +167,7 @@ export default function SystemDetailRoute() {
   return (
     <SystemExperience
       assets={system.media}
+      learningEvidence={system.learningEvidence}
       links={system.links}
       locale={system.locale}
       originSummary={system.origin?.summary ?? null}

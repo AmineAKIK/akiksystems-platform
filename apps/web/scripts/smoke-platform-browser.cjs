@@ -1897,6 +1897,37 @@ async function assertLearningArtifactPublicJourney(browser) {
         'https://akiksystems.com' + target.artifactPath,
       );
 
+      const systemResponse = await page.goto(origin + target.systemPath);
+      assert.equal(systemResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: 'Sentinel', exact: true })
+        .waitFor();
+      const systemEvidence = page.locator('.aks-system-learning-evidence');
+      await systemEvidence
+        .getByRole('heading', {
+          level: 2,
+          name: target.systemEvidenceHeading,
+          exact: true,
+        })
+        .waitFor();
+      await systemEvidence
+        .getByRole('heading', { level: 3, name: target.heading, exact: true })
+        .waitFor();
+      assert.ok(
+        (await systemEvidence.innerText()).includes(target.summary),
+        'System summary depth must expose the connected LearningArtifact summary.',
+      );
+      assert.equal(
+        await systemEvidence
+          .getByRole('link', {
+            name: target.inspectEvidenceLabel,
+            exact: true,
+          })
+          .getAttribute('href'),
+        target.artifactPath,
+        'Sentinel must link back to its localized LearningArtifact.',
+      );
+
       const sourceResponse = await desktop.request.get(origin + target.sourcePath);
       assert.equal(
         sourceResponse.status(),
@@ -2296,6 +2327,8 @@ async function assertSentinelDossierJourney(browser, adminPage) {
         sections: ['Context', 'Objectives', 'Architecture', 'Design choices', 'Security', 'Tests', 'Difficulties', 'Results', 'Limits', 'Evidence'],
         trainingTitle: 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
         systemPath: '/en/systems/sentinel',
+        systemEvidenceHeading: 'Connected learning evidence',
+        inspectEvidenceLabel: 'Inspect learning evidence',
         alternateLocale: 'fr',
         alternatePath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
         sourcePath: '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
@@ -2310,6 +2343,8 @@ async function assertSentinelDossierJourney(browser, adminPage) {
         sections: ['Contexte', 'Objectifs', 'Architecture', 'Choix de conception', 'Sécurité', 'Tests', 'Difficultés', 'Résultats', 'Limites', 'Preuves'],
         trainingTitle: 'Développeur web et web mobile — Titre professionnel RNCP 37674',
         systemPath: '/fr/systems/sentinel',
+        systemEvidenceHeading: 'Preuves d’apprentissage liées',
+        inspectEvidenceLabel: 'Inspecter la preuve',
         alternateLocale: 'en',
         alternatePath: '/en/learning/artifacts/sentinel-dwwm-project-dossier',
         sourcePath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
@@ -2429,6 +2464,8 @@ async function assertSentinelDossierJourney(browser, adminPage) {
     for (const path of [
       '/en/learning/artifacts/sentinel-dwwm-project-dossier',
       '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+      '/en/systems/sentinel',
+      '/fr/systems/sentinel',
     ]) {
       const response = await page.goto(origin + path);
       assert.equal(response?.status(), 200);
@@ -2458,6 +2495,11 @@ async function assertSentinelDossierJourney(browser, adminPage) {
   assert.ok(adminText.includes('Training connected'));
   assert.ok(adminText.includes('System connected'));
   assert.ok(adminText.includes('No source document'));
+  assert.notEqual(
+    await dossierCard.locator('select[name="systemId"]').first().inputValue(),
+    '',
+    'The LearningArtifact admin must remain the management boundary for the System relation.',
+  );
   assert.ok(adminText.includes('Native dossier format'));
 
   const sourceInput = dossierCard.locator(
