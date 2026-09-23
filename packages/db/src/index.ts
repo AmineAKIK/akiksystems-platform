@@ -24,6 +24,7 @@ export type {
 } from './credential-publication.js';
 export {
   getPublishedLearningArtifact,
+  listPublishedLearningArtifacts,
   listPublishedLearningArtifactsForTraining,
   publishLearningArtifactLocalization,
   unpublishLearningArtifactLocalization,

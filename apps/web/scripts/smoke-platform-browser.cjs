@@ -1932,6 +1932,111 @@ async function assertLearningArtifactPublicJourney(browser) {
   }
 }
 
+async function assertLearningOverviewExperience(browser) {
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        path: '/en/learning',
+        heading: 'Learning',
+        mapHeading: 'Two layers, one journey',
+        evidenceHeading: 'Evidence to inspect',
+        trainingHeading: 'Training journey',
+        trainingTitle: 'Qualified Training',
+        trainingPath: '/en/learning/qualified-training',
+        credentialTitle: 'Qualified Credential',
+        credentialPath: '/en/learning/credentials/qualified-credential',
+        artifactTitle: 'Qualified Learning Artifact',
+        artifactPath: '/en/learning/artifacts/qualified-learning-artifact',
+        contextCopy: 'Context · Qualified Training',
+      },
+      {
+        path: '/fr/apprentissage',
+        heading: 'Apprentissage',
+        mapHeading: 'Deux niveaux, un même parcours',
+        evidenceHeading: 'Preuves à inspecter',
+        trainingHeading: 'Parcours de formation',
+        trainingTitle: 'Formation qualifiée',
+        trainingPath: '/fr/apprentissage/formation-qualifiee',
+        credentialTitle: 'Justificatif qualifié',
+        credentialPath: '/fr/apprentissage/justificatifs/justificatif-qualifie',
+        artifactTitle: 'Preuve d’apprentissage qualifiée',
+        artifactPath: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+        contextCopy: 'Contexte · Formation qualifiée',
+      },
+    ];
+
+    for (const target of targets) {
+      const response = await page.goto(origin + target.path);
+      assert.equal(response?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+      await page
+        .getByRole('heading', { level: 2, name: target.mapHeading, exact: true })
+        .waitFor();
+      await page
+        .getByRole('heading', { level: 2, name: target.evidenceHeading, exact: true })
+        .waitFor();
+      await page
+        .getByRole('heading', { level: 2, name: target.trainingHeading, exact: true })
+        .waitFor();
+
+      for (const item of [
+        { title: target.trainingTitle, href: target.trainingPath },
+        { title: target.credentialTitle, href: target.credentialPath },
+        { title: target.artifactTitle, href: target.artifactPath },
+      ]) {
+        await page
+          .getByRole('heading', { level: 3, name: item.title, exact: true })
+          .waitFor();
+        assert.equal(
+          await page.locator('a[href="' + item.href + '"]').count(),
+          1,
+          target.path + ' must expose a direct deep link to ' + item.title + '.',
+        );
+      }
+
+      const body = await page.locator('body').innerText();
+      assert.ok(
+        body.includes(target.contextCopy),
+        target.path + ' must make the Training relationship legible beside evidence.',
+      );
+      assert.ok(
+        body.includes(
+          target.path === '/en/learning'
+            ? '2 published evidence objects'
+            : '2 preuves publiées',
+        ),
+        target.path + ' must surface both published evidence objects at overview depth.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of ['/en/learning', '/fr/apprentissage']) {
+      const response = await page.goto(origin + path);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        path + ' Learning overview must not overflow at 320px.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
 async function assertLearningArtifactAdmin(page) {
   await page.goto(origin + '/admin/learning/artifacts');
   await page
@@ -3472,6 +3577,7 @@ async function assertAxe(page) {
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
     await assertLearningArtifactPublicJourney(browser);
+    await assertLearningOverviewExperience(browser);
     await assertLearningArtifactAdmin(page);
     await assertLearningAdminWorkspace(page);
     await assertTechnicalEvaluatorPaths(browser);

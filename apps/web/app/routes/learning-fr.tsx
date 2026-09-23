@@ -1,4 +1,8 @@
-import { listPublishedTrainings } from '@akiksystems/db';
+import {
+  listPublishedCredentials,
+  listPublishedLearningArtifacts,
+  listPublishedTrainings,
+} from '@akiksystems/db';
 import { data, type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { LearningOverview } from '../components/learning-overview';
@@ -9,11 +13,23 @@ import type { Route } from './+types/learning-fr';
 
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'fr');
-  const trainings = await listPublishedTrainings(appDb, locale);
+  const [credentials, learningArtifacts, trainings] = await Promise.all([
+    listPublishedCredentials(appDb, locale),
+    listPublishedLearningArtifacts(appDb, locale),
+    listPublishedTrainings(appDb, locale),
+  ]);
 
   return data(
     {
       locale,
+      credentials: credentials.map((credential) => ({
+        ...credential,
+        publishedAt: credential.publishedAt.toISOString(),
+      })),
+      learningArtifacts: learningArtifacts.map((artifact) => ({
+        ...artifact,
+        publishedAt: artifact.publishedAt.toISOString(),
+      })),
       trainings: trainings.map((training) => ({
         ...training,
         publishedAt: training.publishedAt.toISOString(),
@@ -43,6 +59,14 @@ export function meta(): MetaDescriptor[] {
 }
 
 export default function LearningFrRoute() {
-  const { trainings } = useLoaderData<typeof loader>();
-  return <LearningOverview locale="fr" trainings={trainings} />;
+  const { credentials, learningArtifacts, trainings } =
+    useLoaderData<typeof loader>();
+  return (
+    <LearningOverview
+      credentials={credentials}
+      learningArtifacts={learningArtifacts}
+      locale="fr"
+      trainings={trainings}
+    />
+  );
 }

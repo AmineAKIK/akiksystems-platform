@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { createDatabase } from '../database.js';
 import {
   getPublishedLearningArtifact,
+  listPublishedLearningArtifacts,
   listPublishedLearningArtifactsForTraining,
   publishLearningArtifactLocalization,
   unpublishLearningArtifactLocalization,
@@ -166,6 +167,12 @@ try {
   assert.equal(english.system?.href, '/en/systems/artifact-system');
   assert.equal(english.sourceAssetId, assetId);
   assert.equal(english.alternate?.slug, 'preuve-apprentissage-qualifiee');
+
+  const listed = await listPublishedLearningArtifacts(db, 'en');
+  assert.deepEqual(
+    listed.map((artifact) => artifact.learningArtifactId),
+    [learningArtifactId],
+  );
 
   const connected = await listPublishedLearningArtifactsForTraining(db, {
     locale: 'en',
