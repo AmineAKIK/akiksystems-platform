@@ -1362,11 +1362,19 @@ async function assertRendreAttentionEssay(browser) {
       assert.ok(text.includes(excerpt), 'Canonical essay excerpt must survive publication: ' + excerpt);
     }
 
-    await page
+    const relatedSystems = page.locator('.aks-writing-related-systems');
+    await relatedSystems
       .getByRole('heading', { level: 2, name: 'Systèmes liés', exact: true })
       .waitFor();
-    const protoCap = page.getByRole('link', { name: 'ProtoCap', exact: true });
-    assert.equal(await protoCap.getAttribute('href'), '/fr/systems/protocap');
+    await relatedSystems
+      .getByRole('heading', { level: 3, name: 'ProtoCap', exact: true })
+      .waitFor();
+    assert.equal(
+      await relatedSystems
+        .getByRole('link', { name: 'Inspecter le système', exact: true })
+        .getAttribute('href'),
+      '/fr/systems/protocap',
+    );
 
     assert.equal(
       await page.locator('.aks-experience-meta a[hreflang="en"]').count(),
