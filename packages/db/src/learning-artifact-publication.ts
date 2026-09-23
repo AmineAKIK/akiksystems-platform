@@ -197,6 +197,32 @@ export async function unpublishLearningArtifactLocalization(
   });
 }
 
+export async function listPublishedLearningArtifacts(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+): Promise<PublishedLearningArtifactListItem[]> {
+  const rows = await db
+    .selectFrom('learning_artifact_publications')
+    .innerJoin(
+      'learning_artifacts',
+      'learning_artifacts.id',
+      'learning_artifact_publications.learning_artifact_id',
+    )
+    .select([
+      'learning_artifact_publications.snapshot',
+      'learning_artifact_publications.published_at',
+    ])
+    .where('learning_artifact_publications.locale', '=', locale)
+    .orderBy('learning_artifacts.editorial_position')
+    .orderBy('learning_artifacts.created_at')
+    .execute();
+
+  return rows.map((row) => ({
+    ...parseSnapshot(row.snapshot),
+    publishedAt: row.published_at,
+  }));
+}
+
 export async function listPublishedLearningArtifactsForTraining(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; trainingId: string },
