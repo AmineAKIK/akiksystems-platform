@@ -72,6 +72,11 @@ export const trainingStates = ['planned', 'in_progress', 'completed'] as const;
 
 export type TrainingState = (typeof trainingStates)[number];
 
+export const credentialKinds = ['diploma', 'title', 'certification'] as const;
+
+export type CredentialKind = (typeof credentialKinds)[number];
+export type CredentialId = string;
+
 export type TrainingId = string;
 
 export interface Training {

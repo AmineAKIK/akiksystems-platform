@@ -39,11 +39,13 @@
     "db:verify-system-proof-transparency": "tsx src/cli/verify-system-proof-transparency.ts",
     "db:verify-system-references": "tsx src/cli/verify-system-references.ts",
     "db:verify-training-domain": "tsx src/cli/verify-training-domain.ts",
+    "db:verify-credential-domain": "tsx src/cli/verify-credential-domain.ts",
     "db:verify-system-publication-snapshots": "tsx src/cli/verify-system-publication-snapshots.ts",
     "db:bootstrap-tugeres-qualification": "tsx src/cli/bootstrap-tugeres-qualification.ts",
     "db:bootstrap-oria-qualification": "tsx src/cli/bootstrap-oria-qualification.ts",
     "db:bootstrap-protocap-qualification": "tsx src/cli/bootstrap-protocap-qualification.ts",
     "db:bootstrap-training-qualification": "tsx src/cli/bootstrap-training-qualification.ts",
+    "db:bootstrap-credential-qualification": "tsx src/cli/bootstrap-credential-qualification.ts",
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts",
     "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts"

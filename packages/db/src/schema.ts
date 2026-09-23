@@ -1,4 +1,5 @@
 import type {
+  CredentialKind,
   PlatformLocale,
   PresentationDocument,
   SystemEditorialState,
@@ -265,6 +266,41 @@ export interface TrainingPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface CredentialsTable {
+  id: string;
+  kind: CredentialKind;
+  issuer: string;
+  issued_on: ColumnType<string | null, string | null | undefined, string | null>;
+  training_id: string | null;
+  source_asset_id: string | null;
+  verification_url: string | null;
+  editorial_position: DefaultedColumn<number>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface CredentialLocalizationsTable {
+  credential_id: string;
+  locale: PlatformLocale;
+  slug: string | null;
+  title: string | null;
+  summary: string | null;
+  body: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface CredentialPublicationsTable {
+  credential_id: string;
+  locale: PlatformLocale;
+  slug: string;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ExperiencesTable {
   id: string;
   created_at: TimestampColumn;
@@ -447,6 +483,18 @@ export type TrainingPublicationRow = Selectable<TrainingPublicationsTable>;
 export type NewTrainingPublicationRow = Insertable<TrainingPublicationsTable>;
 export type TrainingPublicationUpdate = Updateable<TrainingPublicationsTable>;
 
+export type CredentialRow = Selectable<CredentialsTable>;
+export type NewCredentialRow = Insertable<CredentialsTable>;
+export type CredentialUpdate = Updateable<CredentialsTable>;
+
+export type CredentialLocalizationRow = Selectable<CredentialLocalizationsTable>;
+export type NewCredentialLocalizationRow = Insertable<CredentialLocalizationsTable>;
+export type CredentialLocalizationUpdate = Updateable<CredentialLocalizationsTable>;
+
+export type CredentialPublicationRow = Selectable<CredentialPublicationsTable>;
+export type NewCredentialPublicationRow = Insertable<CredentialPublicationsTable>;
+export type CredentialPublicationUpdate = Updateable<CredentialPublicationsTable>;
+
 export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
@@ -506,6 +554,9 @@ export interface Database {
   trainings: TrainingsTable;
   training_localizations: TrainingLocalizationsTable;
   training_publications: TrainingPublicationsTable;
+  credentials: CredentialsTable;
+  credential_localizations: CredentialLocalizationsTable;
+  credential_publications: CredentialPublicationsTable;
   experiences: ExperiencesTable;
   experience_localizations: ExperienceLocalizationsTable;
   system_experiences: SystemExperiencesTable;

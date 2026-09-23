@@ -1,4 +1,7 @@
-import { getPublishedTraining } from '@akiksystems/db';
+import {
+  getPublishedTraining,
+  listPublishedCredentialsForTraining,
+} from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, type MetaDescriptor, useLoaderData } from 'react-router';
 
@@ -32,8 +35,17 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Training not found.', { status: 404 });
   }
 
+  const credentials = await listPublishedCredentialsForTraining(appDb, {
+    locale,
+    trainingId: training.trainingId,
+  });
+
   return data(
     {
+      credentials: credentials.map((credential) => ({
+        ...credential,
+        publishedAt: credential.publishedAt.toISOString(),
+      })),
       training: {
         ...training,
         publishedAt: training.publishedAt.toISOString(),
@@ -91,7 +103,7 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 }
 
 export default function LearningDetailRoute() {
-  const { training } = useLoaderData<typeof loader>();
+  const { credentials, training } = useLoaderData<typeof loader>();
   const overviewHref =
     training.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
   const paragraphs =
@@ -135,11 +147,40 @@ export default function LearningDetailRoute() {
                 ? 'Preuves liées'
                 : 'Connected evidence'}
             </Heading>
-            <Text tone="muted">
-              {training.locale === 'fr'
-                ? 'Les preuves d’apprentissage restent des objets distincts de la formation. Elles seront reliées ici sans dupliquer le contexte.'
-                : 'Learning evidence remains distinct from the Training context. Connected artifacts will appear here without duplicating the Training.'}
-            </Text>
+            {credentials.length === 0 ? (
+              <Text tone="muted">
+                {training.locale === 'fr'
+                  ? 'Aucun justificatif publié n’est encore relié à cette formation.'
+                  : 'No published Credential is connected to this Training yet.'}
+              </Text>
+            ) : (
+              <div className="aks-admin-asset-list">
+                {credentials.map((credential) => (
+                  <article className="aks-admin-asset" key={credential.credentialId}>
+                    <div className="aks-proof-stack">
+                      <Text size="sm" tone="muted">
+                        {credential.kind} · {credential.issuer}
+                      </Text>
+                      <Heading level={3} size="sm">
+                        {credential.title}
+                      </Heading>
+                      <Text>{credential.summary}</Text>
+                      <Link
+                        href={
+                          training.locale === 'fr'
+                            ? `/fr/apprentissage/justificatifs/${credential.slug}`
+                            : `/en/learning/credentials/${credential.slug}`
+                        }
+                      >
+                        {training.locale === 'fr'
+                          ? 'Inspecter le justificatif'
+                          : 'Inspect Credential'}
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
 
           <Link href={overviewHref}>

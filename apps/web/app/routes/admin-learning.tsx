@@ -386,10 +386,11 @@ export default function AdminLearningRoute() {
               </Heading>
               <Text tone="muted">
                 Training is context. Credentials and LearningArtifacts remain
-                separate evidence objects and arrive in AKS-088/089.
+                separate connected evidence objects.
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin">Back to administration</Link>
+                <Link href="/admin/learning/credentials">Credentials</Link>
                 <Link href="/en/learning">Public Learning</Link>
               </div>
             </div>
