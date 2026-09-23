@@ -1579,6 +1579,257 @@ async function assertReusableSystemReferences(browser) {
 }
 
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\
+
+function bootstrapL5TrainingQualification() {');
+}
+
+function assertHtmlTagAttributes(html, tagName, attributes, message) {
+  const tags = html.match(new RegExp('<' + tagName + '\\b[^>]*>', 'gi')) ?? [];
+  const found = tags.some((tag) =>
+    Object.entries(attributes).every(([name, value]) =>
+      new RegExp(
+        escapeRegex(name) + '=["\\\']' + escapeRegex(value) + '["\\\']',
+        'i',
+      ).test(tag),
+    ),
+  );
+  assert.equal(found, true, message);
+}
+
+async function assertLearningSeo(browser) {
+  const context = await browser.newContext();
+  try {
+    const targets = [
+      {
+        path: '/en/learning',
+        locale: 'en',
+        title: 'Learning',
+        description: 'Training context and inspectable learning evidence at AkikSystems.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage',
+        xDefaultPath: '/en/learning',
+        heading: 'Learning',
+        summary: 'The journey provides context.',
+      },
+      {
+        path: '/fr/apprentissage',
+        locale: 'fr',
+        title: 'Apprentissage',
+        description:
+          'Contexte de formation et preuves d’apprentissage inspectables chez AkikSystems.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning',
+        xDefaultPath: '/en/learning',
+        heading: 'Apprentissage',
+        summary: 'Le parcours donne le contexte.',
+      },
+      {
+        path: '/en/learning/qualified-training',
+        locale: 'en',
+        title: 'Qualified Training',
+        description: 'Published Training context.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/formation-qualifiee',
+        xDefaultPath: '/en/learning/qualified-training',
+        heading: 'Qualified Training',
+        summary: 'Published Training context.',
+      },
+      {
+        path: '/fr/apprentissage/formation-qualifiee',
+        locale: 'fr',
+        title: 'Formation qualifiée',
+        description: 'Contexte de formation publié.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/qualified-training',
+        xDefaultPath: '/en/learning/qualified-training',
+        heading: 'Formation qualifiée',
+        summary: 'Contexte de formation publié.',
+      },
+      {
+        path: '/en/learning/credentials/qualified-credential',
+        locale: 'en',
+        title: 'Qualified Credential',
+        description: 'Published Credential evidence.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/justificatifs/justificatif-qualifie',
+        xDefaultPath: '/en/learning/credentials/qualified-credential',
+        heading: 'Qualified Credential',
+        summary: 'Published Credential evidence.',
+      },
+      {
+        path: '/fr/apprentissage/justificatifs/justificatif-qualifie',
+        locale: 'fr',
+        title: 'Justificatif qualifié',
+        description: 'Preuve Credential publiée.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/credentials/qualified-credential',
+        xDefaultPath: '/en/learning/credentials/qualified-credential',
+        heading: 'Justificatif qualifié',
+        summary: 'Preuve Credential publiée.',
+      },
+      {
+        path: '/en/learning/artifacts/qualified-learning-artifact',
+        locale: 'en',
+        title: 'Qualified Learning Artifact',
+        description: 'Published first-class learning evidence.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+        xDefaultPath: '/en/learning/artifacts/qualified-learning-artifact',
+        heading: 'Qualified Learning Artifact',
+        summary: 'Published first-class learning evidence.',
+      },
+      {
+        path: '/fr/apprentissage/preuves/preuve-apprentissage-qualifiee',
+        locale: 'fr',
+        title: 'Preuve d’apprentissage qualifiée',
+        description: 'Preuve d’apprentissage de premier rang publiée.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/artifacts/qualified-learning-artifact',
+        xDefaultPath: '/en/learning/artifacts/qualified-learning-artifact',
+        heading: 'Preuve d’apprentissage qualifiée',
+        summary: 'Preuve d’apprentissage de premier rang publiée.',
+      },
+    ];
+
+    for (const target of targets) {
+      const response = await context.request.get(origin + target.path);
+      assert.equal(response.status(), 200);
+      const html = await response.text();
+      const canonicalUrl = 'https://akiksystems.com' + target.path;
+      const alternateUrl = 'https://akiksystems.com' + target.alternatePath;
+      const xDefaultUrl = 'https://akiksystems.com' + target.xDefaultPath;
+
+      assert.match(
+        html,
+        new RegExp('<html[^>]+lang=["\\\']' + target.locale + '["\\\']', 'i'),
+        target.path + ' must SSR the localized document language.',
+      );
+      assert.ok(
+        html.includes('<title>' + target.title + ' · AkikSystems</title>'),
+        target.path + ' must SSR its localized title before hydration.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        { name: 'description', content: target.description },
+        target.path + ' must SSR its localized description.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        {
+          name: 'robots',
+          content: 'index, follow, max-image-preview:large, max-snippet:-1',
+        },
+        target.path + ' must be explicitly indexable.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'link',
+        { rel: 'canonical', href: canonicalUrl },
+        target.path + ' must expose its autonomous canonical URL.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'link',
+        { rel: 'alternate', hreflang: target.locale, href: canonicalUrl },
+        target.path + ' must expose a self hreflang.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'link',
+        {
+          rel: 'alternate',
+          hreflang: target.alternateLocale,
+          href: alternateUrl,
+        },
+        target.path + ' must expose its localized alternate.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'link',
+        { rel: 'alternate', hreflang: 'x-default', href: xDefaultUrl },
+        target.path + ' must point x-default at the English equivalent.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        { property: 'og:title', content: target.title },
+        target.path + ' must expose an Open Graph title.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        { property: 'og:description', content: target.description },
+        target.path + ' must expose an Open Graph description.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        { property: 'og:url', content: canonicalUrl },
+        target.path + ' must expose the canonical Open Graph URL.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        {
+          property: 'og:locale',
+          content: target.locale === 'fr' ? 'fr_FR' : 'en_US',
+        },
+        target.path + ' must expose the localized Open Graph locale.',
+      );
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        { name: 'twitter:card', content: 'summary' },
+        target.path + ' must expose a stable Twitter card contract.',
+      );
+      assert.ok(
+        html.includes(target.heading) && html.includes(target.summary),
+        target.path +
+          ' must contain title/summary inspection content in the initial HTML.',
+      );
+    }
+
+    for (const path of [
+      '/en/learning/not-published',
+      '/en/learning/credentials/not-published',
+      '/en/learning/artifacts/not-published',
+    ]) {
+      const response = await context.request.get(origin + path);
+      assert.equal(response.status(), 404);
+      const html = await response.text();
+      assertHtmlTagAttributes(
+        html,
+        'meta',
+        {
+          name: 'robots',
+          content: 'noindex, nofollow, noarchive, nosnippet',
+        },
+        path + ' must not become an indexable fallback page.',
+      );
+    }
+
+    for (const path of [
+      '/en/learning/credentials/qualified-credential/source',
+      '/en/learning/artifacts/qualified-learning-artifact/source',
+    ]) {
+      const response = await context.request.get(origin + path);
+      assert.equal(response.status(), 404);
+      assert.match(
+        response.headers()['x-robots-tag'] ?? '',
+        /noindex/i,
+        path + ' source documents must remain outside search indexes.',
+      );
+    }
+  } finally {
+    await context.close();
+  }
+}
+
+
 function bootstrapL5TrainingQualification() {
   execFileSync('pnpm', ['db:bootstrap-training-qualification'], {
     cwd: process.cwd(),
@@ -4278,6 +4529,7 @@ async function assertAxe(page) {
     await assertFutureCredentialExtensibility(page);
     await assertLearningArtifactPublicJourney(browser);
     await assertLearningOverviewExperience(browser);
+    await assertLearningSeo(browser);
     await assertLearningArtifactAdmin(page);
     await assertLearningAdminWorkspace(page);
     await assertDwwmTrainingJourney(browser, page);
