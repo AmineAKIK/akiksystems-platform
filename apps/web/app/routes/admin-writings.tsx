@@ -1173,7 +1173,11 @@ export default function AdminWritingsRoute() {
           </section>
 
           {data.writings.map((writing) => (
-            <section className="aks-admin-card" key={writing.id}>
+            <section
+              className="aks-admin-card"
+              data-writing-card={writing.id}
+              key={writing.id}
+            >
               <div className="aks-proof-stack">
                 <Heading level={2} size="sm">
                   {writing.title_en ?? writing.title_fr ?? 'Untitled Writing'}
