@@ -59,63 +59,99 @@ export function WritingDetailView({
   writing: WritingDetailViewModel;
 }) {
   return (
-    <main className="aks-proof-page">
-      <Container>
-        <article className="aks-proof-stack">
-          <header className="aks-proof-hero">
-            <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-              {kindLabel(writing.kind, writing.locale)}
-            </Text>
-            <Heading level={1} size="lg">
-              {writing.title}
-            </Heading>
-            <Text>{writing.summary}</Text>
-          </header>
+    <main
+      className="aks-writing-detail-page"
+      data-writing-kind={writing.kind}
+    >
+      <Container width="wide">
+        <div className="aks-writing-detail-layout">
+          <article className="aks-writing-article">
+            <header className="aks-writing-detail-header">
+              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                {kindLabel(writing.kind, writing.locale)}
+              </Text>
+              <Heading className="aks-writing-detail-title" level={1} size="lg">
+                {writing.title}
+              </Heading>
+              <Text className="aks-writing-detail-summary" size="lg">
+                {writing.summary}
+              </Text>
 
-          {writing.categories.length > 0 ? (
-            <nav
-              className="aks-proof-actions"
-              aria-label={
-                writing.locale === 'fr'
-                  ? 'Catégories éditoriales'
-                  : 'Editorial categories'
-              }
-            >
-              {writing.categories.map((category) => (
-                <Link
-                  href={categoryHref(writing.locale, category.slug)}
-                  key={category.categoryId}
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
+              {writing.categories.length > 0 || writing.tags.length > 0 ? (
+                <div className="aks-writing-taxonomy">
+                  {writing.categories.length > 0 ? (
+                    <nav
+                      aria-label={
+                        writing.locale === 'fr'
+                          ? 'Catégories éditoriales'
+                          : 'Editorial categories'
+                      }
+                      className="aks-writing-taxonomy-group"
+                    >
+                      {writing.categories.map((category) => (
+                        <Link
+                          href={categoryHref(writing.locale, category.slug)}
+                          key={category.categoryId}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </nav>
+                  ) : null}
 
-          {writing.tags.length > 0 ? (
-            <nav
-              className="aks-proof-actions"
-              aria-label={
-                writing.locale === 'fr' ? 'Tags éditoriaux' : 'Editorial tags'
-              }
+                  {writing.tags.length > 0 ? (
+                    <nav
+                      aria-label={
+                        writing.locale === 'fr'
+                          ? 'Tags éditoriaux'
+                          : 'Editorial tags'
+                      }
+                      className="aks-writing-taxonomy-group"
+                    >
+                      {writing.tags.map((tag) => (
+                        <Link
+                          href={tagHref(writing.locale, tag.slug)}
+                          key={tag.tagId}
+                        >
+                          {tag.name}
+                        </Link>
+                      ))}
+                    </nav>
+                  ) : null}
+                </div>
+              ) : null}
+            </header>
+
+            <section
+              aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}
+              className="aks-writing-reader"
+              data-long-form-reader
             >
-              {writing.tags.map((tag) => (
-                <Link
-                  href={tagHref(writing.locale, tag.slug)}
-                  key={tag.tagId}
-                >
-                  {tag.name}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
+              <WritingEditorialRenderer
+                assetHref={assetHref}
+                assets={writing.assets}
+                document={writing.document}
+                locale={writing.locale}
+                responsiveImages={responsiveImages}
+              />
+            </section>
+
+            <footer className="aks-writing-detail-footer">
+              <Text size="sm" tone="muted">
+                {writing.locale === 'fr'
+                  ? 'Structure contrôlée par le produit · contenu éditorial administrable.'
+                  : 'Product-controlled structure · admin-managed editorial content.'}
+              </Text>
+              <Link href={backHref}>{backLabel}</Link>
+            </footer>
+          </article>
 
           {writing.systems.length > 0 ? (
-            <section
-              className="aks-proof-stack"
+            <aside
               aria-labelledby="writing-related-systems"
+              className="aks-writing-related-systems"
             >
-              <div className="aks-profile-section-heading">
+              <div className="aks-writing-related-heading">
                 <Heading id="writing-related-systems" level={2} size="sm">
                   {writing.locale === 'fr'
                     ? 'Systèmes liés'
@@ -132,30 +168,9 @@ export function WritingDetailView({
                   <SystemReference key={system.id} reference={system} />
                 ))}
               </div>
-            </section>
+            </aside>
           ) : null}
-
-          <section
-            aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}
-            className="aks-writing-reader"
-          >
-            <WritingEditorialRenderer
-              assetHref={assetHref}
-              assets={writing.assets}
-              document={writing.document}
-              locale={writing.locale}
-              responsiveImages={responsiveImages}
-            />
-          </section>
-
-          <Text size="sm" tone="muted">
-            {writing.locale === 'fr'
-              ? 'Structure contrôlée par le produit · contenu éditorial administrable.'
-              : 'Product-controlled structure · admin-managed editorial content.'}
-          </Text>
-
-          <Link href={backHref}>{backLabel}</Link>
-        </article>
+        </div>
       </Container>
     </main>
   );
