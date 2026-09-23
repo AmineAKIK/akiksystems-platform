@@ -1,5 +1,5 @@
 import type { PlatformLocale } from '@akiksystems/core';
-import type { MetaDescriptor } from 'react-router';
+import { data, type MetaDescriptor } from 'react-router';
 
 const canonicalOrigin = 'https://akiksystems.com';
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
@@ -8,8 +8,8 @@ function openGraphLocale(locale: PlatformLocale): 'en_US' | 'fr_FR' {
   return locale === 'fr' ? 'fr_FR' : 'en_US';
 }
 
-export function publicNotFound(message: string): Response {
-  return new Response(message, {
+export function publicNotFound(message: string) {
+  return data(message, {
     status: 404,
     headers: {
       'X-Robots-Tag': noIndexDirective,
