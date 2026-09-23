@@ -5,10 +5,14 @@ import type {
 } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
+import {
+  parseCategoryPublicationSnapshot,
+  type CategoryPublicationSnapshot,
+} from './category-publication.js';
 import type { Database } from './schema.js';
 
 export interface WritingPublicationSnapshot {
-  version: 1;
+  version: 2;
   writingId: string;
   locale: PlatformLocale;
   slug: string;
@@ -18,10 +22,20 @@ export interface WritingPublicationSnapshot {
   kind: WritingKind;
   editorialWeight: WritingEditorialWeight;
   editorialPosition: number;
+  categoryIds: string[];
+}
+
+export interface PublicWritingCategory {
+  categoryId: string;
+  locale: PlatformLocale;
+  slug: string;
+  name: string;
+  description: string | null;
 }
 
 export interface PublishedWritingListItem extends WritingPublicationSnapshot {
   publishedAt: Date;
+  categories: PublicWritingCategory[];
 }
 
 export interface PublishedWriting extends PublishedWritingListItem {
@@ -40,7 +54,62 @@ function parseSnapshot(value: unknown): WritingPublicationSnapshot {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Invalid Writing publication snapshot.');
   }
-  return value as WritingPublicationSnapshot;
+
+  const snapshot = value as Omit<WritingPublicationSnapshot, 'version' | 'categoryIds'> & {
+    version?: number;
+    categoryIds?: unknown;
+  };
+
+  return {
+    ...snapshot,
+    version: 2,
+    categoryIds: Array.isArray(snapshot.categoryIds)
+      ? snapshot.categoryIds.filter(
+          (categoryId): categoryId is string => typeof categoryId === 'string',
+        )
+      : [],
+  };
+}
+
+async function publishedCategoryMap(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+  categoryIds: string[],
+): Promise<Map<string, CategoryPublicationSnapshot>> {
+  if (categoryIds.length === 0) return new Map();
+
+  const rows = await db
+    .selectFrom('category_publications')
+    .select(['category_id', 'snapshot'])
+    .where('locale', '=', locale)
+    .where('category_id', 'in', [...new Set(categoryIds)])
+    .execute();
+
+  return new Map(
+    rows.map((row) => [
+      row.category_id,
+      parseCategoryPublicationSnapshot(row.snapshot),
+    ]),
+  );
+}
+
+function resolveCategories(
+  categoryIds: string[],
+  categoriesById: Map<string, CategoryPublicationSnapshot>,
+): PublicWritingCategory[] {
+  return categoryIds.flatMap((categoryId) => {
+    const category = categoriesById.get(categoryId);
+    if (category === undefined) return [];
+    return [
+      {
+        categoryId: category.categoryId,
+        locale: category.locale,
+        slug: category.slug,
+        name: category.name,
+        description: category.description,
+      },
+    ];
+  });
 }
 
 export async function publishWritingLocalization(
@@ -73,8 +142,15 @@ export async function publishWritingLocalization(
       throw new Error('Writing localization not found.');
     }
 
+    const categoryRows = await transaction
+      .selectFrom('writing_categories')
+      .select('category_id')
+      .where('writing_id', '=', input.writingId)
+      .orderBy('position')
+      .execute();
+
     const snapshot: WritingPublicationSnapshot = {
-      version: 1,
+      version: 2,
       writingId: row.id,
       locale: input.locale,
       slug: requiredText(row.slug, 'slug'),
@@ -84,6 +160,7 @@ export async function publishWritingLocalization(
       kind: row.kind,
       editorialWeight: row.editorial_weight,
       editorialPosition: row.editorial_position,
+      categoryIds: categoryRows.map((category) => category.category_id),
     };
     const now = new Date();
     const snapshotJson = snapshot as unknown as Record<string, unknown>;
@@ -155,16 +232,37 @@ export async function listPublishedWritings(
     .where('locale', '=', locale)
     .execute();
 
-  return rows
-    .map((row) => ({
-      ...parseSnapshot(row.snapshot),
-      publishedAt: row.published_at,
+  const parsed = rows.map((row) => ({
+    snapshot: parseSnapshot(row.snapshot),
+    publishedAt: row.published_at,
+  }));
+  const categoriesById = await publishedCategoryMap(
+    db,
+    locale,
+    parsed.flatMap((row) => row.snapshot.categoryIds),
+  );
+
+  return parsed
+    .map(({ snapshot, publishedAt }) => ({
+      ...snapshot,
+      publishedAt,
+      categories: resolveCategories(snapshot.categoryIds, categoriesById),
     }))
     .sort(
       (left, right) =>
         left.editorialPosition - right.editorialPosition ||
         left.writingId.localeCompare(right.writingId),
     );
+}
+
+export async function listPublishedWritingsForCategory(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; categoryId: string },
+): Promise<PublishedWritingListItem[]> {
+  const writings = await listPublishedWritings(db, input.locale);
+  return writings.filter((writing) =>
+    writing.categoryIds.includes(input.categoryId),
+  );
 }
 
 export async function getPublishedWriting(
@@ -181,6 +279,11 @@ export async function getPublishedWriting(
   if (row === undefined) return null;
 
   const snapshot = parseSnapshot(row.snapshot);
+  const categoriesById = await publishedCategoryMap(
+    db,
+    input.locale,
+    snapshot.categoryIds,
+  );
   const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
   const alternate = await db
     .selectFrom('writing_publications')
@@ -192,6 +295,7 @@ export async function getPublishedWriting(
   return {
     ...snapshot,
     publishedAt: row.published_at,
+    categories: resolveCategories(snapshot.categoryIds, categoriesById),
     alternate:
       alternate === undefined
         ? null
