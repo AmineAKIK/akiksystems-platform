@@ -1693,6 +1693,131 @@ async function assertTrainingPublicJourney(browser) {
   }
 }
 
+function bootstrapL5CredentialQualification() {
+  execFileSync('pnpm', ['db:bootstrap-credential-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertCredentialPublicJourney(browser) {
+  bootstrapL5CredentialQualification();
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        locale: 'en',
+        trainingPath: '/en/learning/qualified-training',
+        credentialPath: '/en/learning/credentials/qualified-credential',
+        heading: 'Qualified Credential',
+        summary: 'Published Credential evidence.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/justificatifs/justificatif-qualifie',
+        sourcePath: '/en/learning/credentials/qualified-credential/source',
+      },
+      {
+        locale: 'fr',
+        trainingPath: '/fr/apprentissage/formation-qualifiee',
+        credentialPath: '/fr/apprentissage/justificatifs/justificatif-qualifie',
+        heading: 'Justificatif qualifié',
+        summary: 'Preuve Credential publiée.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/credentials/qualified-credential',
+        sourcePath: '/fr/apprentissage/justificatifs/justificatif-qualifie/source',
+      },
+    ];
+
+    for (const target of targets) {
+      const trainingResponse = await page.goto(`${origin}${target.trainingPath}`);
+      assert.equal(trainingResponse?.status(), 200);
+      assert.equal(
+        await page.locator(`a[href="${target.credentialPath}"]`).count(),
+        1,
+        `${target.trainingPath} must expose the connected published Credential.`,
+      );
+
+      const credentialResponse = await page.goto(`${origin}${target.credentialPath}`);
+      assert.equal(credentialResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+      const body = await page.locator('body').innerText();
+      assert.ok(body.includes(target.summary));
+      assert.match(body, /Qualification Authority/i);
+      assert.equal(
+        await page.locator('a[href="https://example.com/verify/qualified-credential"]').count(),
+        1,
+        'Credential must expose its optional issuer verification URL.',
+      );
+      assert.equal(
+        await page.locator(`a[href="${target.trainingPath}"]`).count(),
+        1,
+        'Credential must link back to its localized Training context.',
+      );
+      assert.equal(
+        await page
+          .locator(`.aks-experience-meta a[hreflang="${target.alternateLocale}"]`)
+          .getAttribute('href'),
+        target.alternatePath,
+        'Credential translations must switch to the equivalent localized deep route.',
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        `https://akiksystems.com${target.credentialPath}`,
+      );
+      const sourceResponse = await desktop.request.get(`${origin}${target.sourcePath}`);
+      assert.equal(
+        sourceResponse.status(),
+        404,
+        'A Credential without a source asset must not expose a fabricated document.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of [
+      '/en/learning/credentials/qualified-credential',
+      '/fr/apprentissage/justificatifs/justificatif-qualifie',
+    ]) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} Credential surface must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
+async function assertCredentialAdmin(page) {
+  await page.goto(`${origin}/admin/learning/credentials`);
+  await page
+    .getByRole('heading', { level: 1, name: 'Credential administration', exact: true })
+    .waitFor();
+  await page
+    .getByRole('heading', { level: 2, name: 'Qualified Credential', exact: true })
+    .waitFor();
+  assert.equal(
+    await page.getByRole('button', { name: 'Create Credential', exact: true }).count(),
+    1,
+    'Credential must remain manageable from the private Learning administration.',
+  );
+}
+
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -3113,6 +3238,8 @@ async function assertAxe(page) {
     await assertTugeresStandardSystem(browser);
     await assertReusableSystemReferences(browser);
     await assertTrainingPublicJourney(browser);
+    await assertCredentialPublicJourney(browser);
+    await assertCredentialAdmin(page);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
