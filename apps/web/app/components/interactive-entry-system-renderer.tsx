@@ -3,6 +3,7 @@ import { Link as RouterLink } from 'react-router';
 
 import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
+import { SystemLearningEvidence } from './system-learning-evidence';
 import {
   SystemPresentation,
   type SystemDetailViewProps,
@@ -17,6 +18,7 @@ export function InteractiveEntrySystemRenderer({
   technologies,
   links,
   assets,
+  learningEvidence = [],
   preview = false,
 }: SystemDetailViewProps) {
   const live = links.find((link) => link.kind === 'live') ?? null;
@@ -104,6 +106,11 @@ export function InteractiveEntrySystemRenderer({
           <SystemPresentation
             assets={assets}
             document={presentationDocument}
+            locale={locale}
+          />
+
+          <SystemLearningEvidence
+            items={learningEvidence}
             locale={locale}
           />
 
