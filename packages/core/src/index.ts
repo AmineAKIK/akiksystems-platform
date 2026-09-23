@@ -112,6 +112,33 @@ export interface WritingCategory {
   createdAt: Date;
 }
 
+export type TagId = string;
+
+export interface Tag {
+  id: TagId;
+  canonicalKey: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TagLocalization {
+  tagId: TagId;
+  locale: PlatformLocale;
+  slug: string | null;
+  name: string | null;
+  editorialState: SystemEditorialState;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WritingTag {
+  writingId: WritingId;
+  tagId: TagId;
+  position: number;
+  createdAt: Date;
+}
+
 export type TrainingId = string;
 
 export interface Training {

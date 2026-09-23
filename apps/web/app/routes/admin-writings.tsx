@@ -118,36 +118,64 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('writings.id')
     .execute();
 
-  const [categories, writingCategories] = await Promise.all([
-    appDb
-      .selectFrom('categories')
-      .leftJoin('category_localizations as en', (join) =>
-        join
-          .onRef('en.category_id', '=', 'categories.id')
-          .on('en.locale', '=', 'en'),
-      )
-      .leftJoin('category_localizations as fr', (join) =>
-        join
-          .onRef('fr.category_id', '=', 'categories.id')
-          .on('fr.locale', '=', 'fr'),
-      )
-      .select([
-        'categories.id',
-        'categories.editorial_position',
-        'en.name as name_en',
-        'fr.name as name_fr',
-      ])
-      .orderBy('categories.editorial_position')
-      .orderBy('categories.created_at')
-      .orderBy('categories.id')
-      .execute(),
-    appDb
-      .selectFrom('writing_categories')
-      .select(['writing_id', 'category_id', 'position'])
-      .orderBy('writing_id')
-      .orderBy('position')
-      .execute(),
-  ]);
+  const [categories, tags, writingCategories, writingTags] =
+    await Promise.all([
+      appDb
+        .selectFrom('categories')
+        .leftJoin('category_localizations as en', (join) =>
+          join
+            .onRef('en.category_id', '=', 'categories.id')
+            .on('en.locale', '=', 'en'),
+        )
+        .leftJoin('category_localizations as fr', (join) =>
+          join
+            .onRef('fr.category_id', '=', 'categories.id')
+            .on('fr.locale', '=', 'fr'),
+        )
+        .select([
+          'categories.id',
+          'categories.editorial_position',
+          'en.name as name_en',
+          'fr.name as name_fr',
+        ])
+        .orderBy('categories.editorial_position')
+        .orderBy('categories.created_at')
+        .orderBy('categories.id')
+        .execute(),
+      appDb
+        .selectFrom('tags')
+        .leftJoin('tag_localizations as en', (join) =>
+          join
+            .onRef('en.tag_id', '=', 'tags.id')
+            .on('en.locale', '=', 'en'),
+        )
+        .leftJoin('tag_localizations as fr', (join) =>
+          join
+            .onRef('fr.tag_id', '=', 'tags.id')
+            .on('fr.locale', '=', 'fr'),
+        )
+        .select([
+          'tags.id',
+          'tags.canonical_key',
+          'en.name as name_en',
+          'fr.name as name_fr',
+        ])
+        .orderBy('tags.canonical_key')
+        .orderBy('tags.id')
+        .execute(),
+      appDb
+        .selectFrom('writing_categories')
+        .select(['writing_id', 'category_id', 'position'])
+        .orderBy('writing_id')
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('writing_tags')
+        .select(['writing_id', 'tag_id', 'position'])
+        .orderBy('writing_id')
+        .orderBy('position')
+        .execute(),
+    ]);
 
   const categoryIdsByWriting = new Map<string, string[]>();
   for (const relation of writingCategories) {
@@ -156,11 +184,20 @@ export async function loader({ request }: Route.LoaderArgs) {
     categoryIdsByWriting.set(relation.writing_id, categoryIds);
   }
 
+  const tagIdsByWriting = new Map<string, string[]>();
+  for (const relation of writingTags) {
+    const tagIds = tagIdsByWriting.get(relation.writing_id) ?? [];
+    tagIds.push(relation.tag_id);
+    tagIdsByWriting.set(relation.writing_id, tagIds);
+  }
+
   return {
     categories,
+    tags,
     writings: writings.map((writing) => ({
       ...writing,
       categoryIds: categoryIdsByWriting.get(writing.id) ?? [],
+      tagIds: tagIdsByWriting.get(writing.id) ?? [],
     })),
   };
 }
@@ -288,6 +325,71 @@ export async function action({ request }: Route.ActionArgs) {
     return {
       ok: true,
       message: 'Writing categories saved as draft.',
+    };
+  }
+
+  if (intent === 'save-tags') {
+    const rawTagIds = form
+      .getAll('tagId')
+      .filter((value): value is string => typeof value === 'string');
+    if (rawTagIds.some((tagId) => !uuidPattern.test(tagId))) {
+      throw new Response('Invalid Tag selection.', { status: 400 });
+    }
+
+    const tagIds = [...new Set(rawTagIds)];
+    if (tagIds.length > 0) {
+      const existingTags = await db
+        .selectFrom('tags')
+        .select('id')
+        .where('id', 'in', tagIds)
+        .execute();
+      if (existingTags.length !== tagIds.length) {
+        throw new Response('Tag not found.', { status: 404 });
+      }
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('writing_tags')
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      if (tagIds.length > 0) {
+        await transaction
+          .insertInto('writing_tags')
+          .values(
+            tagIds.map((tagId, position) => ({
+              writing_id: writingId,
+              tag_id: tagId,
+              position,
+            })),
+          )
+          .execute();
+      }
+
+      await transaction
+        .updateTable('writing_localizations')
+        .set({
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })
+        .where('writing_id', '=', writingId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.tags_updated',
+        entityType: 'writing',
+        entityId: writingId,
+        metadata: { tagIds },
+      });
+    });
+
+    return {
+      ok: true,
+      message: 'Writing tags saved as draft.',
     };
   }
 
@@ -440,6 +542,7 @@ export default function AdminWritingsRoute() {
               <div className="aks-proof-actions">
                 <Link href="/admin">Administration</Link>
                 <Link href="/admin/writings/categories">Manage categories</Link>
+                <Link href="/admin/writings/tags">Manage tags</Link>
                 <Link href="/en/writings">Open Writings</Link>
               </div>
               {actionData?.message ? <Text>{actionData.message}</Text> : null}
@@ -557,6 +660,44 @@ export default function AdminWritingsRoute() {
                     </Text>
                     <Button emphasis="quiet" type="submit">
                       Save categories
+                    </Button>
+                  </fieldset>
+                </Form>
+
+                <Form method="post" className="aks-proof-stack">
+                  <input name="_intent" type="hidden" value="save-tags" />
+                  <input name="writingId" type="hidden" value={writing.id} />
+                  <fieldset className="aks-admin-card">
+                    <legend>Tags</legend>
+                    {data.tags.length === 0 ? (
+                      <Text size="sm" tone="muted">
+                        No Tag exists yet. Create one from the Tag
+                        administration surface.
+                      </Text>
+                    ) : (
+                      <div className="aks-proof-stack">
+                        {data.tags.map((tag) => (
+                          <label key={tag.id}>
+                            <input
+                              defaultChecked={writing.tagIds.includes(tag.id)}
+                              name="tagId"
+                              type="checkbox"
+                              value={tag.id}
+                            />{' '}
+                            {tag.name_en ??
+                              tag.name_fr ??
+                              tag.canonical_key}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    <Text size="sm" tone="muted">
+                      Tags reuse one deduplicated identity. Saving marks both
+                      Writing localizations as draft; published snapshots remain
+                      unchanged until republished.
+                    </Text>
+                    <Button emphasis="quiet" type="submit">
+                      Save tags
                     </Button>
                   </fieldset>
                 </Form>

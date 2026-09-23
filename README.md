@@ -131,6 +131,16 @@ published, and prevents missing French Category copy from falling back to
 English. Category routes organize published Writings without introducing a
 generic filter UI, styling controls, or page-builder semantics.
 
+AKS-103 adds reusable localized Tags with a stricter deduplication boundary.
+Each Tag has one stable lowercase canonical key that is unique across the
+editorial domain, while public slug and name publish independently in EN/FR.
+Writing↔Tag relations are ordered and many-to-many, and a Writing publication
+snapshot captures Tag identities at publication time. Public reads resolve only
+Tag snapshots published in the requested locale, so draft Tag edits and draft
+assignment changes cannot leak and missing French labels never fall back to
+English. Tag deep routes make the taxonomy inspectable and future-ready for
+search/filter work without introducing the filter UI early.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
