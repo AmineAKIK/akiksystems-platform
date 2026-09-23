@@ -6,30 +6,42 @@ import type { PublishedWritingListItem } from '@akiksystems/db';
 import { WritingsFeed } from './writings-feed';
 
 function writing(
-  writingId: string,
-  kind: PublishedWritingListItem['kind'],
-  slug: string,
-  title: string,
-  position: number,
+  input: Pick<
+    PublishedWritingListItem,
+    'writingId' | 'kind' | 'slug' | 'title' | 'summary' | 'publishedAt'
+  >,
 ): PublishedWritingListItem {
   return {
     version: 5,
-    writingId,
+    writingId: input.writingId,
     locale: 'en',
-    slug,
-    title,
-    summary: `${title} summary`,
-    body: null,
-    document: { version: 1, type: 'doc', content: [] },
-    kind,
+    slug: input.slug,
+    title: input.title,
+    summary: input.summary,
+    body: input.summary,
+    document: {
+      version: 1,
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: input.summary }],
+        },
+      ],
+    },
+    kind: input.kind,
     editorialWeight:
-      kind === 'essay' ? 'major' : kind === 'article' ? 'featured' : 'normal',
-    editorialPosition: position,
+      input.kind === 'essay'
+        ? 'major'
+        : input.kind === 'article'
+          ? 'featured'
+          : 'normal',
+    editorialPosition: 0,
     categoryIds: [],
     tagIds: [],
     systemIds: [],
     assets: [],
-    publishedAt: new Date(`2026-09-${20 + position}T12:00:00.000Z`),
+    publishedAt: input.publishedAt,
     categories: [],
     tags: [],
     systems: [],
@@ -37,45 +49,103 @@ function writing(
 }
 
 describe('WritingsFeed', () => {
-  it('keeps Notes, Articles, and Essays in one ordered editorial feed', () => {
+  it('keeps Note, Article, and Essay in one newest-first editorial feed', () => {
     const html = renderToStaticMarkup(
       <WritingsFeed
-        emptyMessage="No writing."
+        emptyMessage="No writing is published yet."
         locale="en"
         writings={[
-          writing('00000000-0000-4000-8000-000000000001', 'note', 'note-one', 'Note one', 0),
-          writing('00000000-0000-4000-8000-000000000002', 'article', 'article-one', 'Article one', 1),
-          writing('00000000-0000-4000-8000-000000000003', 'essay', 'essay-one', 'Essay one', 2),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000001',
+            kind: 'essay',
+            slug: 'deep-essay',
+            title: 'Deep Essay',
+            summary: 'Long-form reflection.',
+            publishedAt: new Date('2026-09-20T12:00:00.000Z'),
+          }),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000002',
+            kind: 'note',
+            slug: 'fresh-note',
+            title: 'Fresh Note',
+            summary: 'A concise observation.',
+            publishedAt: new Date('2026-09-23T12:00:00.000Z'),
+          }),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000003',
+            kind: 'article',
+            slug: 'middle-article',
+            title: 'Middle Article',
+            summary: 'A developed explanation.',
+            publishedAt: new Date('2026-09-22T12:00:00.000Z'),
+          }),
         ]}
       />,
     );
 
-    expect((html.match(/data-writing-feed/g) ?? []).length).toBe(1);
+    expect((html.match(/data-writing-feed=/g) ?? []).length).toBe(1);
     expect((html.match(/data-writing-kind=/g) ?? []).length).toBe(3);
-    expect(html.indexOf('Note one')).toBeLessThan(html.indexOf('Article one'));
-    expect(html.indexOf('Article one')).toBeLessThan(html.indexOf('Essay one'));
     expect(html).toContain('data-writing-kind="note"');
     expect(html).toContain('data-writing-kind="article"');
     expect(html).toContain('data-writing-kind="essay"');
-    expect(html).toContain('href="/en/writings/note-one"');
-    expect(html).toContain('href="/en/writings/article-one"');
-    expect(html).toContain('href="/en/writings/essay-one"');
+
+    expect(html.indexOf('Fresh Note')).toBeLessThan(html.indexOf('Middle Article'));
+    expect(html.indexOf('Middle Article')).toBeLessThan(html.indexOf('Deep Essay'));
+
+    expect(html).toContain('href="/en/writings/fresh-note"');
+    expect(html).toContain('href="/en/writings/middle-article"');
+    expect(html).toContain('href="/en/writings/deep-essay"');
+    expect(html).not.toContain('/notes/');
+    expect(html).not.toContain('/articles/');
+    expect(html).not.toContain('/essays/');
   });
 
-  it('does not expose editorial-weight labels before AKS-111 owns visual weighting', () => {
+  it('does not surface editorial weight before AKS-111 owns visual weighting', () => {
     const html = renderToStaticMarkup(
       <WritingsFeed
         emptyMessage="No writing."
         locale="en"
         writings={[
-          writing('00000000-0000-4000-8000-000000000004', 'essay', 'essay', 'Essay', 0),
+          writing({
+            writingId: '00000000-0000-4000-8000-000000000004',
+            kind: 'essay',
+            slug: 'essay',
+            title: 'Essay',
+            summary: 'Essay summary.',
+            publishedAt: new Date('2026-09-23T12:00:00.000Z'),
+          }),
         ]}
       />,
     );
 
-    expect(html).toContain('data-editorial-weight="major"');
+    expect(html).not.toContain('data-editorial-weight');
     expect(html).not.toContain('Major weight');
     expect(html).not.toContain('Featured weight');
     expect(html).not.toContain('Normal weight');
+  });
+
+  it('keeps the same surface localized in French', () => {
+    const item = writing({
+      writingId: '00000000-0000-4000-8000-000000000005',
+      kind: 'essay',
+      slug: 'essai-francais',
+      title: 'Essai français',
+      summary: 'Une réflexion longue.',
+      publishedAt: new Date('2026-09-23T12:00:00.000Z'),
+    });
+    item.locale = 'fr';
+
+    const html = renderToStaticMarkup(
+      <WritingsFeed
+        emptyMessage="Aucun écrit n’est encore publié."
+        locale="fr"
+        writings={[item]}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Flux éditorial"');
+    expect(html).toContain('Essai');
+    expect(html).toContain('href="/fr/ecrits/essai-francais"');
+    expect(html).toContain('23 sept. 2026');
   });
 });
