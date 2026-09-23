@@ -129,7 +129,7 @@ jobs:
       - name: Verify L5 DWWM Training content
         run: pnpm --filter @akiksystems/db db:verify-dwwm-training
 
-      - name: Verify L5 Sentinel dossier content and native Web structure
+      - name: Verify L5 Sentinel dossier content, Web structure, and PDF source preservation
         run: pnpm --filter @akiksystems/db db:verify-sentinel-dossier
 
       - name: Verify L5 Credential domain
