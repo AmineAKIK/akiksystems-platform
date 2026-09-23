@@ -28,7 +28,7 @@ export function LearningOverview({ locale, trainings }: LearningOverviewProps) {
 
   return (
     <main className="aks-proof-page">
-      <Container width="wide">
+      <Container>
         <div className="aks-proof-stack">
           <section className="aks-proof-hero">
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
