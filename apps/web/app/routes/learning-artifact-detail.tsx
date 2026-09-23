@@ -8,14 +8,14 @@ import {
 } from '../components/sentinel-dossier-presentation';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
-import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
+import { buildLocalizedPublicMeta, buildNoIndexMeta, publicNotFound } from '../lib/public-seo';
 
 import type { Route } from './+types/learning-artifact-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
-    throw new Response('Learning artifact not found.', { status: 404 });
+    throw publicNotFound('Learning artifact not found.');
   }
   return value;
 }
@@ -38,7 +38,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const artifact = await getPublishedLearningArtifact(appDb, { locale, slug });
 
   if (artifact === null) {
-    throw new Response('Learning artifact not found.', { status: 404 });
+    throw publicNotFound('Learning artifact not found.');
   }
 
   return data(
