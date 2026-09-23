@@ -3,7 +3,7 @@ import {
   writingDocumentFromPlainText,
   writingDocumentToPlainText,
   type WritingDocument,
-} from '@akiksystems/core';
+} from '@akiksystems/core/writing-document';
 
 export type WritingEditorDocument = WritingDocument;
 
