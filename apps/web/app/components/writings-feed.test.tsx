@@ -95,6 +95,7 @@ describe('WritingsFeed', () => {
     expect(html).toContain('href="/en/writings/fresh-note"');
     expect(html).toContain('href="/en/writings/middle-article"');
     expect(html).toContain('href="/en/writings/deep-essay"');
+    expect(html).toContain('aria-label="Software architecture"');
     expect(html).not.toContain('/notes/');
     expect(html).not.toContain('/articles/');
     expect(html).not.toContain('/essays/');
