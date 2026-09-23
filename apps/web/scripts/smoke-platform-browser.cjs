@@ -1838,6 +1838,12 @@ async function assertWritingAdminAndPublic(page) {
         `${locale} Writing editor must author the controlled ${nodeType} block.`,
       );
     }
+    assert.ok(
+      insertedDocument.content.some(
+        (node) => node.type === 'image' && node.attrs?.assetId === assetId,
+      ),
+      `${locale} rich block insertion must not replace contextual media.`,
+    );
 
     await fieldset
       .getByRole('button', {
