@@ -1871,7 +1871,7 @@ async function assertWritingCategories(page) {
 
   const englishDetail =
     '/en/writings/architecture-without-page-builders';
-  await page.goto(origin + englishDetail);
+  await page.goto(origin + englishDetail + '?category-publication=qualified');
   const englishCategoryLink = page.getByRole('link', {
     name: 'Engineering practice',
     exact: true,
@@ -1882,7 +1882,10 @@ async function assertWritingCategories(page) {
     '/en/writings/categories/engineering-practice',
   );
 
-  await page.goto(origin + '/fr/ecrits/architecture-sans-page-builder');
+  await page.goto(
+    origin +
+      '/fr/ecrits/architecture-sans-page-builder?category-publication=en-only',
+  );
   assert.equal(
     await page
       .getByRole('link', { name: 'Pratique d’ingénierie', exact: true })
@@ -1948,7 +1951,12 @@ async function assertWritingCategories(page) {
     await categoryLink.waitFor();
     assert.equal(await categoryLink.getAttribute('href'), target.categoryPath);
 
-    await page.goto(origin + target.writingDetail);
+    await page.goto(
+      origin +
+        target.writingDetail +
+        '?category-publication=' +
+        encodeURIComponent(target.locale),
+    );
     const detailCategoryLink = page.getByRole('link', {
       name: target.categoryName,
       exact: true,
