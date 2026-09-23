@@ -1528,8 +1528,6 @@ async function assertReusableSystemReferences(browser) {
     for (const target of [
       { path: '/en/writings', locale: 'en', heading: 'Writings' },
       { path: '/fr/ecrits', locale: 'fr', heading: 'Écrits' },
-      { path: '/en/learning', locale: 'en', heading: 'Learning' },
-      { path: '/fr/apprentissage', locale: 'fr', heading: 'Apprentissage' },
     ]) {
       const response = await page.goto(`${origin}${target.path}`);
       assert.equal(response?.status(), 200);
@@ -1562,7 +1560,7 @@ async function assertReusableSystemReferences(browser) {
   const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
   try {
     const page = await mobile.newPage();
-    for (const path of ['/en/writings', '/fr/ecrits', '/en/learning', '/fr/apprentissage']) {
+    for (const path of ['/en/writings', '/fr/ecrits']) {
       const response = await page.goto(`${origin}${path}`);
       assert.equal(response?.status(), 200);
       await page.locator('.aks-system-reference').first().waitFor();
@@ -1572,6 +1570,115 @@ async function assertReusableSystemReferences(browser) {
         ),
         true,
         `${path} reusable System references must not overflow at 320px.`,
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+}
+
+
+function bootstrapL5TrainingQualification() {
+  execFileSync('pnpm', ['db:bootstrap-training-qualification'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertTrainingPublicJourney(browser) {
+  bootstrapL5TrainingQualification();
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        locale: 'en',
+        overviewPath: '/en/learning',
+        overviewHeading: 'Learning',
+        detailPath: '/en/learning/qualified-training',
+        detailHeading: 'Qualified Training',
+        summary: 'Published Training context.',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/formation-qualifiee',
+      },
+      {
+        locale: 'fr',
+        overviewPath: '/fr/apprentissage',
+        overviewHeading: 'Apprentissage',
+        detailPath: '/fr/apprentissage/formation-qualifiee',
+        detailHeading: 'Formation qualifiée',
+        summary: 'Contexte de formation publié.',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/qualified-training',
+      },
+    ];
+
+    for (const target of targets) {
+      const overviewResponse = await page.goto(`${origin}${target.overviewPath}`);
+      assert.equal(overviewResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.overviewHeading, exact: true })
+        .waitFor();
+      await page
+        .getByRole('heading', { level: 3, name: target.detailHeading, exact: true })
+        .waitFor();
+      assert.equal(
+        await page.locator(`a[href="${target.detailPath}"]`).count(),
+        1,
+        `${target.overviewPath} must link to the published Training deep route.`,
+      );
+      assert.match(await page.locator('body').innerText(), /Qualification Provider/);
+      await assertAxe(page);
+
+      const detailResponse = await page.goto(`${origin}${target.detailPath}`);
+      assert.equal(detailResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.detailHeading, exact: true })
+        .waitFor();
+      const body = await page.locator('body').innerText();
+      assert.match(body, /Qualification Provider/);
+      assert.ok(
+        body.includes(target.summary),
+        `${target.detailPath} must expose the published Training summary.`,
+      );
+      assert.equal(
+        await page
+          .locator(`.aks-experience-meta a[hreflang="${target.alternateLocale}"]`)
+          .getAttribute('href'),
+        target.alternatePath,
+        'Published Training translations must switch to the equivalent localized deep route.',
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        `https://akiksystems.com${target.detailPath}`,
+        'Training detail must expose its canonical deep URL.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of [
+      '/en/learning',
+      '/fr/apprentissage',
+      '/en/learning/qualified-training',
+      '/fr/apprentissage/formation-qualifiee',
+    ]) {
+      const response = await page.goto(`${origin}${path}`);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        `${path} Training surface must not overflow at 320px.`,
       );
       await assertAxe(page);
     }
@@ -2999,6 +3106,7 @@ async function assertAxe(page) {
     await assertOriaInteractiveEntry(browser);
     await assertTugeresStandardSystem(browser);
     await assertReusableSystemReferences(browser);
+    await assertTrainingPublicJourney(browser);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
