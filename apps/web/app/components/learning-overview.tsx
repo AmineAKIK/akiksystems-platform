@@ -162,8 +162,8 @@ export function LearningOverview({
                 </Heading>
                 <Text>
                   {locale === 'fr'
-                    ? 'Les preuves peuvent être inspectées directement, puis replacées dans leur contexte de formation.'
-                    : 'Evidence can be inspected directly, then traced back to its Training context.'}
+                    ? 'Les preuves peuvent être inspectées directement puis, lorsque c’est pertinent, reliées à leur contexte de formation.'
+                    : 'Evidence can be inspected directly and, when relevant, traced back to its Training context.'}
                 </Text>
                 <Text size="sm" tone="muted">
                   {evidenceCount}{' '}
