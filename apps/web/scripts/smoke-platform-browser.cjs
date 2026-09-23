@@ -3442,9 +3442,22 @@ async function assertFutureCredentialExtensibility(page) {
     body: 'Niveau d’inspection pour un futur diplôme créé sans code applicatif spécifique au justificatif.',
   });
 
+  await futureCard()
+    .getByText(/EN Published · FR Published/)
+    .waitFor();
+  await futureCard()
+    .getByText(/Training connected/)
+    .waitFor();
+
   const publishedAdminText = await futureCard().innerText();
-  assert.ok(publishedAdminText.includes('EN Published · FR Published'));
-  assert.ok(publishedAdminText.includes('Training connected'));
+  assert.ok(
+    publishedAdminText.includes('EN Published · FR Published'),
+    'Credential admin must revalidate both locale publication states before continuing.',
+  );
+  assert.ok(
+    publishedAdminText.includes('Training connected'),
+    'Credential admin must preserve the optional Training context after publication.',
+  );
 
   const targets = [
     {
