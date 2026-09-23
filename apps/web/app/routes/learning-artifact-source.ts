@@ -24,6 +24,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     .selectFrom('assets')
     .select(['storage_key', 'mime_type', 'original_filename'])
     .where('id', '=', artifact.sourceAssetId)
+    .where('mime_type', '=', 'application/pdf')
     .executeTakeFirst();
 
   if (asset === undefined) {
