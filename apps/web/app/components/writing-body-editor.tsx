@@ -1,4 +1,4 @@
-import { Node } from '@tiptap/core';
+import { Node, type JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
@@ -166,7 +166,7 @@ const Callout = Node.create({
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function editorJson(document: WritingEditorDocument) {
+function editorJson(document: WritingEditorDocument): JSONContent {
   return {
     type: document.type,
     content: document.content,
@@ -232,7 +232,7 @@ export function WritingBodyEditor({
     },
   });
 
-  const insertBlock = (content: Record<string, unknown>) => {
+  const insertBlock = (content: JSONContent) => {
     editor?.chain().focus().insertContent(content).run();
   };
 
