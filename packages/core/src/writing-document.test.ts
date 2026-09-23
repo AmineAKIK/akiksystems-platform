@@ -91,10 +91,10 @@ describe('Writing rich-content schema v1', () => {
       ],
     };
 
-    expect(parseWritingDocument(document)).toEqual(document);
-    expect(
-      writingDocumentAssetIds(document as ReturnType<typeof parseWritingDocument> & {}),
-    ).toEqual([assetA, assetB]);
+    const parsed = parseWritingDocument(document);
+    expect(parsed).toEqual(document);
+    expect(parsed).not.toBeNull();
+    expect(writingDocumentAssetIds(parsed!)).toEqual([assetA, assetB]);
   });
 
   it('rejects page-builder semantics, marks, h1, and unjustified tables', () => {
