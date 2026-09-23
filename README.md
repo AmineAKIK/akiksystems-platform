@@ -191,6 +191,20 @@ the snapshot, so editorial metadata cannot drift after publication. The admin
 Tiptap surface exposes only schema-v1 block controls and therefore remains an
 editor, not a page builder.
 
+AKS-110 turns the Writings destination into one living editorial surface. Note,
+Article, and Essay remain explicit forms in metadata and admin, but they are not
+split into separate public blogs, tabs, or route families. The overview, Category,
+and Tag surfaces all reuse the same ordered feed component and every item keeps
+its localized deep link. The feed preserves the existing code-defined
+`editorialPosition` order; it does not reinterpret publication timestamps as
+layout instructions.
+
+`editorialWeight` remains structured data on feed entries but AKS-110 does not
+translate it into a visual hierarchy or expose weight labels to readers. That
+presentation decision belongs to AKS-111, keeping the admin from becoming a page
+builder and preserving the rule that structure is code-defined while content is
+data-managed.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
