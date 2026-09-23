@@ -16,6 +16,7 @@ const db = createDatabase(connectionString);
 const systemId = randomUUID();
 let trainingId: string | null = null;
 let learningArtifactId: string | null = null;
+let sourceAssetId: string | null = null;
 
 function systemSnapshot(locale: 'en' | 'fr') {
   return {
@@ -191,8 +192,43 @@ try {
     ),
   );
 
+  sourceAssetId = randomUUID();
+  await db
+    .insertInto('assets')
+    .values({
+      id: sourceAssetId,
+      storage_key: `qualification/learning-artifacts/${sourceAssetId}.pdf`,
+      original_filename: 'sentinel-dossier-source.pdf',
+      mime_type: 'application/pdf',
+      byte_size: 4096,
+      width: null,
+      height: null,
+    })
+    .execute();
+  await db
+    .updateTable('learning_artifacts')
+    .set({ source_asset_id: sourceAssetId, updated_at: new Date() })
+    .where('id', '=', learningArtifactId)
+    .executeTakeFirstOrThrow();
+
+  const synchronized = await bootstrapSentinelDossier(db);
+  assert.equal(synchronized.created, false);
+
+  const [englishWithSource, frenchWithSource] = await Promise.all([
+    getPublishedLearningArtifact(db, {
+      locale: 'en',
+      slug: 'sentinel-dwwm-project-dossier',
+    }),
+    getPublishedLearningArtifact(db, {
+      locale: 'fr',
+      slug: 'dossier-projet-dwwm-sentinel',
+    }),
+  ]);
+  assert.equal(englishWithSource?.sourceAssetId, sourceAssetId);
+  assert.equal(frenchWithSource?.sourceAssetId, sourceAssetId);
+
   process.stdout.write(
-    'AKS-093/094 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, structured into the ten native Web reading sections, and explicitly keeps the source PDF out of scope.\n',
+    'AKS-093/094/095 Sentinel dossier qualification passed: verified dossier context is bilingual, deep-linkable, connected to the real DWWM Training and Sentinel System, idempotent, structured into the ten native Web reading sections, and preserves an attached PDF source across dossier synchronization.\n',
   );
 } finally {
   if (learningArtifactId !== null) {
@@ -200,6 +236,9 @@ try {
       .deleteFrom('learning_artifacts')
       .where('id', '=', learningArtifactId)
       .execute();
+  }
+  if (sourceAssetId !== null) {
+    await db.deleteFrom('assets').where('id', '=', sourceAssetId).execute();
   }
   await db
     .deleteFrom('system_publications')
