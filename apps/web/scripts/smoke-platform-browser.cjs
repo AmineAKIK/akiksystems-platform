@@ -1676,8 +1676,16 @@ async function assertWritingAdminAndPublic(page) {
     await writingOverviewCard.waitFor();
     const overviewText = await writingOverviewCard.innerText();
     assert.ok(overviewText.includes(target.summary));
-    assert.ok(overviewText.includes(target.kind));
-    assert.ok(overviewText.includes(target.weight));
+    assert.ok(
+      overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
+        .includes(target.kind.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
+      'Writing kind must remain visible regardless of presentational text transform.',
+    );
+    assert.ok(
+      overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
+        .includes(target.weight.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
+      'Editorial weight must remain visible regardless of presentational text transform.',
+    );
     assert.equal(
       await writingOverviewCard.locator('a').getAttribute('href'),
       target.detail,
