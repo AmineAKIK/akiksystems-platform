@@ -15,6 +15,7 @@ export interface ExperienceShellProps {
   pathname: string;
   alternateHref?: string | null;
   currentTitle?: string | null;
+  mode?: 'default' | 'reading';
   children: ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function ExperienceShell({
   pathname,
   alternateHref,
   currentTitle = null,
+  mode = 'default',
   children,
 }: ExperienceShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,7 +49,11 @@ export function ExperienceShell({
         {dictionary.shell.skipToContent}
       </a>
 
-      <header className="aks-experience-shell" data-destination={destinationId ?? 'home'}>
+      <header
+        className="aks-experience-shell"
+        data-destination={destinationId ?? 'home'}
+        data-mode={mode}
+      >
         <Container width="wide">
           <div className="aks-experience-shell-inner">
             <RouterLink
