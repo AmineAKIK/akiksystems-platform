@@ -259,6 +259,15 @@ export async function listPublishedWritingsForCategory(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; categoryId: string },
 ): Promise<PublishedWritingListItem[]> {
+  const category = await db
+    .selectFrom('category_publications')
+    .select('category_id')
+    .where('category_id', '=', input.categoryId)
+    .where('locale', '=', input.locale)
+    .executeTakeFirst();
+
+  if (category === undefined) return [];
+
   const writings = await listPublishedWritings(db, input.locale);
   return writings.filter((writing) =>
     writing.categoryIds.includes(input.categoryId),
