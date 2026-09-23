@@ -92,6 +92,15 @@ independently. No credential-specific route, schema, or renderer is required:
 the Learning overview provides summary depth and the generic Credential route
 provides inspection depth.
 
+AKS-098 gives every published Learning surface one SEO contract. Learning
+overviews, Trainings, Credentials, and LearningArtifacts render localized
+title/description, explicit indexing directives, Open Graph/Twitter metadata,
+canonical URLs, reciprocal locale alternates, and an English `x-default`
+directly in the initial server-rendered HTML. Missing or unpublished detail
+routes render a noindex fallback while still returning 404. Raw Credential and
+LearningArtifact source documents send an HTTP `X-Robots-Tag: noindex`
+directive so the autonomous HTML inspection route remains the search surface.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
