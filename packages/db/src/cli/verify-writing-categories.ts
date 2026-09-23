@@ -304,8 +304,6 @@ try {
         position: 0,
       })
       .execute(),
-    undefined,
-    'A Writing cannot assign two categories to the same position.',
   );
 
   await assert.rejects(
@@ -318,8 +316,6 @@ try {
         name: 'Nicht erlaubt',
       })
       .execute(),
-    undefined,
-    'Category localization must remain constrained to EN/FR.',
   );
 
   process.stdout.write(
