@@ -1736,7 +1736,9 @@ async function assertWritingAdminAndPublic(page) {
     });
     await fieldset
       .getByRole('button', {
-        name: 'Insert · aks-107-contextual.png',
+        name:
+          (locale === 'FR' ? 'Insérer' : 'Insert') +
+          ' · aks-107-contextual.png',
         exact: true,
       })
       .click();
