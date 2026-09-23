@@ -48,6 +48,7 @@
     "db:verify-writing-categories": "tsx src/cli/verify-writing-categories.ts",
     "db:verify-writing-tags": "tsx src/cli/verify-writing-tags.ts",
     "db:verify-writing-systems": "tsx src/cli/verify-writing-systems.ts",
+    "db:verify-writing-editor-document": "tsx src/cli/verify-writing-editor-document.ts",
     "db:verify-system-publication-snapshots": "tsx src/cli/verify-system-publication-snapshots.ts",
     "db:bootstrap-tugeres-qualification": "tsx src/cli/bootstrap-tugeres-qualification.ts",
     "db:bootstrap-oria-qualification": "tsx src/cli/bootstrap-oria-qualification.ts",

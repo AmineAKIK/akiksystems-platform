@@ -14,8 +14,14 @@ import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
+import { WritingBodyEditor } from '../components/writing-body-editor';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
+import {
+  parseWritingEditorDocumentJson,
+  writingEditorDocumentForDraft,
+  writingEditorDocumentToPlainText,
+} from '../lib/writing-editor';
 
 import type { Route } from './+types/admin-writings';
 
@@ -30,6 +36,20 @@ function field(form: FormData, name: string): string {
 function nullableField(form: FormData, name: string): string | null {
   const value = field(form, name);
   return value === '' ? null : value;
+}
+
+function requiredEditorDocument(form: FormData) {
+  const value = form.get('editorDocument');
+  if (typeof value !== 'string') {
+    throw new Response('Writing editor document is required.', { status: 400 });
+  }
+
+  const document = parseWritingEditorDocumentJson(value);
+  if (document === null) {
+    throw new Response('Invalid Writing editor document.', { status: 400 });
+  }
+
+  return document;
 }
 
 function requiredWritingId(form: FormData): string {
@@ -104,11 +124,13 @@ export async function loader({ request }: Route.LoaderArgs) {
       'en.title as title_en',
       'en.summary as summary_en',
       'en.body as body_en',
+      'en.editor_document as editor_document_en',
       'en.editorial_state as editorial_state_en',
       'fr.slug as slug_fr',
       'fr.title as title_fr',
       'fr.summary as summary_fr',
       'fr.body as body_fr',
+      'fr.editor_document as editor_document_fr',
       'fr.editorial_state as editorial_state_fr',
       'pub_en.slug as published_slug_en',
       'pub_fr.slug as published_slug_fr',
@@ -546,7 +568,8 @@ export async function action({ request }: Route.ActionArgs) {
     const slug = nullableField(form, 'slug');
     const title = nullableField(form, 'title');
     const summary = nullableField(form, 'summary');
-    const body = nullableField(form, 'body');
+    const editorDocument = requiredEditorDocument(form);
+    const body = writingEditorDocumentToPlainText(editorDocument) || null;
 
     await db.transaction().execute(async (transaction) => {
       await transaction
@@ -556,6 +579,8 @@ export async function action({ request }: Route.ActionArgs) {
           title,
           summary,
           body,
+          editor_document:
+            editorDocument as unknown as Record<string, unknown>,
           editorial_state: 'draft',
           published_at: null,
           updated_at: new Date(),
@@ -576,6 +601,7 @@ export async function action({ request }: Route.ActionArgs) {
           hasTitle: title !== null,
           hasSummary: summary !== null,
           hasBody: body !== null,
+          hasEditorDocument: true,
         },
       });
     });
@@ -645,9 +671,9 @@ export default function AdminWritingsRoute() {
                 and is applied by later Writings work.
               </Text>
               <Text size="sm" tone="muted">
-                AKS-101 uses plain text paragraphs only. Rich-content semantics
-                and the editor arrive in AKS-105/106; this surface cannot build
-                arbitrary page layouts.
+                AKS-105 uses a headless Tiptap editor with a deliberately
+                constrained paragraph document. AKS-106 owns the richer content
+                vocabulary; this surface still cannot build arbitrary layouts.
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin">Administration</Link>
@@ -862,6 +888,12 @@ export default function AdminWritingsRoute() {
                       locale === 'en' ? writing.summary_en : writing.summary_fr;
                     const body =
                       locale === 'en' ? writing.body_en : writing.body_fr;
+                    const editorDocument = writingEditorDocumentForDraft(
+                      locale === 'en'
+                        ? writing.editor_document_en
+                        : writing.editor_document_fr,
+                      body,
+                    );
                     const editorialState =
                       locale === 'en'
                         ? writing.editorial_state_en
@@ -919,18 +951,10 @@ export default function AdminWritingsRoute() {
                               rows={3}
                             />
                           </label>
-                          <label>
-                            <span>Body</span>
-                            <textarea
-                              defaultValue={body ?? ''}
-                              name="body"
-                              rows={8}
-                            />
-                          </label>
-                          <Text size="sm" tone="muted">
-                            Separate paragraphs with a blank line. The public
-                            renderer emits controlled paragraph semantics only.
-                          </Text>
+                          <WritingBodyEditor
+                            initialDocument={editorDocument}
+                            locale={locale}
+                          />
                           <Button type="submit">
                             Save {locale.toUpperCase()} draft
                           </Button>

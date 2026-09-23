@@ -1521,6 +1521,45 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+async function fillWritingBodyEditor(fieldset, body) {
+  const shell = fieldset.locator('[data-writing-editor]');
+  await fieldset
+    .locator('[data-writing-editor][data-editor-ready="true"]')
+    .waitFor();
+  const editor = shell.locator('[contenteditable="true"]');
+  await editor.waitFor();
+
+  const paragraphs = body.split(/\n\s*\n/);
+  await editor.fill(paragraphs[0] ?? '');
+  for (const paragraph of paragraphs.slice(1)) {
+    await editor.press('End');
+    await editor.press('Enter');
+    if (paragraph !== '') {
+      await editor.pressSequentially(paragraph);
+    }
+  }
+
+  const document = JSON.parse(
+    await fieldset.locator('input[name="editorDocument"]').inputValue(),
+  );
+  assert.equal(document.type, 'doc');
+  assert.equal(
+    document.content.length,
+    paragraphs.length,
+    'The Tiptap document must keep the authored paragraph count.',
+  );
+  assert.equal(
+    await fieldset.locator('input[name="body"]').inputValue(),
+    body,
+    'The editor must keep the legacy public body projection synchronized.',
+  );
+  assert.equal(
+    await fieldset.locator('textarea[name="body"]').count(),
+    0,
+    'AKS-105 must replace the Writing body textarea with Tiptap.',
+  );
+}
+
 async function assertWritingAdminAndPublic(page) {
   await page.goto(origin + '/admin');
   assert.equal(
@@ -1568,6 +1607,18 @@ async function assertWritingAdminAndPublic(page) {
     /ESSAY · MAJOR/,
     'Writing kind and editorial weight must be explicit domain fields in admin.',
   );
+  assert.equal(
+    await writingCard().locator('[data-writing-editor]').count(),
+    2,
+    'Each localized Writing draft must expose one headless Tiptap editor.',
+  );
+  assert.equal(
+    await writingCard()
+      .locator('[name="layout"], [name="template"], [name="style"]')
+      .count(),
+    0,
+    'The Tiptap integration must not introduce page-builder controls.',
+  );
 
   const saveLocale = async ({
     locale,
@@ -1583,7 +1634,7 @@ async function assertWritingAdminAndPublic(page) {
     await fieldset.locator('input[name="slug"]').fill(slug);
     await fieldset.locator('input[name="title"]').fill(title);
     await fieldset.locator('textarea[name="summary"]').fill(summary);
-    await fieldset.locator('textarea[name="body"]').fill(body);
+    await fillWritingBodyEditor(fieldset, body);
     await fieldset
       .getByRole('button', {
         name: 'Save ' + locale + ' draft',
@@ -1593,6 +1644,24 @@ async function assertWritingAdminAndPublic(page) {
     await page
       .getByText(locale + ' Writing draft saved.', { exact: true })
       .waitFor();
+
+    fieldset = writingCard().getByRole('group', {
+      name: locale,
+      exact: true,
+    });
+    const persistedDocument = JSON.parse(
+      await fieldset.locator('input[name="editorDocument"]').inputValue(),
+    );
+    assert.equal(
+      persistedDocument.type,
+      'doc',
+      'The persisted draft must reload as a Tiptap document.',
+    );
+    assert.equal(
+      persistedDocument.content.length,
+      body.split(/\n\s*\n/).length,
+      'The persisted Tiptap draft must survive the admin round-trip.',
+    );
   };
 
   await saveLocale({
