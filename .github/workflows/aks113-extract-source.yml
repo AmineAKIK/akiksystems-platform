@@ -1,7 +1,9 @@
 name: AKS-113 source extraction
 
 on:
-  pull_request:
+  push:
+    branches:
+      - ami-272-aks-113-publish-the-existing-essay-as-the-first-major-case
     paths:
       - '.tmp/aks113-source.pdf'
       - '.github/workflows/aks113-extract-source.yml'
@@ -15,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref_name }}
 
       - name: Install PDF text tooling
         run: |
@@ -181,7 +183,7 @@ jobs:
             exit 0
           fi
           git commit -m "Add canonical AKS-113 essay document"
-          git push origin HEAD:${{ github.head_ref }}
+          git push origin HEAD:${{ github.ref_name }}
 
       - name: Upload extracted essay source
         uses: actions/upload-artifact@v4
