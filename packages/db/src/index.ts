@@ -342,3 +342,6 @@ export type {
   NewTrainingRow,
   TimestampColumn,
 } from './schema.js';
+
+export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
+export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
