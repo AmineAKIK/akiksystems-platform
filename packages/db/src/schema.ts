@@ -303,7 +303,7 @@ export interface CredentialPublicationsTable {
 
 export interface LearningArtifactsTable {
   id: string;
-  training_id: string;
+  training_id: string | null;
   system_id: string | null;
   source_asset_id: string | null;
   editorial_position: DefaultedColumn<number>;
