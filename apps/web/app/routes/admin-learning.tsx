@@ -185,8 +185,8 @@ export default function AdminLearningRoute() {
                   {data.learningArtifact.withSourceDocument} with source document
                 </Text>
                 <Text tone="muted">
-                  First-class learning evidence with required Training context
-                  and optional System/source relationships.
+                  First-class learning evidence with optional Training/System
+                  context and optional source-document relationships.
                 </Text>
                 <Link href="/admin/learning/artifacts">
                   Manage LearningArtifacts
