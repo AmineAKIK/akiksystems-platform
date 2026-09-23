@@ -141,6 +141,9 @@ jobs:
       - name: Verify L5 Learning and System bidirectional navigation
         run: pnpm --filter @akiksystems/db db:verify-learning-system-navigation
 
+      - name: Verify L6 Writing domain
+        run: pnpm --filter @akiksystems/db db:verify-writing-domain
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
