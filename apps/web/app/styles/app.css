@@ -329,6 +329,57 @@
   margin: 0;
 }
 
+.aks-writing-editor-toolbar,
+.aks-writing-editor-assets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2);
+  align-items: end;
+}
+
+.aks-writing-editor-toolbar button,
+.aks-writing-editor-assets button {
+  min-height: 2.5rem;
+  padding: var(--aks-space-2) var(--aks-space-3);
+}
+
+.aks-writing-editor-assets label {
+  display: grid;
+  flex: 1 1 22rem;
+  gap: var(--aks-space-1);
+}
+
+.aks-writing-editor-assets input {
+  inline-size: 100%;
+}
+
+.aks-writing-editor-content h2,
+.aks-writing-editor-content h3,
+.aks-writing-editor-content ul,
+.aks-writing-editor-content ol,
+.aks-writing-editor-content blockquote,
+.aks-writing-editor-content pre,
+.aks-writing-editor-content aside,
+.aks-writing-editor-content figure,
+.aks-writing-editor-content [data-writing-gallery] {
+  margin-block: var(--aks-space-4) 0;
+}
+
+.aks-writing-editor-content blockquote,
+.aks-writing-editor-content aside,
+.aks-writing-editor-content pre,
+.aks-writing-editor-content figure,
+.aks-writing-editor-content [data-writing-gallery] {
+  padding: var(--aks-space-3);
+  border-inline-start: 3px solid var(--aks-border-subtle);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-writing-editor-content [data-writing-gallery] {
+  display: grid;
+  gap: var(--aks-space-2);
+}
+
 .aks-writing-editor-content {
   min-height: 12rem;
   padding: var(--aks-space-4);
