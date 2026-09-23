@@ -1,6 +1,7 @@
 import {
   getPublishedSystem,
   listPublishedLearningArtifactsForSystem,
+  listPublishedWritingsForSystem,
 } from '@akiksystems/db';
 import {
   data,
@@ -37,6 +38,12 @@ function learningArtifactHref(locale: 'en' | 'fr', slug: string): string {
     : `/${locale}/learning/artifacts/${slug}`;
 }
 
+function writingHref(locale: 'en' | 'fr', slug: string): string {
+  return locale === 'fr'
+    ? `/${locale}/ecrits/${slug}`
+    : `/${locale}/writings/${slug}`;
+}
+
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
   const slug = requiredSlug(params.slug);
@@ -48,10 +55,16 @@ export async function loader({ params }: Route.LoaderArgs) {
       throw new Response('System not found.', { status: 404 });
     }
 
-    const learningEvidence = await listPublishedLearningArtifactsForSystem(db, {
-      locale,
-      systemId: system.id,
-    });
+    const [learningEvidence, relatedWritings] = await Promise.all([
+      listPublishedLearningArtifactsForSystem(db, {
+        locale,
+        systemId: system.id,
+      }),
+      listPublishedWritingsForSystem(db, {
+        locale,
+        systemId: system.id,
+      }),
+    ]);
 
     return data(
       {
@@ -63,6 +76,13 @@ export async function loader({ params }: Route.LoaderArgs) {
             title: artifact.title,
             summary: artifact.summary,
             href: learningArtifactHref(locale, artifact.slug),
+          })),
+          relatedWritings: relatedWritings.map((writing) => ({
+            id: writing.writingId,
+            title: writing.title,
+            summary: writing.summary,
+            kind: writing.kind,
+            href: writingHref(locale, writing.slug),
           })),
           media: system.media.map((asset) => ({
             ...asset,
@@ -173,6 +193,7 @@ export default function SystemDetailRoute() {
       originSummary={system.origin?.summary ?? null}
       originTitle={system.origin?.title ?? null}
       presentationDocument={system.presentationDocument}
+      relatedWritings={system.relatedWritings}
       proofTransparency={system.proofTransparency}
       presentationKind={system.presentationKind}
       summary={system.summary}
