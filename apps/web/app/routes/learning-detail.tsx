@@ -4,19 +4,18 @@ import {
   listPublishedLearningArtifactsForTraining,
 } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
-import { data, type MetaDescriptor, useLoaderData } from 'react-router';
+import { data, useLoaderData } from 'react-router';
 
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
+import { buildLocalizedPublicMeta, buildNoIndexMeta, publicNotFound } from '../lib/public-seo';
 
 import type { Route } from './+types/learning-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const canonicalOrigin = 'https://akiksystems.com';
-
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
-    throw new Response('Training not found.', { status: 404 });
+    throw publicNotFound('Training not found.');
   }
   return value;
 }
@@ -75,7 +74,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const training = await getPublishedTraining(appDb, { locale, slug });
 
   if (training === null) {
-    throw new Response('Training not found.', { status: 404 });
+    throw publicNotFound('Training not found.');
   }
 
   const [credentials, learningArtifacts] = await Promise.all([
@@ -119,40 +118,36 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
+
+export function headers({
+  loaderHeaders,
+  errorHeaders,
+}: Route.HeadersArgs): Headers {
+  return errorHeaders ?? loaderHeaders;
+}
+
+export function meta({ loaderData }: Route.MetaArgs) {
   if (loaderData === undefined) {
-    return [{ title: 'Learning · AkikSystems' }];
+    return buildNoIndexMeta('Learning · AkikSystems');
   }
 
   const training = loaderData.training;
-  const canonicalPath = trainingHref(training.locale, training.slug);
-  const canonicalUrl = `${canonicalOrigin}${canonicalPath}`;
-  const descriptors: MetaDescriptor[] = [
-    { title: `${training.title} · AkikSystems` },
-    { name: 'description', content: training.summary },
-    { name: 'robots', content: 'index, follow, max-snippet:-1' },
-    { tagName: 'link', rel: 'canonical', href: canonicalUrl },
-    {
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: training.locale,
-      href: canonicalUrl,
-    },
-  ];
-
-  if (training.alternate !== null) {
-    descriptors.push({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: training.alternate.locale,
-      href: `${canonicalOrigin}${trainingHref(
-        training.alternate.locale,
-        training.alternate.slug,
-      )}`,
-    });
-  }
-
-  return descriptors;
+  return buildLocalizedPublicMeta({
+    title: training.title,
+    description: training.summary,
+    locale: training.locale,
+    canonicalPath: trainingHref(training.locale, training.slug),
+    alternate:
+      training.alternate === null
+        ? null
+        : {
+            locale: training.alternate.locale,
+            path: trainingHref(
+              training.alternate.locale,
+              training.alternate.slug,
+            ),
+          },
+  });
 }
 
 export default function LearningDetailRoute() {
