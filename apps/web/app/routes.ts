@@ -66,7 +66,7 @@ export default [
     route('ecrits/tags/:slug', 'routes/writing-tag-detail-fr.tsx'),
     route(
       'ecrits/:slug/assets/:assetId',
-      'routes/writing-detail-asset.ts',
+      'routes/writing-detail-asset-fr.ts',
     ),
     route('ecrits/:slug', 'routes/writing-detail-fr.tsx'),
     route('learning', 'routes/learning.tsx'),
