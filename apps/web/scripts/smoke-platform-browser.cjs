@@ -1579,23 +1579,12 @@ async function assertReusableSystemReferences(browser) {
 }
 
 
-function escapeRegex(value) {
-  const specialCharacters = '\\^$.*+?()[]{}|';
-  return [...value]
-    .map((character) =>
-      specialCharacters.includes(character) ? '\\' + character : character,
-    )
-    .join('');
-}
-
 function assertHtmlTagAttributes(html, tagName, attributes, message) {
   const tags = html.match(new RegExp('<' + tagName + '\\b[^>]*>', 'gi')) ?? [];
   const found = tags.some((tag) =>
     Object.entries(attributes).every(([name, value]) =>
-      new RegExp(
-        escapeRegex(name) + '=["\\\']' + escapeRegex(value) + '["\\\']',
-        'i',
-      ).test(tag),
+      tag.includes(name + '=\"' + value + '\"') ||
+      tag.includes(name + "='" + value + "'"),
     ),
   );
   assert.equal(found, true, message);
