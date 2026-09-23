@@ -55,7 +55,7 @@ app.use((request, response, next) => {
       response.setHeader('X-Robots-Tag', noIndexDirective);
     }
 
-    return writeHead.call(this, statusCode, ...args);
+    return Reflect.apply(writeHead, this, [statusCode, ...args]);
   };
 
   response.setHeader('Content-Security-Policy', contentSecurityPolicy);
