@@ -1583,7 +1583,7 @@ function assertHtmlTagAttributes(html, tagName, attributes, message) {
   const tags = html.match(new RegExp('<' + tagName + '\\b[^>]*>', 'gi')) ?? [];
   const found = tags.some((tag) =>
     Object.entries(attributes).every(([name, value]) =>
-      tag.includes(name + '=\"' + value + '\"') ||
+      tag.includes(name + '="' + value + '"') ||
       tag.includes(name + "='" + value + "'"),
     ),
   );
