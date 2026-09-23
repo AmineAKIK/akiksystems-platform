@@ -3,11 +3,12 @@ import {
   listPublishedLearningArtifacts,
   listPublishedTrainings,
 } from '@akiksystems/db';
-import { data, type MetaDescriptor, useLoaderData } from 'react-router';
+import { data, useLoaderData } from 'react-router';
 
 import { LearningOverview } from '../components/learning-overview';
 import { requireExactLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
+import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
 
 import type { Route } from './+types/learning';
 
@@ -47,14 +48,21 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function meta(): MetaDescriptor[] {
-  return [
-    { title: 'Learning · AkikSystems' },
-    {
-      name: 'description',
-      content: 'Training context and inspectable learning evidence at AkikSystems.',
+export function meta({ loaderData }: Route.MetaArgs) {
+  if (loaderData === undefined) {
+    return buildNoIndexMeta('Learning · AkikSystems');
+  }
+
+  return buildLocalizedPublicMeta({
+    title: 'Learning',
+    description: 'Training context and inspectable learning evidence at AkikSystems.',
+    locale: 'en',
+    canonicalPath: '/en/learning',
+    alternate: {
+      locale: 'fr',
+      path: '/fr/apprentissage',
     },
-  ];
+  });
 }
 
 export default function LearningRoute() {
