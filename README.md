@@ -84,6 +84,14 @@ Markdown dossier and is not stored in the Sentinel Git repository or its
 actual original PDF through the admin; a rendered substitute must not be
 presented as the original source.
 
+AKS-097 treats Credential as the stable extension boundary for future diplomas,
+professional titles, and certifications. New Credential instances are created
+from the private Learning admin, choose one of the existing evidence kinds, may
+optionally connect to Training/source/issuer verification, and publish EN/FR
+independently. No credential-specific route, schema, or renderer is required:
+the Learning overview provides summary depth and the generic Credential route
+provides inspection depth.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
