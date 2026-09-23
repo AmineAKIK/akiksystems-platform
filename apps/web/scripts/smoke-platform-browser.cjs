@@ -2313,12 +2313,54 @@ async function assertLearningAdminWorkspace(page) {
     hubText,
     /Training is context\. Credentials and LearningArtifacts are evidence\./,
   );
+  const trainingCard = page
+    .locator('article.aks-admin-card')
+    .filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: 'Trainings',
+        exact: true,
+      }),
+    });
+  const credentialCard = page
+    .locator('article.aks-admin-card')
+    .filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: 'Credentials',
+        exact: true,
+      }),
+    });
+  const artifactCard = page
+    .locator('article.aks-admin-card')
+    .filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: 'LearningArtifacts',
+        exact: true,
+      }),
+    });
+
   assert.ok(
-    (hubText.match(/Published snapshots · EN 1 · FR 1/g) ?? []).length >= 3,
-    'Learning hub must summarize bilingual publication state for all three domain types.',
+    (await trainingCard.innerText()).includes('Published snapshots · EN 1 · FR 1'),
+    'Training publication summary must remain bilingual.',
   );
-  assert.match(hubText, /1 connected to Training · 0 standalone/);
-  assert.match(hubText, /1 connected to System · 0 with source document/);
+  assert.ok(
+    (await credentialCard.innerText()).includes('Published snapshots · EN 2 · FR 2'),
+    'Credential publication summary must include the admin-created future diploma.',
+  );
+  assert.ok(
+    (await credentialCard.innerText()).includes('2 connected to Training · 0 standalone'),
+    'Credential relationship summary must include both connected evidence objects.',
+  );
+  assert.ok(
+    (await artifactCard.innerText()).includes('Published snapshots · EN 1 · FR 1'),
+    'LearningArtifact publication summary must remain bilingual.',
+  );
+  assert.ok(
+    (await artifactCard.innerText()).includes('1 connected to System · 0 with source document'),
+    'LearningArtifact relationship summary must remain intact.',
+  );
   assert.equal(
     await page.getByRole('button', { name: 'Create Training', exact: true }).count(),
     0,
