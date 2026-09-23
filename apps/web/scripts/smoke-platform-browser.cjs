@@ -3020,6 +3020,11 @@ async function assertSentinelDossierJourney(browser, adminPage) {
     englishSource.headers()['content-disposition'] ?? '',
     /qualification-sentinel-dossier\.pdf/,
   );
+  assert.match(
+    englishSource.headers()['x-robots-tag'] ?? '',
+    /noindex/i,
+    'Published source PDFs must not compete with their HTML inspection route.',
+  );
   assert.match((await englishSource.body()).toString('utf8'), /^%PDF-/);
 
   const frenchBeforePublish = await adminPage.context().request.get(
@@ -3044,6 +3049,11 @@ async function assertSentinelDossierJourney(browser, adminPage) {
   );
   assert.equal(frenchSource.status(), 200);
   assert.equal(frenchSource.headers()['content-type'], 'application/pdf');
+  assert.match(
+    frenchSource.headers()['x-robots-tag'] ?? '',
+    /noindex/i,
+    'Localized source PDFs must remain outside search indexes.',
+  );
 
   for (const path of [
     '/en/learning/artifacts/sentinel-dwwm-project-dossier',
