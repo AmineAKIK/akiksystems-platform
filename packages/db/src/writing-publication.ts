@@ -280,6 +280,7 @@ export async function publishWritingLocalization(
       .select([
         'writings.id',
         'writings.kind',
+        'writings.lifecycle',
         'writings.editorial_weight',
         'writings.editorial_position',
         'writing_localizations.slug',
@@ -294,6 +295,9 @@ export async function publishWritingLocalization(
 
     if (row === undefined) {
       throw new Error('Writing localization not found.');
+    }
+    if (row.lifecycle !== 'active') {
+      throw new Error('Archived Writings cannot be published.');
     }
 
     const document =
@@ -450,8 +454,10 @@ export async function listPublishedWritings(
 ): Promise<PublishedWritingListItem[]> {
   const rows = await db
     .selectFrom('writing_publications')
-    .select(['snapshot', 'published_at'])
-    .where('locale', '=', locale)
+    .innerJoin('writings', 'writings.id', 'writing_publications.writing_id')
+    .select(['writing_publications.snapshot', 'writing_publications.published_at'])
+    .where('writings.lifecycle', '=', 'active')
+    .where('writing_publications.locale', '=', locale)
     .execute();
 
   const parsed = rows.map((row) => ({
@@ -550,9 +556,15 @@ export async function getPublishedWriting(
 ): Promise<PublishedWriting | null> {
   const row = await db
     .selectFrom('writing_publications')
-    .select(['writing_id', 'snapshot', 'published_at'])
-    .where('locale', '=', input.locale)
-    .where('slug', '=', input.slug)
+    .innerJoin('writings', 'writings.id', 'writing_publications.writing_id')
+    .select([
+      'writing_publications.writing_id',
+      'writing_publications.snapshot',
+      'writing_publications.published_at',
+    ])
+    .where('writings.lifecycle', '=', 'active')
+    .where('writing_publications.locale', '=', input.locale)
+    .where('writing_publications.slug', '=', input.slug)
     .executeTakeFirst();
 
   if (row === undefined) return null;

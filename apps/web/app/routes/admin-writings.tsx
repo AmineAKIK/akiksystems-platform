@@ -148,6 +148,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     .select([
       'writings.id',
       'writings.kind',
+      'writings.lifecycle',
+      'writings.archived_at',
       'writings.editorial_weight',
       'writings.editorial_position',
       'en.slug as slug_en',
@@ -389,12 +391,81 @@ export async function action({ request }: Route.ActionArgs) {
   const writingId = requiredWritingId(form);
   const writing = await db
     .selectFrom('writings')
-    .select('id')
+    .select(['id', 'lifecycle'])
     .where('id', '=', writingId)
     .executeTakeFirst();
 
   if (writing === undefined) {
     throw new Response('Writing not found.', { status: 404 });
+  }
+
+  if (intent === 'archive-writing') {
+    if (writing.lifecycle === 'archived') {
+      return { ok: true, message: 'Writing is already archived.' };
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      const archivedAt = new Date();
+      await transaction
+        .updateTable('writings')
+        .set({
+          lifecycle: 'archived',
+          archived_at: archivedAt,
+          updated_at: archivedAt,
+        })
+        .where('id', '=', writingId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.archived',
+        entityType: 'writing',
+        entityId: writingId,
+        metadata: {
+          publicSnapshotsPreserved: true,
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message: 'Writing archived. Existing publication snapshots are preserved but hidden from public delivery.',
+    };
+  }
+
+  if (intent === 'restore-writing') {
+    if (writing.lifecycle === 'active') {
+      return { ok: true, message: 'Writing is already active.' };
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .updateTable('writings')
+        .set({
+          lifecycle: 'active',
+          archived_at: null,
+          updated_at: new Date(),
+        })
+        .where('id', '=', writingId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.restored',
+        entityType: 'writing',
+        entityId: writingId,
+        metadata: {
+          preservedSnapshotsMayBecomePublicAgain: true,
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message: 'Writing restored. Preserved publication snapshots are public again where they still exist.',
+    };
   }
 
   if (intent === 'upload-asset') {
@@ -1067,6 +1138,12 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (intent === 'publish') {
     const locale = requiredLocale(form);
+    if (writing.lifecycle !== 'active') {
+      return {
+        ok: false,
+        message: 'Restore this Writing before publishing a locale.',
+      };
+    }
     await publishWritingLocalization(db, { writingId, locale });
     await writeAdminAuditEvent(db, {
       actorUserId: session.user.id,
@@ -1184,7 +1261,8 @@ export default function AdminWritingsRoute() {
                 </Heading>
                 <Text size="sm" tone="muted">
                   {writing.kind.toUpperCase()} ·{' '}
-                  {writing.editorial_weight.toUpperCase()} · Position{' '}
+                  {writing.editorial_weight.toUpperCase()} ·{' '}
+                  {writing.lifecycle.toUpperCase()} · Position{' '}
                   {writing.editorial_position + 1}
                 </Text>
 
@@ -1218,6 +1296,30 @@ export default function AdminWritingsRoute() {
                     Save Writing settings
                   </Button>
                 </Form>
+
+                <Form method="post">
+                  <input
+                    name="_intent"
+                    type="hidden"
+                    value={
+                      writing.lifecycle === 'active'
+                        ? 'archive-writing'
+                        : 'restore-writing'
+                    }
+                  />
+                  <input name="writingId" type="hidden" value={writing.id} />
+                  <Button emphasis="quiet" type="submit">
+                    {writing.lifecycle === 'active'
+                      ? 'Archive Writing'
+                      : 'Restore Writing'}
+                  </Button>
+                </Form>
+                {writing.lifecycle === 'archived' ? (
+                  <Text size="sm" tone="muted">
+                    Archived · public snapshots are retained but excluded from
+                    public lists, deep links, and related-content resolution.
+                  </Text>
+                ) : null}
 
                 <Form method="post" className="aks-proof-stack">
                   <input name="_intent" type="hidden" value="save-categories" />
@@ -1591,6 +1693,11 @@ export default function AdminWritingsRoute() {
                         </Form>
 
                         <div className="aks-proof-actions">
+                          <Link
+                            href={`/admin/writings/${writing.id}/preview/${locale}`}
+                          >
+                            Preview {locale.toUpperCase()}
+                          </Link>
                           <Form method="post">
                             <input name="_intent" type="hidden" value="publish" />
                             <input
@@ -1599,7 +1706,11 @@ export default function AdminWritingsRoute() {
                               value={writing.id}
                             />
                             <input name="locale" type="hidden" value={locale} />
-                            <Button emphasis="quiet" type="submit">
+                            <Button
+                              disabled={writing.lifecycle !== 'active'}
+                              emphasis="quiet"
+                              type="submit"
+                            >
                               {publishedSlug === null
                                 ? 'Publish'
                                 : 'Publish update'}{' '}
@@ -1629,9 +1740,15 @@ export default function AdminWritingsRoute() {
                                   Unpublish {locale.toUpperCase()}
                                 </Button>
                               </Form>
-                              <Link href={publicHref(locale, publishedSlug)}>
-                                Open public
-                              </Link>
+                              {writing.lifecycle === 'active' ? (
+                                <Link href={publicHref(locale, publishedSlug)}>
+                                  Open public
+                                </Link>
+                              ) : (
+                                <Text size="sm" tone="muted">
+                                  Public snapshot hidden while archived.
+                                </Text>
+                              )}
                             </>
                           ) : null}
                         </div>

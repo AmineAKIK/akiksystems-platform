@@ -14,6 +14,10 @@ export default [
   route('admin/writings/categories', 'routes/admin-writing-categories.tsx'),
   route('admin/writings/tags', 'routes/admin-writing-tags.tsx'),
   route(
+    'admin/writings/:writingId/preview/:locale',
+    'routes/admin-writing-preview.tsx',
+  ),
+  route(
     'admin/writings/:writingId/assets/:assetId',
     'routes/admin-writing-asset.ts',
   ),

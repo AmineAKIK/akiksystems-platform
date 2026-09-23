@@ -1653,9 +1653,14 @@ async function assertWritingAdminAndPublic(page) {
       'The persisted draft must reload as a Tiptap document.',
     );
     assert.equal(
-      persistedDocument.content.length,
-      body.split(/\n\s*\n/).length,
-      'The persisted Tiptap draft must survive the admin round-trip.',
+      persistedDocument.version,
+      1,
+      'The persisted Tiptap draft must remain on Writing schema v1.',
+    );
+    assert.equal(
+      await fieldset.locator('input[name="body"]').inputValue(),
+      body,
+      'The persisted Writing text projection must survive the admin round-trip.',
     );
   };
 
@@ -1673,6 +1678,59 @@ async function assertWritingAdminAndPublic(page) {
     summary: 'Le contenu éditorial reste administrable tandis que la sémantique de page reste définie dans le code.',
     body: 'Un Writing décrit du contenu, pas une mise en page.\n\nAKS-101 limite volontairement le premier renderer à des paragraphes contrôlés.',
   });
+
+  for (const preview of [
+    {
+      locale: 'EN',
+      title: 'Architecture Without Page Builders',
+      paragraph: 'A Writing is content, not a layout definition.',
+    },
+    {
+      locale: 'FR',
+      title: 'Architecture sans page builder',
+      paragraph: 'Un Writing décrit du contenu, pas une mise en page.',
+    },
+  ]) {
+    const previewLink = writingCard().getByRole('link', {
+      name: 'Preview ' + preview.locale,
+      exact: true,
+    });
+    const previewHref = await previewLink.getAttribute('href');
+    assert.ok(
+      previewHref?.includes('/admin/writings/') &&
+        previewHref.endsWith('/preview/' + preview.locale.toLowerCase()),
+      'Writing draft preview must stay under the authenticated admin surface.',
+    );
+
+    const previewResponse = await page.goto(origin + previewHref);
+    assert.equal(previewResponse?.status(), 200);
+    assert.match(
+      previewResponse?.headers()['cache-control'] ?? '',
+      /private.*no-store/i,
+      'Writing preview must not be publicly cacheable.',
+    );
+    assert.match(
+      previewResponse?.headers()['x-robots-tag'] ?? '',
+      /noindex/i,
+      'Writing preview must not be indexable.',
+    );
+    assert.equal(
+      await page.locator('meta[name="robots"]').getAttribute('content'),
+      'noindex, nofollow, noarchive, nosnippet',
+    );
+    await page
+      .getByRole('heading', { level: 1, name: preview.title, exact: true })
+      .waitFor();
+    assert.ok(
+      (await page.locator('body').innerText()).includes(preview.paragraph),
+      'Writing preview must use the same content renderer as public delivery.',
+    );
+    assert.match(
+      await page.locator('.aks-preview-toolbar').innerText(),
+      /private preview/i,
+    );
+    await page.goto(origin + '/admin/writings');
+  }
 
   let assetSection = writingCard().locator('[data-writing-assets]');
   const upload = assetSection.locator('form[data-writing-asset-upload]');
@@ -1897,6 +1955,67 @@ async function assertWritingAdminAndPublic(page) {
     assert.ok(
       html.includes(target.paragraphs[0]),
       'Writing deep content must be available in initial HTML.',
+    );
+  }
+
+  await page.goto(origin + '/admin/writings');
+  await writingCard()
+    .getByRole('button', { name: 'Archive Writing', exact: true })
+    .click();
+  await page
+    .getByText(
+      'Writing archived. Existing publication snapshots are preserved but hidden from public delivery.',
+      { exact: true },
+    )
+    .waitFor();
+
+  for (const target of targets) {
+    const archivedDetail = await page.context().request.get(
+      origin + target.detail,
+      { headers: { 'Cache-Control': 'no-cache' } },
+    );
+    assert.equal(
+      archivedDetail.status(),
+      404,
+      'Archived Writing deep links must disappear from origin public delivery.',
+    );
+  }
+
+  await page.goto(origin + '/admin/writings');
+  const archivedPreviewHref = await writingCard()
+    .getByRole('link', { name: 'Preview EN', exact: true })
+    .getAttribute('href');
+  const archivedPreview = await page.goto(origin + archivedPreviewHref);
+  assert.equal(
+    archivedPreview?.status(),
+    200,
+    'Archive must not prevent secure draft inspection.',
+  );
+  assert.match(
+    await page.locator('.aks-preview-toolbar').innerText(),
+    /archived.*private preview/i,
+  );
+
+  await page.goto(origin + '/admin/writings');
+  await writingCard()
+    .getByRole('button', { name: 'Restore Writing', exact: true })
+    .click();
+  await page
+    .getByText(
+      'Writing restored. Preserved publication snapshots are public again where they still exist.',
+      { exact: true },
+    )
+    .waitFor();
+
+  for (const target of targets) {
+    const restoredDetail = await page.context().request.get(
+      origin + target.detail,
+      { headers: { 'Cache-Control': 'no-cache' } },
+    );
+    assert.equal(
+      restoredDetail.status(),
+      200,
+      'Restoring a Writing must reactivate preserved publication snapshots without republishing.',
     );
   }
 }

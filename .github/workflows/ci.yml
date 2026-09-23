@@ -159,6 +159,9 @@ jobs:
       - name: Verify L6 contextual Writing assets
         run: pnpm --filter @akiksystems/db db:verify-writing-assets
 
+      - name: Verify L6 Writing editorial lifecycle
+        run: pnpm --filter @akiksystems/db db:verify-writing-editorial-lifecycle
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
