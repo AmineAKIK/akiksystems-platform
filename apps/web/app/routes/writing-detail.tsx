@@ -23,6 +23,12 @@ function writingHref(locale: 'en' | 'fr', slug: string): string {
     : `/en/writings/${slug}`;
 }
 
+function categoryHref(locale: 'en' | 'fr', slug: string): string {
+  return locale === 'fr'
+    ? `/fr/ecrits/categories/${slug}`
+    : `/en/writings/categories/${slug}`;
+}
+
 function kindLabel(kind: 'note' | 'article' | 'essay', locale: 'en' | 'fr') {
   if (kind === 'note') return 'Note';
   if (kind === 'article') return 'Article';
@@ -100,6 +106,26 @@ export default function WritingDetailRoute() {
             </Heading>
             <Text>{writing.summary}</Text>
           </header>
+
+          {writing.categories.length > 0 ? (
+            <nav
+              className="aks-proof-actions"
+              aria-label={
+                writing.locale === 'fr'
+                  ? 'Catégories éditoriales'
+                  : 'Editorial categories'
+              }
+            >
+              {writing.categories.map((category) => (
+                <Link
+                  href={categoryHref(writing.locale, category.slug)}
+                  key={category.categoryId}
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
 
           {paragraphs.length > 0 ? (
             <section className="aks-proof-stack" aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}>
