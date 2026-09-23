@@ -1912,7 +1912,7 @@ async function assertWritingAdminAndPublic(page) {
       alternateLocale: 'fr',
       alternatePath: '/fr/ecrits/architecture-sans-page-builder',
       kind: 'Essay',
-      weight: 'Major weight',
+      feedHeading: 'Editorial feed',
       richHeading: 'Section heading',
       calloutText: 'Important context',
     },
@@ -1929,7 +1929,7 @@ async function assertWritingAdminAndPublic(page) {
       alternateLocale: 'en',
       alternatePath: '/en/writings/architecture-without-page-builders',
       kind: 'Essai',
-      weight: 'Poids majeur',
+      feedHeading: 'Flux éditorial',
       richHeading: 'Titre de section',
       calloutText: 'Contexte important',
     },
@@ -1942,28 +1942,46 @@ async function assertWritingAdminAndPublic(page) {
       .getByRole('heading', { level: 1, name: target.heading, exact: true })
       .waitFor();
 
-    const writingOverviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.title,
-        exact: true,
-      }),
-    });
+    await page
+      .getByRole('heading', { level: 2, name: target.feedHeading, exact: true })
+      .waitFor();
+    assert.equal(
+      await page.locator('[data-unified-editorial-surface] [data-writing-feed]').count(),
+      1,
+      'Notes, Articles, and Essays must share one public editorial feed.',
+    );
+
+    const writingOverviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.title,
+          exact: true,
+        }),
+      });
     await writingOverviewCard.waitFor();
     const overviewText = await writingOverviewCard.innerText();
     assert.ok(overviewText.includes(target.summary));
     assert.ok(
       overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
         .includes(target.kind.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
-      'Writing kind must remain visible regardless of presentational text transform.',
-    );
-    assert.ok(
-      overviewText.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')
-        .includes(target.weight.toLocaleLowerCase(target.detail.startsWith('/fr/') ? 'fr' : 'en')),
-      'Editorial weight must remain visible regardless of presentational text transform.',
+      'Writing kind must remain visible inside the unified feed.',
     );
     assert.equal(
-      await writingOverviewCard.locator('a').getAttribute('href'),
+      await writingOverviewCard.getAttribute('data-editorial-weight'),
+      'major',
+      'Editorial weight stays available as structured data for AKS-111 without becoming an admin-authored layout.',
+    );
+    assert.equal(
+      overviewText.includes('Major weight') || overviewText.includes('Poids majeur'),
+      false,
+      'AKS-110 must not pre-empt AKS-111 by exposing editorial-weight labels as presentation.',
+    );
+    assert.equal(
+      await writingOverviewCard
+        .getByRole('link', { name: target.title, exact: true })
+        .getAttribute('href'),
       target.detail,
       'Each published Writing must remain independently deep-linkable.',
     );
@@ -2316,13 +2334,15 @@ async function assertWritingCategories(page) {
 
   for (const target of targets) {
     await page.goto(origin + target.overview);
-    const overviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const overviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     const categoryLink = overviewCard.getByRole('link', {
       name: target.categoryName,
       exact: true,
@@ -2356,13 +2376,15 @@ async function assertWritingCategories(page) {
       })
       .waitFor();
     assert.ok((await page.locator('body').innerText()).includes(target.categoryDescription));
-    const categoryWriting = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const categoryWriting = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     await categoryWriting.waitFor();
     assert.equal(
       await categoryWriting.getByRole('link', { name: /Lire|Read/ }).getAttribute('href'),
@@ -2639,13 +2661,15 @@ async function assertWritingTags(page) {
         exact: true,
       })
       .waitFor();
-    const tagWriting = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const tagWriting = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     await tagWriting.waitFor();
     assert.equal(
       await tagWriting
