@@ -298,5 +298,6 @@ export interface SystemLink {
 }
 
 export * from './presentation-document.js';
+export * from './writing-document.js';
 
 export * from './system-publication-readiness.js';
