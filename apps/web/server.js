@@ -33,6 +33,8 @@ const app = express();
 
 app.disable('x-powered-by');
 
+const noIndexDirective = noIndexDirective;
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -47,6 +49,15 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 app.use((request, response, next) => {
+  const writeHead = response.writeHead;
+  response.writeHead = function writeHeadWithRobots(statusCode, ...args) {
+    if (statusCode === 404 && !response.hasHeader('X-Robots-Tag')) {
+      response.setHeader('X-Robots-Tag', noIndexDirective);
+    }
+
+    return writeHead.call(this, statusCode, ...args);
+  };
+
   response.setHeader('Content-Security-Policy', contentSecurityPolicy);
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -65,13 +76,13 @@ app.use((request, response, next) => {
   }
 
   if (STAGING) {
-    response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.setHeader('X-Robots-Tag', noIndexDirective);
   }
 
   if (request.path.startsWith('/admin')) {
     response.setHeader('Cache-Control', 'private, no-store, max-age=0');
     response.setHeader('Pragma', 'no-cache');
-    response.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.setHeader('X-Robots-Tag', noIndexDirective);
   }
 
   next();
