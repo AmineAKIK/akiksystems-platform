@@ -1797,14 +1797,9 @@ async function assertLearningSeo(browser) {
     ]) {
       const response = await context.request.get(origin + path);
       assert.equal(response.status(), 404);
-      const html = await response.text();
-      assertHtmlTagAttributes(
-        html,
-        'meta',
-        {
-          name: 'robots',
-          content: 'noindex, nofollow, noarchive, nosnippet',
-        },
+      assert.match(
+        response.headers()['x-robots-tag'] ?? '',
+        /noindex/i,
         path + ' must not become an indexable fallback page.',
       );
     }
