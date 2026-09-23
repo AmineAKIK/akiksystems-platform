@@ -129,6 +129,9 @@ jobs:
       - name: Verify L5 Credential domain
         run: pnpm --filter @akiksystems/db db:verify-credential-domain
 
+      - name: Verify L5 LearningArtifact domain
+        run: pnpm --filter @akiksystems/db db:verify-learning-artifact-domain
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
