@@ -6357,27 +6357,26 @@ async function assertAxe(page) {
       'function',
       'Chromium must expose View Transitions for the enhanced route path.',
     );
-    const transitionProbe = await page.evaluate(async () => {
+    const transitionProbeSupported = await page.evaluate(() => {
       const link = document.querySelector('.aks-experience-nav a[href="/en/profile"]');
-      if (!(link instanceof HTMLAnchorElement)) {
-        return { supported: false, started: 0 };
-      }
-      let started = 0;
+      if (!(link instanceof HTMLAnchorElement)) return false;
+
+      window.__aksTransitionStarts = 0;
       const original = document.startViewTransition.bind(document);
       document.startViewTransition = (callback) => {
-        started += 1;
+        window.__aksTransitionStarts += 1;
         return original(callback);
       };
-      link.click();
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      return { supported: true, started };
+      return true;
     });
-    assert.equal(transitionProbe.supported, true);
-    assert.ok(
-      transitionProbe.started >= 1,
-      'Client-side shell navigation must opt into a View Transition when supported.',
-    );
+    assert.equal(transitionProbeSupported, true);
+    await page.locator('.aks-experience-nav a[href="/en/profile"]').click();
     await page.waitForURL(`${origin}/en/profile`);
+    await page.waitForFunction(
+      () => window.__aksTransitionStarts >= 1,
+      undefined,
+      { timeout: 2_000 },
+    );
     await page
       .getByRole('heading', { level: 1, name: 'Amine AKIK', exact: true })
       .waitFor();
