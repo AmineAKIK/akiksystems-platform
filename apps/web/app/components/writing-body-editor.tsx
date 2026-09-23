@@ -28,7 +28,6 @@ export function WritingBodyEditor({
     extensions: [Document, Paragraph, TextNode],
     content: initialDocument,
     immediatelyRender: false,
-    shouldRerenderOnTransaction: false,
     editorProps: {
       attributes: {
         'aria-label': label,
