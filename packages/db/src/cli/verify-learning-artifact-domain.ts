@@ -251,8 +251,33 @@ try {
   assert.equal(optionalLinks?.sourceAssetId, null);
   assert.equal(optionalLinks?.training?.trainingId, trainingId);
 
+  await db
+    .updateTable('learning_artifacts')
+    .set({ training_id: null, updated_at: new Date() })
+    .where('id', '=', learningArtifactId)
+    .execute();
+  await publishLearningArtifactLocalization(db, {
+    learningArtifactId,
+    locale: 'en',
+  });
+
+  const standalone = await getPublishedLearningArtifact(db, {
+    locale: 'en',
+    slug: 'qualified-learning-artifact',
+  });
+  assert.equal(standalone?.trainingId, null);
+  assert.equal(standalone?.training, null);
+
+  const noLongerConnected = await listPublishedLearningArtifactsForTraining(db, {
+    locale: 'en',
+    trainingId,
+  });
+  assert.deepEqual(noLongerConnected, []);
+
+  await db.deleteFrom('trainings').where('id', '=', trainingId).execute();
+
   process.stdout.write(
-    'AKS-089 LearningArtifact domain qualification passed: mandatory Training context, optional System/source evidence, bilingual snapshots, deep public read model, draft isolation, and independent unpublication are enforced.\n',
+    'AKS-089/100 LearningArtifact domain qualification passed: Training context is optional but explicit, System/source evidence stays optional, bilingual publication snapshots remain stable, and standalone evidence can publish without inventing a Training.\n',
   );
 } finally {
   await db
