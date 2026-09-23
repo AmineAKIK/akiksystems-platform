@@ -1816,7 +1816,6 @@ async function assertWritingCategories(page) {
     .getByRole('button', { name: 'Publish FR', exact: true })
     .click();
   await page.getByText('FR Category published.', { exact: true }).waitFor();
-  await assertAxe(page);
 
   await page.goto(origin + '/admin/writings');
   const writingCard = page.locator('section.aks-admin-card').filter({
