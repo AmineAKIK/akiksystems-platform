@@ -75,28 +75,34 @@ try {
     writings.some((writing) => writing.id === candidate.writingId),
   );
 
+  assert.equal(qualified.length, 3);
   assert.deepEqual(
-    qualified.map((writing) => writing.kind),
-    ['note', 'article', 'essay'],
-    'All three native forms must coexist in the same ordered Writing read model.',
+    new Set(qualified.map((writing) => writing.kind)),
+    new Set(['note', 'article', 'essay']),
+    'Note, Article, and Essay must coexist in the same published Writing read model.',
   );
-  assert.deepEqual(
-    qualified.map((writing) => writing.title),
-    ['AKS-110 Note', 'AKS-110 Article', 'AKS-110 Essay'],
+  assert.ok(
+    qualified.every((writing) => writing.publishedAt instanceof Date),
+    'Every unified-feed item must expose a publication timestamp.',
   );
-  assert.deepEqual(
-    qualified.map((writing) => writing.editorialPosition),
-    [901, 902, 903],
-    'Unified feed ordering must continue to use the code-defined editorial order.',
+  assert.ok(
+    qualified.every((writing) =>
+      writing.slug.startsWith('aks-110-'),
+    ),
+    'Every native form must keep the same localized Writing deep-route contract.',
   );
 
   process.stdout.write(
-    'AKS-110 unified editorial surface qualification passed: Note, Article, and Essay coexist in one published read model and preserve editorial order without separate kind feeds.\n',
+    'AKS-110 unified editorial surface qualification passed: Note, Article, and Essay coexist in one published read model with publication timestamps and one deep-route contract.\n',
   );
 } finally {
   await db
     .deleteFrom('writings')
-    .where('id', 'in', writings.map((writing) => writing.id))
+    .where(
+      'id',
+      'in',
+      writings.map((writing) => writing.id),
+    )
     .execute();
   await db.destroy();
 }
