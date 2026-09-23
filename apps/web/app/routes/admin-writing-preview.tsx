@@ -3,7 +3,12 @@ import {
   parseCategoryPublicationSnapshot,
   parseTagPublicationSnapshot,
 } from '@akiksystems/db';
-import type { PlatformLocale } from '@akiksystems/core';
+import {
+  parseWritingDocument,
+  writingDocumentAssetIds,
+  writingDocumentFromPlainText,
+  type PlatformLocale,
+} from '@akiksystems/core';
 import { Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
@@ -55,6 +60,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       'writing_localizations.title',
       'writing_localizations.summary',
       'writing_localizations.body',
+      'writing_localizations.editor_document',
       'writing_localizations.editorial_state',
     ])
     .where('writings.id', '=', writingId)
@@ -69,7 +75,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response('Preview content is incomplete.', { status: 404 });
   }
 
-  const [categoryRelations, tagRelations, systemRelations] = await Promise.all([
+  const document =
+    parseWritingDocument(writing.editor_document) ??
+    writingDocumentFromPlainText(writing.body);
+  const documentAssetIds = writingDocumentAssetIds(document);
+
+  const [categoryRelations, tagRelations, systemRelations, assetRows] = await Promise.all([
     appDb
       .selectFrom('writing_categories')
       .select(['category_id', 'position'])
@@ -88,6 +99,27 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       .where('writing_id', '=', writingId)
       .orderBy('position')
       .execute(),
+    documentAssetIds.length === 0
+      ? Promise.resolve([])
+      : appDb
+          .selectFrom('writing_assets')
+          .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+          .leftJoin('asset_localizations', (join) =>
+            join
+              .onRef('asset_localizations.asset_id', '=', 'assets.id')
+              .on('asset_localizations.locale', '=', locale),
+          )
+          .select([
+            'assets.id',
+            'assets.mime_type',
+            'assets.width',
+            'assets.height',
+            'asset_localizations.alt_text',
+            'asset_localizations.caption',
+          ])
+          .where('writing_assets.writing_id', '=', writingId)
+          .where('writing_assets.asset_id', 'in', documentAssetIds)
+          .execute(),
   ]);
 
   const categoryIds = categoryRelations.map((row) => row.category_id);
@@ -167,6 +199,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     const system = systemsById.get(systemId);
     return system === undefined ? [] : [system];
   });
+  const assets = documentAssetIds.flatMap((assetId) => {
+    const asset = assetRows.find((candidate) => candidate.id === assetId);
+    const altText = asset?.alt_text?.trim() ?? '';
+    return asset === undefined || altText === ''
+      ? []
+      : [
+          {
+            id: asset.id,
+            mimeType: asset.mime_type,
+            altText,
+            caption: asset.caption?.trim() || null,
+            width: asset.width,
+            height: asset.height,
+          },
+        ];
+  });
 
   return data(
     {
@@ -179,6 +227,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         title: writing.title,
         summary: writing.summary,
         body: writing.body,
+        document,
+        assets,
         categories,
         tags,
         systems,
@@ -224,6 +274,9 @@ export default function AdminWritingPreviewRoute() {
         </div>
       </div>
       <WritingDetailView
+        assetHref={(assetId) =>
+          `/admin/writings/${preview.writingId}/assets/${assetId}`
+        }
         backHref="/admin/writings"
         backLabel={
           preview.writing.locale === 'fr'
