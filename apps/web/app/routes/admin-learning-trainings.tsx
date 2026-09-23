@@ -450,6 +450,10 @@ export default function AdminLearningTrainingsRoute() {
                 <Text size="sm" tone="muted">
                   {training.id}
                 </Text>
+                <Text size="sm" tone="muted">
+                  EN {training.published_slug_en === null ? 'Draft' : 'Published'} · FR{' '}
+                  {training.published_slug_fr === null ? 'Draft' : 'Published'} · {training.state}
+                </Text>
 
                 <Form className="aks-admin-form" method="post">
                   <input name="_intent" type="hidden" value="shared" />
