@@ -105,10 +105,12 @@ export function WritingsFeed({
                 ))}
                 {writing.tags.map((tag) => (
                   <Link
+                    aria-label={tag.name}
                     href={tagHref(locale, tag.slug)}
                     key={tag.tagId}
                   >
-                    #{tag.name}
+                    <span aria-hidden="true">#</span>
+                    {tag.name}
                   </Link>
                 ))}
               </div>
