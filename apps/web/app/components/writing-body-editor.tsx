@@ -1,4 +1,4 @@
-import { Node } from '@tiptap/core';
+import { Node, type JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
@@ -17,6 +17,119 @@ export interface WritingBodyAsset {
   altText: string | null;
   caption: string | null;
 }
+
+const ControlledHeading = Node.create({
+  name: 'heading',
+  group: 'block',
+  content: 'text*',
+  defining: true,
+  addAttributes() {
+    return {
+      level: {
+        default: 2,
+      },
+    };
+  },
+  parseHTML() {
+    return [
+      { tag: 'h2', attrs: { level: 2 } },
+      { tag: 'h3', attrs: { level: 3 } },
+    ];
+  },
+  renderHTML({ node }) {
+    return [node.attrs.level === 3 ? 'h3' : 'h2', {}, 0];
+  },
+});
+
+const ControlledListItem = Node.create({
+  name: 'listItem',
+  content: 'paragraph+',
+  defining: true,
+  parseHTML() {
+    return [{ tag: 'li' }];
+  },
+  renderHTML() {
+    return ['li', {}, 0];
+  },
+});
+
+const ControlledBulletList = Node.create({
+  name: 'bulletList',
+  group: 'block',
+  content: 'listItem+',
+  parseHTML() {
+    return [{ tag: 'ul' }];
+  },
+  renderHTML() {
+    return ['ul', {}, 0];
+  },
+});
+
+const ControlledOrderedList = Node.create({
+  name: 'orderedList',
+  group: 'block',
+  content: 'listItem+',
+  parseHTML() {
+    return [{ tag: 'ol' }];
+  },
+  renderHTML() {
+    return ['ol', {}, 0];
+  },
+});
+
+const ControlledBlockquote = Node.create({
+  name: 'blockquote',
+  group: 'block',
+  content: 'paragraph+',
+  defining: true,
+  parseHTML() {
+    return [{ tag: 'blockquote' }];
+  },
+  renderHTML() {
+    return ['blockquote', {}, 0];
+  },
+});
+
+const ControlledCodeBlock = Node.create({
+  name: 'codeBlock',
+  group: 'block',
+  content: 'text*',
+  marks: '',
+  code: true,
+  defining: true,
+  addAttributes() {
+    return {
+      language: {
+        default: null,
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'pre' }];
+  },
+  renderHTML({ node }) {
+    const language =
+      typeof node.attrs.language === 'string' ? node.attrs.language : null;
+    return [
+      'pre',
+      language === null ? {} : { 'data-language': language },
+      ['code', {}, 0],
+    ];
+  },
+});
+
+const ControlledCallout = Node.create({
+  name: 'callout',
+  group: 'block',
+  content: 'paragraph+',
+  defining: true,
+  parseHTML() {
+    return [{ tag: 'aside[data-writing-callout]' }];
+  },
+  renderHTML() {
+    return ['aside', { 'data-writing-callout': '' }, 0];
+  },
+});
 
 const ContextualImage = Node.create({
   name: 'image',
@@ -44,7 +157,20 @@ const ContextualImage = Node.create({
   },
 });
 
-function editorJson(document: WritingEditorDocument) {
+const ControlledGallery = Node.create({
+  name: 'gallery',
+  group: 'block',
+  content: 'image{2,12}',
+  defining: true,
+  parseHTML() {
+    return [{ tag: '[data-writing-gallery]' }];
+  },
+  renderHTML() {
+    return ['div', { 'data-writing-gallery': '' }, 0];
+  },
+});
+
+function editorJson(document: WritingEditorDocument): JSONContent {
   return {
     type: document.type,
     content: document.content,
@@ -84,7 +210,20 @@ export function WritingBodyEditor({
   };
 
   const editor = useEditor({
-    extensions: [Document, Paragraph, TextNode, ContextualImage],
+    extensions: [
+      Document,
+      Paragraph,
+      TextNode,
+      ControlledHeading,
+      ControlledListItem,
+      ControlledBulletList,
+      ControlledOrderedList,
+      ControlledBlockquote,
+      ControlledCodeBlock,
+      ControlledCallout,
+      ContextualImage,
+      ControlledGallery,
+    ],
     content: editorJson(initialDocument),
     immediatelyRender: false,
     editorProps: {
@@ -97,6 +236,50 @@ export function WritingBodyEditor({
       syncDocument(currentEditor.getJSON());
     },
   });
+
+  const insertBlock = (block: JSONContent) => {
+    editor?.chain().focus().insertContent(block).run();
+  };
+
+  const labels =
+    locale === 'fr'
+      ? {
+          heading2: 'Titre H2',
+          heading3: 'Titre H3',
+          bullet: 'Liste',
+          ordered: 'Étapes',
+          quote: 'Citation',
+          code: 'Code',
+          callout: 'Encadré',
+          gallery: 'Galerie',
+          headingText: 'Titre de section',
+          subheadingText: 'Sous-section',
+          listText: 'Élément de liste',
+          stepText: 'Étape',
+          quoteText: 'Citation',
+          codeText: 'code',
+          calloutText: 'Contexte important',
+        }
+      : {
+          heading2: 'H2 heading',
+          heading3: 'H3 heading',
+          bullet: 'List',
+          ordered: 'Steps',
+          quote: 'Quote',
+          code: 'Code',
+          callout: 'Callout',
+          gallery: 'Gallery',
+          headingText: 'Section heading',
+          subheadingText: 'Subsection',
+          listText: 'List item',
+          stepText: 'Step',
+          quoteText: 'Quotation',
+          codeText: 'code',
+          calloutText: 'Important context',
+        };
+
+  const localizedAssets = assets.filter((asset) => asset.altText !== null);
+  const galleryAssets = localizedAssets.slice(0, 12);
 
   const initialDocumentJson = JSON.stringify(initialDocument);
   const initialBody = writingEditorDocumentToPlainText(initialDocument);
@@ -111,10 +294,149 @@ export function WritingBodyEditor({
         <span>{label}</span>
         <span className="aks-writing-editor-contract">
           {locale === 'fr'
-            ? 'Schéma v1 · médias contextuels'
-            : 'Schema v1 · contextual media'}
+            ? 'Schéma v1 · sémantique contrôlée'
+            : 'Schema v1 · controlled semantics'}
         </span>
       </div>
+
+      <div
+        aria-label={locale === 'fr' ? 'Blocs éditoriaux' : 'Editorial blocks'}
+        className="aks-writing-editor-toolbar"
+        role="toolbar"
+      >
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'heading',
+              attrs: { level: 2 },
+              content: [{ type: 'text', text: labels.headingText }],
+            })
+          }
+          type="button"
+        >
+          {labels.heading2}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'heading',
+              attrs: { level: 3 },
+              content: [{ type: 'text', text: labels.subheadingText }],
+            })
+          }
+          type="button"
+        >
+          {labels.heading3}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'bulletList',
+              content: [
+                {
+                  type: 'listItem',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      content: [{ type: 'text', text: labels.listText }],
+                    },
+                  ],
+                },
+              ],
+            })
+          }
+          type="button"
+        >
+          {labels.bullet}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'orderedList',
+              content: [
+                {
+                  type: 'listItem',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      content: [{ type: 'text', text: labels.stepText }],
+                    },
+                  ],
+                },
+              ],
+            })
+          }
+          type="button"
+        >
+          {labels.ordered}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'blockquote',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: labels.quoteText }],
+                },
+              ],
+            })
+          }
+          type="button"
+        >
+          {labels.quote}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'codeBlock',
+              content: [{ type: 'text', text: labels.codeText }],
+            })
+          }
+          type="button"
+        >
+          {labels.code}
+        </button>
+        <button
+          onClick={() =>
+            insertBlock({
+              type: 'callout',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: labels.calloutText }],
+                },
+              ],
+            })
+          }
+          type="button"
+        >
+          {labels.callout}
+        </button>
+        <button
+          disabled={galleryAssets.length < 2}
+          onClick={() =>
+            insertBlock({
+              type: 'gallery',
+              content: galleryAssets.map((asset) => ({
+                type: 'image',
+                attrs: { assetId: asset.id },
+              })),
+            })
+          }
+          title={
+            galleryAssets.length < 2
+              ? locale === 'fr'
+                ? 'Deux médias localisés sont nécessaires.'
+                : 'Two localized media items are required.'
+              : undefined
+          }
+          type="button"
+        >
+          {labels.gallery}
+        </button>
+      </div>
+
       <EditorContent editor={editor} />
 
       <div className="aks-writing-editor-assets">
@@ -136,14 +458,10 @@ export function WritingBodyEditor({
                 disabled={asset.altText === null}
                 key={asset.id}
                 onClick={() => {
-                  editor
-                    ?.chain()
-                    .focus()
-                    .insertContent({
-                      type: 'image',
-                      attrs: { assetId: asset.id },
-                    })
-                    .run();
+                  insertBlock({
+                    type: 'image',
+                    attrs: { assetId: asset.id },
+                  });
                 }}
                 title={
                   asset.altText === null
@@ -175,8 +493,8 @@ export function WritingBodyEditor({
       />
       <p className="aks-writing-editor-note">
         {locale === 'fr'
-          ? 'Les médias sont liés à ce Writing et référencés par identifiant dans le document. L’alt localisé est obligatoire avant publication.'
-          : 'Media stays linked to this Writing and is referenced by identifier in the document. Localized alt text is required before publication.'}
+          ? 'Les contrôles insèrent uniquement les blocs du schéma v1. Aucun HTML brut, style libre, colonne ou template n’est disponible.'
+          : 'Controls insert only schema v1 blocks. Raw HTML, free styling, columns, and templates are unavailable.'}
       </p>
     </div>
   );
