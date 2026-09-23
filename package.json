@@ -62,6 +62,7 @@
     "db:bootstrap-training-qualification": "pnpm --filter @akiksystems/db db:bootstrap-training-qualification",
     "db:bootstrap-credential-qualification": "pnpm --filter @akiksystems/db db:bootstrap-credential-qualification",
     "db:verify-credential-domain": "pnpm --filter @akiksystems/db db:verify-credential-domain",
+    "db:verify-learning-artifact-domain": "pnpm --filter @akiksystems/db db:verify-learning-artifact-domain",
     "db:verify-public-profile": "pnpm --filter @akiksystems/db db:verify-public-profile"
   },
   "devDependencies": {
