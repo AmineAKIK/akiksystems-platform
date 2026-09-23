@@ -2643,13 +2643,15 @@ async function assertWritingTags(page) {
 
   for (const target of targets) {
     await page.goto(origin + target.overview + '?tag-publication=' + target.locale);
-    const overviewCard = page.locator('article.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 3,
-        name: target.writingTitle,
-        exact: true,
-      }),
-    });
+    const overviewCard = page
+      .locator('[data-writing-feed] [data-writing-kind]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: target.writingTitle,
+          exact: true,
+        }),
+      });
     const overviewTagLink = overviewCard.getByRole('link', {
       name: target.tagName,
       exact: true,
