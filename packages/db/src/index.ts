@@ -41,6 +41,17 @@ export type {
   PublicLearningArtifactSystem,
   PublicLearningArtifactTraining,
 } from './learning-artifact-publication.js';
+export {
+  getPublishedWriting,
+  listPublishedWritings,
+  publishWritingLocalization,
+  unpublishWritingLocalization,
+} from './writing-publication.js';
+export type {
+  PublishedWriting,
+  PublishedWritingListItem,
+  WritingPublicationSnapshot,
+} from './writing-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
 export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
 export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
@@ -126,6 +137,15 @@ export type {
   LearningArtifactRow,
   LearningArtifactsTable,
   LearningArtifactUpdate,
+  WritingLocalizationRow,
+  WritingLocalizationsTable,
+  WritingLocalizationUpdate,
+  WritingPublicationRow,
+  WritingPublicationsTable,
+  WritingPublicationUpdate,
+  WritingRow,
+  WritingsTable,
+  WritingUpdate,
   Database,
   ExperienceLocalizationRow,
   ExperienceLocalizationUpdate,
@@ -142,6 +162,9 @@ export type {
   NewLearningArtifactLocalizationRow,
   NewLearningArtifactPublicationRow,
   NewLearningArtifactRow,
+  NewWritingLocalizationRow,
+  NewWritingPublicationRow,
+  NewWritingRow,
   NewExperienceLocalizationRow,
   NewExperienceRow,
   NewProfileCapabilityGroupLocalizationRow,
