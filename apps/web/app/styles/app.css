@@ -303,6 +303,57 @@
   font-weight: 700;
 }
 
+.aks-writing-editor {
+  display: grid;
+  gap: var(--aks-space-2);
+}
+
+.aks-writing-editor-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-2) var(--aks-space-4);
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: var(--aks-font-size-sm);
+  font-weight: 620;
+}
+
+.aks-writing-editor-contract,
+.aks-writing-editor-note {
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+  font-weight: 500;
+}
+
+.aks-writing-editor-note {
+  margin: 0;
+}
+
+.aks-writing-editor-content {
+  min-height: 12rem;
+  padding: var(--aks-space-4);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-sm);
+  outline: none;
+  background: var(--aks-surface-canvas);
+  color: var(--aks-text-primary);
+  line-height: 1.7;
+}
+
+.aks-writing-editor-content:focus-visible {
+  border-color: currentColor;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.aks-writing-editor-content p {
+  margin: 0;
+}
+
+.aks-writing-editor-content p + p {
+  margin-block-start: var(--aks-space-4);
+}
+
 .aks-preview-toolbar {
   position: sticky;
   top: 0;
