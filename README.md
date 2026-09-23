@@ -66,8 +66,23 @@ LearningArtifacts keep their existing renderer.
 
 The source document still carries explicit finalization markers, so the Web
 reading does not attach or imply a finalized PDF. Source-document publication
-remains a separate qualification step, and re-running the dossier bootstrap
-preserves any source asset that may be attached later.
+is deliberately separate from the native Web reading.
+
+AKS-095 provides the source-PDF publication workflow from the LearningArtifact
+admin. The original PDF is uploaded directly to private object storage as an
+`application/pdf` asset; upload/replacement marks both localized drafts as
+changed but does not mutate existing public snapshots. The source becomes
+public for a locale only after that LearningArtifact locale is explicitly
+republished, through its stable `/source` deep link with inline PDF delivery.
+Removing or replacing a draft source preserves the prior storage object so an
+older published snapshot cannot be broken. Re-running the Sentinel dossier
+bootstrap also preserves an attached source asset.
+
+The original Sentinel dossier PDF is intentionally not generated from the
+Markdown dossier and is not stored in the Sentinel Git repository or its
+`v1.0.0-rc.9` release. Publishing AKS-095 therefore requires importing the
+actual original PDF through the admin; a rendered substitute must not be
+presented as the original source.
 
 A production recovery is expected to restore PostgreSQL and object storage
 together; bootstrap scripts are not a substitute for a content backup or

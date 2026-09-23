@@ -8,6 +8,11 @@ import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
+import {
+  deleteAssetObject,
+  putAssetObject,
+  validateAssetUpload,
+} from '../lib/asset-storage.server';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
@@ -221,6 +226,180 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const learningArtifactId = requiredId(form);
+
+  if (intent === 'source-upload') {
+    const file = form.get('file');
+
+    if (!(file instanceof File)) {
+      return { ok: false, message: 'Choose the original PDF source file.' };
+    }
+
+    if (file.type !== 'application/pdf') {
+      return { ok: false, message: 'LearningArtifact source must be a PDF file.' };
+    }
+
+    try {
+      validateAssetUpload(file);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'LearningArtifact source upload is invalid.',
+      };
+    }
+
+    const artifact = await appDb
+      .selectFrom('learning_artifacts')
+      .leftJoin('assets', 'assets.id', 'learning_artifacts.source_asset_id')
+      .select([
+        'learning_artifacts.id',
+        'learning_artifacts.source_asset_id',
+        'assets.storage_key as source_storage_key',
+      ])
+      .where('learning_artifacts.id', '=', learningArtifactId)
+      .executeTakeFirst();
+
+    if (artifact === undefined) {
+      throw new Response('LearningArtifact not found.', { status: 404 });
+    }
+
+    const assetId = randomUUID();
+    const storageKey =
+      `learning-artifacts/${learningArtifactId}/source/${assetId}.pdf`;
+
+    try {
+      await putAssetObject(storageKey, file);
+
+      await appDb.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('assets')
+          .values({
+            id: assetId,
+            storage_key: storageKey,
+            original_filename: file.name,
+            mime_type: file.type,
+            byte_size: file.size,
+          })
+          .execute();
+
+        await transaction
+          .updateTable('learning_artifacts')
+          .set({
+            source_asset_id: assetId,
+            updated_at: new Date(),
+          })
+          .where('id', '=', learningArtifactId)
+          .executeTakeFirstOrThrow();
+
+        await transaction
+          .updateTable('learning_artifact_localizations')
+          .set({
+            editorial_state: 'draft',
+            published_at: null,
+            updated_at: new Date(),
+          })
+          .where('learning_artifact_id', '=', learningArtifactId)
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'learning_artifact.source_pdf_updated',
+          entityType: 'learning_artifact',
+          entityId: learningArtifactId,
+          metadata: {
+            assetId,
+            mimeType: file.type,
+            byteSize: file.size,
+            replacedExistingSource: artifact.source_asset_id !== null,
+            previousAssetPreserved: artifact.source_asset_id !== null,
+            publicationRequired: true,
+          },
+        });
+      });
+    } catch (error) {
+      try {
+        await deleteAssetObject(storageKey);
+      } catch {
+        // Best-effort compensation when storage or persistence fails.
+      }
+
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'LearningArtifact source PDF upload could not be completed.',
+      };
+    }
+
+    return {
+      ok: true,
+      message:
+        artifact.source_asset_id === null
+          ? 'Source PDF uploaded. Republish EN/FR to expose it publicly.'
+          : 'Source PDF replaced. Previous asset preserved for published snapshots; republish EN/FR to expose the new source.',
+    };
+  }
+
+  if (intent === 'source-remove') {
+    const artifact = await appDb
+      .selectFrom('learning_artifacts')
+      .select('source_asset_id')
+      .where('id', '=', learningArtifactId)
+      .executeTakeFirst();
+
+    if (artifact === undefined) {
+      throw new Response('LearningArtifact not found.', { status: 404 });
+    }
+
+    if (artifact.source_asset_id === null) {
+      return { ok: true, message: 'No source PDF is currently attached.' };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .updateTable('learning_artifacts')
+        .set({
+          source_asset_id: null,
+          updated_at: new Date(),
+        })
+        .where('id', '=', learningArtifactId)
+        .executeTakeFirstOrThrow();
+
+      await transaction
+        .updateTable('learning_artifact_localizations')
+        .set({
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })
+        .where('learning_artifact_id', '=', learningArtifactId)
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'learning_artifact.source_pdf_removed',
+        entityType: 'learning_artifact',
+        entityId: learningArtifactId,
+        metadata: {
+          assetId: artifact.source_asset_id,
+          storageObjectPreserved: true,
+          publicationRequired: true,
+          reason: 'published_snapshot_safety',
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message:
+        'Source PDF removed from the draft. Existing public snapshots stay unchanged until republished.',
+    };
+  }
 
   if (intent === 'shared') {
     const trainingId = requiredTrainingId(form);
@@ -460,6 +639,76 @@ export default function AdminLearningArtifactsRoute() {
                   {artifact.system_id === null ? 'No System' : 'System connected'} ·{' '}
                   {artifact.source_asset_id === null ? 'No source document' : 'Source attached'}
                 </Text>
+
+                <section className="aks-proof-panel">
+                  <div className="aks-proof-stack">
+                    <Heading level={3} size="sm">
+                      Source PDF
+                    </Heading>
+                    <Text size="sm" tone="muted">
+                      Upload the original source document here. The file stays
+                      private until the localized LearningArtifact snapshot is
+                      republished; replacing or removing a source never mutates
+                      an already-published snapshot.
+                    </Text>
+                    {artifact.source_asset_id === null ? (
+                      <Text size="sm" tone="muted">
+                        No source PDF attached to the current draft.
+                      </Text>
+                    ) : (
+                      <Text size="sm" tone="muted">
+                        Current draft source: {
+                          data.assets.find(
+                            (asset) => asset.id === artifact.source_asset_id,
+                          )?.original_filename ?? artifact.source_asset_id
+                        }
+                      </Text>
+                    )}
+                    <Form
+                      className="aks-admin-form"
+                      encType="multipart/form-data"
+                      method="post"
+                    >
+                      <input name="_intent" type="hidden" value="source-upload" />
+                      <input
+                        name="learningArtifactId"
+                        type="hidden"
+                        value={artifact.id}
+                      />
+                      <label>
+                        <span>Original PDF</span>
+                        <input
+                          accept="application/pdf"
+                          name="file"
+                          required
+                          type="file"
+                        />
+                      </label>
+                      <Button type="submit">
+                        {artifact.source_asset_id === null
+                          ? 'Upload source PDF'
+                          : 'Replace source PDF'}
+                      </Button>
+                    </Form>
+                    {artifact.source_asset_id !== null ? (
+                      <Form method="post">
+                        <input
+                          name="_intent"
+                          type="hidden"
+                          value="source-remove"
+                        />
+                        <input
+                          name="learningArtifactId"
+                          type="hidden"
+                          value={artifact.id}
+                        />
+                        <Button emphasis="quiet" type="submit">
+                          Remove source from draft
+                        </Button>
+                      </Form>
+                    ) : null}
+                  </div>
+                </section>
 
                 <Form className="aks-admin-form" method="post">
                   <input name="_intent" type="hidden" value="shared" />
