@@ -26,8 +26,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
         editor_document is null
         or (
           jsonb_typeof(editor_document) = 'object'
+          and editor_document ? 'type'
           and editor_document ->> 'type' = 'doc'
+          and editor_document ? 'version'
           and editor_document ->> 'version' = '1'
+          and editor_document ? 'content'
           and jsonb_typeof(editor_document -> 'content') = 'array'
           and (
             editor_document - 'version' - 'type' - 'content'
