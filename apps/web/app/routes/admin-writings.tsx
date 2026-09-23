@@ -397,6 +397,348 @@ export async function action({ request }: Route.ActionArgs) {
     throw new Response('Writing not found.', { status: 404 });
   }
 
+  if (intent === 'upload-asset') {
+    const file = form.get('file');
+    if (!(file instanceof File)) {
+      return { ok: false, message: 'Choose an image to upload.' };
+    }
+    if (!file.type.startsWith('image/')) {
+      return {
+        ok: false,
+        message: 'Writing media must be JPEG, PNG, WebP, or AVIF.',
+      };
+    }
+
+    try {
+      validateAssetUpload(file);
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : 'Invalid image.',
+      };
+    }
+
+    const altEn = requiredAssetAlt(form, 'altEn', 'English');
+    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const captionEn = nullableField(form, 'captionEn');
+    const captionFr = nullableField(form, 'captionFr');
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const dimensions = imageDimensions(file.type, bytes);
+    const assetId = randomUUID();
+    const extension = assetExtensionForMimeType(file.type);
+    const storageKey = `writings/${writingId}/${assetId}.${extension}`;
+
+    try {
+      await putAssetObject(storageKey, file);
+
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('assets')
+          .values({
+            id: assetId,
+            storage_key: storageKey,
+            original_filename: file.name,
+            mime_type: file.type,
+            byte_size: file.size,
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+          })
+          .execute();
+
+        await transaction
+          .insertInto('asset_localizations')
+          .values([
+            {
+              asset_id: assetId,
+              locale: 'en',
+              alt_text: altEn,
+              caption: captionEn,
+            },
+            {
+              asset_id: assetId,
+              locale: 'fr',
+              alt_text: altFr,
+              caption: captionFr,
+            },
+          ])
+          .execute();
+
+        await transaction
+          .insertInto('writing_assets')
+          .values({
+            writing_id: writingId,
+            asset_id: assetId,
+          })
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'writing.asset_uploaded',
+          entityType: 'asset',
+          entityId: assetId,
+          metadata: {
+            writingId,
+            mimeType: file.type,
+            byteSize: file.size,
+            localizedMetadata: ['en', 'fr'],
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+          },
+        });
+      });
+    } catch (error) {
+      try {
+        await deleteAssetObject(storageKey);
+      } catch {
+        // Best-effort compensation when storage or metadata persistence fails.
+      }
+
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Writing media upload could not be completed.',
+      };
+    }
+
+    return {
+      ok: true,
+      message: 'Writing image uploaded. Insert it from the EN or FR editor.',
+    };
+  }
+
+  if (intent === 'update-asset-metadata') {
+    const assetId = requiredAssetId(form);
+    const linked = await db
+      .selectFrom('writing_assets')
+      .select('asset_id')
+      .where('writing_id', '=', writingId)
+      .where('asset_id', '=', assetId)
+      .executeTakeFirst();
+    if (linked === undefined) {
+      throw new Response('Writing asset not found.', { status: 404 });
+    }
+
+    const altEn = requiredAssetAlt(form, 'altEn', 'English');
+    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const captionEn = nullableField(form, 'captionEn');
+    const captionFr = nullableField(form, 'captionFr');
+    const localizations = await db
+      .selectFrom('writing_localizations')
+      .select(['locale', 'editor_document'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const referencedLocales = localizations.flatMap((localization) => {
+      const document = parseWritingDocument(localization.editor_document);
+      return document !== null &&
+        writingDocumentAssetIds(document).includes(assetId)
+        ? [localization.locale]
+        : [];
+    });
+
+    await db.transaction().execute(async (transaction) => {
+      for (const localized of [
+        { locale: 'en' as const, altText: altEn, caption: captionEn },
+        { locale: 'fr' as const, altText: altFr, caption: captionFr },
+      ]) {
+        await transaction
+          .insertInto('asset_localizations')
+          .values({
+            asset_id: assetId,
+            locale: localized.locale,
+            alt_text: localized.altText,
+            caption: localized.caption,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['asset_id', 'locale']).doUpdateSet({
+              alt_text: localized.altText,
+              caption: localized.caption,
+              updated_at: new Date(),
+            }),
+          )
+          .execute();
+      }
+
+      if (referencedLocales.length > 0) {
+        await transaction
+          .updateTable('writing_localizations')
+          .set({
+            editorial_state: 'draft',
+            published_at: null,
+            updated_at: new Date(),
+          })
+          .where('writing_id', '=', writingId)
+          .where('locale', 'in', referencedLocales)
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.asset_metadata_updated',
+        entityType: 'asset',
+        entityId: assetId,
+        metadata: {
+          writingId,
+          localizedMetadata: ['en', 'fr'],
+          draftLocales: referencedLocales,
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message:
+        referencedLocales.length === 0
+          ? 'Writing image metadata updated.'
+          : 'Writing image metadata updated; referenced locale drafts must be republished.',
+    };
+  }
+
+  if (intent === 'delete-asset') {
+    const assetId = requiredAssetId(form);
+    const asset = await db
+      .selectFrom('writing_assets')
+      .innerJoin('assets', 'assets.id', 'writing_assets.asset_id')
+      .select(['assets.id', 'assets.storage_key'])
+      .where('writing_assets.writing_id', '=', writingId)
+      .where('writing_assets.asset_id', '=', assetId)
+      .executeTakeFirst();
+    if (asset === undefined) {
+      throw new Response('Writing asset not found.', { status: 404 });
+    }
+
+    const draftLocalizations = await db
+      .selectFrom('writing_localizations')
+      .select(['locale', 'editor_document'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const draftReferences = draftLocalizations.flatMap((localization) => {
+      const document = parseWritingDocument(localization.editor_document);
+      return document !== null &&
+        writingDocumentAssetIds(document).includes(assetId)
+        ? [localization.locale]
+        : [];
+    });
+    if (draftReferences.length > 0) {
+      return {
+        ok: false,
+        message:
+          `Remove this image from the ${draftReferences.join(', ').toUpperCase()} editor and save the draft before deleting it.`,
+      };
+    }
+
+    const publications = await db
+      .selectFrom('writing_publications')
+      .select(['locale', 'snapshot'])
+      .where('writing_id', '=', writingId)
+      .execute();
+    const publishedReferences = publications.flatMap((publication) => {
+      const snapshot = parseWritingPublicationSnapshot(publication.snapshot);
+      const referenced =
+        snapshot.assets.some((candidate) => candidate.id === assetId) ||
+        writingDocumentAssetIds(snapshot.document).includes(assetId);
+      return referenced ? [publication.locale] : [];
+    });
+    if (publishedReferences.length > 0) {
+      return {
+        ok: false,
+        message:
+          `Deletion blocked: published snapshot(s) ${publishedReferences.join(', ').toUpperCase()} still reference this image. Republish or unpublish them first.`,
+      };
+    }
+
+    const [
+      writingReferences,
+      systemReferences,
+      profileReferences,
+      credentialReferences,
+      learningArtifactReferences,
+    ] = await Promise.all([
+      db
+        .selectFrom('writing_assets')
+        .select('writing_id')
+        .where('asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('system_assets')
+        .select('system_id')
+        .where('asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('profiles')
+        .select(['portrait_asset_id', 'source_cv_asset_id'])
+        .execute(),
+      db
+        .selectFrom('credentials')
+        .select('id')
+        .where('source_asset_id', '=', assetId)
+        .execute(),
+      db
+        .selectFrom('learning_artifacts')
+        .select('id')
+        .where('source_asset_id', '=', assetId)
+        .execute(),
+    ]);
+    const sharedReference =
+      writingReferences.some((reference) => reference.writing_id !== writingId) ||
+      systemReferences.length > 0 ||
+      profileReferences.some(
+        (profile) =>
+          profile.portrait_asset_id === assetId ||
+          profile.source_cv_asset_id === assetId,
+      ) ||
+      credentialReferences.length > 0 ||
+      learningArtifactReferences.length > 0;
+    if (sharedReference) {
+      return {
+        ok: false,
+        message: 'Deletion blocked: this asset is still used by another context.',
+      };
+    }
+
+    try {
+      await deleteAssetObject(asset.storage_key);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? `Storage deletion failed; metadata was kept so the operation can be retried: ${error.message}`
+            : 'Storage deletion failed; metadata was kept so the operation can be retried.',
+      };
+    }
+
+    await db.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('writing_assets')
+        .where('writing_id', '=', writingId)
+        .where('asset_id', '=', assetId)
+        .execute();
+
+      await transaction
+        .deleteFrom('assets')
+        .where('id', '=', assetId)
+        .executeTakeFirstOrThrow();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'writing.asset_deleted',
+        entityType: 'asset',
+        entityId: assetId,
+        metadata: {
+          writingId,
+          storageObjectDeleted: true,
+        },
+      });
+    });
+
+    return { ok: true, message: 'Writing image removed from storage.' };
+  }
+
   if (intent === 'save-categories') {
     const rawCategoryIds = form
       .getAll('categoryId')
