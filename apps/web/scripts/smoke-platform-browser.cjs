@@ -1570,7 +1570,6 @@ async function assertWritingAdminAndPublic(page) {
   );
 
   const saveLocale = async ({
-    index,
     locale,
     slug,
     title,
@@ -1597,7 +1596,6 @@ async function assertWritingAdminAndPublic(page) {
   };
 
   await saveLocale({
-    index: 0,
     locale: 'EN',
     slug: 'architecture-without-page-builders',
     title: 'Architecture Without Page Builders',
@@ -1605,7 +1603,6 @@ async function assertWritingAdminAndPublic(page) {
     body: 'A Writing is content, not a layout definition.\n\nAKS-101 keeps the first renderer intentionally limited to controlled paragraphs.',
   });
   await saveLocale({
-    index: 1,
     locale: 'FR',
     slug: 'architecture-sans-page-builder',
     title: 'Architecture sans page builder',
