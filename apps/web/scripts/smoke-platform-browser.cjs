@@ -2271,6 +2271,147 @@ async function assertDwwmTrainingJourney(browser, adminPage) {
   assert.equal(await dwwmCard.locator('input[name="startDate"]').first().inputValue(), '');
   assert.equal(await dwwmCard.locator('input[name="endDate"]').first().inputValue(), '');
 }
+function bootstrapL5SentinelDossier() {
+  execFileSync('pnpm', ['content:bootstrap-sentinel-dossier'], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+  });
+}
+
+async function assertSentinelDossierJourney(browser, adminPage) {
+  bootstrapL5SentinelDossier();
+
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    const page = await desktop.newPage();
+    const targets = [
+      {
+        overviewPath: '/en/learning',
+        trainingPath: '/en/learning/full-stack-web-mobile-developer',
+        artifactPath: '/en/learning/artifacts/sentinel-dwwm-project-dossier',
+        heading: 'Sentinel — DWWM Project Dossier',
+        summary: 'First-class learning evidence connecting the DWWM training to Sentinel through problem framing, architecture, implementation, security, testing, deployment, and documented limits.',
+        inspection: 'The examination baseline documented by the Sentinel repository is the immutable release v1.0.0-rc.9',
+        trainingTitle: 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
+        systemPath: '/en/systems/sentinel',
+        alternateLocale: 'fr',
+        alternatePath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+        sourcePath: '/en/learning/artifacts/sentinel-dwwm-project-dossier/source',
+      },
+      {
+        overviewPath: '/fr/apprentissage',
+        trainingPath: '/fr/apprentissage/developpeur-web-web-mobile',
+        artifactPath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+        heading: 'Sentinel — dossier de projet DWWM',
+        summary: 'Preuve d’apprentissage de premier rang reliant la formation DWWM à Sentinel à travers le cadrage du besoin, l’architecture, l’implémentation, la sécurité, les tests, le déploiement et les limites documentées.',
+        inspection: 'La base d’examen documentée par le dépôt Sentinel est la release immuable v1.0.0-rc.9',
+        trainingTitle: 'Développeur web et web mobile — Titre professionnel RNCP 37674',
+        systemPath: '/fr/systems/sentinel',
+        alternateLocale: 'en',
+        alternatePath: '/en/learning/artifacts/sentinel-dwwm-project-dossier',
+        sourcePath: '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel/source',
+      },
+    ];
+
+    for (const target of targets) {
+      const overviewResponse = await page.goto(origin + target.overviewPath);
+      assert.equal(overviewResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 3, name: target.heading, exact: true })
+        .waitFor();
+      assert.equal(
+        await page.locator('a[href="' + target.artifactPath + '"]').count(),
+        1,
+        target.overviewPath + ' must expose the Sentinel dossier as first-class evidence.',
+      );
+
+      const trainingResponse = await page.goto(origin + target.trainingPath);
+      assert.equal(trainingResponse?.status(), 200);
+      assert.equal(
+        await page.locator('a[href="' + target.artifactPath + '"]').count(),
+        1,
+        target.trainingPath + ' must connect DWWM context to the Sentinel dossier evidence.',
+      );
+
+      const artifactResponse = await page.goto(origin + target.artifactPath);
+      assert.equal(artifactResponse?.status(), 200);
+      await page
+        .getByRole('heading', { level: 1, name: target.heading, exact: true })
+        .waitFor();
+      const body = await page.locator('body').innerText();
+      assert.ok(body.includes(target.summary));
+      assert.ok(body.includes(target.inspection));
+      assert.ok(body.includes('ed26a25e3c005cabb0da30a4553dfbbee03afe81'));
+      assert.equal(
+        await page.getByRole('link', { name: target.trainingTitle, exact: true }).getAttribute('href'),
+        target.trainingPath,
+        'Sentinel dossier must link back to its real DWWM Training context.',
+      );
+      assert.equal(
+        await page.locator('a[href="' + target.systemPath + '"]').count(),
+        1,
+        'Sentinel dossier must link to the published Sentinel System.',
+      );
+      assert.equal(
+        await page
+          .locator('.aks-experience-meta a[hreflang="' + target.alternateLocale + '"]')
+          .getAttribute('href'),
+        target.alternatePath,
+      );
+      assert.equal(
+        await page.locator('link[rel="canonical"]').getAttribute('href'),
+        'https://akiksystems.com' + target.artifactPath,
+      );
+
+      const sourceResponse = await desktop.request.get(origin + target.sourcePath);
+      assert.equal(
+        sourceResponse.status(),
+        404,
+        'AKS-093 must not expose a fabricated dossier PDF before AKS-095.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  try {
+    const page = await mobile.newPage();
+    for (const path of [
+      '/en/learning/artifacts/sentinel-dwwm-project-dossier',
+      '/fr/apprentissage/preuves/dossier-projet-dwwm-sentinel',
+    ]) {
+      const response = await page.goto(origin + path);
+      assert.equal(response?.status(), 200);
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        true,
+        path + ' Sentinel dossier must not overflow at 320px.',
+      );
+      await assertAxe(page);
+    }
+  } finally {
+    await mobile.close();
+  }
+
+  await adminPage.goto(origin + '/admin/learning/artifacts');
+  const dossierCard = adminPage.locator('section').filter({
+    has: adminPage.getByRole('heading', {
+      level: 2,
+      name: 'Sentinel — DWWM Project Dossier',
+      exact: true,
+    }),
+  });
+  await dossierCard.waitFor();
+  const adminText = await dossierCard.innerText();
+  assert.ok(adminText.includes('Training connected'));
+  assert.ok(adminText.includes('System connected'));
+  assert.ok(adminText.includes('No source document'));
+}
 async function assertRepresentativeSystemSelection(page) {
   await page.goto(`${origin}/admin/profile`);
   await page
@@ -3698,6 +3839,7 @@ async function assertAxe(page) {
     await assertLearningArtifactAdmin(page);
     await assertLearningAdminWorkspace(page);
     await assertDwwmTrainingJourney(browser, page);
+    await assertSentinelDossierJourney(browser, page);
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
