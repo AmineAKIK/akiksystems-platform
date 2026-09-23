@@ -2212,10 +2212,10 @@ async function assertLearningOverviewExperience(browser) {
       assert.ok(
         body.includes(
           target.path === '/en/learning'
-            ? '2 published evidence objects'
-            : '2 preuves publiées',
+            ? '3 published evidence objects'
+            : '3 preuves publiées',
         ),
-        target.path + ' must surface both published evidence objects at overview depth.',
+        target.path + ' must surface all qualified evidence objects at overview depth.',
       );
       await assertAxe(page);
     }
