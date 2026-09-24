@@ -1,10 +1,18 @@
 import { createDatabase } from '../database.js';
+import { bootstrapInitialProfile } from '../profile-initial-bootstrap.js';
 import { getDraftProfile } from '../public-profile.js';
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
 
 try {
+  const initial = await bootstrapInitialProfile(db);
+  if (initial.updatedDraft || initial.publishedLocales.length > 0) {
+    process.stdout.write(
+      `Initial Profile bootstrap prepared ${initial.profileId}; published ${initial.publishedLocales.map((locale) => locale.toUpperCase()).join(', ') || 'no new locale'}.\n`,
+    );
+  }
+
   const profile = await db
     .selectFrom('profiles')
     .select('id')

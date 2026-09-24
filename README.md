@@ -753,7 +753,7 @@ Assets are stored once, related to domain context, and localized independently.
 - Uploads accept JPEG, PNG, WebP, AVIF, and PDF up to 10 MiB. Validation is enforced both before storage and by PostgreSQL constraints.
 - Private object bytes live in S3-compatible storage. The web server signs PUT/DELETE requests with AWS Signature Version 4; storage credentials remain server-only.
 - Deleting an asset that is still referenced is blocked by database constraints. The admin removal path verifies references before unlinking metadata and deleting the object.
-- Staging uses an isolated Railway Storage Bucket, so staging assets do not share credentials or objects with other environments.
+- Staging and production use isolated Railway Storage Buckets, so assets, credentials and objects are never shared across environments.
 - Browser qualification uses an isolated filesystem object root only under `NODE_ENV=test`, so responsive variants exercise real image bytes without requiring external object storage.
 
 ### Sentinel System workspace
@@ -800,9 +800,7 @@ administrator, provisions the L4 reference Systems (ProtoCap, Oria Nutrition, Tu
 minimal bilingual Sentinel draft if Sentinel is still missing, re-runs System publication bootstrapping,
 and provisions the published DWWM training.
 
-The command deliberately does **not** publish invented Profile content and does not fabricate the
-Sentinel learning dossier before Sentinel itself satisfies publication readiness. Profile identity and
-the final Sentinel dossier remain operator-authored/published boundaries.
+The command publishes the canonical initial Profile identity used by the qualified public journey when those fields are still empty. Existing operator-authored Profile fields are preserved. It does not fabricate the Sentinel learning dossier before Sentinel itself satisfies publication readiness; the final Sentinel dossier remains an operator-authored/published boundary.
 
 After successful commissioning, normal deployments must return to `pnpm deploy:migrate`.
 `ADMIN_PASSWORD` is a one-time provisioning secret and must not be treated as a permanent runtime

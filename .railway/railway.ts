@@ -6,13 +6,7 @@ import {
   service,
 } from 'railway/iac';
 
-export default defineRailway((ctx) => {
-  if (!ctx.isEnvironment('staging')) {
-    throw new Error(
-      'This Railway IaC definition is intentionally staging-only for now. Target the staging environment explicitly.',
-    );
-  }
-
+export default defineRailway((_ctx) => {
   const database = postgres('Postgres');
 
   const source = github('AmineAKIK/akiksystems-platform', { branch: 'main' });
