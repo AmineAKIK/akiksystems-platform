@@ -6,14 +6,19 @@ import type { Locale } from '../i18n/locales';
 import type { WritingFilterModel } from '../lib/writing-filters';
 import { WritingsFeed } from './writings-feed';
 import { WritingsFilters } from './writings-filters';
+import { WritingsSearch } from './writings-search';
 
 export function WritingsOverview({
   filterModel,
   locale,
+  searchQuery,
+  searchResultCount,
   writings,
 }: {
   filterModel: WritingFilterModel;
   locale: Locale;
+  searchQuery: string;
+  searchResultCount: number;
   writings: PublishedWritingListItem[];
 }) {
   const destination = destinationById('writings');
@@ -48,17 +53,32 @@ export function WritingsOverview({
               </Text>
             </div>
 
-            <WritingsFilters locale={locale} model={filterModel} />
+            <WritingsSearch
+              filterModel={filterModel}
+              locale={locale}
+              query={searchQuery}
+              resultCount={searchResultCount}
+            />
+
+            <WritingsFilters
+              locale={locale}
+              model={filterModel}
+              searchQuery={searchQuery}
+            />
 
             <WritingsFeed
               emptyMessage={
-                filterModel.enabled && filterModel.resultCount === 0
+                writings.length === 0 && searchQuery !== ''
                   ? locale === 'fr'
-                    ? 'Aucun écrit ne correspond à ces filtres.'
-                    : 'No writing matches these filters.'
-                  : locale === 'fr'
-                    ? 'Aucun écrit n’est encore publié.'
-                    : 'No writing is published yet.'
+                    ? 'Aucun écrit publié ne correspond à cette recherche.'
+                    : 'No published Writing matches this search.'
+                  : filterModel.enabled && filterModel.resultCount === 0
+                    ? locale === 'fr'
+                      ? 'Aucun écrit ne correspond à ces filtres.'
+                      : 'No writing matches these filters.'
+                    : locale === 'fr'
+                      ? 'Aucun écrit n’est encore publié.'
+                      : 'No writing is published yet.'
               }
               locale={locale}
               writings={writings}
