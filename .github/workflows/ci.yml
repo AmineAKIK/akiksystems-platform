@@ -192,6 +192,9 @@ jobs:
       - name: Verify AKS-125 collaboration content
         run: pnpm db:verify-work-with-us-collaboration
 
+      - name: Verify AKS-126 selected commercial proof
+        run: pnpm db:verify-work-with-us-selected-proof
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
