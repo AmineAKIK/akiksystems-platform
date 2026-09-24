@@ -27,6 +27,7 @@
 .aks-writing-quote .aks-text,
 .aks-writing-callout .aks-text {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .aks-writing-content > .aks-text {
@@ -112,6 +113,11 @@
   line-height: 1.65;
   tab-size: 2;
   white-space: pre;
+}
+
+.aks-writing-code:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .aks-writing-media {

@@ -1798,6 +1798,17 @@ async function submitWritingAdminAction(page, button) {
     .waitFor();
 }
 
+async function ensureCheckboxChecked(checkbox, message) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (await checkbox.isChecked()) return;
+    await checkbox.click();
+    await sleep(100);
+    if (await checkbox.isChecked()) return;
+  }
+
+  assert.equal(await checkbox.isChecked(), true, message);
+}
+
 async function waitForWritingFieldValue(locator, expected, message) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     if ((await locator.inputValue()) === expected) return;
@@ -4026,8 +4037,9 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     'Publish only evidence you can support.',
   ];
   const quotation =
-    'A system becomes useful when its boundary is easier to inspect than the ambiguity it replaces.';
-  const code = 'signal -> state -> evidence -> decision';
+    'A system becomes useful when its boundary is easier to inspect than the ambiguity it replaces. The reader should be able to stay with the argument without fighting the interface, even when a quotation carries several complete thoughts across a small screen. Good reading conditions protect attention instead of asking the reader to manage layout.';
+  const code =
+    'const decision = normalize(signal).then(deriveState).then(attachEvidence).then(makeBoundaryInspectable).then(decideWithoutHidingAmbiguity);';
   const callout =
     'Do not automate an ambiguity you have not yet described.';
   const assetName = 'aks-119-boundary.png';
@@ -4282,12 +4294,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Categories',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'Engineering practice',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 Category relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
@@ -4300,12 +4313,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Tags',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'Software architecture',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 Tag relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
@@ -4318,12 +4332,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Systems',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'ProtoCap',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 System relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
@@ -4512,6 +4527,239 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   );
   await assertAxe(page);
   await page.setViewportSize({ width: 1280, height: 800 });
+}
+
+async function assertLongFormMobileReading(browser) {
+  const essayPath = '/fr/ecrits/rendre-l-attention-au-reel';
+  const articlePath = '/en/writings/from-ambiguity-to-executable-boundaries';
+  const articleImageAlt =
+    'A boundary sketch connecting signal, state, evidence and decision';
+
+  const viewports = [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 430, height: 932 },
+  ];
+
+  for (const viewport of viewports) {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+
+      const essayResponse = await page.goto(origin + essayPath);
+      assert.equal(essayResponse?.status(), 200);
+      await page
+        .getByRole('heading', {
+          level: 1,
+          name: 'Rendre l’attention au réel',
+          exact: true,
+        })
+        .waitFor();
+
+      const essayReader = page.locator('[data-long-form-reader]');
+      const essayMetrics = await essayReader.evaluate((reader) => {
+        const paragraph = reader.querySelector(
+          '[data-writing-node="paragraph"]',
+        );
+        if (!(paragraph instanceof HTMLElement)) {
+          throw new Error('AKS-120 requires a long-form paragraph.');
+        }
+
+        const styles = getComputedStyle(paragraph);
+        const readerRect = reader.getBoundingClientRect();
+        return {
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          documentWidth: document.documentElement.scrollWidth,
+          readerWidth: readerRect.width,
+          paragraphFontSize: Number.parseFloat(styles.fontSize),
+          paragraphLineHeight: Number.parseFloat(styles.lineHeight),
+          pageHeight: document.documentElement.scrollHeight,
+        };
+      });
+
+      assert.equal(
+        essayMetrics.documentWidth <= essayMetrics.viewportWidth,
+        true,
+        `AKS-120 essay must not create global horizontal scrolling at ${viewport.width}px.`,
+      );
+      assert.ok(
+        essayMetrics.readerWidth <= essayMetrics.viewportWidth,
+        `AKS-120 essay reader must stay inside the ${viewport.width}px viewport.`,
+      );
+
+      for (const sourceUrl of [
+        'https://github.com/AmineAKIK/protocap',
+        'https://protocap-production.up.railway.app/',
+      ]) {
+        const sourceParagraph = essayReader.getByText(sourceUrl, {
+          exact: true,
+        });
+        await sourceParagraph.waitFor();
+        assert.equal(
+          await sourceParagraph.evaluate(
+            (node) => node.scrollWidth <= node.clientWidth,
+          ),
+          true,
+          `Long source URL must wrap inside the ${viewport.width}px prose measure: ${sourceUrl}`,
+        );
+      }
+      assert.ok(
+        essayMetrics.paragraphFontSize >= 16,
+        'Long-form mobile prose must remain at least 16px.',
+      );
+      assert.ok(
+        essayMetrics.paragraphLineHeight / essayMetrics.paragraphFontSize >=
+          1.65,
+        'Long-form mobile prose must retain generous reading line-height.',
+      );
+      assert.ok(
+        essayMetrics.pageHeight / essayMetrics.viewportHeight >= 12,
+        'The real 25-page essay must exercise sustained mobile reading depth.',
+      );
+
+      const finalExcerpt = page.getByText(
+        'l’attention peut retourner là où tout avait commencé : dans le réel.',
+        { exact: false },
+      );
+      await finalExcerpt.last().scrollIntoViewIfNeeded();
+      const finalBox = await finalExcerpt.last().boundingBox();
+      assert.ok(finalBox !== null);
+      assert.ok(
+        finalBox.y < viewport.height &&
+          finalBox.y + finalBox.height > 0,
+        'The final essay argument must remain reachable and visible on mobile.',
+      );
+      await assertAxe(page);
+
+      const articleResponse = await page.goto(origin + articlePath);
+      assert.equal(articleResponse?.status(), 200);
+      await page
+        .getByRole('heading', {
+          level: 1,
+          name: 'From ambiguity to executable boundaries',
+          exact: true,
+        })
+        .waitFor();
+
+      const articleReader = page.locator('[data-long-form-reader]');
+      assert.equal(
+        await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth <=
+            document.documentElement.clientWidth,
+        ),
+        true,
+        `Rich long-form Writing must not create global overflow at ${viewport.width}px.`,
+      );
+
+      const codeBlock = articleReader.locator(
+        '[data-writing-node="codeBlock"]',
+      );
+      await codeBlock.waitFor();
+      const codeMetrics = await codeBlock.evaluate((node) => {
+        const styles = getComputedStyle(node);
+        return {
+          clientWidth: node.clientWidth,
+          scrollWidth: node.scrollWidth,
+          overflowX: styles.overflowX,
+          viewportWidth: window.innerWidth,
+        };
+      });
+      assert.equal(
+        codeMetrics.overflowX,
+        'auto',
+        'Long code must scroll locally rather than widening the page.',
+      );
+      assert.ok(
+        codeMetrics.clientWidth <= codeMetrics.viewportWidth,
+        'Code block must fit inside the mobile viewport.',
+      );
+      assert.ok(
+        codeMetrics.scrollWidth > codeMetrics.clientWidth,
+        'AKS-120 fixture must exercise genuinely long horizontally scrollable code.',
+      );
+      await codeBlock.evaluate((node) => {
+        node.scrollLeft = node.scrollWidth;
+      });
+      assert.ok(
+        (await codeBlock.evaluate((node) => node.scrollLeft)) > 0,
+        'The reader must permit deliberate local horizontal code scrolling.',
+      );
+      assert.equal(
+        await page.evaluate(() => window.scrollX),
+        0,
+        'Local code scrolling must not move the whole page horizontally.',
+      );
+
+      const quote = articleReader.locator(
+        '[data-writing-node="blockquote"]',
+      );
+      await quote.waitFor();
+      const quoteMetrics = await quote.evaluate((node) => {
+        const text = node.querySelector('.aks-text');
+        if (!(text instanceof HTMLElement)) {
+          throw new Error('AKS-120 requires quote text.');
+        }
+        const textStyles = getComputedStyle(text);
+        const nodeRect = node.getBoundingClientRect();
+        const reader = node.closest('[data-long-form-reader]');
+        const readerRect = reader?.getBoundingClientRect();
+        return {
+          width: nodeRect.width,
+          readerWidth: readerRect?.width ?? 0,
+          height: nodeRect.height,
+          lineHeight: Number.parseFloat(textStyles.lineHeight),
+        };
+      });
+      assert.ok(
+        quoteMetrics.width <= quoteMetrics.readerWidth + 1,
+        'Long quotations must wrap inside the prose measure.',
+      );
+      assert.ok(
+        quoteMetrics.height / quoteMetrics.lineHeight >= 4,
+        'AKS-120 must exercise a quotation spanning several mobile lines.',
+      );
+
+      const image = page.locator('img[alt="' + articleImageAlt + '"]');
+      await image.waitFor();
+      const imageMetrics = await image.evaluate((node) => {
+        const rect = node.getBoundingClientRect();
+        const reader = node.closest('[data-long-form-reader]');
+        const readerRect = reader?.getBoundingClientRect();
+        return {
+          width: rect.width,
+          height: rect.height,
+          readerWidth: readerRect?.width ?? 0,
+          viewportHeight: window.innerHeight,
+          loading: node.loading,
+        };
+      });
+      assert.ok(
+        imageMetrics.width <= imageMetrics.readerWidth + 1,
+        'Contextual images must remain within the mobile reader width.',
+      );
+      assert.ok(
+        imageMetrics.height <= imageMetrics.viewportHeight * 0.8,
+        'Contextual images must not monopolize more than roughly one mobile viewport.',
+      );
+      assert.equal(
+        imageMetrics.loading,
+        'lazy',
+        'Contextual long-form images below the opening should stay lazy-loaded.',
+      );
+
+      assert.equal(
+        await articleReader.locator('table').count(),
+        0,
+        'Writing schema v1 must not silently introduce table rendering during AKS-120.',
+      );
+
+      await assertAxe(page);
+    } finally {
+      await context.close();
+    }
+  }
 }
 
 async function assertWritingsOverviewIsolation(browser) {
@@ -7884,6 +8132,7 @@ async function assertAxe(page) {
     await assertWritingFiltering(page);
     await assertWritingSearch(page);
     await assertRealArticleAuthoringFromAdmin(page);
+    await assertLongFormMobileReading(browser);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
