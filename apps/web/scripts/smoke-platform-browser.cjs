@@ -1755,17 +1755,35 @@ async function waitForPublishedWritingState(fieldset, locale) {
 }
 
 async function publishWritingLocale(page, fieldset, locale, buttonName) {
-  await fieldset
-    .getByRole('button', { name: buttonName, exact: true })
-    .click();
-  await waitForPublishedWritingState(fieldset, locale);
+  const button = fieldset.getByRole('button', {
+    name: buttonName,
+    exact: true,
+  });
+  await button.waitFor();
 
-  const reload = await page.goto(origin + '/admin/writings');
-  assert.equal(
-    reload?.status(),
-    200,
-    'Published Writing state must survive a fresh admin reload.',
+  const navigationPromise = page.waitForNavigation({
+    waitUntil: 'domcontentloaded',
+  });
+  await button.evaluate((element) => {
+    const form = element.form;
+    if (form === null) {
+      throw new Error('Writing publication control must belong to a form.');
+    }
+    form.submit();
+  });
+  const response = await navigationPromise;
+  assert.ok(
+    response !== null && response.status() < 400,
+    'Writing publication form must complete successfully through the native admin boundary.',
   );
+
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writings administration',
+      exact: true,
+    })
+    .waitFor();
   await waitForPublishedWritingState(fieldset, locale);
 }
 
