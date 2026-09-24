@@ -2527,6 +2527,302 @@ async function assertLightweightNoteAuthoring(page) {
   }
 }
 
+async function assertWritingFiltering(page) {
+  await page.goto(origin + '/en/writings');
+  assert.equal(
+    await page.locator('[data-writing-filters]').count(),
+    0,
+    'AKS-115 filters must stay absent while the published EN volume is below six Writings.',
+  );
+
+  const qualificationNotes = [
+    {
+      en: {
+        slug: 'evidence-near-claims',
+        title: 'Keep evidence near claims',
+        body: 'A claim is easier to inspect when its evidence stays close to it.',
+      },
+      fr: {
+        slug: 'preuves-pres-des-affirmations',
+        title: 'Garder les preuves près des affirmations',
+        body: 'Une affirmation reste plus facile à inspecter quand sa preuve reste proche.',
+      },
+    },
+    {
+      en: {
+        slug: 'semantics-owned-by-code',
+        title: 'Keep semantics owned by code',
+        body: 'Editorial freedom does not require handing page structure to the content model.',
+      },
+      fr: {
+        slug: 'semantique-portee-par-le-code',
+        title: 'Garder la sémantique dans le code',
+        body: 'La liberté éditoriale n’exige pas de confier la structure de page au contenu.',
+      },
+    },
+    {
+      en: {
+        slug: 'observe-before-abstracting',
+        title: 'Observe before abstracting',
+        body: 'A useful abstraction starts after enough contact with the real activity.',
+      },
+      fr: {
+        slug: 'observer-avant-abstraire',
+        title: 'Observer avant d’abstraire',
+        body: 'Une abstraction utile commence après un contact suffisant avec l’activité réelle.',
+      },
+    },
+    {
+      en: {
+        slug: 'quiet-interfaces-reveal-state',
+        title: 'Quiet interfaces reveal state',
+        body: 'A calm interface can make system state legible without adding decorative chrome.',
+      },
+      fr: {
+        slug: 'interfaces-calmes-etat-lisible',
+        title: 'Les interfaces calmes rendent l’état lisible',
+        body: 'Une interface calme peut rendre l’état du système lisible sans chrome décoratif.',
+      },
+    },
+  ];
+
+  for (const note of qualificationNotes) {
+    await page.goto(origin + '/admin/writings');
+    const createCard = page.locator('section.aks-admin-card').filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: 'Create Writing',
+        exact: true,
+      }),
+    });
+    await createCard.locator('select[name="kind"]').selectOption('note');
+    await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
+    await createCard
+      .getByRole('button', { name: 'Create Writing', exact: true })
+      .click();
+    await page.getByText('Writing created.', { exact: true }).waitFor();
+
+    const noteCard = () =>
+      page
+        .locator('[data-writing-card]')
+        .filter({ hasText: 'NOTE · NORMAL' })
+        .last();
+
+    for (const [locale, localized] of [
+      ['EN', note.en],
+      ['FR', note.fr],
+    ]) {
+      let fieldset = noteCard().getByRole('group', {
+        name: locale,
+        exact: true,
+      });
+      await fieldset.locator('input[name="slug"]').fill(localized.slug);
+      await fieldset.locator('input[name="title"]').fill(localized.title);
+      await fieldset
+        .locator('[data-writing-note-editor] textarea')
+        .fill(localized.body);
+      await fieldset
+        .getByRole('button', {
+          name: 'Save ' + locale + ' draft',
+          exact: true,
+        })
+        .click();
+      await page
+        .getByText(locale + ' Writing draft saved.', { exact: true })
+        .waitFor();
+
+      fieldset = noteCard().getByRole('group', {
+        name: locale,
+        exact: true,
+      });
+      await fieldset
+        .getByRole('button', {
+          name: 'Publish ' + locale,
+          exact: true,
+        })
+        .click();
+      await page
+        .getByText(locale + ' Writing published.', { exact: true })
+        .waitFor();
+    }
+  }
+
+  await page.goto(origin + '/en/writings');
+  const filters = page.locator('[data-writing-filters]');
+  await filters.waitFor();
+  assert.equal(
+    (await filters.getByRole('heading', { level: 3 }).innerText()).trim(),
+    'Refine the feed',
+  );
+  assert.equal(
+    await filters.locator('form').getAttribute('action'),
+    '/en/writings',
+    'Filtering must stay on the unified Writings route rather than create a silo.',
+  );
+  assert.equal(
+    await filters.locator('select[name="type"] option').count(),
+    3,
+    'The type facet must expose All + the two EN Writing types that exist.',
+  );
+  assert.ok(
+    (await filters.locator('select[name="category"]').innerText()).includes(
+      'Engineering practice (1)',
+    ),
+    'A partially covering Category must become a useful thematic facet.',
+  );
+  assert.ok(
+    (await filters.locator('select[name="tag"]').innerText()).includes(
+      'Software architecture (1)',
+    ),
+    'A partially covering Tag must become a useful thematic facet.',
+  );
+  assert.match(await filters.innerText(), /6 of 6 writings/);
+  await assertAxe(page);
+
+  await filters.locator('select[name="type"]').selectOption('article');
+  await Promise.all([
+    page.waitForURL((url) => url.searchParams.get('type') === 'article'),
+    filters.getByRole('button', { name: 'Apply filters', exact: true }).click(),
+  ]);
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'Type filtering must reduce the same editorial feed.',
+  );
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    })
+    .waitFor();
+  assert.match(
+    await page.locator('[data-writing-filters]').innerText(),
+    /1 of 6 writings/,
+  );
+
+  await page
+    .getByRole('link', { name: 'Clear filters', exact: true })
+    .click();
+  await page.waitForURL(origin + '/en/writings');
+
+  let activeFilters = page.locator('[data-writing-filters]');
+  await activeFilters
+    .locator('select[name="category"]')
+    .selectOption('engineering-practice');
+  await Promise.all([
+    page.waitForURL(
+      (url) => url.searchParams.get('category') === 'engineering-practice',
+    ),
+    activeFilters
+      .getByRole('button', { name: 'Apply filters', exact: true })
+      .click(),
+  ]);
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'Category filtering must use the existing publication taxonomy.',
+  );
+
+  await page.goto(origin + '/en/writings?tag=software-architecture');
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'Tag filtering must use the existing publication taxonomy.',
+  );
+
+  await page.goto(
+    origin + '/en/writings?type=note&category=engineering-practice',
+  );
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    0,
+    'Multiple AKS-115 filters must compose with AND semantics.',
+  );
+  await page
+    .getByText('No writing matches these filters.', { exact: true })
+    .waitFor();
+  assert.match(
+    await page.locator('[data-writing-filters]').innerText(),
+    /0 of 6 writings/,
+  );
+
+  await page.goto(
+    origin + '/en/writings?type=unknown&category=missing&tag=missing',
+  );
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    6,
+    'Unknown filter values must be ignored rather than create a hidden empty silo.',
+  );
+  assert.equal(
+    await page.locator('[data-writing-filters] select[name="type"]').inputValue(),
+    '',
+  );
+
+  await page.goto(origin + '/fr/ecrits');
+  const frenchFilters = page.locator('[data-writing-filters]');
+  await frenchFilters.waitFor();
+  assert.match(await frenchFilters.innerText(), /7 sur 7 écrits/);
+  assert.ok(
+    (await frenchFilters.locator('select[name="category"]').innerText()).includes(
+      'Pratique d’ingénierie (1)',
+    ),
+  );
+  await frenchFilters
+    .locator('select[name="category"]')
+    .selectOption('pratique-ingenierie');
+  await Promise.all([
+    page.waitForURL(
+      (url) => url.searchParams.get('category') === 'pratique-ingenierie',
+    ),
+    frenchFilters.getByRole('button', { name: 'Appliquer', exact: true }).click(),
+  ]);
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Architecture sans page builder',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+  );
+  await assertAxe(page);
+
+  const ssr = await page.context().request.get(
+    origin + '/en/writings?tag=software-architecture',
+  );
+  assert.equal(ssr.status(), 200);
+  const html = await ssr.text();
+  assert.ok(html.includes('Architecture Without Page Builders'));
+  assert.ok(
+    !html.includes('Keep evidence near claims'),
+    'Filtered Writings must be resolved in SSR rather than hidden only in the browser.',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(origin + '/en/writings');
+  await page.locator('[data-writing-filters]').waitFor();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+    true,
+    'AKS-115 filters must not overflow at 390px.',
+  );
+  await assertAxe(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertWritingCategories(page) {
   await page.goto(origin + '/admin/writings');
   assert.equal(
