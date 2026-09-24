@@ -546,19 +546,21 @@ export async function searchPublishedWritings(
     from writing_publications as wp
     inner join writings as w
       on w.id = wp.writing_id
-    cross join websearch_to_tsquery(
-      case
-        when ${input.locale} = 'fr'
-          then 'french'::regconfig
-        else 'english'::regconfig
-      end,
-      ${query}
-    ) as query
+    cross join lateral (
+      select websearch_to_tsquery(
+        case
+          when ${input.locale} = 'fr'
+            then 'french'::regconfig
+          else 'english'::regconfig
+        end,
+        ${query}
+      ) as value
+    ) as search_query
     where w.lifecycle = 'active'
       and wp.locale = ${input.locale}
-      and wp.search_vector @@ query
+      and wp.search_vector @@ search_query.value
     order by
-      ts_rank_cd(wp.search_vector, query) desc,
+      ts_rank_cd(wp.search_vector, search_query.value) desc,
       w.editorial_position asc,
       wp.writing_id asc
   `.execute(db);
