@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Text } from '@akiksystems/ui';
+import { BrandSignature, Button, Container, Heading, Text } from '@akiksystems/ui';
 import { useState, type FormEvent } from 'react';
 import { redirect } from 'react-router';
 
@@ -52,6 +52,11 @@ export default function AdminLogin() {
       <Container>
         <section className="aks-admin-card" aria-labelledby="admin-login-title">
           <div className="aks-proof-stack">
+            <BrandSignature
+              aria-label="AkikSystems home"
+              href="/en"
+              size="sm"
+            />
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
               Private administration
             </Text>
