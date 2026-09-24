@@ -4226,13 +4226,23 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   await upload
     .locator('textarea[name="captionFr"]')
     .fill('Schéma de frontière utilisé pendant la qualification AKS-119.');
-  await submitWritingAdminAction(
-    page,
-    upload.getByRole('button', {
+  await upload
+    .getByRole('button', {
       name: 'Upload Writing image',
       exact: true,
-    }),
-  );
+    })
+    .click();
+  await page
+    .getByText(
+      'Writing image uploaded. Insert it from the EN or FR editor.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal((await page.goto(origin + '/admin/writings'))?.status(), 200);
+  await articleCard()
+    .locator('[data-writing-assets]')
+    .getByText(assetName, { exact: true })
+    .waitFor();
 
   fieldset = articleCard().getByRole('group', {
     name: 'EN',
