@@ -8180,6 +8180,29 @@ async function assertHomePortal(page, locale, { mobile = false } = {}) {
 
   const portal = page.locator('.aks-home-portal');
   await portal.waitFor();
+
+  const brandMarks = portal.locator(
+    'img.aks-brand-mark[src="/brand/AKSYS.svg"]',
+  );
+  assert.equal(
+    await brandMarks.count(),
+    2,
+    'Home must use the canonical uploaded AkikSystems emblem for both brand positions.',
+  );
+  assert.equal(
+    await page.locator('link[rel="icon"][href="/brand/AKSYS.svg"]').count(),
+    1,
+    'The uploaded AkikSystems emblem must be the global SVG favicon.',
+  );
+  const emblemResponse = await page.context().request.get(
+    `${origin}/brand/AKSYS.svg`,
+  );
+  assert.equal(
+    emblemResponse.status(),
+    200,
+    'The canonical AkikSystems emblem asset must be publicly served.',
+  );
+
   const navigation = page.getByRole('navigation', { name: config.label });
   await navigation.waitFor();
 
@@ -8400,6 +8423,11 @@ async function assertAxe(page) {
     await assertStaticHomeOrientation(browser, 'fr', { width: 320, height: 720 });
 
     await page.goto(`${origin}/admin/login`);
+    await page
+      .locator(
+        'a.aks-brand-signature[href="/en"] img.aks-brand-mark[src="/brand/AKSYS.svg"]',
+      )
+      .waitFor();
     await page.getByLabel('Email').fill(adminEmail);
     await page.getByLabel('Password').fill(adminPassword);
     await page.getByRole('button', { name: 'Sign in' }).click();
