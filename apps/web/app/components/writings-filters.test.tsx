@@ -47,6 +47,7 @@ describe('WritingsFilters', () => {
             resultCount: 5,
             selection: { kind: null, category: null, tag: null },
           })}
+          searchQuery=""
         />,
       ),
     ).toBe('');
@@ -54,7 +55,7 @@ describe('WritingsFilters', () => {
 
   it('keeps filtering on the unified route and groups category/tag as themes', () => {
     const html = renderToStaticMarkup(
-      <WritingsFilters locale="en" model={model()} />,
+      <WritingsFilters locale="en" model={model()} searchQuery="" />,
     );
 
     expect(html).toContain('data-writing-filters');
@@ -76,6 +77,7 @@ describe('WritingsFilters', () => {
         model={model({
           selection: { kind: 'essay', category: null, tag: 'practice' },
         })}
+        searchQuery="attention systèmes"
       />,
     );
 
@@ -85,5 +87,10 @@ describe('WritingsFilters', () => {
     expect(html).toContain('Essai (2)');
     expect(html).toContain('Effacer les filtres');
     expect(html).toContain('2 sur 8 écrits');
+    expect(html).toContain('name="q"');
+    expect(html).toContain('value="attention systèmes"');
+    expect(html).toContain(
+      'href="/fr/ecrits?q=attention%20syst%C3%A8mes"',
+    );
   });
 });
