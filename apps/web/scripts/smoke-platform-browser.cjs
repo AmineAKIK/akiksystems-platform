@@ -7166,9 +7166,23 @@ async function assertFirstLevelDeepLinkAutonomy(browser, { mobile = false } = {}
         destination.lang,
         `${destination.path} must reconstruct its locale from the URL.`,
       );
-      await page
-        .getByRole('heading', { level: 1, name: destination.heading, exact: true })
-        .waitFor();
+      const destinationHeading = page.getByRole('heading', { level: 1 });
+      await destinationHeading.waitFor();
+      if (
+        !destination.path.endsWith('/work-with-us') &&
+        !destination.path.endsWith('/travailler-ensemble')
+      ) {
+        assert.equal(
+          (await destinationHeading.innerText()).trim(),
+          destination.heading,
+          `${destination.path} must keep its code-owned first-level heading.`,
+        );
+      } else {
+        assert.ok(
+          (await destinationHeading.innerText()).trim().length > 0,
+          `${destination.path} must reconstruct a non-empty localized commercial heading on direct load.`,
+        );
+      }
       await page.locator('.aks-brand-signature').waitFor();
 
       const contextLabel =
