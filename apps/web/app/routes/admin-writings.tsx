@@ -1467,22 +1467,16 @@ export default function AdminWritingsRoute() {
                         />
                       </label>
                       <label>
-                        <span>English alt text</span>
+                        <span>English alt text · required only if EN uses this image</span>
                         <input name="altEn" type="text" />
-                        <Text size="sm" tone="muted">
-                          Required only if the EN Writing uses this image.
-                        </Text>
                       </label>
                       <label>
                         <span>English caption</span>
                         <textarea name="captionEn" rows={2} />
                       </label>
                       <label>
-                        <span>French alt text</span>
+                        <span>French alt text · required only if FR uses this image</span>
                         <input name="altFr" type="text" />
-                        <Text size="sm" tone="muted">
-                          Required only if the FR Writing uses this image.
-                        </Text>
                       </label>
                       <label>
                         <span>French caption</span>
@@ -1537,7 +1531,7 @@ export default function AdminWritingsRoute() {
                                   value={asset.id}
                                 />
                                 <label>
-                                  <span>English alt text</span>
+                                  <span>English alt text · required if EN uses this image</span>
                                   <input
                                     defaultValue={asset.alt_en ?? ''}
                                     name="altEn"
@@ -1552,7 +1546,7 @@ export default function AdminWritingsRoute() {
                                   />
                                 </label>
                                 <label>
-                                  <span>French alt text</span>
+                                  <span>French alt text · required if FR uses this image</span>
                                   <input
                                     defaultValue={asset.alt_fr ?? ''}
                                     name="altFr"
