@@ -1706,7 +1706,11 @@ function requestCarriesFormValue(body, name, value) {
   const encodedPair =
     encodeURIComponent(name) + '=' + encodeURIComponent(value);
   const multipartPair =
-    'name="' + name + '"\\r\\n\\r\\n' + value;
+    'name="' +
+    name +
+    '"' +
+    String.fromCharCode(13, 10, 13, 10) +
+    value;
   return body.includes(encodedPair) || body.includes(multipartPair);
 }
 
