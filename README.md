@@ -244,6 +244,17 @@ not fabricate an English localization. When the published ProtoCap System is
 available, the Writing links to it through the existing Writing↔System relation
 instead of copying System content into the essay.
 
+
+AKS-114 keeps Notes inside that same Writing domain while giving them a
+deliberately lighter authoring contract. A Note localization needs a slug, title,
+and direct paragraph body; it does not ask the editor to write a separate
+summary or use the long-form rich-block toolbar. Publication derives the feed
+excerpt from the Note body, requires non-empty content, and rejects non-paragraph
+rich structure so changing an Article or Essay to NOTE cannot carry hidden
+long-form layout forward. Notes still use the same bilingual publication
+snapshots, deep links, editorial feed, taxonomy, related-System model, preview,
+accessibility, and responsive reader as every other Writing.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.

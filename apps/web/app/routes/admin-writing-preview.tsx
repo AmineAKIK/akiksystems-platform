@@ -6,6 +6,7 @@ import {
 import {
   parseWritingDocument,
   writingDocumentAssetIds,
+  writingDocumentExcerpt,
   writingDocumentFromPlainText,
   type PlatformLocale,
 } from '@akiksystems/core';
@@ -70,7 +71,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   if (
     writing === undefined ||
     writing.title === null ||
-    writing.summary === null
+    (writing.kind !== 'note' && writing.summary === null)
   ) {
     throw new Response('Preview content is incomplete.', { status: 404 });
   }
@@ -78,6 +79,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const document =
     parseWritingDocument(writing.editor_document) ??
     writingDocumentFromPlainText(writing.body);
+  const summary =
+    writing.kind === 'note'
+      ? writingDocumentExcerpt(document)
+      : writing.summary;
   const documentAssetIds = writingDocumentAssetIds(document);
 
   const [categoryRelations, tagRelations, systemRelations, assetRows] = await Promise.all([
@@ -225,7 +230,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         locale,
         kind: writing.kind,
         title: writing.title,
-        summary: writing.summary,
+        summary: summary ?? '',
         body: writing.body,
         document,
         assets,

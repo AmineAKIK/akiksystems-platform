@@ -62,7 +62,8 @@
     "db:verify-public-profile": "tsx src/cli/verify-public-profile.ts",
     "profile:bootstrap-publications": "tsx src/cli/bootstrap-profile-publication.ts",
     "systems:bootstrap-publications": "tsx src/cli/bootstrap-system-publications.ts",
-    "db:verify-rendre-attention-essay": "tsx src/cli/verify-rendre-attention-essay.ts"
+    "db:verify-rendre-attention-essay": "tsx src/cli/verify-rendre-attention-essay.ts",
+    "db:verify-lightweight-notes": "tsx src/cli/verify-lightweight-notes.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
