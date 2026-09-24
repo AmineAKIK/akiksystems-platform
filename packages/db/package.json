@@ -66,7 +66,8 @@
     "db:verify-lightweight-notes": "tsx src/cli/verify-lightweight-notes.ts",
     "db:verify-writing-full-text-search": "tsx src/cli/verify-writing-full-text-search.ts",
     "db:verify-work-with-us-open-situations": "tsx src/cli/verify-work-with-us-open-situations.ts",
-    "db:verify-work-with-us-capabilities": "tsx src/cli/verify-work-with-us-capabilities.ts"
+    "db:verify-work-with-us-capabilities": "tsx src/cli/verify-work-with-us-capabilities.ts",
+    "db:verify-work-with-us-collaboration": "tsx src/cli/verify-work-with-us-collaboration.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
