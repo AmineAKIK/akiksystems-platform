@@ -19,7 +19,8 @@
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
     "start": "node server.js",
     "typecheck": "react-router typegen && tsc -b",
-    "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts"
+    "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts",
+    "content:bootstrap-work-with-us-open-situations": "tsx scripts/bootstrap-work-with-us-open-situations.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",

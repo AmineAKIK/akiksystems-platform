@@ -522,6 +522,29 @@ export default function Admin() {
                             rows={4}
                           />
                         </label>
+                        <label>
+                          <span>Open situations heading</span>
+                          <input
+                            defaultValue={localized?.situations_title ?? ''}
+                            name="situationsTitle"
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>Open situations copy</span>
+                          <textarea
+                            defaultValue={localized?.situations_body ?? ''}
+                            name="situationsBody"
+                            required
+                            rows={6}
+                          />
+                        </label>
+                        <Text size="sm" tone="muted">
+                          Keep this open to organizations and individuals. Do not
+                          ask visitors to choose a service, budget, deadline, or
+                          project type here.
+                        </Text>
                         <Button type="submit">
                           Save {locale.toUpperCase()} draft
                         </Button>

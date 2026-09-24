@@ -281,6 +281,8 @@ model reserves the fixed L7 sections for the following tickets without exposing
 page-builder controls. AKS-122 intentionally does not create the public inquiry
 form or persist contact details; AKS-127+ owns that boundary.
 
+AKS-123 fills the first reserved L7 section with bilingual open-situations copy. It welcomes both organizations and individuals, asks visitors to describe the situation in their own words, and explicitly keeps framing after the first human exchange. The content is provisioned with `pnpm content:bootstrap-work-with-us-open-situations`; the bootstrap is idempotent and does not overwrite an already-authored situations draft. It deliberately leaves capabilities, collaboration, inquiry, and privacy sections for their later tickets.
+
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication
 snapshots as public truth, schema v1 as the bounded semantic document contract,
