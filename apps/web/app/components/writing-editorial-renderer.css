@@ -114,6 +114,11 @@
   white-space: pre;
 }
 
+.aks-writing-code:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .aks-writing-media {
   display: grid;
   gap: var(--aks-space-3);
