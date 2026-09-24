@@ -4,6 +4,10 @@ import { data, type MetaDescriptor } from 'react-router';
 const canonicalOrigin = 'https://akiksystems.com';
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
+export function publicCanonicalUrl(path: string): string {
+  return canonicalOrigin + path;
+}
+
 function openGraphLocale(locale: PlatformLocale): 'en_US' | 'fr_FR' {
   return locale === 'fr' ? 'fr_FR' : 'en_US';
 }
@@ -45,7 +49,7 @@ export function buildLocalizedPublicMeta({
       }
     | null;
 }): MetaDescriptor[] {
-  const canonicalUrl = canonicalOrigin + canonicalPath;
+  const canonicalUrl = publicCanonicalUrl(canonicalPath);
   const descriptors: MetaDescriptor[] = [
     { title: title + ' · AkikSystems' },
     { name: 'description', content: description },
@@ -72,7 +76,7 @@ export function buildLocalizedPublicMeta({
   ];
 
   if (alternate !== null) {
-    const alternateUrl = canonicalOrigin + alternate.path;
+    const alternateUrl = publicCanonicalUrl(alternate.path);
     descriptors.push(
       {
         property: 'og:locale:alternate',
@@ -91,7 +95,7 @@ export function buildLocalizedPublicMeta({
     locale === 'en'
       ? canonicalUrl
       : alternate?.locale === 'en'
-        ? canonicalOrigin + alternate.path
+        ? publicCanonicalUrl(alternate.path)
         : null;
 
   if (englishUrl !== null) {
