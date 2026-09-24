@@ -558,3 +558,24 @@ export function writingDocumentToPlainText(document: WritingDocument): string {
     .join('\n\n')
     .trim();
 }
+
+
+export function writingDocumentExcerpt(
+  document: WritingDocument,
+  maxLength = 220,
+): string {
+  const normalized = writingDocumentToPlainText(document)
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (normalized.length <= maxLength) return normalized;
+
+  const target = normalized.slice(0, Math.max(1, maxLength - 1)).trimEnd();
+  const wordBoundary = target.lastIndexOf(' ');
+  const clipped =
+    wordBoundary >= Math.floor(maxLength * 0.6)
+      ? target.slice(0, wordBoundary)
+      : target;
+
+  return `${clipped.trimEnd()}…`;
+}
