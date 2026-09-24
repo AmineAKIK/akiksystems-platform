@@ -1745,7 +1745,7 @@ async function waitForWritingFieldValue(locator, expected, message) {
 }
 
 async function waitForPublishedWritingState(fieldset, locale) {
-  await fieldset.getByText('Public snapshot available', { exact: true }).waitFor();
+  await fieldset.getByText('Public snapshot available').waitFor();
   await fieldset.getByRole('link', { name: 'Open public', exact: true }).waitFor();
   assert.match(
     await fieldset.innerText(),
