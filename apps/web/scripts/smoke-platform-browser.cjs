@@ -1883,6 +1883,207 @@ async function fillWritingBodyEditor(fieldset, body) {
   );
 }
 
+async function submitRootAdminAction(page, button, intent, locale) {
+  const responsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    const pathname = new URL(response.url()).pathname;
+    if (
+      request.method() !== 'POST' ||
+      (pathname !== '/admin' && pathname !== '/admin.data')
+    ) {
+      return false;
+    }
+
+    const body =
+      request.postData() ??
+      request.postDataBuffer()?.toString('utf8') ??
+      '';
+    return (
+      requestCarriesFormValue(body, '_intent', intent) &&
+      requestCarriesFormValue(body, 'locale', locale)
+    );
+  });
+
+  await button.click();
+  const response = await responsePromise;
+  assert.equal(
+    response.status(),
+    200,
+    'Root admin action ' + intent + ' / ' + locale + ' must succeed.',
+  );
+
+  const reload = await page.goto(origin + '/admin');
+  assert.equal(reload?.status(), 200);
+}
+
+async function assertWorkWithUsContentAdministration(page) {
+  const englishTitle = 'Start with the situation';
+  const englishIntroduction =
+    'Describe what is happening in your own words. AkikSystems listens before framing the work.';
+  const frenchTitle = 'Partir de la situation';
+  const frenchIntroduction =
+    'Décrivez ce qui se passe avec vos propres mots. AkikSystems écoute avant de cadrer le travail.';
+
+  await page.goto(origin + '/en/work-with-us');
+  await page
+    .getByRole('heading', { level: 1, name: 'Work with us', exact: true })
+    .waitFor();
+
+  await page.goto(origin + '/admin');
+  const adminSection = page.locator('#admin-work-with-us');
+  await adminSection.waitFor();
+
+  assert.equal(
+    await adminSection.locator(
+      'input[name="email"], input[name="phone"], input[name="budget"], input[name="deadline"], input[name="projectType"]',
+    ).count(),
+    0,
+    'AKS-122 must not introduce inquiry/contact qualification fields.',
+  );
+
+  let englishCard = adminSection.locator('.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'English',
+      exact: true,
+    }),
+  });
+  await englishCard.locator('input[name="title"]').fill(englishTitle);
+  await englishCard
+    .locator('textarea[name="introduction"]')
+    .fill(englishIntroduction);
+  await submitRootAdminAction(
+    page,
+    englishCard.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+    'save-commercial-localization',
+    'en',
+  );
+
+  let englishPublic = await page.context().request.get(
+    origin + '/en/work-with-us',
+  );
+  let englishHtml = await englishPublic.text();
+  assert.equal(englishPublic.status(), 200);
+  assert.doesNotMatch(
+    englishHtml,
+    /Start with the situation/,
+    'Saving a commercial draft must preserve the previous public snapshot.',
+  );
+
+  englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'English',
+      exact: true,
+    }),
+  });
+  await submitRootAdminAction(
+    page,
+    englishCard.getByRole('button', {
+      name: 'Publish EN',
+      exact: true,
+    }),
+    'publish-commercial-localization',
+    'en',
+  );
+
+  await page.goto(origin + '/en/work-with-us');
+  await page
+    .getByRole('heading', { level: 1, name: englishTitle, exact: true })
+    .waitFor();
+  await page.getByText(englishIntroduction, { exact: true }).waitFor();
+  assert.equal(
+    await page.locator('main form, main input, main textarea').count(),
+    0,
+    'AKS-122 must publish content only; the free-form inquiry arrives in AKS-127.',
+  );
+  await assertAxe(page);
+
+  await page.goto(origin + '/fr/travailler-ensemble');
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Travailler ensemble',
+      exact: true,
+    })
+    .waitFor();
+
+  await page.goto(origin + '/admin');
+  let frenchCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'Français',
+      exact: true,
+    }),
+  });
+  await frenchCard.locator('input[name="title"]').fill(frenchTitle);
+  await frenchCard
+    .locator('textarea[name="introduction"]')
+    .fill(frenchIntroduction);
+  await submitRootAdminAction(
+    page,
+    frenchCard.getByRole('button', {
+      name: 'Save FR draft',
+      exact: true,
+    }),
+    'save-commercial-localization',
+    'fr',
+  );
+
+  frenchCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'Français',
+      exact: true,
+    }),
+  });
+  await submitRootAdminAction(
+    page,
+    frenchCard.getByRole('button', {
+      name: 'Publish FR',
+      exact: true,
+    }),
+    'publish-commercial-localization',
+    'fr',
+  );
+
+  await page.goto(origin + '/fr/travailler-ensemble');
+  await page
+    .getByRole('heading', { level: 1, name: frenchTitle, exact: true })
+    .waitFor();
+  await page.getByText(frenchIntroduction, { exact: true }).waitFor();
+  await assertAxe(page);
+
+  await page.goto(origin + '/admin');
+  englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'English',
+      exact: true,
+    }),
+  });
+  await englishCard
+    .locator('input[name="title"]')
+    .fill('Draft title must stay private');
+  await submitRootAdminAction(
+    page,
+    englishCard.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+    'save-commercial-localization',
+    'en',
+  );
+
+  englishPublic = await page.context().request.get(origin + '/en/work-with-us');
+  englishHtml = await englishPublic.text();
+  assert.match(englishHtml, /Start with the situation/);
+  assert.doesNotMatch(englishHtml, /Draft title must stay private/);
+}
+
 async function assertWritingAdminAndPublic(page) {
   await page.goto(origin + '/admin');
   assert.equal(
@@ -6881,9 +7082,21 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
     const response = await page.goto(`${origin}${destination.path}`);
     assert.equal(response?.status(), 200, `${destination.path} must return HTTP 200.`);
     assert.equal(await page.locator('html').getAttribute('lang'), destination.lang);
-    await page
-      .getByRole('heading', { level: 1, name: destination.heading, exact: true })
-      .waitFor();
+    const destinationHeading = page.getByRole('heading', { level: 1 });
+    await destinationHeading.waitFor();
+    if (!destination.path.endsWith('/work-with-us') &&
+        !destination.path.endsWith('/travailler-ensemble')) {
+      assert.equal(
+        (await destinationHeading.innerText()).trim(),
+        destination.heading,
+        `${destination.path} must keep its code-owned first-level heading.`,
+      );
+    } else {
+      assert.ok(
+        (await destinationHeading.innerText()).trim().length > 0,
+        `${destination.path} must expose a non-empty localized commercial heading.`,
+      );
+    }
     await page.locator('.aks-brand-signature').waitFor();
 
     if (mobile) {
@@ -8029,6 +8242,7 @@ async function assertAxe(page) {
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
+    await assertWorkWithUsContentAdministration(page);
     await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();

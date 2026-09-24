@@ -1,4 +1,4 @@
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import { publishCommercialPageLocalization, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
@@ -18,6 +18,42 @@ function field(form: FormData, name: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function optionalField(form: FormData, name: string): string | null {
+  const value = field(form, name);
+  return value === '' ? null : value;
+}
+
+function requiredCommercialLocale(form: FormData): 'en' | 'fr' {
+  const locale = field(form, 'locale');
+  if (locale !== 'en' && locale !== 'fr') {
+    throw new Response('Invalid commercial-page locale.', { status: 400 });
+  }
+  return locale;
+}
+
+async function ensureCommercialPage() {
+  const existing = await appDb
+    .selectFrom('work_with_us_pages')
+    .select('id')
+    .where('singleton_key', '=', 'public')
+    .executeTakeFirst();
+
+  if (existing !== undefined) return existing;
+
+  const id = randomUUID();
+  await appDb
+    .insertInto('work_with_us_pages')
+    .values({ id, singleton_key: 'public' })
+    .onConflict((conflict) => conflict.column('singleton_key').doNothing())
+    .execute();
+
+  return appDb
+    .selectFrom('work_with_us_pages')
+    .select('id')
+    .where('singleton_key', '=', 'public')
+    .executeTakeFirstOrThrow();
+}
+
 function requiredSystemId(form: FormData): string {
   const systemId = field(form, 'systemId');
 
@@ -31,6 +67,21 @@ function requiredSystemId(form: FormData): string {
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await requireAdminSession(request);
   const db = appDb;
+
+  const commercialPage = await ensureCommercialPage();
+
+  const [commercialLocalizations, commercialPublications] = await Promise.all([
+    db
+      .selectFrom('work_with_us_localizations')
+      .selectAll()
+      .where('page_id', '=', commercialPage.id)
+      .execute(),
+    db
+      .selectFrom('work_with_us_publications')
+      .select(['locale', 'published_at', 'updated_at'])
+      .where('page_id', '=', commercialPage.id)
+      .execute(),
+  ]);
 
   const systems = await db
     .selectFrom('systems')
@@ -57,6 +108,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     email: session.user.email,
     twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
     systems,
+    commercial: {
+      pageId: commercialPage.id,
+      localizations: commercialLocalizations,
+      publications: commercialPublications,
+    },
   };
 }
 
@@ -65,6 +121,110 @@ export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const intent = field(form, '_intent');
   const db = appDb;
+
+  if (
+    intent === 'save-commercial-localization' ||
+    intent === 'publish-commercial-localization'
+  ) {
+    const commercialPage = await ensureCommercialPage();
+    const locale = requiredCommercialLocale(form);
+
+    if (intent === 'save-commercial-localization') {
+      const values = {
+        title: optionalField(form, 'title'),
+        introduction: optionalField(form, 'introduction'),
+        situations_title: optionalField(form, 'situationsTitle'),
+        situations_body: optionalField(form, 'situationsBody'),
+        capabilities_title: optionalField(form, 'capabilitiesTitle'),
+        capabilities_body: optionalField(form, 'capabilitiesBody'),
+        collaboration_title: optionalField(form, 'collaborationTitle'),
+        collaboration_body: optionalField(form, 'collaborationBody'),
+        inquiry_title: optionalField(form, 'inquiryTitle'),
+        inquiry_body: optionalField(form, 'inquiryBody'),
+        privacy_note: optionalField(form, 'privacyNote'),
+      };
+
+      const publicCopy = Object.values(values)
+        .filter((value) => value !== null)
+        .join(' ');
+
+      if (/\bcssov\b/i.test(publicCopy)) {
+        return {
+          ok: false,
+          message:
+            'Public collaboration copy must describe the practice directly without naming CSSOV.',
+        };
+      }
+
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('work_with_us_localizations')
+          .values({
+            page_id: commercialPage.id,
+            locale,
+            ...values,
+            editorial_state: 'draft',
+            published_at: null,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['page_id', 'locale']).doUpdateSet({
+              ...values,
+              editorial_state: 'draft',
+              published_at: null,
+              updated_at: new Date(),
+            }),
+          )
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'work_with_us.localization_saved',
+          entityType: 'work_with_us',
+          entityId: commercialPage.id,
+          locale,
+          metadata: {
+            publicSnapshotPreserved: true,
+            structureOwnedByCode: true,
+          },
+        });
+      });
+
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} Work with us draft saved.`,
+      };
+    }
+
+    try {
+      await publishCommercialPageLocalization(db, commercialPage.id, locale);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Commercial content could not be published.',
+      };
+    }
+
+    await writeAdminAuditEvent(db, {
+      actorUserId: session.user.id,
+      actorEmail: session.user.email,
+      action: 'work_with_us.published',
+      entityType: 'work_with_us',
+      entityId: commercialPage.id,
+      locale,
+      metadata: {
+        snapshotVersion: 1,
+      },
+    });
+
+    return {
+      ok: true,
+      message: `${locale.toUpperCase()} Work with us content published.`,
+    };
+  }
 
   if (intent === 'move-system') {
     const systemId = requiredSystemId(form);
@@ -298,6 +458,99 @@ export default function Admin() {
                   {pending ? 'Signing out…' : 'Sign out'}
                 </Button>
               </div>
+            </div>
+          </section>
+
+          <section className="aks-admin-card" id="admin-work-with-us">
+            <div className="aks-proof-stack">
+              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                L7 · Work with us
+              </Text>
+              <Heading level={2} size="sm">
+                Localized page copy
+              </Heading>
+              <Text tone="muted">
+                The public section order remains code-defined. This surface edits
+                localized copy and publishes each locale independently.
+              </Text>
+
+              {(['en', 'fr'] as const).map((locale) => {
+                const localized = data.commercial.localizations.find(
+                  (candidate) => candidate.locale === locale,
+                );
+                const publication = data.commercial.publications.find(
+                  (candidate) => candidate.locale === locale,
+                );
+
+                return (
+                  <div className="aks-admin-card" key={locale}>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {locale === 'en' ? 'English' : 'Français'}
+                      </Heading>
+                      <Text size="sm" tone="muted">
+                        {localized?.editorial_state ?? 'not started'} ·{' '}
+                        {publication === undefined
+                          ? 'No public snapshot'
+                          : 'Public snapshot available'}
+                      </Text>
+
+                      <Form className="aks-admin-form" method="post">
+                        <input
+                          name="_intent"
+                          type="hidden"
+                          value="save-commercial-localization"
+                        />
+                        <input name="locale" type="hidden" value={locale} />
+                        <label>
+                          <span>Page title</span>
+                          <input
+                            defaultValue={localized?.title ?? ''}
+                            maxLength={140}
+                            name="title"
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>Introduction</span>
+                          <textarea
+                            defaultValue={localized?.introduction ?? ''}
+                            maxLength={700}
+                            name="introduction"
+                            required
+                            rows={4}
+                          />
+                        </label>
+                        <Button type="submit">
+                          Save {locale.toUpperCase()} draft
+                        </Button>
+                      </Form>
+
+                      <Form method="post">
+                        <input
+                          name="_intent"
+                          type="hidden"
+                          value="publish-commercial-localization"
+                        />
+                        <input name="locale" type="hidden" value={locale} />
+                        <Button
+                          disabled={
+                            localized?.title === null ||
+                            localized?.title === undefined ||
+                            localized?.introduction === null ||
+                            localized?.introduction === undefined
+                          }
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          Publish {locale.toUpperCase()}
+                        </Button>
+                      </Form>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 

@@ -274,6 +274,13 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-122 begins L7 with a narrow Work with us content boundary. The public
+destination keeps section order and layout in code while the private admin owns
+localized EN/FR copy and publishes each locale independently as a snapshot. The
+model reserves the fixed L7 sections for the following tickets without exposing
+page-builder controls. AKS-122 intentionally does not create the public inquiry
+form or persist contact details; AKS-127+ owns that boundary.
+
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication
 snapshots as public truth, schema v1 as the bounded semantic document contract,

@@ -88,6 +88,17 @@ export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput }
 export type { BootstrapOriaInput, BootstrapOriaResult, OriaMediaInput } from './oria-bootstrap.js';
 export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
 export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
+export {
+  buildCommercialPagePublicationSnapshot,
+  getPublishedCommercialPage,
+  parseCommercialPagePublicationSnapshot,
+  publishCommercialPageLocalization,
+} from './commercial-page.js';
+export type {
+  CommercialPagePublicationSnapshot,
+  PublishedCommercialPage,
+} from './commercial-page.js';
+
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
@@ -262,7 +273,19 @@ export type {
   ProfilePublicationRow,
   ProfilePublicationsTable,
   ProfilePublicationUpdate,
+  WorkWithUsLocalizationRow,
+  WorkWithUsLocalizationsTable,
+  WorkWithUsLocalizationUpdate,
+  WorkWithUsPageRow,
+  WorkWithUsPagesTable,
+  WorkWithUsPageUpdate,
+  WorkWithUsPublicationRow,
+  WorkWithUsPublicationsTable,
+  WorkWithUsPublicationUpdate,
   NewProfilePublicationRow,
+  NewWorkWithUsLocalizationRow,
+  NewWorkWithUsPageRow,
+  NewWorkWithUsPublicationRow,
   ProfileCapabilityGroupLocalizationRow,
   ProfileCapabilityGroupLocalizationsTable,
   ProfileCapabilityGroupLocalizationUpdate,

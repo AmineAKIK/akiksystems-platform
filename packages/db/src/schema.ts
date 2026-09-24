@@ -120,6 +120,41 @@ export interface ProfilePublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface WorkWithUsPagesTable {
+  id: string;
+  singleton_key: DefaultedColumn<'public'>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsLocalizationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  title: string | null;
+  introduction: string | null;
+  situations_title: string | null;
+  situations_body: string | null;
+  capabilities_title: string | null;
+  capabilities_body: string | null;
+  collaboration_title: string | null;
+  collaboration_body: string | null;
+  inquiry_title: string | null;
+  inquiry_body: string | null;
+  privacy_note: string | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsPublicationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ProfileWorkPrinciplesTable {
   id: string;
   profile_id: string;
@@ -552,6 +587,18 @@ export type ProfilePublicationRow = Selectable<ProfilePublicationsTable>;
 export type NewProfilePublicationRow = Insertable<ProfilePublicationsTable>;
 export type ProfilePublicationUpdate = Updateable<ProfilePublicationsTable>;
 
+export type WorkWithUsPageRow = Selectable<WorkWithUsPagesTable>;
+export type NewWorkWithUsPageRow = Insertable<WorkWithUsPagesTable>;
+export type WorkWithUsPageUpdate = Updateable<WorkWithUsPagesTable>;
+
+export type WorkWithUsLocalizationRow = Selectable<WorkWithUsLocalizationsTable>;
+export type NewWorkWithUsLocalizationRow = Insertable<WorkWithUsLocalizationsTable>;
+export type WorkWithUsLocalizationUpdate = Updateable<WorkWithUsLocalizationsTable>;
+
+export type WorkWithUsPublicationRow = Selectable<WorkWithUsPublicationsTable>;
+export type NewWorkWithUsPublicationRow = Insertable<WorkWithUsPublicationsTable>;
+export type WorkWithUsPublicationUpdate = Updateable<WorkWithUsPublicationsTable>;
+
 export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
 export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
 export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
@@ -759,6 +806,9 @@ export interface Database {
   profiles: ProfilesTable;
   profile_localizations: ProfileLocalizationsTable;
   profile_publications: ProfilePublicationsTable;
+  work_with_us_pages: WorkWithUsPagesTable;
+  work_with_us_localizations: WorkWithUsLocalizationsTable;
+  work_with_us_publications: WorkWithUsPublicationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
   profile_capability_groups: ProfileCapabilityGroupsTable;
