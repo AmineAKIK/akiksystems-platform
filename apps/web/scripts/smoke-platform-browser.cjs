@@ -1391,6 +1391,51 @@ async function assertRendreAttentionEssay(browser) {
     const html = await ssr.text();
     assert.ok(html.includes('Elles consommaient de l’attention'));
     assert.ok(html.includes('data-long-form-reader'));
+    assertHtmlTagAttributes(
+      html,
+      'link',
+      {
+        rel: 'canonical',
+        href: 'https://akiksystems.com' + detailPath,
+      },
+      'The published essay must expose its localized canonical URL in SSR HTML.',
+    );
+    assertHtmlTagAttributes(
+      html,
+      'link',
+      {
+        rel: 'alternate',
+        hreflang: 'fr',
+        href: 'https://akiksystems.com' + detailPath,
+      },
+      'The published essay must expose its own published locale as hreflang.',
+    );
+    assertHtmlTagAttributes(
+      html,
+      'meta',
+      { property: 'og:type', content: 'article' },
+      'The published essay must expose Article OpenGraph metadata.',
+    );
+    assertHtmlTagAttributes(
+      html,
+      'meta',
+      {
+        property: 'article:published_time',
+        content: '2026-09-16T10:25:02.000Z',
+      },
+      'The published essay must retain its real publication date in social metadata.',
+    );
+    assert.ok(
+      html.includes('"@type":"Article"') &&
+        html.includes('"datePublished":"2026-09-16T10:25:02.000Z"') &&
+        html.includes('"genre":"Essay"'),
+      'The published essay must expose Article JSON-LD from its real publication snapshot.',
+    );
+    assert.equal(
+      /hreflang="en"|hreflang="x-default"/.test(html),
+      false,
+      'The French-only essay must not invent English SEO alternates.',
+    );
     await assertAxe(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
