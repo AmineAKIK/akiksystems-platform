@@ -1926,6 +1926,9 @@ async function assertWorkWithUsContentAdministration(page) {
   const seededEnglishCapabilitiesTitle = 'Capabilities that can be combined';
   const seededEnglishCapabilitiesBody =
     'Depending on the situation, AkikSystems can help turn an unclear operational or product problem into a bounded software system; design architecture and interfaces around explicit constraints; build web applications, internal tools, and data-backed workflows; connect existing systems and automate repetitive work; and make the result inspectable with tests, documentation, observability, and clear limits. These capabilities can be combined according to the situation; they do not define a menu the visitor has to choose from.';
+  const seededEnglishCollaborationTitle = 'How collaboration begins';
+  const seededEnglishCollaborationBody =
+    'The first step is a conversation focused on understanding the situation: what is happening, what matters, what is already in place, and where uncertainty remains. You do not need a finished brief or a predefined solution. After that first human exchange, we can decide whether there is a useful next step and, if so, frame the work, its boundaries, responsibilities, and evidence together.';
   const seededFrenchTitle = 'Partir de la situation';
   const seededFrenchIntroduction =
     'Que vous agissiez pour une organisation ou à titre personnel, vous pouvez commencer par ce qui se passe, ce qui compte et ce que vous voulez faire évoluer. Vous n’avez pas à traduire cela dans une prestation prédéfinie.';
@@ -1936,6 +1939,9 @@ async function assertWorkWithUsContentAdministration(page) {
   const seededFrenchCapabilitiesTitle = 'Des capacités à combiner';
   const seededFrenchCapabilitiesBody =
     'Selon la situation, AkikSystems peut aider à transformer un problème opérationnel ou produit encore flou en système logiciel délimité ; concevoir l’architecture et les interfaces autour de contraintes explicites ; construire des applications web, des outils internes et des flux appuyés sur les données ; relier des systèmes existants et automatiser des tâches répétitives ; puis rendre le résultat inspectable avec des tests, de la documentation, de l’observabilité et des limites claires. Ces capacités se combinent selon la situation ; elles ne définissent pas un menu dans lequel il faudrait choisir.';
+  const seededFrenchCollaborationTitle = 'Comment la collaboration commence';
+  const seededFrenchCollaborationBody =
+    'La première étape est un échange centré sur la compréhension de la situation : ce qui se passe, ce qui compte, ce qui existe déjà et ce qui reste incertain. Vous n’avez pas besoin d’un cahier des charges finalisé ni d’une solution prédéfinie. Après ce premier échange humain, nous pouvons décider s’il existe une suite utile et, si oui, cadrer ensemble le travail, ses limites, les responsabilités et les preuves attendues.';
 
   await page.goto(origin + '/en/work-with-us');
   await page
@@ -1955,22 +1961,35 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededEnglishCollaborationTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededEnglishIntroduction, { exact: true }).waitFor();
   await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
   await page.getByText(seededEnglishCapabilitiesBody, { exact: true }).waitFor();
+  await page.getByText(seededEnglishCollaborationBody, { exact: true }).waitFor();
   assert.equal(
     await page.locator('main form, main input, main textarea').count(),
     0,
-    'AKS-124 must keep first contact as published copy only; inquiry capture arrives in AKS-127.',
+    'AKS-125 must keep first contact as published copy only; inquiry capture arrives in AKS-127.',
   );
   assert.equal(
     await page
       .getByText(
-        /service catalogue|service category|fixed offer|pricing grid|project type|budget|deadline/i,
+        /service catalogue|service category|fixed offer|pricing grid|project type|budget|deadline|qualification form/i,
       )
       .count(),
     0,
-    'AKS-124 must present combinable capabilities without forcing service or qualification categories.',
+    'AKS-125 must keep the initial path free of service and project qualification.',
+  );
+  assert.equal(
+    await page.getByText(/\bcssov\b/i).count(),
+    0,
+    'AKS-125 public collaboration copy must describe the practice without naming CSSOV.',
   );
   await assertAxe(page);
 
@@ -1992,9 +2011,17 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededFrenchCollaborationTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededFrenchIntroduction, { exact: true }).waitFor();
   await page.getByText(seededFrenchSituationsBody, { exact: true }).waitFor();
   await page.getByText(seededFrenchCapabilitiesBody, { exact: true }).waitFor();
+  await page.getByText(seededFrenchCollaborationBody, { exact: true }).waitFor();
   await assertAxe(page);
 
   await page.goto(origin + '/admin');
@@ -2006,7 +2033,7 @@ async function assertWorkWithUsContentAdministration(page) {
       'input[name="email"], input[name="phone"], input[name="budget"], input[name="deadline"], input[name="projectType"]',
     ).count(),
     0,
-    'AKS-124 must not introduce inquiry/contact qualification fields.',
+    'AKS-125 must not introduce inquiry/contact qualification fields.',
   );
 
   let englishCard = adminSection.locator('.aks-admin-card').filter({
@@ -2019,12 +2046,22 @@ async function assertWorkWithUsContentAdministration(page) {
   assert.equal(
     await englishCard.locator('input[name="capabilitiesTitle"]').count(),
     1,
-    'AKS-124 must expose the capabilities heading as localized admin copy.',
+    'AKS-124 must keep the capabilities heading as localized admin copy.',
   );
   assert.equal(
     await englishCard.locator('textarea[name="capabilitiesBody"]').count(),
     1,
-    'AKS-124 must expose the capabilities body as localized admin copy.',
+    'AKS-124 must keep the capabilities body as localized admin copy.',
+  );
+  assert.equal(
+    await englishCard.locator('input[name="collaborationTitle"]').count(),
+    1,
+    'AKS-125 must expose the collaboration heading as localized admin copy.',
+  );
+  assert.equal(
+    await englishCard.locator('textarea[name="collaborationBody"]').count(),
+    1,
+    'AKS-125 must expose the collaboration body as localized admin copy.',
   );
 
   await englishCard
@@ -2033,6 +2070,9 @@ async function assertWorkWithUsContentAdministration(page) {
   await englishCard
     .locator('textarea[name="capabilitiesBody"]')
     .fill('A private capabilities draft should stay private until publication.');
+  await englishCard
+    .locator('textarea[name="collaborationBody"]')
+    .fill('A private collaboration draft should stay private until publication.');
   await submitRootAdminAction(
     page,
     englishCard.getByRole('button', {
@@ -2052,6 +2092,8 @@ async function assertWorkWithUsContentAdministration(page) {
   assert.match(englishHtml, /Describe the situation in your own words/);
   assert.match(englishHtml, /Capabilities that can be combined/);
   assert.match(englishHtml, /bounded software system/);
+  assert.match(englishHtml, /How collaboration begins/);
+  assert.match(englishHtml, /first human exchange/);
   assert.doesNotMatch(
     englishHtml,
     /A private draft should not replace the published open-situations copy/,
@@ -2061,6 +2103,11 @@ async function assertWorkWithUsContentAdministration(page) {
     englishHtml,
     /A private capabilities draft should stay private until publication/,
     'Saving AKS-124 capability draft copy must preserve the previous public snapshot.',
+  );
+  assert.doesNotMatch(
+    englishHtml,
+    /A private collaboration draft should stay private until publication/,
+    'Saving AKS-125 collaboration draft copy must preserve the previous public snapshot.',
   );
 
   englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
@@ -2076,6 +2123,9 @@ async function assertWorkWithUsContentAdministration(page) {
   await englishCard
     .locator('textarea[name="capabilitiesBody"]')
     .fill(seededEnglishCapabilitiesBody);
+  await englishCard
+    .locator('textarea[name="collaborationBody"]')
+    .fill(seededEnglishCollaborationBody);
   await submitRootAdminAction(
     page,
     englishCard.getByRole('button', {
@@ -2118,8 +2168,16 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededEnglishCollaborationTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
   await page.getByText(seededEnglishCapabilitiesBody, { exact: true }).waitFor();
+  await page.getByText(seededEnglishCollaborationBody, { exact: true }).waitFor();
   await assertAxe(page);
 }
 

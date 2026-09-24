@@ -29,8 +29,6 @@ try {
     assert.equal(published.situationsBody, situations.situationsBody);
     assert.equal(published.capabilitiesTitle, capabilities.capabilitiesTitle);
     assert.equal(published.capabilitiesBody, capabilities.capabilitiesBody);
-    assert.equal(published.collaborationTitle, null);
-    assert.equal(published.collaborationBody, null);
     assert.equal(published.inquiryTitle, null);
     assert.equal(published.inquiryBody, null);
     assert.equal(published.privacyNote, null);
@@ -61,7 +59,7 @@ try {
   }
 
   process.stdout.write(
-    'AKS-124 qualification passed: EN/FR Work with us capabilities are concrete, combinable, non-catalogue, and leave later L7 collaboration/inquiry/privacy sections untouched.\n',
+    'AKS-124 qualification passed: EN/FR Work with us capabilities are concrete, combinable, non-catalogue, and leave later L7 inquiry/privacy sections untouched.\n',
   );
 } finally {
   await db.destroy();

@@ -285,6 +285,8 @@ AKS-123 fills the first reserved L7 section with bilingual open-situations copy.
 
 AKS-124 fills the capabilities section with concrete bilingual engineering abilities while keeping them deliberately combinable rather than packaging them as services. The copy covers bounded system design, architecture and interfaces, web/internal/data-backed software, integration and automation, and inspectability through tests, documentation, observability, and explicit limits. `pnpm content:bootstrap-work-with-us-capabilities` provisions the copy idempotently, preserves authored capability drafts, and leaves collaboration, inquiry, privacy, pricing, and project qualification to later boundaries.
 
+AKS-125 fills the collaboration section with the understand-first, frame-after-contact sequence in direct bilingual copy. The first exchange is explicitly for understanding the situation rather than qualifying a predefined project; only after that human exchange can a useful next step be framed together around boundaries, responsibilities, and expected evidence. `pnpm content:bootstrap-work-with-us-collaboration` provisions the copy idempotently, preserves authored collaboration drafts, exposes no internal methodology name, and leaves inquiry/contact capture and privacy to later L7 tickets.
+
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication
 snapshots as public truth, schema v1 as the bounded semantic document contract,

@@ -186,6 +186,12 @@ jobs:
       - name: Verify AKS-124 capabilities content
         run: pnpm db:verify-work-with-us-capabilities
 
+      - name: Bootstrap AKS-125 collaboration content
+        run: pnpm content:bootstrap-work-with-us-collaboration
+
+      - name: Verify AKS-125 collaboration content
+        run: pnpm db:verify-work-with-us-collaboration
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 

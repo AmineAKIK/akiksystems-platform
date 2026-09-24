@@ -307,3 +307,128 @@ export async function bootstrapWorkWithUsCapabilities(
     preservedDraftLocales,
   };
 }
+
+
+interface WorkWithUsCollaborationSeed {
+  collaborationTitle: string;
+  collaborationBody: string;
+}
+
+export const workWithUsCollaborationSeed: Record<
+  PlatformLocale,
+  WorkWithUsCollaborationSeed
+> = {
+  en: {
+    collaborationTitle: 'How collaboration begins',
+    collaborationBody:
+      'The first step is a conversation focused on understanding the situation: what is happening, what matters, what is already in place, and where uncertainty remains. You do not need a finished brief or a predefined solution. After that first human exchange, we can decide whether there is a useful next step and, if so, frame the work, its boundaries, responsibilities, and evidence together.',
+  },
+  fr: {
+    collaborationTitle: 'Comment la collaboration commence',
+    collaborationBody:
+      'La première étape est un échange centré sur la compréhension de la situation : ce qui se passe, ce qui compte, ce qui existe déjà et ce qui reste incertain. Vous n’avez pas besoin d’un cahier des charges finalisé ni d’une solution prédéfinie. Après ce premier échange humain, nous pouvons décider s’il existe une suite utile et, si oui, cadrer ensemble le travail, ses limites, les responsabilités et les preuves attendues.',
+  },
+};
+
+export interface BootstrapWorkWithUsCollaborationResult {
+  pageId: string;
+  createdPage: boolean;
+  publishedLocales: PlatformLocale[];
+  preservedDraftLocales: PlatformLocale[];
+}
+
+export async function bootstrapWorkWithUsCollaboration(
+  db: Kysely<Database>,
+): Promise<BootstrapWorkWithUsCollaborationResult> {
+  const baseline = await bootstrapWorkWithUsCapabilities(db);
+  const pageId = baseline.pageId;
+  const publishedLocales: PlatformLocale[] = [];
+  const preservedDraftLocales: PlatformLocale[] = [];
+
+  for (const locale of ['en', 'fr'] as const) {
+    const seed = workWithUsCollaborationSeed[locale];
+    const localization = await db
+      .selectFrom('work_with_us_localizations')
+      .select(['collaboration_title', 'collaboration_body'])
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .executeTakeFirstOrThrow();
+    const publication = await db
+      .selectFrom('work_with_us_publications')
+      .select('snapshot')
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .executeTakeFirst();
+
+    const hadAuthoredCollaboration =
+      localization.collaboration_title !== null ||
+      localization.collaboration_body !== null;
+
+    const updates: {
+      collaboration_title?: string;
+      collaboration_body?: string;
+    } = {};
+
+    if (localization.collaboration_title === null) {
+      updates.collaboration_title = seed.collaborationTitle;
+    }
+    if (localization.collaboration_body === null) {
+      updates.collaboration_body = seed.collaborationBody;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db
+        .updateTable('work_with_us_localizations')
+        .set({ ...updates, updated_at: new Date() })
+        .where('page_id', '=', pageId)
+        .where('locale', '=', locale)
+        .execute();
+    }
+
+    if (publication === undefined) {
+      await publishCommercialPageLocalization(db, pageId, locale);
+      publishedLocales.push(locale);
+      continue;
+    }
+
+    const published = parseCommercialPagePublicationSnapshot(
+      publication.snapshot,
+    );
+    if (
+      published === null ||
+      published.collaborationTitle !== null ||
+      published.collaborationBody !== null
+    ) {
+      continue;
+    }
+
+    if (hadAuthoredCollaboration) {
+      preservedDraftLocales.push(locale);
+      continue;
+    }
+
+    const now = new Date();
+    await db
+      .updateTable('work_with_us_publications')
+      .set({
+        snapshot: {
+          ...published,
+          collaborationTitle: seed.collaborationTitle,
+          collaborationBody: seed.collaborationBody,
+        } as unknown as Record<string, unknown>,
+        published_at: now,
+        updated_at: now,
+      })
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .execute();
+    publishedLocales.push(locale);
+  }
+
+  return {
+    pageId,
+    createdPage: baseline.createdPage,
+    publishedLocales,
+    preservedDraftLocales,
+  };
+}

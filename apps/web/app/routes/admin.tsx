@@ -568,6 +568,29 @@ export default function Admin() {
                           turn them into a catalogue, pricing grid, or project
                           qualification step.
                         </Text>
+                        <label>
+                          <span>Collaboration heading</span>
+                          <input
+                            defaultValue={localized?.collaboration_title ?? ''}
+                            name="collaborationTitle"
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>Collaboration copy</span>
+                          <textarea
+                            defaultValue={localized?.collaboration_body ?? ''}
+                            name="collaborationBody"
+                            required
+                            rows={7}
+                          />
+                        </label>
+                        <Text size="sm" tone="muted">
+                          Explain the understand-first, frame-after-contact
+                          sequence directly. Keep the first exchange human and do
+                          not name internal methodology.
+                        </Text>
                         <Button type="submit">
                           Save {locale.toUpperCase()} draft
                         </Button>
