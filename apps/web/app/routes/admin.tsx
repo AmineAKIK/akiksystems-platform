@@ -122,8 +122,108 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = field(form, '_intent');
   const db = appDb;
 
-  if (intent === 'save-commercial-localization') {
-    return { ok: true, message: 'Commercial draft accepted.' };
+  if (
+    intent === 'save-commercial-localization' ||
+    intent === 'publish-commercial-localization'
+  ) {
+    const commercialPage = await ensureCommercialPage();
+    const locale = requiredCommercialLocale(form);
+
+    if (intent === 'save-commercial-localization') {
+      const values = {
+        title: optionalField(form, 'title'),
+        introduction: optionalField(form, 'introduction'),
+        situations_title: optionalField(form, 'situationsTitle'),
+        situations_body: optionalField(form, 'situationsBody'),
+        capabilities_title: optionalField(form, 'capabilitiesTitle'),
+        capabilities_body: optionalField(form, 'capabilitiesBody'),
+        collaboration_title: optionalField(form, 'collaborationTitle'),
+        collaboration_body: optionalField(form, 'collaborationBody'),
+        inquiry_title: optionalField(form, 'inquiryTitle'),
+        inquiry_body: optionalField(form, 'inquiryBody'),
+        privacy_note: optionalField(form, 'privacyNote'),
+      };
+
+      const publicCopy = Object.values(values)
+        .filter((value) => value !== null)
+        .join(' ');
+
+      if (/\bcssov\b/i.test(publicCopy)) {
+        return {
+          ok: false,
+          message:
+            'Public collaboration copy must describe the practice directly without naming CSSOV.',
+        };
+      }
+
+      await db.transaction().execute(async (transaction) => {
+        await transaction
+          .insertInto('work_with_us_localizations')
+          .values({
+            page_id: commercialPage.id,
+            locale,
+            ...values,
+            editorial_state: 'draft',
+            published_at: null,
+          })
+          .onConflict((conflict) =>
+            conflict.columns(['page_id', 'locale']).doUpdateSet({
+              ...values,
+              editorial_state: 'draft',
+              published_at: null,
+              updated_at: new Date(),
+            }),
+          )
+          .execute();
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'work_with_us.localization_saved',
+          entityType: 'work_with_us',
+          entityId: commercialPage.id,
+          locale,
+          metadata: {
+            publicSnapshotPreserved: true,
+            structureOwnedByCode: true,
+          },
+        });
+      });
+
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} Work with us draft saved.`,
+      };
+    }
+
+    try {
+      await publishCommercialPageLocalization(db, commercialPage.id, locale);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Commercial content could not be published.',
+      };
+    }
+
+    await writeAdminAuditEvent(db, {
+      actorUserId: session.user.id,
+      actorEmail: session.user.email,
+      action: 'work_with_us.published',
+      entityType: 'work_with_us',
+      entityId: commercialPage.id,
+      locale,
+      metadata: {
+        snapshotVersion: 1,
+      },
+    });
+
+    return {
+      ok: true,
+      message: `${locale.toUpperCase()} Work with us content published.`,
+    };
   }
 
   if (intent === 'move-system') {
