@@ -4063,9 +4063,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   await fieldset
     .getByRole('button', { name: 'Code', exact: true })
     .click();
-  const codeNode = editor.locator('pre code').last();
-  await codeNode.waitFor();
-  await codeNode.selectText();
+  const codeBlock = editor.locator('pre').last();
+  await codeBlock.waitFor();
+  await codeBlock.click();
+  await page.keyboard.press('End');
+  for (let index = 0; index < 'code'.length; index += 1) {
+    await page.keyboard.press('Backspace');
+  }
   await page.keyboard.insertText(code);
 
   await insertBlockWithText(
