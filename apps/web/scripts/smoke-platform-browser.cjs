@@ -1702,23 +1702,86 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+function requestCarriesFormValue(body, name, value) {
+  const encodedPair =
+    encodeURIComponent(name) + '=' + encodeURIComponent(value);
+  const multipartPair =
+    'name="' +
+    name +
+    '"' +
+    String.fromCharCode(13, 10, 13, 10) +
+    value;
+  return body.includes(encodedPair) || body.includes(multipartPair);
+}
+
 async function submitWritingAdminAction(page, button) {
+  const identity = await button.evaluate((element) => {
+    const form = element.form;
+    if (form === null) {
+      throw new Error('Writing admin action control must belong to a form.');
+    }
+    const data = new FormData(form);
+    const read = (name) => {
+      const value = data.get(name);
+      return typeof value === 'string' && value !== '' ? value : null;
+    };
+    return {
+      intent: read('_intent'),
+      writingId: read('writingId'),
+      locale: read('locale'),
+    };
+  });
+
+  assert.ok(
+    identity.intent !== null,
+    'Writing admin forms must expose an explicit _intent.',
+  );
+
   const responsePromise = page.waitForResponse((response) => {
     const request = response.request();
     const pathname = new URL(response.url()).pathname;
+    if (
+      request.method() !== 'POST' ||
+      (pathname !== '/admin/writings' && pathname !== '/admin/writings.data')
+    ) {
+      return false;
+    }
+
+    const body =
+      request.postData() ??
+      request.postDataBuffer()?.toString('utf8') ??
+      '';
     return (
-      request.method() === 'POST' &&
-      (pathname === '/admin/writings' || pathname === '/admin/writings.data')
+      requestCarriesFormValue(body, '_intent', identity.intent) &&
+      (identity.writingId === null ||
+        requestCarriesFormValue(body, 'writingId', identity.writingId)) &&
+      (identity.locale === null ||
+        requestCarriesFormValue(body, 'locale', identity.locale))
     );
   });
 
   await button.click();
   const response = await responsePromise;
-  assert.equal(
-    response.status(),
-    200,
-    'Writing admin actions must complete successfully before the smoke inspects persisted state.',
-  );
+  if (response.status() !== 200) {
+    let responseBody = '';
+    try {
+      responseBody = await response.text();
+    } catch {
+      responseBody = '<unavailable>';
+    }
+    throw new Error(
+      'Writing admin action ' +
+        identity.intent +
+        ' failed with HTTP ' +
+        response.status() +
+        (identity.writingId === null ? '' : ' for Writing ' + identity.writingId) +
+        (identity.locale === null ? '' : ' / ' + identity.locale.toUpperCase()) +
+        '. Response: ' +
+        responseBody.slice(0, 800) +
+        '. Server stderr tail: ' +
+        stderr.slice(-1600),
+    );
+  }
 
   const reload = await page.goto(origin + '/admin/writings');
   assert.equal(
@@ -4163,13 +4226,23 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   await upload
     .locator('textarea[name="captionFr"]')
     .fill('Schéma de frontière utilisé pendant la qualification AKS-119.');
-  await submitWritingAdminAction(
-    page,
-    upload.getByRole('button', {
+  await upload
+    .getByRole('button', {
       name: 'Upload Writing image',
       exact: true,
-    }),
-  );
+    })
+    .click();
+  await page
+    .getByText(
+      'Writing image uploaded. Insert it from the EN or FR editor.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal((await page.goto(origin + '/admin/writings'))?.status(), 200);
+  await articleCard()
+    .locator('[data-writing-assets]')
+    .getByText(assetName, { exact: true })
+    .waitFor();
 
   fieldset = articleCard().getByRole('group', {
     name: 'EN',
