@@ -9,7 +9,7 @@ import {
   type WritingEditorialWeight,
   type WritingKind,
 } from '@akiksystems/core';
-import type { Kysely } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 
 import {
   parseCategoryPublicationSnapshot,
@@ -464,21 +464,19 @@ export async function unpublishWritingLocalization(
   });
 }
 
-export async function listPublishedWritings(
+type PublishedWritingRow = {
+  snapshot: unknown;
+  publishedAt: Date;
+};
+
+async function hydratePublishedWritingRows(
   db: Kysely<Database>,
   locale: PlatformLocale,
+  rows: PublishedWritingRow[],
 ): Promise<PublishedWritingListItem[]> {
-  const rows = await db
-    .selectFrom('writing_publications')
-    .innerJoin('writings', 'writings.id', 'writing_publications.writing_id')
-    .select(['writing_publications.snapshot', 'writing_publications.published_at'])
-    .where('writings.lifecycle', '=', 'active')
-    .where('writing_publications.locale', '=', locale)
-    .execute();
-
   const parsed = rows.map((row) => ({
     snapshot: parseWritingPublicationSnapshot(row.snapshot),
-    publishedAt: row.published_at,
+    publishedAt: row.publishedAt,
   }));
   const [categoriesById, tagsById, systemsById] = await Promise.all([
     publishedCategoryMap(
@@ -498,19 +496,83 @@ export async function listPublishedWritings(
     ),
   ]);
 
-  return parsed
-    .map(({ snapshot, publishedAt }) => ({
-      ...snapshot,
-      publishedAt,
-      categories: resolveCategories(snapshot.categoryIds, categoriesById),
-      tags: resolveTags(snapshot.tagIds, tagsById),
-      systems: resolveSystems(snapshot.systemIds, systemsById),
-    }))
-    .sort(
-      (left, right) =>
-        left.editorialPosition - right.editorialPosition ||
-        left.writingId.localeCompare(right.writingId),
-    );
+  return parsed.map(({ snapshot, publishedAt }) => ({
+    ...snapshot,
+    publishedAt,
+    categories: resolveCategories(snapshot.categoryIds, categoriesById),
+    tags: resolveTags(snapshot.tagIds, tagsById),
+    systems: resolveSystems(snapshot.systemIds, systemsById),
+  }));
+}
+
+export async function listPublishedWritings(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+): Promise<PublishedWritingListItem[]> {
+  const rows = await db
+    .selectFrom('writing_publications')
+    .innerJoin('writings', 'writings.id', 'writing_publications.writing_id')
+    .select(['writing_publications.snapshot', 'writing_publications.published_at'])
+    .where('writings.lifecycle', '=', 'active')
+    .where('writing_publications.locale', '=', locale)
+    .orderBy('writings.editorial_position')
+    .orderBy('writing_publications.writing_id')
+    .execute();
+
+  return hydratePublishedWritingRows(
+    db,
+    locale,
+    rows.map((row) => ({
+      snapshot: row.snapshot,
+      publishedAt: row.published_at,
+    })),
+  );
+}
+
+export async function searchPublishedWritings(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; query: string },
+): Promise<PublishedWritingListItem[]> {
+  const query = input.query.trim();
+  if (query === '') return listPublishedWritings(db, input.locale);
+
+  const result = await sql<{
+    snapshot: unknown;
+    published_at: Date;
+  }>`
+    select
+      wp.snapshot,
+      wp.published_at
+    from writing_publications as wp
+    inner join writings as w
+      on w.id = wp.writing_id
+    cross join lateral (
+      select websearch_to_tsquery(
+        case
+          when ${input.locale} = 'fr'
+            then 'french'::regconfig
+          else 'english'::regconfig
+        end,
+        ${query}
+      ) as value
+    ) as search_query
+    where w.lifecycle = 'active'
+      and wp.locale = ${input.locale}
+      and wp.search_vector @@ search_query.value
+    order by
+      ts_rank_cd(wp.search_vector, search_query.value) desc,
+      w.editorial_position asc,
+      wp.writing_id asc
+  `.execute(db);
+
+  return hydratePublishedWritingRows(
+    db,
+    input.locale,
+    result.rows.map((row) => ({
+      snapshot: row.snapshot,
+      publishedAt: row.published_at,
+    })),
+  );
 }
 
 export async function listPublishedWritingsForCategory(

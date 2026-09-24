@@ -366,6 +366,7 @@ export interface WritingPublicationsTable {
   locale: PlatformLocale;
   slug: string;
   snapshot: Record<string, unknown>;
+  search_vector: DefaultedColumn<string>;
   published_at: TimestampColumn;
   updated_at: TimestampColumn;
 }

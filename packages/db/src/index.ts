@@ -69,6 +69,7 @@ export {
   listPublishedWritingsForCategory,
   listPublishedWritingsForTag,
   listPublishedWritingsForSystem,
+  searchPublishedWritings,
   parseWritingPublicationSnapshot,
   publishWritingLocalization,
   unpublishWritingLocalization,

@@ -273,6 +273,26 @@ their existing taxonomy inspection surfaces, while AKS-115 itself creates no new
 editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
+
+AKS-116 adds search to that same editorial surface without introducing an
+external search service or a separate results application. Each published
+Writing snapshot owns a generated PostgreSQL `tsvector`: title terms receive
+weight A, summary terms weight B, and body terms weight C. English publications
+use PostgreSQL's `english` text-search configuration and French publications use
+`french`; a GIN index keeps matching on the publication table rather than
+scanning draft authoring data.
+
+The public EN/FR overview accepts a normalized `q` GET parameter and resolves
+matches in SSR with `websearch_to_tsquery`, so quoted phrases, exclusions, and
+ordinary search terms use PostgreSQL semantics. Relevance ranks search results
+before editorial position as the deterministic tie-breaker. Drafts, archived
+Writings, and the other locale never enter the result set. Search and AKS-115
+facets compose on the same overview route: the six-item filter threshold remains
+based on the full published corpus, while the final feed is the intersection of
+the PostgreSQL search result and any active type/category/tag facets. The search
+form is always available, bilingual, keyboard/native-form accessible, and
+collapses safely on narrow screens.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.

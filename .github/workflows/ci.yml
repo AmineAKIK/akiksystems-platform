@@ -171,6 +171,9 @@ jobs:
       - name: Verify AKS-114 lightweight Notes
         run: pnpm --filter @akiksystems/db db:verify-lightweight-notes
 
+      - name: Verify AKS-116 PostgreSQL full-text Writing search
+        run: pnpm --filter @akiksystems/db db:verify-writing-full-text-search
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 

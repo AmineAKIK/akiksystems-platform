@@ -1,0 +1,47 @@
+.aks-writings-search {
+  display: grid;
+  gap: var(--aks-space-4);
+  padding-block: var(--aks-space-5);
+  border-block-start: 1px solid var(--aks-border-subtle);
+}
+
+.aks-writings-search-heading {
+  display: grid;
+  gap: var(--aks-space-2);
+  max-width: 52rem;
+}
+
+.aks-writings-search-heading .aks-heading,
+.aks-writings-search-heading .aks-text,
+.aks-writings-search-status {
+  margin: 0;
+}
+
+.aks-writings-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--aks-space-3);
+  align-items: center;
+  max-width: 52rem;
+}
+
+.aks-writings-search-field {
+  min-width: 0;
+}
+
+.aks-writings-search-field input {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 48rem) {
+  .aks-writings-search-form {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .aks-writings-search-form .aks-button,
+  .aks-writings-search-form a {
+    justify-self: start;
+  }
+}
