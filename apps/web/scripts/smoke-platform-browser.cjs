@@ -2421,7 +2421,11 @@ async function assertLightweightNoteAuthoring(page) {
   await createCard.getByRole('button', { name: 'Create Writing', exact: true }).click();
   await page.getByText('Writing created.', { exact: true }).waitFor();
 
-  const noteCard = () => page.locator('[data-writing-card]').last();
+  const noteCard = () =>
+    page
+      .locator('[data-writing-card]')
+      .filter({ hasText: 'NOTE · NORMAL' })
+      .last();
   const items = [
     {
       locale: 'EN',
