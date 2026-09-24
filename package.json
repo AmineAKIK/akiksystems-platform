@@ -28,7 +28,7 @@
     "db:verify-system-domain": "pnpm --filter @akiksystems/db db:verify-system-domain",
     "db:verify-system-experiences": "pnpm --filter @akiksystems/db db:verify-system-experiences",
     "db:verify-system-technologies": "pnpm --filter @akiksystems/db db:verify-system-technologies",
-    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate && pnpm --filter @akiksystems/db profile:bootstrap-publications && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-rendre-attention-essay",
+    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate && pnpm --filter @akiksystems/db profile:bootstrap-publications && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-rendre-attention-essay && pnpm content:bootstrap-work-with-us-open-situations",
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "dev:worker": "pnpm --filter @akiksystems/worker dev",
     "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
