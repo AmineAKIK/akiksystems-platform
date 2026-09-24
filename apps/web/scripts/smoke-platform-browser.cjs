@@ -1747,7 +1747,10 @@ async function submitWritingAdminAction(page, button) {
       return false;
     }
 
-    const body = request.postData() ?? '';
+    const body =
+      request.postData() ??
+      request.postDataBuffer()?.toString('utf8') ??
+      '';
     return (
       requestCarriesFormValue(body, '_intent', identity.intent) &&
       (identity.writingId === null ||
