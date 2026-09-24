@@ -761,7 +761,7 @@ Assets are stored once, related to domain context, and localized independently.
 AKS-021 consolidates the Sentinel slice into one domain-specific System workspace.
 
 - `/admin/systems/:systemId` is the coherent editing surface for identity/lifecycle, EN/FR title/slug/summary, ordered technologies, origin Experience context, ordered typed links, presentation and media.
-- `/admin` can create the initial Sentinel System identity plus minimal EN/FR localization rows when no System exists yet.
+- `/admin` can create the initial Sentinel System identity plus minimal EN/FR localization rows whenever Sentinel itself is still missing, even if other reference Systems already exist.
 - Presentation and contextual media reuse the specialized editors from AKS-020 and AKS-017 instead of duplicating those capabilities.
 - Technology and link ordering remain explicit and are rewritten transactionally from the workspace.
 - The origin context is managed as a shared Experience relation, not duplicated System text.
@@ -785,6 +785,29 @@ Required server-only variables are `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER
 `ADMIN_EMAIL`. Contextual asset operations additionally require `BUCKET`, `REGION`, `ENDPOINT`,
 `ACCESS_KEY_ID`, and `SECRET_ACCESS_KEY`. `ADMIN_PASSWORD` is intentionally only used for the
 one-time bootstrap command.
+
+### Initial environment commissioning
+
+A newly created environment is not considered operator-ready after migrations alone. Run the one-time,
+idempotent commissioning command:
+
+```bash
+pnpm provision:initial
+```
+
+It performs normal migrations/content publication bootstraps, provisions the single configured
+administrator, provisions the L4 reference Systems (ProtoCap, Oria Nutrition, Tugères), creates a
+minimal bilingual Sentinel draft if Sentinel is still missing, re-runs System publication bootstrapping,
+and provisions the published DWWM training.
+
+The command deliberately does **not** publish invented Profile content and does not fabricate the
+Sentinel learning dossier before Sentinel itself satisfies publication readiness. Profile identity and
+the final Sentinel dossier remain operator-authored/published boundaries.
+
+After successful commissioning, normal deployments must return to `pnpm deploy:migrate`.
+`ADMIN_PASSWORD` is a one-time provisioning secret and must not be treated as a permanent runtime
+credential mechanism.
+
 
 ## Containers
 
