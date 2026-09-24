@@ -1705,9 +1705,10 @@ async function assertTugeresStandardSystem(browser) {
 async function submitWritingAdminAction(page, button) {
   const responsePromise = page.waitForResponse((response) => {
     const request = response.request();
+    const pathname = new URL(response.url()).pathname;
     return (
       request.method() === 'POST' &&
-      new URL(response.url()).pathname === '/admin/writings'
+      (pathname === '/admin/writings' || pathname === '/admin/writings.data')
     );
   });
 
