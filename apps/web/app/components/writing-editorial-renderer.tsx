@@ -169,10 +169,12 @@ export function WritingEditorialRenderer({
           case 'codeBlock':
             return (
               <pre
+                aria-label={locale === 'fr' ? 'Bloc de code' : 'Code block'}
                 className="aks-writing-code"
                 data-language={block.attrs?.language ?? undefined}
                 data-writing-node="codeBlock"
                 key={key}
+                tabIndex={0}
               >
                 <code>{textContent(block.content)}</code>
               </pre>
