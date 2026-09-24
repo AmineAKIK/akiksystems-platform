@@ -73,9 +73,11 @@ export function WritingDetailView({
               <Heading className="aks-writing-detail-title" level={1} size="lg">
                 {writing.title}
               </Heading>
-              <Text className="aks-writing-detail-summary" size="lg">
-                {writing.summary}
-              </Text>
+              {writing.kind === 'note' ? null : (
+                <Text className="aks-writing-detail-summary" size="lg">
+                  {writing.summary}
+                </Text>
+              )}
 
               {writing.categories.length > 0 || writing.tags.length > 0 ? (
                 <div className="aks-writing-taxonomy">
@@ -126,6 +128,7 @@ export function WritingDetailView({
               aria-label={writing.locale === 'fr' ? 'Texte' : 'Text'}
               className="aks-writing-reader"
               data-long-form-reader
+              data-reading-mode={writing.kind === 'note' ? 'note' : 'long-form'}
             >
               <WritingEditorialRenderer
                 assetHref={assetHref}
