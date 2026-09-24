@@ -274,6 +274,15 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-117 keeps related editorial navigation contextual rather than promotional.
+A Writing detail may surface at most two other published Writings when they share
+one or more published System identities with the current Writing. The current
+Writing is excluded, duplicate candidates are collapsed, stronger shared-System
+context wins before the existing editorial-position order, and no contextual
+block is rendered when the Writing has no matching published peers. This
+selection is resolved server-side and appears only after the reading flow, so it
+does not interrupt long-form content or create a second recommendation system.
+
 AKS-116 adds search to that same editorial surface without introducing an
 external search service or a separate results application. Each published
 Writing snapshot owns a generated PostgreSQL `tsvector`: title terms receive
