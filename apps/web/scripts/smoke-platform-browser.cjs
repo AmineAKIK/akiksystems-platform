@@ -1917,17 +1917,61 @@ async function submitRootAdminAction(page, button, intent, locale) {
 }
 
 async function assertWorkWithUsContentAdministration(page) {
-  const englishTitle = 'Start with the situation';
-  const englishIntroduction =
-    'Describe what is happening in your own words. AkikSystems listens before framing the work.';
-  const frenchTitle = 'Partir de la situation';
-  const frenchIntroduction =
-    'Décrivez ce qui se passe avec vos propres mots. AkikSystems écoute avant de cadrer le travail.';
+  const seededEnglishTitle = 'Start with the situation';
+  const seededEnglishIntroduction =
+    'Whether you are acting for an organization or for yourself, you can begin with what is happening, what matters, and what you want to change. You do not need to translate it into a predefined service.';
+  const seededEnglishSituationsTitle = 'You do not need a finished brief';
+  const seededEnglishSituationsBody =
+    'You can arrive with a problem you can name, something that feels stuck, an idea that is still vague, or simply a result you want to reach. Describe the situation in your own words. The first exchange is for understanding the context; framing comes later, with a human.';
+  const seededFrenchTitle = 'Partir de la situation';
+  const seededFrenchIntroduction =
+    'Que vous agissiez pour une organisation ou à titre personnel, vous pouvez commencer par ce qui se passe, ce qui compte et ce que vous voulez faire évoluer. Vous n’avez pas à traduire cela dans une prestation prédéfinie.';
+  const seededFrenchSituationsTitle =
+    'Vous n’avez pas besoin d’un cahier des charges finalisé';
+  const seededFrenchSituationsBody =
+    'Vous pouvez venir avec un problème identifié, quelque chose qui bloque, une idée encore floue ou simplement un résultat que vous cherchez à atteindre. Décrivez la situation avec vos mots. Le premier échange sert à comprendre le contexte ; le cadrage vient ensuite, avec une personne.';
 
   await page.goto(origin + '/en/work-with-us');
   await page
-    .getByRole('heading', { level: 1, name: 'Work with us', exact: true })
+    .getByRole('heading', { level: 1, name: seededEnglishTitle, exact: true })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededEnglishSituationsTitle,
+      exact: true,
+    })
+    .waitFor();
+  await page.getByText(seededEnglishIntroduction, { exact: true }).waitFor();
+  await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
+  assert.equal(
+    await page.locator('main form, main input, main textarea').count(),
+    0,
+    'AKS-123 must keep first contact as published copy only; inquiry capture arrives in AKS-127.',
+  );
+  assert.equal(
+    await page
+      .getByText(/service catalogue|service category|project type|budget|deadline/i)
+      .count(),
+    0,
+    'AKS-123 must not force visitors into service or qualification categories.',
+  );
+  await assertAxe(page);
+
+  await page.goto(origin + '/fr/travailler-ensemble');
+  await page
+    .getByRole('heading', { level: 1, name: seededFrenchTitle, exact: true })
+    .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededFrenchSituationsTitle,
+      exact: true,
+    })
+    .waitFor();
+  await page.getByText(seededFrenchIntroduction, { exact: true }).waitFor();
+  await page.getByText(seededFrenchSituationsBody, { exact: true }).waitFor();
+  await assertAxe(page);
 
   await page.goto(origin + '/admin');
   const adminSection = page.locator('#admin-work-with-us');
@@ -1938,7 +1982,7 @@ async function assertWorkWithUsContentAdministration(page) {
       'input[name="email"], input[name="phone"], input[name="budget"], input[name="deadline"], input[name="projectType"]',
     ).count(),
     0,
-    'AKS-122 must not introduce inquiry/contact qualification fields.',
+    'AKS-123 must not introduce inquiry/contact qualification fields.',
   );
 
   let englishCard = adminSection.locator('.aks-admin-card').filter({
@@ -1948,10 +1992,9 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     }),
   });
-  await englishCard.locator('input[name="title"]').fill(englishTitle);
   await englishCard
-    .locator('textarea[name="introduction"]')
-    .fill(englishIntroduction);
+    .locator('textarea[name="situationsBody"]')
+    .fill('A private draft should not replace the published open-situations copy.');
   await submitRootAdminAction(
     page,
     englishCard.getByRole('button', {
@@ -1967,10 +2010,32 @@ async function assertWorkWithUsContentAdministration(page) {
   );
   let englishHtml = await englishPublic.text();
   assert.equal(englishPublic.status(), 200);
+  assert.match(englishHtml, /You do not need a finished brief/);
+  assert.match(englishHtml, /Describe the situation in your own words/);
   assert.doesNotMatch(
     englishHtml,
-    /Start with the situation/,
-    'Saving a commercial draft must preserve the previous public snapshot.',
+    /A private draft should not replace the published open-situations copy/,
+    'Saving AKS-123 draft copy must preserve the previous public snapshot.',
+  );
+
+  englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'English',
+      exact: true,
+    }),
+  });
+  await englishCard
+    .locator('textarea[name="situationsBody"]')
+    .fill(seededEnglishSituationsBody);
+  await submitRootAdminAction(
+    page,
+    englishCard.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+    'save-commercial-localization',
+    'en',
   );
 
   englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
@@ -1992,96 +2057,14 @@ async function assertWorkWithUsContentAdministration(page) {
 
   await page.goto(origin + '/en/work-with-us');
   await page
-    .getByRole('heading', { level: 1, name: englishTitle, exact: true })
-    .waitFor();
-  await page.getByText(englishIntroduction, { exact: true }).waitFor();
-  assert.equal(
-    await page.locator('main form, main input, main textarea').count(),
-    0,
-    'AKS-122 must publish content only; the free-form inquiry arrives in AKS-127.',
-  );
-  await assertAxe(page);
-
-  await page.goto(origin + '/fr/travailler-ensemble');
-  await page
     .getByRole('heading', {
-      level: 1,
-      name: 'Travailler ensemble',
+      level: 2,
+      name: seededEnglishSituationsTitle,
       exact: true,
     })
     .waitFor();
-
-  await page.goto(origin + '/admin');
-  let frenchCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 3,
-      name: 'Français',
-      exact: true,
-    }),
-  });
-  await frenchCard.locator('input[name="title"]').fill(frenchTitle);
-  await frenchCard
-    .locator('textarea[name="introduction"]')
-    .fill(frenchIntroduction);
-  await submitRootAdminAction(
-    page,
-    frenchCard.getByRole('button', {
-      name: 'Save FR draft',
-      exact: true,
-    }),
-    'save-commercial-localization',
-    'fr',
-  );
-
-  frenchCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 3,
-      name: 'Français',
-      exact: true,
-    }),
-  });
-  await submitRootAdminAction(
-    page,
-    frenchCard.getByRole('button', {
-      name: 'Publish FR',
-      exact: true,
-    }),
-    'publish-commercial-localization',
-    'fr',
-  );
-
-  await page.goto(origin + '/fr/travailler-ensemble');
-  await page
-    .getByRole('heading', { level: 1, name: frenchTitle, exact: true })
-    .waitFor();
-  await page.getByText(frenchIntroduction, { exact: true }).waitFor();
+  await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
   await assertAxe(page);
-
-  await page.goto(origin + '/admin');
-  englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 3,
-      name: 'English',
-      exact: true,
-    }),
-  });
-  await englishCard
-    .locator('input[name="title"]')
-    .fill('Draft title must stay private');
-  await submitRootAdminAction(
-    page,
-    englishCard.getByRole('button', {
-      name: 'Save EN draft',
-      exact: true,
-    }),
-    'save-commercial-localization',
-    'en',
-  );
-
-  englishPublic = await page.context().request.get(origin + '/en/work-with-us');
-  englishHtml = await englishPublic.text();
-  assert.match(englishHtml, /Start with the situation/);
-  assert.doesNotMatch(englishHtml, /Draft title must stay private/);
 }
 
 async function assertWritingAdminAndPublic(page) {
