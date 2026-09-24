@@ -62,9 +62,9 @@ async function createWriting(input: {
 try {
   const column = await sql<{
     is_generated: string;
-    data_type: string;
+    udt_name: string;
   }>`
-    select is_generated, data_type
+    select is_generated, udt_name
     from information_schema.columns
     where table_schema = current_schema()
       and table_name = 'writing_publications'
@@ -72,7 +72,7 @@ try {
   `.execute(db);
   assert.equal(column.rows.length, 1);
   assert.equal(column.rows[0]?.is_generated, 'ALWAYS');
-  assert.equal(column.rows[0]?.data_type, 'tsvector');
+  assert.equal(column.rows[0]?.udt_name, 'tsvector');
 
   const indexes = await sql<{ indexdef: string }>`
     select indexdef
