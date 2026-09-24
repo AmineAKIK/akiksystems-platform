@@ -1,10 +1,14 @@
-import { getPublishedWriting } from '@akiksystems/db';
+import {
+  getPublishedWriting,
+  listPublishedWritings,
+} from '@akiksystems/db';
 import { data, useLoaderData } from 'react-router';
 
 import { WritingDetailView } from '../components/writing-detail-view';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
 import { publicNotFound } from '../lib/public-seo';
+import { selectContextualRelatedWritings } from '../lib/related-writings';
 
 import type { Route } from './+types/writing-detail';
 
@@ -32,12 +36,28 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw publicNotFound('Writing not found.');
   }
 
+  const relatedWritings =
+    writing.systemIds.length === 0
+      ? []
+      : selectContextualRelatedWritings({
+          currentWritingId: writing.writingId,
+          currentSystemIds: writing.systemIds,
+          candidates: await listPublishedWritings(appDb, locale),
+        });
+
   return data(
     {
       writing: {
         ...writing,
         publishedAt: writing.publishedAt.toISOString(),
       },
+      relatedWritings: relatedWritings.map((related) => ({
+        writingId: related.writingId,
+        kind: related.kind,
+        slug: related.slug,
+        title: related.title,
+        summary: related.summary,
+      })),
       localContext: {
         title: writing.title,
         shellMode: 'reading' as const,
@@ -74,7 +94,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function WritingDetailRoute() {
-  const { writing } = useLoaderData<typeof loader>();
+  const { relatedWritings, writing } = useLoaderData<typeof loader>();
   const overviewHref = writing.locale === 'fr' ? '/fr/ecrits' : '/en/writings';
 
   return (
@@ -90,6 +110,7 @@ export default function WritingDetailRoute() {
       backLabel={
         writing.locale === 'fr' ? 'Retour aux Écrits' : 'Back to Writings'
       }
+      relatedWritings={relatedWritings}
       responsiveImages
       writing={writing}
     />
