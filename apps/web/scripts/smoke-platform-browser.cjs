@@ -4013,36 +4013,58 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   );
   await editor.fill(intro);
 
-  const insertBlockWithText = async (buttonName, text) => {
+  const insertBlockWithText = async (buttonName, selector, text) => {
     await fieldset
       .getByRole('button', { name: buttonName, exact: true })
       .click();
-    await page.keyboard.press('Shift+Home');
-    await page.keyboard.insertText(text);
+    const inserted = editor.locator(selector).last();
+    await inserted.waitFor();
+    await inserted.fill(text);
+    return inserted;
   };
 
-  await insertBlockWithText('H2 heading', sectionHeading);
-  await page.keyboard.press('End');
+  const section = await insertBlockWithText(
+    'H2 heading',
+    'h2',
+    sectionHeading,
+  );
+  await section.press('End');
   await page.keyboard.press('Enter');
   await page.keyboard.insertText(sectionParagraph);
 
-  await insertBlockWithText('List', bulletItems[0]);
-  await page.keyboard.press('End');
+  const firstBullet = await insertBlockWithText(
+    'List',
+    'ul li p',
+    bulletItems[0],
+  );
+  await firstBullet.press('End');
   await page.keyboard.press('Enter');
   await page.keyboard.insertText(bulletItems[1]);
 
-  await insertBlockWithText('H3 heading', subsectionHeading);
+  await insertBlockWithText(
+    'H3 heading',
+    'h3',
+    subsectionHeading,
+  );
 
-  await insertBlockWithText('Steps', orderedItems[0]);
+  const firstStep = await insertBlockWithText(
+    'Steps',
+    'ol li p',
+    orderedItems[0],
+  );
+  await firstStep.press('End');
   for (const item of orderedItems.slice(1)) {
-    await page.keyboard.press('End');
     await page.keyboard.press('Enter');
     await page.keyboard.insertText(item);
   }
 
-  await insertBlockWithText('Quote', quotation);
-  await insertBlockWithText('Code', code);
-  await insertBlockWithText('Callout', callout);
+  await insertBlockWithText('Quote', 'blockquote p', quotation);
+  await insertBlockWithText('Code', 'pre code', code);
+  await insertBlockWithText(
+    'Callout',
+    'aside[data-writing-callout] p',
+    callout,
+  );
 
   const authoredDocument = JSON.parse(
     await fieldset.locator('input[name="editorDocument"]').inputValue(),
@@ -4061,7 +4083,8 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   ]) {
     assert.ok(
       authoredJson.includes(authoredText),
-      'AKS-119 authoring must persist real text entered through the visible editor.',
+      'AKS-119 authoring must persist real text entered through the visible editor: ' +
+        authoredText,
     );
   }
   for (const nodeType of [
