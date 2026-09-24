@@ -7,8 +7,9 @@ import { data, useLoaderData } from 'react-router';
 import { WritingDetailView } from '../components/writing-detail-view';
 import { requireLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
-import { publicNotFound } from '../lib/public-seo';
+import { buildNoIndexMeta, publicNotFound } from '../lib/public-seo';
 import { selectContextualRelatedWritings } from '../lib/related-writings';
+import { buildWritingMeta, writingHref } from '../lib/writing-seo';
 
 import type { Route } from './+types/writing-detail';
 
@@ -19,12 +20,6 @@ function requiredSlug(value: string | undefined): string {
     throw publicNotFound('Writing not found.');
   }
   return value;
-}
-
-function writingHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/${slug}`
-    : `/en/writings/${slug}`;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -83,14 +78,11 @@ export function headers({
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  return [
-    {
-      title:
-        loaderData === undefined
-          ? 'Writings · AkikSystems'
-          : `${loaderData.writing.title} · AkikSystems`,
-    },
-  ];
+  if (loaderData === undefined) {
+    return buildNoIndexMeta('Writings · AkikSystems');
+  }
+
+  return buildWritingMeta(loaderData.writing);
 }
 
 export default function WritingDetailRoute() {
