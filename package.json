@@ -88,7 +88,10 @@
     "db:verify-work-with-us-capabilities": "pnpm --filter @akiksystems/db db:verify-work-with-us-capabilities",
     "content:bootstrap-work-with-us-collaboration": "pnpm --filter @akiksystems/web content:bootstrap-work-with-us-collaboration",
     "db:verify-work-with-us-collaboration": "pnpm --filter @akiksystems/db db:verify-work-with-us-collaboration",
-    "db:verify-work-with-us-selected-proof": "pnpm --filter @akiksystems/db db:verify-work-with-us-selected-proof"
+    "db:verify-work-with-us-selected-proof": "pnpm --filter @akiksystems/db db:verify-work-with-us-selected-proof",
+    "content:bootstrap-sentinel-system": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-system",
+    "db:verify-sentinel-bootstrap": "pnpm --filter @akiksystems/db db:verify-sentinel-bootstrap",
+    "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin && pnpm content:bootstrap-l4-reference-systems && pnpm content:bootstrap-sentinel-system && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-dwwm"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
