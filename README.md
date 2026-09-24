@@ -274,6 +274,17 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-120 qualifies long-form mobile reading beyond a simple overflow check.
+Chromium exercises the real 25-page French Essay and the rich admin-authored
+Article from AKS-119 at 320, 390, and 430 pixel viewport widths. The gate checks
+minimum prose size, generous line-height, sustained scroll depth, final-content
+reachability, local horizontal code scrolling without page drift, long-quotation
+wrapping, contextual-image containment/lazy loading, and axe accessibility.
+Writing schema v1 still deliberately excludes tables; AKS-120 records that
+ticket/schema mismatch rather than adding a test-only table or silently widening
+the content model. Full evidence lives in
+`docs/qualification/aks-120-long-form-mobile-reading.md`.
+
 AKS-119 qualifies the Writing admin as a real authoring path rather than only
 a collection of isolated controls. CI creates a blank ARTICLE/FEATURED Writing,
 types a representative engineering article through the visible Tiptap UI,
