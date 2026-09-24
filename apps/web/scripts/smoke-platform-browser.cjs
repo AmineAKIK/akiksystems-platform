@@ -1923,6 +1923,9 @@ async function assertWorkWithUsContentAdministration(page) {
   const seededEnglishSituationsTitle = 'You do not need a finished brief';
   const seededEnglishSituationsBody =
     'You can arrive with a problem you can name, something that feels stuck, an idea that is still vague, or simply a result you want to reach. Describe the situation in your own words. The first exchange is for understanding the context; framing comes later, with a human.';
+  const seededEnglishCapabilitiesTitle = 'Capabilities that can be combined';
+  const seededEnglishCapabilitiesBody =
+    'Depending on the situation, AkikSystems can help turn an unclear operational or product problem into a bounded software system; design architecture and interfaces around explicit constraints; build web applications, internal tools, and data-backed workflows; connect existing systems and automate repetitive work; and make the result inspectable with tests, documentation, observability, and clear limits. These capabilities can be combined according to the situation; they do not define a menu the visitor has to choose from.';
   const seededFrenchTitle = 'Partir de la situation';
   const seededFrenchIntroduction =
     'Que vous agissiez pour une organisation ou à titre personnel, vous pouvez commencer par ce qui se passe, ce qui compte et ce que vous voulez faire évoluer. Vous n’avez pas à traduire cela dans une prestation prédéfinie.';
@@ -1930,6 +1933,9 @@ async function assertWorkWithUsContentAdministration(page) {
     'Vous n’avez pas besoin d’un cahier des charges finalisé';
   const seededFrenchSituationsBody =
     'Vous pouvez venir avec un problème identifié, quelque chose qui bloque, une idée encore floue ou simplement un résultat que vous cherchez à atteindre. Décrivez la situation avec vos mots. Le premier échange sert à comprendre le contexte ; le cadrage vient ensuite, avec une personne.';
+  const seededFrenchCapabilitiesTitle = 'Des capacités à combiner';
+  const seededFrenchCapabilitiesBody =
+    'Selon la situation, AkikSystems peut aider à transformer un problème opérationnel ou produit encore flou en système logiciel délimité ; concevoir l’architecture et les interfaces autour de contraintes explicites ; construire des applications web, des outils internes et des flux appuyés sur les données ; relier des systèmes existants et automatiser des tâches répétitives ; puis rendre le résultat inspectable avec des tests, de la documentation, de l’observabilité et des limites claires. Ces capacités se combinent selon la situation ; elles ne définissent pas un menu dans lequel il faudrait choisir.';
 
   await page.goto(origin + '/en/work-with-us');
   await page
@@ -1942,19 +1948,29 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededEnglishCapabilitiesTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededEnglishIntroduction, { exact: true }).waitFor();
   await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
+  await page.getByText(seededEnglishCapabilitiesBody, { exact: true }).waitFor();
   assert.equal(
     await page.locator('main form, main input, main textarea').count(),
     0,
-    'AKS-123 must keep first contact as published copy only; inquiry capture arrives in AKS-127.',
+    'AKS-124 must keep first contact as published copy only; inquiry capture arrives in AKS-127.',
   );
   assert.equal(
     await page
-      .getByText(/service catalogue|service category|project type|budget|deadline/i)
+      .getByText(
+        /service catalogue|service category|fixed offer|pricing grid|project type|budget|deadline/i,
+      )
       .count(),
     0,
-    'AKS-123 must not force visitors into service or qualification categories.',
+    'AKS-124 must present combinable capabilities without forcing service or qualification categories.',
   );
   await assertAxe(page);
 
@@ -1969,8 +1985,16 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededFrenchCapabilitiesTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededFrenchIntroduction, { exact: true }).waitFor();
   await page.getByText(seededFrenchSituationsBody, { exact: true }).waitFor();
+  await page.getByText(seededFrenchCapabilitiesBody, { exact: true }).waitFor();
   await assertAxe(page);
 
   await page.goto(origin + '/admin');
@@ -1982,7 +2006,7 @@ async function assertWorkWithUsContentAdministration(page) {
       'input[name="email"], input[name="phone"], input[name="budget"], input[name="deadline"], input[name="projectType"]',
     ).count(),
     0,
-    'AKS-123 must not introduce inquiry/contact qualification fields.',
+    'AKS-124 must not introduce inquiry/contact qualification fields.',
   );
 
   let englishCard = adminSection.locator('.aks-admin-card').filter({
@@ -1992,9 +2016,23 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     }),
   });
+  assert.equal(
+    await englishCard.locator('input[name="capabilitiesTitle"]').count(),
+    1,
+    'AKS-124 must expose the capabilities heading as localized admin copy.',
+  );
+  assert.equal(
+    await englishCard.locator('textarea[name="capabilitiesBody"]').count(),
+    1,
+    'AKS-124 must expose the capabilities body as localized admin copy.',
+  );
+
   await englishCard
     .locator('textarea[name="situationsBody"]')
     .fill('A private draft should not replace the published open-situations copy.');
+  await englishCard
+    .locator('textarea[name="capabilitiesBody"]')
+    .fill('A private capabilities draft should stay private until publication.');
   await submitRootAdminAction(
     page,
     englishCard.getByRole('button', {
@@ -2012,10 +2050,17 @@ async function assertWorkWithUsContentAdministration(page) {
   assert.equal(englishPublic.status(), 200);
   assert.match(englishHtml, /You do not need a finished brief/);
   assert.match(englishHtml, /Describe the situation in your own words/);
+  assert.match(englishHtml, /Capabilities that can be combined/);
+  assert.match(englishHtml, /bounded software system/);
   assert.doesNotMatch(
     englishHtml,
     /A private draft should not replace the published open-situations copy/,
     'Saving AKS-123 draft copy must preserve the previous public snapshot.',
+  );
+  assert.doesNotMatch(
+    englishHtml,
+    /A private capabilities draft should stay private until publication/,
+    'Saving AKS-124 capability draft copy must preserve the previous public snapshot.',
   );
 
   englishCard = page.locator('#admin-work-with-us .aks-admin-card').filter({
@@ -2028,6 +2073,9 @@ async function assertWorkWithUsContentAdministration(page) {
   await englishCard
     .locator('textarea[name="situationsBody"]')
     .fill(seededEnglishSituationsBody);
+  await englishCard
+    .locator('textarea[name="capabilitiesBody"]')
+    .fill(seededEnglishCapabilitiesBody);
   await submitRootAdminAction(
     page,
     englishCard.getByRole('button', {
@@ -2063,7 +2111,15 @@ async function assertWorkWithUsContentAdministration(page) {
       exact: true,
     })
     .waitFor();
+  await page
+    .getByRole('heading', {
+      level: 2,
+      name: seededEnglishCapabilitiesTitle,
+      exact: true,
+    })
+    .waitFor();
   await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
+  await page.getByText(seededEnglishCapabilitiesBody, { exact: true }).waitFor();
   await assertAxe(page);
 }
 
