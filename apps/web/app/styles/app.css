@@ -92,6 +92,31 @@
   max-width: 44rem;
 }
 
+
+.aks-writing-detail-page[data-writing-kind='note'] .aks-writing-article {
+  gap: var(--aks-space-6);
+}
+
+.aks-writing-detail-page[data-writing-kind='note'] .aks-writing-detail-header,
+.aks-writing-detail-page[data-writing-kind='note'] .aks-writing-reader,
+.aks-writing-detail-page[data-writing-kind='note'] .aks-writing-detail-footer {
+  width: min(100%, 44rem);
+}
+
+.aks-writing-detail-page[data-writing-kind='note'] .aks-writing-detail-title {
+  font-size: clamp(1.9rem, 1.55rem + 1.8vw, 3rem);
+}
+
+.aks-writing-note-editor {
+  display: grid;
+  gap: var(--aks-space-3);
+}
+
+.aks-writing-note-editor textarea {
+  min-height: 12rem;
+  resize: vertical;
+}
+
 @media (max-width: 48rem) {
   .aks-writing-detail-page {
     padding-block: var(--aks-space-7);
