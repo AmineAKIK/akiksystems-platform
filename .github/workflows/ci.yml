@@ -195,6 +195,9 @@ jobs:
       - name: Verify AKS-126 selected commercial proof
         run: pnpm db:verify-work-with-us-selected-proof
 
+      - name: Verify Sentinel remains bootstrapable after existing Systems
+        run: pnpm db:verify-sentinel-bootstrap
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
