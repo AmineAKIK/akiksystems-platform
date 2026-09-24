@@ -2411,6 +2411,118 @@ async function assertWritingAdminAndPublic(page) {
   }
 }
 
+async function assertLightweightNoteAuthoring(page) {
+  await page.goto(origin + '/admin/writings');
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', { level: 2, name: 'Create Writing', exact: true }),
+  });
+  await createCard.locator('select[name="kind"]').selectOption('note');
+  await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
+  await createCard.getByRole('button', { name: 'Create Writing', exact: true }).click();
+  await page.getByText('Writing created.', { exact: true }).waitFor();
+
+  const noteCard = () => page.locator('[data-writing-card]').last();
+  const items = [
+    {
+      locale: 'EN',
+      slug: 'attention-before-interface',
+      title: 'Attention before interface',
+      body: 'A short Note starts from one concrete observation.\n\nThe interface should not ask for structure that the thought does not need.',
+      path: '/en/writings/attention-before-interface',
+      alternateLocale: 'fr',
+      alternatePath: '/fr/ecrits/attention-avant-interface',
+    },
+    {
+      locale: 'FR',
+      slug: 'attention-avant-interface',
+      title: 'L’attention avant l’interface',
+      body: 'Une Note courte part d’une observation concrète.\n\nL’interface ne devrait pas imposer une structure dont la pensée n’a pas besoin.',
+      path: '/fr/ecrits/attention-avant-interface',
+      alternateLocale: 'en',
+      alternatePath: '/en/writings/attention-before-interface',
+    },
+  ];
+
+  for (const item of items) {
+    let fieldset = noteCard().getByRole('group', { name: item.locale, exact: true });
+    assert.equal(await fieldset.locator('textarea[name="summary"]').count(), 0);
+    assert.equal(await fieldset.locator('[data-writing-editor]').count(), 0);
+    assert.equal(await fieldset.locator('[data-writing-note-editor]').count(), 1);
+
+    await fieldset.locator('input[name="slug"]').fill(item.slug);
+    await fieldset.locator('input[name="title"]').fill(item.title);
+    await fieldset.locator('[data-writing-note-editor] textarea').fill(item.body);
+
+    const document = JSON.parse(
+      await fieldset.locator('input[name="editorDocument"]').inputValue(),
+    );
+    assert.equal(document.version, 1);
+    assert.equal(document.type, 'doc');
+    assert.equal(document.content.length, 2);
+    assert.ok(document.content.every((block) => block.type === 'paragraph'));
+
+    await fieldset
+      .getByRole('button', { name: 'Save ' + item.locale + ' draft', exact: true })
+      .click();
+    await page.getByText(item.locale + ' Writing draft saved.', { exact: true }).waitFor();
+
+    fieldset = noteCard().getByRole('group', { name: item.locale, exact: true });
+    const previewHref = await fieldset
+      .getByRole('link', { name: 'Preview ' + item.locale, exact: true })
+      .getAttribute('href');
+    const preview = await page.goto(origin + previewHref);
+    assert.equal(preview?.status(), 200);
+    await page.getByRole('heading', { level: 1, name: item.title, exact: true }).waitFor();
+    assert.equal(await page.locator('.aks-writing-detail-summary').count(), 0);
+    assert.equal(await page.locator('[data-reading-mode="note"]').count(), 1);
+
+    await page.goto(origin + '/admin/writings');
+    fieldset = noteCard().getByRole('group', { name: item.locale, exact: true });
+    await fieldset
+      .getByRole('button', { name: 'Publish ' + item.locale, exact: true })
+      .click();
+    await page.getByText(item.locale + ' Writing published.', { exact: true }).waitFor();
+  }
+
+  for (const item of items) {
+    const overview = item.locale === 'FR' ? '/fr/ecrits' : '/en/writings';
+    assert.equal((await page.goto(origin + overview))?.status(), 200);
+    const card = page.locator('[data-writing-feed] [data-writing-kind="note"]').filter({
+      has: page.getByRole('heading', { level: 3, name: item.title, exact: true }),
+    });
+    await card.waitFor();
+    assert.equal(await card.getAttribute('data-editorial-weight'), 'normal');
+    assert.ok((await card.innerText()).includes(item.body.replace(/\n\n/g, ' ')));
+
+    assert.equal((await page.goto(origin + item.path))?.status(), 200);
+    await page.getByRole('heading', { level: 1, name: item.title, exact: true }).waitFor();
+    assert.equal(await page.locator('.aks-writing-detail-summary').count(), 0);
+    assert.equal(await page.locator('[data-reading-mode="note"]').count(), 1);
+    assert.equal(
+      await page.locator('[data-long-form-reader] [data-writing-node="paragraph"]').count(),
+      2,
+    );
+    assert.equal(
+      await page
+        .locator('.aks-experience-meta a[hreflang="' + item.alternateLocale + '"]')
+        .getAttribute('href'),
+      item.alternatePath,
+    );
+    await assertAxe(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal((await page.goto(origin + item.path))?.status(), 200);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      true,
+    );
+    await assertAxe(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+  }
+}
+
 async function assertWritingCategories(page) {
   await page.goto(origin + '/admin/writings');
   assert.equal(
@@ -6571,6 +6683,7 @@ async function assertAxe(page) {
     await assertWritingTags(page);
     await assertWritingSystemRelations(page);
     await assertWritingsOverviewIsolation(browser);
+    await assertLightweightNoteAuthoring(page);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
