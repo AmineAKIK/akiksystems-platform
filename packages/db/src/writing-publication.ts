@@ -1,7 +1,9 @@
 import {
   parseWritingDocument,
   writingDocumentAssetIds,
+  writingDocumentExcerpt,
   writingDocumentFromPlainText,
+  writingDocumentToPlainText,
   type PlatformLocale,
   type WritingDocument,
   type WritingEditorialWeight,
@@ -303,6 +305,17 @@ export async function publishWritingLocalization(
     const document =
       parseWritingDocument(row.editor_document) ??
       writingDocumentFromPlainText(row.body);
+    const documentPlainText = writingDocumentToPlainText(document);
+    if (row.kind === 'note') {
+      if (documentPlainText === '') {
+        throw new Error('Writing Note content is required before publication.');
+      }
+      if (document.content.some((block) => block.type !== 'paragraph')) {
+        throw new Error(
+          'Writing Notes must use the lightweight paragraph-only editor before publication.',
+        );
+      }
+    }
     const documentAssetIds = writingDocumentAssetIds(document);
 
     const [categoryRows, tagRows, systemRows, assetRows] = await Promise.all([
@@ -377,8 +390,11 @@ export async function publishWritingLocalization(
       locale: input.locale,
       slug: requiredText(row.slug, 'slug'),
       title: requiredText(row.title, 'title'),
-      summary: requiredText(row.summary, 'summary'),
-      body: row.body?.trim() || null,
+      summary:
+        row.kind === 'note'
+          ? writingDocumentExcerpt(document)
+          : requiredText(row.summary, 'summary'),
+      body: documentPlainText || null,
       document,
       kind: row.kind,
       editorialWeight: row.editorial_weight,
