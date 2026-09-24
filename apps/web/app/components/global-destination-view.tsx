@@ -109,6 +109,9 @@ export function GlobalDestinationView({
             <section
               aria-labelledby={`${destinationId}-system-references`}
               className="aks-related-system-references"
+              data-work-with-us-proof={
+                destinationId === 'work-with-us' ? '' : undefined
+              }
             >
               <div className="aks-profile-section-heading">
                 <Heading
@@ -116,12 +119,22 @@ export function GlobalDestinationView({
                   level={2}
                   size="sm"
                 >
-                  {locale === 'fr' ? 'Systèmes liés' : 'Related Systems'}
+                  {destinationId === 'work-with-us'
+                    ? locale === 'fr'
+                      ? 'Preuves sélectionnées'
+                      : 'Selected proof'
+                    : locale === 'fr'
+                      ? 'Systèmes liés'
+                      : 'Related Systems'}
                 </Heading>
                 <Text size="sm" tone="muted">
-                  {locale === 'fr'
-                    ? 'Références publiées réutilisant le même contrat de preuve.'
-                    : 'Published references using the same evidence contract.'}
+                  {destinationId === 'work-with-us'
+                    ? locale === 'fr'
+                      ? 'Une sélection volontairement courte de Systems publiés. Chaque carte renvoie vers le System complet, son périmètre et ses limites.'
+                      : 'A deliberately short selection of published Systems. Each card links to the complete System, its scope, and its limits.'
+                    : locale === 'fr'
+                      ? 'Références publiées réutilisant le même contrat de preuve.'
+                      : 'Published references using the same evidence contract.'}
                 </Text>
               </div>
               <div className="aks-system-reference-grid">

@@ -382,3 +382,7 @@ export type {
   BootstrapWorkWithUsCollaborationResult,
   BootstrapWorkWithUsOpenSituationsResult,
 } from './work-with-us-bootstrap.js';
+export {
+  listWorkWithUsProofReferences,
+  workWithUsProofSystemSlugs,
+} from './work-with-us-proof.js';

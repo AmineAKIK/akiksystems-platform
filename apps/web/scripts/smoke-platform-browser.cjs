@@ -1972,6 +1972,34 @@ async function assertWorkWithUsContentAdministration(page) {
   await page.getByText(seededEnglishSituationsBody, { exact: true }).waitFor();
   await page.getByText(seededEnglishCapabilitiesBody, { exact: true }).waitFor();
   await page.getByText(seededEnglishCollaborationBody, { exact: true }).waitFor();
+  const englishProof = page.locator('[data-work-with-us-proof]');
+  await englishProof
+    .getByRole('heading', { level: 2, name: 'Selected proof', exact: true })
+    .waitFor();
+  assert.equal(
+    await englishProof.locator('.aks-system-reference').count(),
+    2,
+    'AKS-126 must keep commercial proof deliberately capped at two published Systems.',
+  );
+  await englishProof
+    .getByRole('heading', { level: 3, name: 'ProtoCap', exact: true })
+    .waitFor();
+  await englishProof
+    .getByRole('heading', { level: 3, name: 'Tugères', exact: true })
+    .waitFor();
+  assert.equal(
+    await englishProof.getByText('Oria Nutrition', { exact: true }).count(),
+    0,
+    'AKS-126 must not reproduce the Systems library on Work with us.',
+  );
+  assert.equal(
+    await englishProof.locator('a[href="/en/systems/protocap"]').count(),
+    1,
+  );
+  assert.equal(
+    await englishProof.locator('a[href="/en/systems/tugeres"]').count(),
+    1,
+  );
   assert.equal(
     await page.locator('main form, main input, main textarea').count(),
     0,
@@ -2022,6 +2050,37 @@ async function assertWorkWithUsContentAdministration(page) {
   await page.getByText(seededFrenchSituationsBody, { exact: true }).waitFor();
   await page.getByText(seededFrenchCapabilitiesBody, { exact: true }).waitFor();
   await page.getByText(seededFrenchCollaborationBody, { exact: true }).waitFor();
+  const frenchProof = page.locator('[data-work-with-us-proof]');
+  await frenchProof
+    .getByRole('heading', {
+      level: 2,
+      name: 'Preuves sélectionnées',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await frenchProof.locator('.aks-system-reference').count(),
+    2,
+    'AKS-126 must keep the French commercial proof selection capped too.',
+  );
+  await frenchProof
+    .getByRole('heading', { level: 3, name: 'ProtoCap', exact: true })
+    .waitFor();
+  await frenchProof
+    .getByRole('heading', { level: 3, name: 'Tugères', exact: true })
+    .waitFor();
+  assert.equal(
+    await frenchProof.getByText('Oria Nutrition', { exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await frenchProof.locator('a[href="/fr/systems/protocap"]').count(),
+    1,
+  );
+  assert.equal(
+    await frenchProof.locator('a[href="/fr/systems/tugeres"]').count(),
+    1,
+  );
   await assertAxe(page);
 
   await page.goto(origin + '/admin');
@@ -8353,7 +8412,6 @@ async function assertAxe(page) {
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
-    await assertWorkWithUsContentAdministration(page);
     await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();
@@ -8470,6 +8528,7 @@ async function assertAxe(page) {
     bootstrapL4QualificationSystems();
     bootstrapL6RendreAttentionEssay();
 
+    await assertWorkWithUsContentAdministration(page);
     await assertSystemsOverview(browser);
     await assertRendreAttentionEssay(browser);
     await assertProtoCapGuidedDemo(browser);
