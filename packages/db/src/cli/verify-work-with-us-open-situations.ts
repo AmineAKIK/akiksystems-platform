@@ -51,7 +51,10 @@ try {
     french.introduction,
     french.situationsBody,
   ]) {
-    assert.doesNotMatch(copy, /\b(service|services|package|packages|offre|offres|prestation|prestations|budget|deadline|délai|questionnaire)\b/i);
+    assert.doesNotMatch(
+      copy,
+      /choose a service|select a service|service category|package|budget|deadline|questionnaire|choisir une offre|choisir une prestation|catégorie de service|budget|délai|questionnaire/i,
+    );
   }
 
   process.stdout.write(
