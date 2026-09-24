@@ -1717,8 +1717,22 @@ async function submitWritingAdminAction(page, button) {
   assert.equal(
     response.status(),
     200,
-    'Writing admin actions must complete successfully before the smoke inspects revalidated state.',
+    'Writing admin actions must complete successfully before the smoke inspects persisted state.',
   );
+
+  const reload = await page.goto(origin + '/admin/writings');
+  assert.equal(
+    reload?.status(),
+    200,
+    'Writing admin state must reload successfully after a persisted mutation.',
+  );
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writings administration',
+      exact: true,
+    })
+    .waitFor();
 }
 
 async function waitForWritingFieldValue(locator, expected, message) {
