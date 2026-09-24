@@ -14,10 +14,10 @@ import type { Route } from './+types/writings-fr';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'fr');
-  const params = new URL(request.url).searchParams;
-  const searchQuery = normalizeWritingSearchQuery(params.get('q'));
+  const searchParams = new URL(request.url).searchParams;
+  const searchQuery = normalizeWritingSearchQuery(searchParams.get('q'));
   const published = await listPublishedWritings(appDb, locale);
-  const resolvedFilters = resolveWritingFilters(published, params);
+  const resolvedFilters = resolveWritingFilters(published, searchParams);
   const searched =
     searchQuery === ''
       ? published
