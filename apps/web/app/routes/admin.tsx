@@ -1,4 +1,4 @@
-import { writeAdminAuditEvent } from '@akiksystems/db';
+import { publishCommercialPageLocalization, writeAdminAuditEvent } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
@@ -18,6 +18,42 @@ function field(form: FormData, name: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function optionalField(form: FormData, name: string): string | null {
+  const value = field(form, name);
+  return value === '' ? null : value;
+}
+
+function requiredCommercialLocale(form: FormData): 'en' | 'fr' {
+  const locale = field(form, 'locale');
+  if (locale !== 'en' && locale !== 'fr') {
+    throw new Response('Invalid commercial-page locale.', { status: 400 });
+  }
+  return locale;
+}
+
+async function ensureCommercialPage() {
+  const existing = await appDb
+    .selectFrom('work_with_us_pages')
+    .select('id')
+    .where('singleton_key', '=', 'public')
+    .executeTakeFirst();
+
+  if (existing !== undefined) return existing;
+
+  const id = randomUUID();
+  await appDb
+    .insertInto('work_with_us_pages')
+    .values({ id, singleton_key: 'public' })
+    .onConflict((conflict) => conflict.column('singleton_key').doNothing())
+    .execute();
+
+  return appDb
+    .selectFrom('work_with_us_pages')
+    .select('id')
+    .where('singleton_key', '=', 'public')
+    .executeTakeFirstOrThrow();
+}
+
 function requiredSystemId(form: FormData): string {
   const systemId = field(form, 'systemId');
 
@@ -31,6 +67,21 @@ function requiredSystemId(form: FormData): string {
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await requireAdminSession(request);
   const db = appDb;
+
+  const commercialPage = await ensureCommercialPage();
+
+  const [commercialLocalizations, commercialPublications] = await Promise.all([
+    db
+      .selectFrom('work_with_us_localizations')
+      .selectAll()
+      .where('page_id', '=', commercialPage.id)
+      .execute(),
+    db
+      .selectFrom('work_with_us_publications')
+      .select(['locale', 'published_at', 'updated_at'])
+      .where('page_id', '=', commercialPage.id)
+      .execute(),
+  ]);
 
   const systems = await db
     .selectFrom('systems')
@@ -57,6 +108,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     email: session.user.email,
     twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
     systems,
+    commercial: {
+      pageId: commercialPage.id,
+      localizations: commercialLocalizations,
+      publications: commercialPublications,
+    },
   };
 }
 
