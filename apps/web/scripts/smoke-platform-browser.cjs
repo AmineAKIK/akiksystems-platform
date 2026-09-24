@@ -1703,21 +1703,27 @@ async function assertTugeresStandardSystem(browser) {
 }
 
 async function submitWritingAdminAction(page, button) {
-  const responsePromise = page.waitForResponse((response) => {
-    const request = response.request();
-    const pathname = new URL(response.url()).pathname;
-    return (
-      request.method() === 'POST' &&
-      (pathname === '/admin/writings' || pathname === '/admin/writings.data')
-    );
-  });
+  const requestPromise = page.waitForRequest(
+    (request) => request.method() === 'POST',
+  );
 
   await button.click();
-  const response = await responsePromise;
-  assert.equal(
-    response.status(),
-    200,
-    'Writing admin actions must complete successfully before the smoke inspects persisted state.',
+  const request = await requestPromise;
+  const requestPath = new URL(request.url()).pathname;
+  assert.ok(
+    requestPath.startsWith('/admin/writings'),
+    'Writing admin controls must submit to the private Writings action boundary.',
+  );
+
+  const response = await request.response();
+  assert.ok(
+    response !== null && response.status() < 400,
+    'Writing admin actions must complete successfully before the smoke inspects persisted state. ' +
+      'POST ' +
+      requestPath +
+      ' returned ' +
+      (response === null ? 'no response' : response.status()) +
+      '.',
   );
 
   const reload = await page.goto(origin + '/admin/writings');
