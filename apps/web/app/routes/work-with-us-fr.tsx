@@ -1,4 +1,7 @@
-import { getPublishedCommercialPage } from '@akiksystems/db';
+import {
+  getPublishedCommercialPage,
+  listWorkWithUsProofReferences,
+} from '@akiksystems/db';
 import { useLoaderData, useParams } from 'react-router';
 
 import { GlobalDestinationView } from '../components/global-destination-view';
@@ -9,9 +12,12 @@ import type { Route } from './+types/work-with-us-fr';
 
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'fr');
-  return {
-    content: await getPublishedCommercialPage(appDb, locale),
-  };
+  const [content, systemReferences] = await Promise.all([
+    getPublishedCommercialPage(appDb, locale),
+    listWorkWithUsProofReferences(appDb, locale),
+  ]);
+
+  return { content, systemReferences };
 }
 
 export function meta() {
@@ -21,13 +27,14 @@ export function meta() {
 export default function GlobalDestinationRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'fr');
-  const { content } = useLoaderData<typeof loader>();
+  const { content, systemReferences } = useLoaderData<typeof loader>();
 
   return (
     <GlobalDestinationView
       commercialContent={content}
       destinationId="work-with-us"
       locale={locale}
+      systemReferences={systemReferences}
     />
   );
 }
