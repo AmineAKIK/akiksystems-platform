@@ -17,7 +17,10 @@ import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
-import { WritingBodyEditor } from '../components/writing-body-editor';
+import {
+  WritingBodyEditor,
+  WritingNoteEditor,
+} from '../components/writing-body-editor';
 import { requireAdminSession } from '../lib/admin.server';
 import {
   assetExtensionForMimeType,
@@ -1198,8 +1201,9 @@ export default function AdminWritingsRoute() {
               <Text tone="muted">
                 One Writing entity serves Notes, Articles, and Essays, and all
                 three publish into the same public editorial feed. Editorial
-                weight is modeled but its visual treatment remains code-owned
-                by the next Writings step rather than configurable here.
+                weight maps to code-owned presentation rather than configurable
+                layout. Notes use a lightweight paragraph-only authoring path;
+                Articles and Essays keep the controlled rich-content editor.
               </Text>
               <Text size="sm" tone="muted">
                 AKS-106 defines a versioned rich-content vocabulary for
@@ -1666,28 +1670,45 @@ export default function AdminWritingsRoute() {
                               name="title"
                             />
                           </label>
-                          <label>
-                            <span>Summary</span>
-                            <textarea
-                              defaultValue={summary ?? ''}
-                              name="summary"
-                              rows={3}
-                            />
-                          </label>
-                          <WritingBodyEditor
-                            assets={writing.assets.map((asset) => ({
-                              id: asset.id,
-                              label: asset.original_filename,
-                              altText:
-                                locale === 'en' ? asset.alt_en : asset.alt_fr,
-                              caption:
-                                locale === 'en'
-                                  ? asset.caption_en
-                                  : asset.caption_fr,
-                            }))}
-                            initialDocument={editorDocument}
-                            locale={locale}
-                          />
+                          {writing.kind === 'note' ? (
+                            <>
+                              <input name="summary" type="hidden" value="" />
+                              <Text size="sm" tone="muted">
+                                {locale === 'fr'
+                                  ? 'L’extrait du flux est dérivé automatiquement du corps de la Note.'
+                                  : 'The feed excerpt is derived automatically from the Note body.'}
+                              </Text>
+                              <WritingNoteEditor
+                                initialDocument={editorDocument}
+                                locale={locale}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <label>
+                                <span>Summary</span>
+                                <textarea
+                                  defaultValue={summary ?? ''}
+                                  name="summary"
+                                  rows={3}
+                                />
+                              </label>
+                              <WritingBodyEditor
+                                assets={writing.assets.map((asset) => ({
+                                  id: asset.id,
+                                  label: asset.original_filename,
+                                  altText:
+                                    locale === 'en' ? asset.alt_en : asset.alt_fr,
+                                  caption:
+                                    locale === 'en'
+                                      ? asset.caption_en
+                                      : asset.caption_fr,
+                                }))}
+                                initialDocument={editorDocument}
+                                locale={locale}
+                              />
+                            </>
+                          )}
                           <Button type="submit">
                             Save {locale.toUpperCase()} draft
                           </Button>
