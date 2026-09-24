@@ -1798,6 +1798,17 @@ async function submitWritingAdminAction(page, button) {
     .waitFor();
 }
 
+async function ensureCheckboxChecked(checkbox, message) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (await checkbox.isChecked()) return;
+    await checkbox.click();
+    await sleep(100);
+    if (await checkbox.isChecked()) return;
+  }
+
+  assert.equal(await checkbox.isChecked(), true, message);
+}
+
 async function waitForWritingFieldValue(locator, expected, message) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     if ((await locator.inputValue()) === expected) return;
@@ -4283,12 +4294,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Categories',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'Engineering practice',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 Category relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
@@ -4301,12 +4313,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Tags',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'Software architecture',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 Tag relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
@@ -4319,12 +4332,13 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'Systems',
     exact: true,
   });
-  await relationGroup
-    .getByRole('checkbox', {
+  await ensureCheckboxChecked(
+    relationGroup.getByRole('checkbox', {
       name: 'ProtoCap',
       exact: true,
-    })
-    .check();
+    }),
+    'AKS-119 System relation must remain checked before save.',
+  );
   await submitWritingAdminAction(
     page,
     relationGroup.getByRole('button', {
