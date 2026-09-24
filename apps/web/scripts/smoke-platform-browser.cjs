@@ -4233,12 +4233,6 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     .locator('textarea[name="captionEn"]')
     .fill(assetCaption);
   await upload
-    .locator('input[name="altFr"]')
-    .fill('Un schéma de frontière reliant signal, état, preuve et décision');
-  await upload
-    .locator('textarea[name="captionFr"]')
-    .fill('Schéma de frontière utilisé pendant la qualification AKS-119.');
-  await upload
     .getByRole('button', {
       name: 'Upload Writing image',
       exact: true,
@@ -4251,10 +4245,36 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     )
     .waitFor();
   assert.equal((await page.goto(origin + '/admin/writings'))?.status(), 200);
-  await articleCard()
-    .locator('[data-writing-assets]')
-    .getByText(assetName, { exact: true })
-    .waitFor();
+  const persistedAssetSection = articleCard().locator('[data-writing-assets]');
+  await persistedAssetSection.getByText(assetName, { exact: true }).waitFor();
+  const persistedAsset = persistedAssetSection
+    .locator('.aks-admin-asset')
+    .filter({ hasText: assetName });
+  assert.equal(
+    await persistedAsset.locator('input[name="altEn"]').inputValue(),
+    assetAlt,
+    'AKS-121 must preserve the EN-only alt text entered during upload.',
+  );
+  assert.equal(
+    await persistedAsset.locator('input[name="altFr"]').inputValue(),
+    '',
+    'AKS-121 must allow contextual media to remain untranslated until FR actually uses it.',
+  );
+
+  const frenchFieldset = articleCard().getByRole('group', {
+    name: 'FR',
+    exact: true,
+  });
+  assert.equal(
+    await frenchFieldset
+      .getByRole('button', {
+        name: 'Insérer · ' + assetName,
+        exact: true,
+      })
+      .isDisabled(),
+    true,
+    'FR authoring must still require FR alt text before the image can be inserted.',
+  );
 
   fieldset = articleCard().getByRole('group', {
     name: 'EN',
