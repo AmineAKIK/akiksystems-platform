@@ -21,6 +21,7 @@ const testAssetRoot = '/tmp/akiksystems-browser-assets';
 fs.rmSync(testAssetRoot, { force: true, recursive: true });
 fs.mkdirSync(testAssetRoot, { recursive: true });
 process.env.ASSET_STORAGE_TEST_ROOT = testAssetRoot;
+let stdout = '';
 let stderr = '';
 
 const server = spawn(process.execPath, ['server.js'], {
@@ -32,6 +33,10 @@ const server = spawn(process.execPath, ['server.js'], {
     BETTER_AUTH_URL: origin,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
+});
+
+server.stdout.on('data', (chunk) => {
+  stdout += chunk.toString();
 });
 
 server.stderr.on('data', (chunk) => {
@@ -1778,8 +1783,10 @@ async function submitWritingAdminAction(page, button) {
         (identity.locale === null ? '' : ' / ' + identity.locale.toUpperCase()) +
         '. Response: ' +
         responseBody.slice(0, 800) +
+        '. Server stdout tail: ' +
+        stdout.slice(-4000) +
         '. Server stderr tail: ' +
-        stderr.slice(-1600),
+        stderr.slice(-2000),
     );
   }
 
