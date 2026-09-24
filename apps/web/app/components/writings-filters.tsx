@@ -14,9 +14,11 @@ function kindLabel(value: string, locale: Locale): string {
 export function WritingsFilters({
   locale,
   model,
+  searchQuery,
 }: {
   locale: Locale;
   model: WritingFilterModel;
+  searchQuery: string;
 }) {
   if (!model.enabled) return null;
 
@@ -33,6 +35,10 @@ export function WritingsFilters({
     model.selection.category !== null ||
     model.selection.tag !== null;
   const overviewHref = locale === 'fr' ? '/fr/ecrits' : '/en/writings';
+  const clearFiltersHref =
+    searchQuery === ''
+      ? overviewHref
+      : `${overviewHref}?q=${encodeURIComponent(searchQuery)}`;
 
   return (
     <section
@@ -52,6 +58,9 @@ export function WritingsFilters({
       </div>
 
       <form action={overviewHref} className="aks-writings-filters-form" method="get">
+        {searchQuery !== '' ? (
+          <input name="q" type="hidden" value={searchQuery} />
+        ) : null}
         {showKinds ? (
           <label className="aks-writings-filter-field">
             <span>{locale === 'fr' ? 'Type' : 'Type'}</span>
@@ -120,7 +129,7 @@ export function WritingsFilters({
             {locale === 'fr' ? 'Appliquer' : 'Apply filters'}
           </Button>
           {hasSelection ? (
-            <Link href={overviewHref}>
+            <Link href={clearFiltersHref}>
               {locale === 'fr' ? 'Effacer les filtres' : 'Clear filters'}
             </Link>
           ) : null}
