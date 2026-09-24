@@ -62,7 +62,7 @@ These are recorded findings, not scope silently added to AKS-119:
 | `codeBlock.attrs.language` exists in the schema/renderer but has no admin control. | Code can be authored, but syntax language metadata cannot be set through the editor. | Non-blocking; record for the L6 architecture review. |
 | No explicit move/delete controls exist for rich blocks. | Reordering or removing blocks relies on native ProseMirror keyboard editing rather than visible controls. | Usable, but less discoverable than the rest of the admin workflow. |
 | Gallery insertion uses the first localized assets (up to 12) rather than an explicit selection/order step. | A Writing with many images cannot compose a precise gallery from the toolbar alone. | Not needed by the qualified Article; keep as a documented editor limitation. |
-| Writing image upload currently requires both EN and FR alt text up front. | A one-locale Article must still provide accessibility metadata for the other locale before inserting media. | The Article can still be authored honestly in EN only, but this is avoidable locale coupling in the media workflow. |
+| Writing image upload required both EN and FR alt text up front. | A one-locale Article had to provide accessibility metadata for the unused locale before inserting media. | Resolved by AKS-121: media metadata is now locale-independent and alt text is required only when that locale uses the image. |
 
 None of these findings required bypassing the admin for the representative
 Article. They should be confronted during AKS-121 rather than expanded
