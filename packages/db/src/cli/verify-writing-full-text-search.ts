@@ -17,7 +17,7 @@ const titleMatch = randomUUID();
 const bodyMatch = randomUUID();
 const draftOnly = randomUUID();
 const frenchMatch = randomUUID();
-const ids = [titleMatch, bodyMatch, draftOnly, frenchMatch];
+const ids: string[] = [titleMatch, bodyMatch, draftOnly, frenchMatch];
 
 async function createWriting(input: {
   id: string;
