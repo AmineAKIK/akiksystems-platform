@@ -461,6 +461,99 @@ export default function Admin() {
             </div>
           </section>
 
+          <section className="aks-admin-card" id="admin-work-with-us">
+            <div className="aks-proof-stack">
+              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                L7 · Work with us
+              </Text>
+              <Heading level={2} size="sm">
+                Localized page copy
+              </Heading>
+              <Text tone="muted">
+                The public section order remains code-defined. This surface edits
+                localized copy and publishes each locale independently.
+              </Text>
+
+              {(['en', 'fr'] as const).map((locale) => {
+                const localized = data.commercial.localizations.find(
+                  (candidate) => candidate.locale === locale,
+                );
+                const publication = data.commercial.publications.find(
+                  (candidate) => candidate.locale === locale,
+                );
+
+                return (
+                  <div className="aks-admin-card" key={locale}>
+                    <div className="aks-proof-stack">
+                      <Heading level={3} size="sm">
+                        {locale === 'en' ? 'English' : 'Français'}
+                      </Heading>
+                      <Text size="sm" tone="muted">
+                        {localized?.editorial_state ?? 'not started'} ·{' '}
+                        {publication === undefined
+                          ? 'No public snapshot'
+                          : 'Public snapshot available'}
+                      </Text>
+
+                      <Form className="aks-admin-form" method="post">
+                        <input
+                          name="_intent"
+                          type="hidden"
+                          value="save-commercial-localization"
+                        />
+                        <input name="locale" type="hidden" value={locale} />
+                        <label>
+                          <span>Page title</span>
+                          <input
+                            defaultValue={localized?.title ?? ''}
+                            maxLength={140}
+                            name="title"
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>Introduction</span>
+                          <textarea
+                            defaultValue={localized?.introduction ?? ''}
+                            maxLength={700}
+                            name="introduction"
+                            required
+                            rows={4}
+                          />
+                        </label>
+                        <Button type="submit">
+                          Save {locale.toUpperCase()} draft
+                        </Button>
+                      </Form>
+
+                      <Form method="post">
+                        <input
+                          name="_intent"
+                          type="hidden"
+                          value="publish-commercial-localization"
+                        />
+                        <input name="locale" type="hidden" value={locale} />
+                        <Button
+                          disabled={
+                            localized?.title === null ||
+                            localized?.title === undefined ||
+                            localized?.introduction === null ||
+                            localized?.introduction === undefined
+                          }
+                          emphasis="quiet"
+                          type="submit"
+                        >
+                          Publish {locale.toUpperCase()}
+                        </Button>
+                      </Form>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="aks-admin-card">
             <div className="aks-proof-stack">
               <Heading level={2} size="sm">
