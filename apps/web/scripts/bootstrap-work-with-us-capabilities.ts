@@ -18,7 +18,7 @@ try {
           .join(', ')}`;
 
   process.stdout.write(
-    `AKS-124 Work with us capabilities bootstrap reused page ${result.pageId}; ${published}${preserved}.\n`,
+    `AKS-124 Work with us capabilities bootstrap ${result.createdPage ? 'created' : 'reused'} page ${result.pageId}; ${published}${preserved}.\n`,
   );
 } finally {
   await appDb.destroy();
