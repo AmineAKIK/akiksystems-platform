@@ -274,6 +274,17 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-121 closes the L6 architecture review using the real authoring and mobile
+evidence from AKS-119/120. The review keeps one Writing domain, publication
+snapshots as public truth, schema v1 as the bounded semantic document contract,
+and responsive reading behavior in code. It deliberately does not introduce a
+schema v2, tables, page-builder controls, or speculative inline-mark framework.
+The concrete refinement is locale-independent contextual media: EN and FR alt
+text/captions can now be authored independently, while insertion/save/publication
+still require alt text in the locale that actually uses the image. The complete
+decision record lives in
+`docs/qualification/aks-121-writings-architecture-review.md`.
+
 AKS-120 qualifies long-form mobile reading beyond a simple overflow check.
 Chromium exercises the real 25-page French Essay and the rich admin-authored
 Article from AKS-119 at 320, 390, and 430 pixel viewport widths. The gate checks
