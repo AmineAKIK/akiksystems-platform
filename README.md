@@ -274,6 +274,17 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-119 qualifies the Writing admin as a real authoring path rather than only
+a collection of isolated controls. CI creates a blank ARTICLE/FEATURED Writing,
+types a representative engineering article through the visible Tiptap UI,
+uploads and inserts contextual media, assigns the existing Category, Tag, and
+ProtoCap System context, previews it, publishes EN only, then verifies the same
+content in SSR, desktop Chromium, and a 390 × 844 mobile viewport. The
+qualification never writes the hidden editor payload, calls a content bootstrap,
+or mutates PostgreSQL directly. Detailed evidence and the editor capability gaps
+observed during the exercise live in
+`docs/qualification/aks-119-real-writing-authoring.md`.
+
 AKS-118 gives every published Writing detail a first-class localized SEO
 contract. The publication snapshot drives title/description, canonical URL,
 published-only hreflang alternates, Open Graph/Twitter metadata, Article
