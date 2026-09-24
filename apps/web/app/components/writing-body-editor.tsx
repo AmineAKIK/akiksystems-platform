@@ -1,9 +1,13 @@
+import {
+  writingDocumentFromPlainText,
+  writingDocumentToPlainText,
+} from '@akiksystems/core';
 import { Node, type JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
 import { EditorContent, useEditor } from '@tiptap/react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   parseWritingEditorDocument,
@@ -501,6 +505,46 @@ export function WritingBodyEditor({
         {locale === 'fr'
           ? 'Les contrôles insèrent uniquement les blocs du schéma v1. Aucun HTML brut, style libre, colonne ou template n’est disponible.'
           : 'Controls insert only schema v1 blocks. Raw HTML, free styling, columns, and templates are unavailable.'}
+      </p>
+    </div>
+  );
+}
+
+
+export function WritingNoteEditor({
+  initialDocument,
+  locale,
+}: {
+  initialDocument: WritingEditorDocument;
+  locale: 'en' | 'fr';
+}) {
+  const [body, setBody] = useState(() =>
+    writingDocumentToPlainText(initialDocument),
+  );
+  const document = writingDocumentFromPlainText(body);
+  const label = locale === 'fr' ? 'Corps de la note' : 'Note body';
+
+  return (
+    <div className="aks-writing-note-editor" data-writing-note-editor>
+      <label>
+        <span>{label}</span>
+        <textarea
+          aria-label={label}
+          onChange={(event) => setBody(event.currentTarget.value)}
+          rows={8}
+          value={body}
+        />
+      </label>
+      <input
+        name="editorDocument"
+        type="hidden"
+        value={JSON.stringify(document)}
+      />
+      <input name="body" type="hidden" value={body} />
+      <p className="aks-writing-editor-note">
+        {locale === 'fr'
+          ? 'Format court : écris directement la note. Les paragraphes suffisent ; aucun résumé, bloc riche, média ou structure long-form n’est requis.'
+          : 'Short-form path: write the Note directly. Paragraphs are enough; no summary, rich block, media, or long-form structure is required.'}
       </p>
     </div>
   );
