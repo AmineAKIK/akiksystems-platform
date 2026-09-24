@@ -3941,6 +3941,447 @@ async function assertWritingSystemRelations(page) {
   }
 }
 
+async function assertRealArticleAuthoringFromAdmin(page) {
+  const title = 'From ambiguity to executable boundaries';
+  const slug = 'from-ambiguity-to-executable-boundaries';
+  const publicPath = '/en/writings/' + slug;
+  const summary =
+    'A practical article on turning unclear operational signals into a bounded, inspectable software system.';
+  const intro =
+    'A useful system starts by reducing ambiguity before it adds interface.';
+  const sectionHeading = 'Start from observable work';
+  const sectionParagraph =
+    'Watch what people actually do, identify the evidence they rely on, and separate recurring signals from assumptions.';
+  const bulletItems = [
+    'Capture the evidence already present in the activity.',
+    'Name the decision that evidence is supposed to support.',
+  ];
+  const subsectionHeading = 'Make the boundary explicit';
+  const orderedItems = [
+    'Describe one concrete state transition.',
+    'Keep ownership of semantics in code.',
+    'Publish only evidence you can support.',
+  ];
+  const quotation =
+    'A system becomes useful when its boundary is easier to inspect than the ambiguity it replaces.';
+  const code = 'signal -> state -> evidence -> decision';
+  const callout =
+    'Do not automate an ambiguity you have not yet described.';
+  const assetName = 'aks-119-boundary.png';
+  const assetAlt =
+    'A boundary sketch connecting signal, state, evidence and decision';
+  const assetCaption =
+    'Boundary sketch used while authoring the AKS-119 article from the admin.';
+
+  await page.goto(origin + '/admin/writings');
+
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Writing',
+      exact: true,
+    }),
+  });
+  await createCard.locator('select[name="kind"]').selectOption('article');
+  await createCard
+    .locator('select[name="editorialWeight"]')
+    .selectOption('featured');
+  await submitWritingAdminAction(
+    page,
+    createCard.getByRole('button', { name: 'Create Writing', exact: true }),
+  );
+
+  const createdCard = () =>
+    page
+      .locator('[data-writing-card]')
+      .filter({ hasText: 'ARTICLE · FEATURED' })
+      .last();
+
+  let fieldset = createdCard().getByRole('group', {
+    name: 'EN',
+    exact: true,
+  });
+  await fieldset.locator('input[name="slug"]').fill(slug);
+  await fieldset.locator('input[name="title"]').fill(title);
+  await fieldset.locator('textarea[name="summary"]').fill(summary);
+  await fieldset
+    .locator('[data-writing-editor][data-editor-ready="true"]')
+    .waitFor();
+
+  const editor = fieldset.locator(
+    '[data-writing-editor] [contenteditable="true"]',
+  );
+  await editor.fill(intro);
+
+  const insertBlockWithText = async (buttonName, text) => {
+    await fieldset
+      .getByRole('button', { name: buttonName, exact: true })
+      .click();
+    await page.keyboard.press('Shift+Home');
+    await page.keyboard.insertText(text);
+  };
+
+  await insertBlockWithText('H2 heading', sectionHeading);
+  await page.keyboard.press('End');
+  await page.keyboard.press('Enter');
+  await page.keyboard.insertText(sectionParagraph);
+
+  await insertBlockWithText('List', bulletItems[0]);
+  await page.keyboard.press('End');
+  await page.keyboard.press('Enter');
+  await page.keyboard.insertText(bulletItems[1]);
+
+  await insertBlockWithText('H3 heading', subsectionHeading);
+
+  await insertBlockWithText('Steps', orderedItems[0]);
+  for (const item of orderedItems.slice(1)) {
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.insertText(item);
+  }
+
+  await insertBlockWithText('Quote', quotation);
+  await insertBlockWithText('Code', code);
+  await insertBlockWithText('Callout', callout);
+
+  const authoredDocument = JSON.parse(
+    await fieldset.locator('input[name="editorDocument"]').inputValue(),
+  );
+  const authoredJson = JSON.stringify(authoredDocument);
+  for (const authoredText of [
+    intro,
+    sectionHeading,
+    sectionParagraph,
+    ...bulletItems,
+    subsectionHeading,
+    ...orderedItems,
+    quotation,
+    code,
+    callout,
+  ]) {
+    assert.ok(
+      authoredJson.includes(authoredText),
+      'AKS-119 authoring must persist real text entered through the visible editor.',
+    );
+  }
+  for (const nodeType of [
+    'heading',
+    'bulletList',
+    'orderedList',
+    'blockquote',
+    'codeBlock',
+    'callout',
+  ]) {
+    assert.ok(
+      authoredDocument.content.some((node) => node.type === nodeType),
+      'AKS-119 article must exercise the controlled ' + nodeType + ' block.',
+    );
+  }
+
+  await submitWritingAdminAction(
+    page,
+    fieldset.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+  );
+
+  const articleCard = () =>
+    page.locator('[data-writing-card]').filter({
+      has: page.getByRole('heading', {
+        level: 2,
+        name: title,
+        exact: true,
+      }),
+    });
+
+  fieldset = articleCard().getByRole('group', {
+    name: 'EN',
+    exact: true,
+  });
+  const persistedDocument = JSON.parse(
+    await fieldset.locator('input[name="editorDocument"]').inputValue(),
+  );
+  assert.equal(
+    JSON.stringify(persistedDocument).includes(callout),
+    true,
+    'The real Article document must survive a server-backed admin round-trip.',
+  );
+
+  const assetSection = articleCard().locator('[data-writing-assets]');
+  const upload = assetSection.locator('form[data-writing-asset-upload]');
+  await upload.locator('input[name="file"]').setInputFiles({
+    name: assetName,
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8YQAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
+  await upload.locator('input[name="altEn"]').fill(assetAlt);
+  await upload
+    .locator('textarea[name="captionEn"]')
+    .fill(assetCaption);
+  await upload
+    .locator('input[name="altFr"]')
+    .fill('Un schéma de frontière reliant signal, état, preuve et décision');
+  await upload
+    .locator('textarea[name="captionFr"]')
+    .fill('Schéma de frontière utilisé pendant la qualification AKS-119.');
+  await submitWritingAdminAction(
+    page,
+    upload.getByRole('button', {
+      name: 'Upload Writing image',
+      exact: true,
+    }),
+  );
+
+  fieldset = articleCard().getByRole('group', {
+    name: 'EN',
+    exact: true,
+  });
+  await fieldset
+    .locator('[data-writing-editor][data-editor-ready="true"]')
+    .waitFor();
+  const reloadedEditor = fieldset.locator(
+    '[data-writing-editor] [contenteditable="true"]',
+  );
+  await reloadedEditor.click();
+  await reloadedEditor.press('Control+End');
+  await fieldset
+    .getByRole('button', {
+      name: 'Insert · ' + assetName,
+      exact: true,
+    })
+    .click();
+
+  const mediaDocument = JSON.parse(
+    await fieldset.locator('input[name="editorDocument"]').inputValue(),
+  );
+  assert.ok(
+    mediaDocument.content.some((node) => node.type === 'image'),
+    'AKS-119 real authoring must insert contextual media through the editor UI.',
+  );
+  await submitWritingAdminAction(
+    page,
+    fieldset.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+  );
+
+  let relationGroup = articleCard().getByRole('group', {
+    name: 'Categories',
+    exact: true,
+  });
+  await relationGroup
+    .getByRole('checkbox', {
+      name: 'Engineering practice',
+      exact: true,
+    })
+    .check();
+  await submitWritingAdminAction(
+    page,
+    relationGroup.getByRole('button', {
+      name: 'Save categories',
+      exact: true,
+    }),
+  );
+
+  relationGroup = articleCard().getByRole('group', {
+    name: 'Tags',
+    exact: true,
+  });
+  await relationGroup
+    .getByRole('checkbox', {
+      name: 'Software architecture',
+      exact: true,
+    })
+    .check();
+  await submitWritingAdminAction(
+    page,
+    relationGroup.getByRole('button', {
+      name: 'Save tags',
+      exact: true,
+    }),
+  );
+
+  relationGroup = articleCard().getByRole('group', {
+    name: 'Systems',
+    exact: true,
+  });
+  await relationGroup
+    .getByRole('checkbox', {
+      name: 'ProtoCap',
+      exact: true,
+    })
+    .check();
+  await submitWritingAdminAction(
+    page,
+    relationGroup.getByRole('button', {
+      name: 'Save systems',
+      exact: true,
+    }),
+  );
+
+  const previewHref = await articleCard()
+    .getByRole('link', { name: 'Preview EN', exact: true })
+    .getAttribute('href');
+  assert.ok(previewHref, 'AKS-119 Article must expose an authenticated preview.');
+  const previewResponse = await page.goto(origin + previewHref);
+  assert.equal(previewResponse?.status(), 200);
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: title,
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('meta[name="robots"]').getAttribute('content'),
+    'noindex, nofollow, noarchive, nosnippet',
+  );
+  assert.ok((await page.locator('body').innerText()).includes(sectionHeading));
+  assert.ok((await page.locator('body').innerText()).includes(callout));
+  assert.equal(
+    await page.locator('img[alt="' + assetAlt + '"]').count(),
+    1,
+    'The admin preview must resolve the contextual Article image.',
+  );
+  await assertAxe(page);
+
+  await page.goto(origin + '/admin/writings');
+  fieldset = articleCard().getByRole('group', {
+    name: 'EN',
+    exact: true,
+  });
+  await publishWritingLocale(page, fieldset, 'EN', 'Publish EN');
+
+  const publicResponse = await page.goto(origin + publicPath);
+  assert.equal(publicResponse?.status(), 200);
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: title,
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('main[data-writing-kind="article"]').count(),
+    1,
+    'AKS-119 must publish through the shared Article form, not a separate route.',
+  );
+  const publicBody = await page.locator('body').innerText();
+  for (const expected of [
+    summary,
+    intro,
+    sectionHeading,
+    sectionParagraph,
+    ...bulletItems,
+    subsectionHeading,
+    ...orderedItems,
+    quotation,
+    code,
+    callout,
+  ]) {
+    assert.ok(
+      publicBody.includes(expected),
+      'Published AKS-119 Article must retain authored content: ' + expected,
+    );
+  }
+  assert.ok(
+    (await page.locator('[data-writing-node="bulletList"]').innerText()).includes(
+      bulletItems[1],
+    ),
+  );
+  assert.ok(
+    (await page.locator('[data-writing-node="orderedList"]').innerText()).includes(
+      orderedItems[2],
+    ),
+  );
+  assert.equal(
+    await page.locator('[data-writing-node="blockquote"]').count(),
+    1,
+  );
+  assert.equal(
+    await page.locator('[data-writing-node="codeBlock"]').count(),
+    1,
+  );
+  assert.equal(
+    await page.locator('[data-writing-node="callout"]').count(),
+    1,
+  );
+  const publicImage = page.locator('img[alt="' + assetAlt + '"]');
+  await publicImage.waitFor();
+  assert.equal(
+    await publicImage.locator('xpath=..').locator('figcaption').innerText(),
+    assetCaption,
+  );
+  assert.equal(
+    await page
+      .getByRole('link', {
+        name: 'Engineering practice',
+        exact: true,
+      })
+      .getAttribute('href'),
+    '/en/writings/categories/engineering-practice',
+  );
+  assert.equal(
+    await page
+      .getByRole('link', {
+        name: 'Software architecture',
+        exact: true,
+      })
+      .getAttribute('href'),
+    '/en/writings/tags/software-architecture',
+  );
+  const protoCapReference = page.locator('.aks-system-reference').filter({
+    has: page.getByRole('heading', {
+      level: 3,
+      name: 'ProtoCap',
+      exact: true,
+    }),
+  });
+  await protoCapReference.waitFor();
+  assert.equal(
+    await protoCapReference
+      .getByRole('link', { name: 'Inspect System', exact: true })
+      .getAttribute('href'),
+    '/en/systems/protocap',
+  );
+  assert.equal(
+    await page.locator('.aks-experience-meta a[hreflang="fr"]').count(),
+    0,
+    'A real EN-only Article must not fabricate a French publication.',
+  );
+  await assertAxe(page);
+
+  const ssr = await page.context().request.get(origin + publicPath);
+  assert.equal(ssr.status(), 200);
+  const html = await ssr.text();
+  assert.ok(
+    html.includes(title) &&
+      html.includes(sectionHeading) &&
+      html.includes(assetAlt) &&
+      html.includes('"@type":"Article"'),
+    'The real Article must be present in initial SSR HTML with editorial SEO.',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal((await page.goto(origin + publicPath))?.status(), 200);
+  assert.equal(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+    true,
+    'The AKS-119 real Article must not overflow a 390px mobile viewport.',
+  );
+  await assertAxe(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertWritingsOverviewIsolation(browser) {
   const targets = [
     { path: '/en/writings', heading: 'Writings' },
@@ -7310,6 +7751,7 @@ async function assertAxe(page) {
     await assertLightweightNoteAuthoring(page);
     await assertWritingFiltering(page);
     await assertWritingSearch(page);
+    await assertRealArticleAuthoringFromAdmin(page);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
