@@ -1702,6 +1702,66 @@ async function assertTugeresStandardSystem(browser) {
   }
 }
 
+async function submitWritingAdminAction(page, button) {
+  const responsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    const pathname = new URL(response.url()).pathname;
+    return (
+      request.method() === 'POST' &&
+      (pathname === '/admin/writings' || pathname === '/admin/writings.data')
+    );
+  });
+
+  await button.click();
+  const response = await responsePromise;
+  assert.equal(
+    response.status(),
+    200,
+    'Writing admin actions must complete successfully before the smoke inspects persisted state.',
+  );
+
+  const reload = await page.goto(origin + '/admin/writings');
+  assert.equal(
+    reload?.status(),
+    200,
+    'Writing admin state must reload successfully after a persisted mutation.',
+  );
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Writings administration',
+      exact: true,
+    })
+    .waitFor();
+}
+
+async function waitForWritingFieldValue(locator, expected, message) {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    if ((await locator.inputValue()) === expected) return;
+    await sleep(100);
+  }
+
+  assert.equal(await locator.inputValue(), expected, message);
+}
+
+async function waitForPublishedWritingState(fieldset, locale) {
+  await fieldset.getByText('Public snapshot available').waitFor();
+  await fieldset.getByRole('link', { name: 'Open public', exact: true }).waitFor();
+  assert.match(
+    await fieldset.innerText(),
+    new RegExp('Publish update ' + locale),
+    locale + ' publication controls must reflect the persisted public snapshot.',
+  );
+}
+
+async function publishWritingLocale(page, fieldset, locale, buttonName) {
+  await submitWritingAdminAction(
+    page,
+    fieldset.getByRole('button', { name: buttonName, exact: true }),
+  );
+  await waitForPublishedWritingState(fieldset, locale);
+}
+
 async function fillWritingBodyEditor(fieldset, body) {
   const shell = fieldset.locator('[data-writing-editor]');
   await fieldset
@@ -1811,20 +1871,23 @@ async function assertWritingAdminAndPublic(page) {
     await fieldset.locator('input[name="title"]').fill(title);
     await fieldset.locator('textarea[name="summary"]').fill(summary);
     await fillWritingBodyEditor(fieldset, body);
-    await fieldset
-      .getByRole('button', {
+    await submitWritingAdminAction(
+      page,
+      fieldset.getByRole('button', {
         name: 'Save ' + locale + ' draft',
         exact: true,
-      })
-      .click();
-    await page
-      .getByText(locale + ' Writing draft saved.', { exact: true })
-      .waitFor();
+      }),
+    );
 
     fieldset = writingCard().getByRole('group', {
       name: locale,
       exact: true,
     });
+    await waitForWritingFieldValue(
+      fieldset.locator('input[name="body"]'),
+      body,
+      'The persisted Writing text projection must survive the admin round-trip.',
+    );
     const persistedDocument = JSON.parse(
       await fieldset.locator('input[name="editorDocument"]').inputValue(),
     );
@@ -1838,11 +1901,7 @@ async function assertWritingAdminAndPublic(page) {
       1,
       'The persisted Tiptap draft must remain on Writing schema v1.',
     );
-    assert.equal(
-      await fieldset.locator('input[name="body"]').inputValue(),
-      body,
-      'The persisted Writing text projection must survive the admin round-trip.',
-    );
+
   };
 
   await saveLocale({
@@ -2084,18 +2143,30 @@ async function assertWritingAdminAndPublic(page) {
   }
 
   let card = writingCard();
-  await card
-    .getByRole('group', { name: 'EN', exact: true })
-    .getByRole('button', { name: 'Publish EN', exact: true })
-    .click();
-  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+  let publicationFieldset = card.getByRole('group', { name: 'EN', exact: true });
+  await submitWritingAdminAction(
+    page,
+    publicationFieldset.getByRole('button', {
+      name: 'Publish EN',
+      exact: true,
+    }),
+  );
+  card = writingCard();
+  publicationFieldset = card.getByRole('group', { name: 'EN', exact: true });
+  await waitForPublishedWritingState(publicationFieldset, 'EN');
 
   card = writingCard();
-  await card
-    .getByRole('group', { name: 'FR', exact: true })
-    .getByRole('button', { name: 'Publish FR', exact: true })
-    .click();
-  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+  publicationFieldset = card.getByRole('group', { name: 'FR', exact: true });
+  await submitWritingAdminAction(
+    page,
+    publicationFieldset.getByRole('button', {
+      name: 'Publish FR',
+      exact: true,
+    }),
+  );
+  card = writingCard();
+  publicationFieldset = card.getByRole('group', { name: 'FR', exact: true });
+  await waitForPublishedWritingState(publicationFieldset, 'FR');
 
   const targets = [
     {
@@ -2527,10 +2598,12 @@ async function assertLightweightNoteAuthoring(page) {
 
     await page.goto(origin + '/admin/writings');
     fieldset = noteCard().getByRole('group', { name: item.locale, exact: true });
-    await fieldset
-      .getByRole('button', { name: 'Publish ' + item.locale, exact: true })
-      .click();
-    await page.getByText(item.locale + ' Writing published.', { exact: true }).waitFor();
+    await publishWritingLocale(
+      page,
+      fieldset,
+      item.locale,
+      'Publish ' + item.locale,
+    );
   }
 
   for (const item of items) {
@@ -2666,29 +2739,35 @@ async function assertWritingFiltering(page) {
       await fieldset
         .locator('[data-writing-note-editor] textarea')
         .fill(localized.body);
-      await fieldset
-        .getByRole('button', {
+      await submitWritingAdminAction(
+        page,
+        fieldset.getByRole('button', {
           name: 'Save ' + locale + ' draft',
           exact: true,
-        })
-        .click();
-      await page
-        .getByText(locale + ' Writing draft saved.', { exact: true })
-        .waitFor();
+        }),
+      );
 
       fieldset = noteCard().getByRole('group', {
         name: locale,
         exact: true,
       });
-      await fieldset
-        .getByRole('button', {
+      await waitForWritingFieldValue(
+        fieldset.locator('input[name="body"]'),
+        localized.body,
+        locale + ' Note body must survive the admin save/revalidation round-trip.',
+      );
+      await submitWritingAdminAction(
+        page,
+        fieldset.getByRole('button', {
           name: 'Publish ' + locale,
           exact: true,
-        })
-        .click();
-      await page
-        .getByText(locale + ' Writing published.', { exact: true })
-        .waitFor();
+        }),
+      );
+      fieldset = noteCard().getByRole('group', {
+        name: locale,
+        exact: true,
+      });
+      await waitForPublishedWritingState(fieldset, locale);
     }
   }
 
@@ -3194,11 +3273,12 @@ async function assertWritingCategories(page) {
     }),
   });
 
-  await refreshedWritingCard
-    .getByRole('group', { name: 'EN', exact: true })
-    .getByRole('button', { name: 'Publish update EN', exact: true })
-    .click();
-  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    refreshedWritingCard.getByRole('group', { name: 'EN', exact: true }),
+    'EN',
+    'Publish update EN',
+  );
 
   const englishDetail =
     '/en/writings/architecture-without-page-builders';
@@ -3233,11 +3313,12 @@ async function assertWritingCategories(page) {
       exact: true,
     }),
   });
-  await frenchWritingCard
-    .getByRole('group', { name: 'FR', exact: true })
-    .getByRole('button', { name: 'Publish update FR', exact: true })
-    .click();
-  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    frenchWritingCard.getByRole('group', { name: 'FR', exact: true }),
+    'FR',
+    'Publish update FR',
+  );
 
   const targets = [
     {
@@ -3494,11 +3575,12 @@ async function assertWritingTags(page) {
       exact: true,
     }),
   });
-  await refreshedWritingCard
-    .getByRole('group', { name: 'EN', exact: true })
-    .getByRole('button', { name: 'Publish update EN', exact: true })
-    .click();
-  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    refreshedWritingCard.getByRole('group', { name: 'EN', exact: true }),
+    'EN',
+    'Publish update EN',
+  );
 
   await page.goto(origin + englishDetail + '?tag-publication=en');
   const englishTagLink = page.getByRole('link', {
@@ -3528,11 +3610,12 @@ async function assertWritingTags(page) {
       exact: true,
     }),
   });
-  await refreshedWritingCard
-    .getByRole('group', { name: 'FR', exact: true })
-    .getByRole('button', { name: 'Publish update FR', exact: true })
-    .click();
-  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    refreshedWritingCard.getByRole('group', { name: 'FR', exact: true }),
+    'FR',
+    'Publish update FR',
+  );
 
   const targets = [
     {
@@ -3702,11 +3785,12 @@ async function assertWritingSystemRelations(page) {
       exact: true,
     }),
   });
-  await refreshedWritingCard
-    .getByRole('group', { name: 'EN', exact: true })
-    .getByRole('button', { name: 'Publish update EN', exact: true })
-    .click();
-  await page.getByText('EN Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    refreshedWritingCard.getByRole('group', { name: 'EN', exact: true }),
+    'EN',
+    'Publish update EN',
+  );
 
   await page.goto(origin + englishWriting + '?system-relation=en');
   const englishReference = page.locator('.aks-system-reference').filter({
@@ -3779,11 +3863,12 @@ async function assertWritingSystemRelations(page) {
       exact: true,
     }),
   });
-  await refreshedWritingCard
-    .getByRole('group', { name: 'FR', exact: true })
-    .getByRole('button', { name: 'Publish update FR', exact: true })
-    .click();
-  await page.getByText('FR Writing published.', { exact: true }).waitFor();
+  await publishWritingLocale(
+    page,
+    refreshedWritingCard.getByRole('group', { name: 'FR', exact: true }),
+    'FR',
+    'Publish update FR',
+  );
 
   await page.goto(origin + frenchWriting + '?system-relation=fr');
   const frenchReference = page.locator('.aks-system-reference').filter({
