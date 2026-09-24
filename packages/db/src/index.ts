@@ -371,11 +371,14 @@ export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstra
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
 export {
   bootstrapWorkWithUsCapabilities,
+  bootstrapWorkWithUsCollaboration,
   bootstrapWorkWithUsOpenSituations,
   workWithUsCapabilitiesSeed,
+  workWithUsCollaborationSeed,
   workWithUsOpenSituationsSeed,
 } from './work-with-us-bootstrap.js';
 export type {
   BootstrapWorkWithUsCapabilitiesResult,
+  BootstrapWorkWithUsCollaborationResult,
   BootstrapWorkWithUsOpenSituationsResult,
 } from './work-with-us-bootstrap.js';
