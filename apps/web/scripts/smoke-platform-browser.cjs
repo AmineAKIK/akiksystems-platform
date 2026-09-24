@@ -8224,13 +8224,13 @@ async function assertAxe(page) {
     await page.waitForURL(`${origin}/admin`);
 
     await assertProfileAdministration(page);
-    await assertWorkWithUsContentAdministration(page);
 
     await assertGlobalDestinations(page);
     await assertRealDeviceClasses(browser);
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
+    await assertWorkWithUsContentAdministration(page);
     await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();
