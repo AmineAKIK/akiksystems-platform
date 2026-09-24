@@ -26,8 +26,6 @@ try {
     assert.equal(published.introduction, seed.introduction);
     assert.equal(published.situationsTitle, seed.situationsTitle);
     assert.equal(published.situationsBody, seed.situationsBody);
-    assert.equal(published.collaborationTitle, null);
-    assert.equal(published.collaborationBody, null);
     assert.equal(published.inquiryTitle, null);
     assert.equal(published.inquiryBody, null);
     assert.equal(published.privacyNote, null);
@@ -56,7 +54,7 @@ try {
   }
 
   process.stdout.write(
-    'AKS-123 qualification passed: EN/FR Work with us open-situations copy welcomes organizations and individuals, keeps free expression explicit, avoids service-category framing, and leaves collaboration/inquiry/privacy to later L7 tickets.\n',
+    'AKS-123 qualification passed: EN/FR Work with us open-situations copy welcomes organizations and individuals, keeps free expression explicit, avoids service-category framing, and leaves inquiry/privacy to later L7 tickets.\n',
   );
 } finally {
   await db.destroy();
