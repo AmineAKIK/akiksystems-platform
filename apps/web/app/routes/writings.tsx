@@ -16,18 +16,27 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'en');
   const params = new URL(request.url).searchParams;
   const searchQuery = normalizeWritingSearchQuery(params.get('q'));
-  const published =
+  const published = await listPublishedWritings(appDb, locale);
+  const resolvedFilters = resolveWritingFilters(published, params);
+  const searched =
     searchQuery === ''
-      ? await listPublishedWritings(appDb, locale)
+      ? published
       : await searchPublishedWritings(appDb, {
           locale,
           query: searchQuery,
         });
-  const searchResultCount = published.length;
-  const { model: filterModel, writings } = resolveWritingFilters(
-    published,
-    params,
+  const searchResultCount = searched.length;
+  const allowedWritingIds = new Set(
+    resolvedFilters.writings.map((writing) => writing.writingId),
   );
+  const writings =
+    searchQuery === ''
+      ? resolvedFilters.writings
+      : searched.filter((writing) => allowedWritingIds.has(writing.writingId));
+  const filterModel = {
+    ...resolvedFilters.model,
+    resultCount: writings.length,
+  };
   return {
     filterModel,
     searchQuery,
