@@ -1703,27 +1703,21 @@ async function assertTugeresStandardSystem(browser) {
 }
 
 async function submitWritingAdminAction(page, button) {
-  const requestPromise = page.waitForRequest(
-    (request) => request.method() === 'POST',
-  );
+  const responsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    const pathname = new URL(response.url()).pathname;
+    return (
+      request.method() === 'POST' &&
+      (pathname === '/admin/writings' || pathname === '/admin/writings.data')
+    );
+  });
 
   await button.click();
-  const request = await requestPromise;
-  const requestPath = new URL(request.url()).pathname;
-  assert.ok(
-    requestPath.startsWith('/admin/writings'),
-    'Writing admin controls must submit to the private Writings action boundary.',
-  );
-
-  const response = await request.response();
-  assert.ok(
-    response !== null && response.status() < 400,
-    'Writing admin actions must complete successfully before the smoke inspects persisted state. ' +
-      'POST ' +
-      requestPath +
-      ' returned ' +
-      (response === null ? 'no response' : response.status()) +
-      '.',
+  const response = await responsePromise;
+  assert.equal(
+    response.status(),
+    200,
+    'Writing admin actions must complete successfully before the smoke inspects persisted state.',
   );
 
   const reload = await page.goto(origin + '/admin/writings');
@@ -1761,9 +1755,16 @@ async function waitForPublishedWritingState(fieldset, locale) {
 }
 
 async function publishWritingLocale(page, fieldset, locale, buttonName) {
-  await submitWritingAdminAction(
-    page,
-    fieldset.getByRole('button', { name: buttonName, exact: true }),
+  await fieldset
+    .getByRole('button', { name: buttonName, exact: true })
+    .click();
+  await waitForPublishedWritingState(fieldset, locale);
+
+  const reload = await page.goto(origin + '/admin/writings');
+  assert.equal(
+    reload?.status(),
+    200,
+    'Published Writing state must survive a fresh admin reload.',
   );
   await waitForPublishedWritingState(fieldset, locale);
 }
