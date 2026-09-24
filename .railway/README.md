@@ -5,14 +5,14 @@ Railway infrastructure for the AkikSystems platform is defined in
 
 ## Current scope
 
-The definition is intentionally restricted to the `staging` environment until
-production infrastructure is qualified later in the backlog.
+The Railway definition is the shared infrastructure contract for both
+`staging` and `production`.
 
-Staging contains:
+Each environment contains:
 
 - the `web` service sourced from `AmineAKIK/akiksystems-platform` on `main`;
 - the `worker` service running Graphile Worker from the same repository;
-- one Railway-managed PostgreSQL service named `Postgres`;
+- one Railway-managed PostgreSQL service;
 - `DATABASE_URL` wired from both application services to PostgreSQL over
   Railway's internal service reference;
 - `pnpm db:migrate` as the web pre-deploy migration command;
@@ -21,13 +21,19 @@ Staging contains:
 
 ## Safe workflow
 
-Always target staging explicitly:
+Always target the intended environment explicitly before planning or applying
+infrastructure:
 
 ```bash
 railway link --project akiksystems-platform --environment staging
 railway config plan
 railway config apply
+
+railway link --project akiksystems-platform --environment production
+railway config plan
+railway config apply
 ```
 
-The TypeScript definition throws when evaluated against a non-staging
-environment so that production cannot be changed accidentally from this file.
+Staging and production use isolated PostgreSQL, worker and object-storage
+resources. Production changes are allowed from this definition and must be
+reviewed with the same plan/apply discipline as staging.
