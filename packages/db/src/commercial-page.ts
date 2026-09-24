@@ -128,6 +128,7 @@ export async function publishCommercialPageLocalization(
     pageId,
     locale,
   );
+  const snapshotJson: Record<string, unknown> = { ...snapshot };
   const now = new Date();
 
   await db.transaction().execute(async (transaction) => {
@@ -136,13 +137,13 @@ export async function publishCommercialPageLocalization(
       .values({
         page_id: pageId,
         locale,
-        snapshot,
+        snapshot: snapshotJson,
         published_at: now,
         updated_at: now,
       })
       .onConflict((conflict) =>
         conflict.columns(['page_id', 'locale']).doUpdateSet({
-          snapshot,
+          snapshot: snapshotJson,
           published_at: now,
           updated_at: now,
         }),
