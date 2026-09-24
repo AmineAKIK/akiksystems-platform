@@ -2763,18 +2763,16 @@ async function assertWritingFiltering(page) {
         localized.body,
         locale + ' Note body must survive the admin save/revalidation round-trip.',
       );
-      await submitWritingAdminAction(
+      await publishWritingLocale(
         page,
-        fieldset.getByRole('button', {
-          name: 'Publish ' + locale,
-          exact: true,
-        }),
+        fieldset,
+        locale,
+        'Publish ' + locale,
       );
       fieldset = noteCard().getByRole('group', {
         name: locale,
         exact: true,
       });
-      await waitForPublishedWritingState(fieldset, locale);
     }
   }
 
