@@ -4059,7 +4059,15 @@ async function assertRealArticleAuthoringFromAdmin(page) {
   }
 
   await insertBlockWithText('Quote', 'blockquote p', quotation);
-  await insertBlockWithText('Code', 'pre code', code);
+
+  await fieldset
+    .getByRole('button', { name: 'Code', exact: true })
+    .click();
+  const codeNode = editor.locator('pre code').last();
+  await codeNode.waitFor();
+  await codeNode.selectText();
+  await page.keyboard.insertText(code);
+
   await insertBlockWithText(
     'Callout',
     'aside[data-writing-callout] p',
