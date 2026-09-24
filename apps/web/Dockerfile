@@ -13,9 +13,9 @@ FROM base AS build
 
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @akiksystems/core build
-RUN pnpm --filter @akiksystems/db build
-RUN pnpm --filter @akiksystems/web build
+RUN pnpm --filter @akiksystems/core build \
+  && pnpm --filter @akiksystems/db build \
+  && pnpm --filter @akiksystems/web build
 
 FROM base AS runtime
 
