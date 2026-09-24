@@ -369,3 +369,8 @@ export type {
 
 export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
+export {
+  bootstrapWorkWithUsOpenSituations,
+  workWithUsOpenSituationsSeed,
+} from './work-with-us-bootstrap.js';
+export type { BootstrapWorkWithUsOpenSituationsResult } from './work-with-us-bootstrap.js';
