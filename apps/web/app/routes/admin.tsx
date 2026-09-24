@@ -545,6 +545,29 @@ export default function Admin() {
                           ask visitors to choose a service, budget, deadline, or
                           project type here.
                         </Text>
+                        <label>
+                          <span>Capabilities heading</span>
+                          <input
+                            defaultValue={localized?.capabilities_title ?? ''}
+                            name="capabilitiesTitle"
+                            required
+                            type="text"
+                          />
+                        </label>
+                        <label>
+                          <span>Capabilities copy</span>
+                          <textarea
+                            defaultValue={localized?.capabilities_body ?? ''}
+                            name="capabilitiesBody"
+                            required
+                            rows={8}
+                          />
+                        </label>
+                        <Text size="sm" tone="muted">
+                          Describe concrete abilities that can be combined. Do not
+                          turn them into a catalogue, pricing grid, or project
+                          qualification step.
+                        </Text>
                         <Button type="submit">
                           Save {locale.toUpperCase()} draft
                         </Button>
