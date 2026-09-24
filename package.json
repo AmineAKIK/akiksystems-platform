@@ -28,7 +28,7 @@
     "db:verify-system-domain": "pnpm --filter @akiksystems/db db:verify-system-domain",
     "db:verify-system-experiences": "pnpm --filter @akiksystems/db db:verify-system-experiences",
     "db:verify-system-technologies": "pnpm --filter @akiksystems/db db:verify-system-technologies",
-    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate && pnpm --filter @akiksystems/db profile:bootstrap-publications && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-rendre-attention-essay && pnpm content:bootstrap-work-with-us-open-situations",
+    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate && pnpm --filter @akiksystems/db profile:bootstrap-publications && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-rendre-attention-essay && pnpm content:bootstrap-work-with-us-open-situations && pnpm content:bootstrap-work-with-us-capabilities",
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "dev:worker": "pnpm --filter @akiksystems/worker dev",
     "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
@@ -83,7 +83,9 @@
     "db:verify-lightweight-notes": "pnpm --filter @akiksystems/db db:verify-lightweight-notes",
     "db:verify-writing-full-text-search": "pnpm --filter @akiksystems/db db:verify-writing-full-text-search",
     "content:bootstrap-work-with-us-open-situations": "pnpm --filter @akiksystems/web content:bootstrap-work-with-us-open-situations",
-    "db:verify-work-with-us-open-situations": "pnpm --filter @akiksystems/db db:verify-work-with-us-open-situations"
+    "db:verify-work-with-us-open-situations": "pnpm --filter @akiksystems/db db:verify-work-with-us-open-situations",
+    "content:bootstrap-work-with-us-capabilities": "pnpm --filter @akiksystems/web content:bootstrap-work-with-us-capabilities",
+    "db:verify-work-with-us-capabilities": "pnpm --filter @akiksystems/db db:verify-work-with-us-capabilities"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

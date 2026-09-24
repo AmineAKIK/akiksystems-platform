@@ -283,6 +283,8 @@ form or persist contact details; AKS-127+ owns that boundary.
 
 AKS-123 fills the first reserved L7 section with bilingual open-situations copy. It welcomes both organizations and individuals, asks visitors to describe the situation in their own words, and explicitly keeps framing after the first human exchange. The content is provisioned with `pnpm content:bootstrap-work-with-us-open-situations`; the bootstrap is idempotent and does not overwrite an already-authored situations draft. It deliberately leaves capabilities, collaboration, inquiry, and privacy sections for their later tickets.
 
+AKS-124 fills the capabilities section with concrete bilingual engineering abilities while keeping them deliberately combinable rather than packaging them as services. The copy covers bounded system design, architecture and interfaces, web/internal/data-backed software, integration and automation, and inspectability through tests, documentation, observability, and explicit limits. `pnpm content:bootstrap-work-with-us-capabilities` provisions the copy idempotently, preserves authored capability drafts, and leaves collaboration, inquiry, privacy, pricing, and project qualification to later boundaries.
+
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication
 snapshots as public truth, schema v1 as the bounded semantic document contract,

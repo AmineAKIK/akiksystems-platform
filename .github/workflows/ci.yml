@@ -180,6 +180,12 @@ jobs:
       - name: Verify AKS-123 open-situations content
         run: pnpm db:verify-work-with-us-open-situations
 
+      - name: Bootstrap AKS-124 capabilities content
+        run: pnpm content:bootstrap-work-with-us-capabilities
+
+      - name: Verify AKS-124 capabilities content
+        run: pnpm db:verify-work-with-us-capabilities
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
