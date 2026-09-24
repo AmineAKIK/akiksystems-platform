@@ -236,6 +236,14 @@ uses a smaller fixed footprint so navigation stays present without competing
 with the article. The admin preview reuses the same reader component, preserving
 preview/public rendering parity without adding a second presentation system.
 
+AKS-113 confronts that reader with the existing 25-page French essay
+*Rendre l’attention au réel*. The native Writing is generated from the original
+ProtoCap PDF rather than rewritten for the portfolio, publishes as `ESSAY / MAJOR`,
+retains the source publication date (16 September 2026), and deliberately does
+not fabricate an English localization. When the published ProtoCap System is
+available, the Writing links to it through the existing Writing↔System relation
+instead of copying System content into the essay.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.

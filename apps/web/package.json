@@ -18,7 +18,8 @@
     "smoke:observability": "node scripts/smoke-observability.mjs",
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
     "start": "node server.js",
-    "typecheck": "react-router typegen && tsc -b"
+    "typecheck": "react-router typegen && tsc -b",
+    "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",

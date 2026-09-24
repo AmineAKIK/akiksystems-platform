@@ -165,6 +165,9 @@ jobs:
       - name: Verify L6 unified Writing editorial surface
         run: pnpm --filter @akiksystems/db db:verify-writing-unified-feed
 
+      - name: Verify AKS-113 canonical ESSAY/MAJOR publication
+        run: pnpm --filter @akiksystems/db db:verify-rendre-attention-essay
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
