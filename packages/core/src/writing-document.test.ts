@@ -4,6 +4,7 @@ import {
   parseWritingDocument,
   validateWritingDocument,
   writingDocumentAssetIds,
+  writingDocumentExcerpt,
   writingDocumentFromPlainText,
   writingDocumentToPlainText,
 } from './writing-document.js';
@@ -165,6 +166,19 @@ describe('Writing rich-content schema v1', () => {
         ],
       }).success,
     ).toBe(false);
+  });
+
+  it('derives a compact whitespace-normalized excerpt for lightweight Notes', () => {
+    const document = writingDocumentFromPlainText(
+      'A short Note keeps attention on the observation itself.\n\nIt does not need a separate editorial summary.',
+    );
+
+    expect(writingDocumentExcerpt(document)).toBe(
+      'A short Note keeps attention on the observation itself. It does not need a separate editorial summary.',
+    );
+    expect(writingDocumentExcerpt(document, 48)).toBe(
+      'A short Note keeps attention on the…',
+    );
   });
 
   it('keeps a plain-text compatibility projection while richer rendering is deferred', () => {
