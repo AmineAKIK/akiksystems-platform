@@ -14,6 +14,10 @@ export async function loader({ params }: Route.LoaderArgs) {
   };
 }
 
+export function meta() {
+  return [{ title: 'Travailler ensemble · AkikSystems' }];
+}
+
 export default function GlobalDestinationRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'fr');
