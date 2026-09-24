@@ -168,6 +168,9 @@ jobs:
       - name: Verify AKS-113 canonical ESSAY/MAJOR publication
         run: pnpm --filter @akiksystems/db db:verify-rendre-attention-essay
 
+      - name: Verify AKS-114 lightweight Notes
+        run: pnpm --filter @akiksystems/db db:verify-lightweight-notes
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
