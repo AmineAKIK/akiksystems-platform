@@ -51,18 +51,6 @@ function nullableField(form: FormData, name: string): string | null {
   return value === '' ? null : value;
 }
 
-function requiredAssetAlt(
-  form: FormData,
-  name: 'altEn' | 'altFr',
-  label: string,
-): string {
-  const value = field(form, name);
-  if (value === '') {
-    throw new Response(`${label} alt text is required.`, { status: 400 });
-  }
-  return value;
-}
-
 function requiredAssetId(form: FormData): string {
   const assetId = field(form, 'assetId');
   if (!uuidPattern.test(assetId)) {
@@ -492,8 +480,8 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    const altEn = requiredAssetAlt(form, 'altEn', 'English');
-    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const altEn = nullableField(form, 'altEn');
+    const altFr = nullableField(form, 'altFr');
     const captionEn = nullableField(form, 'captionEn');
     const captionFr = nullableField(form, 'captionFr');
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -595,8 +583,8 @@ export async function action({ request }: Route.ActionArgs) {
       throw new Response('Writing asset not found.', { status: 404 });
     }
 
-    const altEn = requiredAssetAlt(form, 'altEn', 'English');
-    const altFr = requiredAssetAlt(form, 'altFr', 'French');
+    const altEn = nullableField(form, 'altEn');
+    const altFr = nullableField(form, 'altFr');
     const captionEn = nullableField(form, 'captionEn');
     const captionFr = nullableField(form, 'captionFr');
     const localizations = await db
@@ -1450,9 +1438,11 @@ export default function AdminWritingsRoute() {
                       Contextual media
                     </Heading>
                     <Text size="sm" tone="muted">
-                      Upload images inside this Writing context. Alt text is
-                      localized and required in EN and FR; captions are optional.
-                      There is no global media-library workflow.
+                      Upload images inside this Writing context. Alt text and
+                      captions are localized independently. Alt text becomes
+                      required only in a locale that actually inserts the image,
+                      before that locale can be saved or published. There is no
+                      global media-library workflow.
                     </Text>
 
                     <Form
@@ -1477,16 +1467,16 @@ export default function AdminWritingsRoute() {
                         />
                       </label>
                       <label>
-                        <span>English alt text</span>
-                        <input name="altEn" required type="text" />
+                        <span>English alt text · required only if EN uses this image</span>
+                        <input name="altEn" type="text" />
                       </label>
                       <label>
                         <span>English caption</span>
                         <textarea name="captionEn" rows={2} />
                       </label>
                       <label>
-                        <span>French alt text</span>
-                        <input name="altFr" required type="text" />
+                        <span>French alt text · required only if FR uses this image</span>
+                        <input name="altFr" type="text" />
                       </label>
                       <label>
                         <span>French caption</span>
@@ -1541,11 +1531,10 @@ export default function AdminWritingsRoute() {
                                   value={asset.id}
                                 />
                                 <label>
-                                  <span>English alt text</span>
+                                  <span>English alt text · required if EN uses this image</span>
                                   <input
                                     defaultValue={asset.alt_en ?? ''}
                                     name="altEn"
-                                    required
                                   />
                                 </label>
                                 <label>
@@ -1557,11 +1546,10 @@ export default function AdminWritingsRoute() {
                                   />
                                 </label>
                                 <label>
-                                  <span>French alt text</span>
+                                  <span>French alt text · required if FR uses this image</span>
                                   <input
                                     defaultValue={asset.alt_fr ?? ''}
                                     name="altFr"
-                                    required
                                   />
                                 </label>
                                 <label>
