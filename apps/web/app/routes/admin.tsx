@@ -1,4 +1,8 @@
-import { publishCommercialPageLocalization, writeAdminAuditEvent } from '@akiksystems/db';
+import {
+  bootstrapSentinelSystemDraft,
+  publishCommercialPageLocalization,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
@@ -97,6 +101,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       'systems.lifecycle',
       'systems.editorial_position',
       'systems.featured',
+      'system_en.slug as slug_en',
       'system_en.title as title_en',
     ])
     .orderBy('systems.editorial_position')
@@ -351,76 +356,34 @@ export async function action({ request }: Route.ActionArgs) {
     return null;
   }
 
-  const existing = await db
-    .selectFrom('systems')
-    .select('id')
-    .orderBy('editorial_position')
-    .orderBy('created_at')
-    .executeTakeFirst();
+  const result = await bootstrapSentinelSystemDraft(db);
 
-  if (existing !== undefined) {
-    return redirect(`/admin/systems/${existing.id}`);
-  }
-
-  const systemId = randomUUID();
-
-  await db.transaction().execute(async (transaction) => {
-    await transaction
-      .insertInto('systems')
-      .values({ id: systemId, editorial_position: 0 })
-      .execute();
-
-    await transaction
-      .insertInto('system_localizations')
-      .values([
-        {
-          system_id: systemId,
-          locale: 'en',
-          slug: 'sentinel',
-          title: 'Sentinel',
-          summary: null,
-          proof_role: 'Industrial-context software system',
-          proof_maturity: 'Inspectable implementation',
-          proof_demo_nature: 'No separate public demo',
-          proof_data_nature: 'Real-world context; no customer data exposed',
-          proof_limits: 'Origin context alone is not evidence of current deployment or publicly exposed operational data.',
-        },
-        {
-          system_id: systemId,
-          locale: 'fr',
-          slug: 'sentinel',
-          title: 'Sentinel',
-          summary: null,
-          proof_role: 'Système logiciel issu d un contexte industriel',
-          proof_maturity: 'Implémentation inspectable',
-          proof_demo_nature: 'Aucune démo publique séparée',
-          proof_data_nature: 'Contexte réel ; aucune donnée client exposée',
-          proof_limits: 'Le contexte d origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
-        },
-      ])
-      .execute();
-
-    await writeAdminAuditEvent(transaction, {
+  if (result.created) {
+    await writeAdminAuditEvent(db, {
       actorUserId: session.user.id,
       actorEmail: session.user.email,
       action: 'system.created',
       entityType: 'system',
-      entityId: systemId,
-      systemId,
+      entityId: result.systemId,
+      systemId: result.systemId,
       metadata: {
         initialLocales: ['en', 'fr'],
         initialSlug: 'sentinel',
-        editorialPosition: 0,
+        editorialPosition: result.editorialPosition,
         featured: false,
+        source: 'admin',
       },
     });
-  });
+  }
 
-  return redirect(`/admin/systems/${systemId}`);
+  return redirect(`/admin/systems/${result.systemId}`);
 }
 
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
+  const sentinelSystem = data.systems.find(
+    (system) => system.slug_en === 'sentinel',
+  );
   const [pending, setPending] = useState(false);
 
   async function signOut() {
@@ -632,18 +595,21 @@ export default function Admin() {
                 Order and prominence are shared System-level editorial controls,
                 independent from EN/FR publication state.
               </Text>
-              {data.systems.length === 0 ? (
+              {sentinelSystem === undefined ? (
                 <>
                   <Text tone="muted">
-                    Create Sentinel to start the System library with a stable
-                    identity and independent EN/FR content.
+                    Sentinel has not been initialized yet. Create its stable
+                    bilingual identity without affecting existing reference
+                    Systems.
                   </Text>
                   <Form method="post">
                     <input name="_intent" type="hidden" value="create-sentinel" />
                     <Button type="submit">Create Sentinel</Button>
                   </Form>
                 </>
-              ) : (
+              ) : null}
+
+              {data.systems.length > 0 ? (
                 <div className="aks-admin-asset-list">
                   {data.systems.map((system, index) => (
                     <article className="aks-admin-asset" key={system.id}>
@@ -714,6 +680,8 @@ export default function Admin() {
                     </article>
                   ))}
                 </div>
+              ) : (
+                <Text tone="muted">No System has been initialized yet.</Text>
               )}
             </div>
           </section>
