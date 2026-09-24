@@ -8412,7 +8412,6 @@ async function assertAxe(page) {
     await assertFirstLevelDeepLinkAutonomy(browser);
     await assertFirstLevelDeepLinkAutonomy(browser, { mobile: true });
 
-    await assertWorkWithUsContentAdministration(page);
     await page.goto(`${origin}/admin`);
 
     await page.getByRole('button', { name: 'Create Sentinel' }).click();
@@ -8529,6 +8528,7 @@ async function assertAxe(page) {
     bootstrapL4QualificationSystems();
     bootstrapL6RendreAttentionEssay();
 
+    await assertWorkWithUsContentAdministration(page);
     await assertSystemsOverview(browser);
     await assertRendreAttentionEssay(browser);
     await assertProtoCapGuidedDemo(browser);
