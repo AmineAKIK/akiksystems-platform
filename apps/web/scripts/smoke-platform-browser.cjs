@@ -2679,9 +2679,9 @@ async function assertWritingFiltering(page) {
   assert.match(await filters.innerText(), /6 of 6 writings/);
   await assertAxe(page);
 
-  await filters.locator('select[name="type"]').selectOption('article');
+  await filters.locator('select[name="type"]').selectOption('essay');
   await Promise.all([
-    page.waitForURL((url) => url.searchParams.get('type') === 'article'),
+    page.waitForURL((url) => url.searchParams.get('type') === 'essay'),
     filters.getByRole('button', { name: 'Apply filters', exact: true }).click(),
   ]);
   assert.equal(
