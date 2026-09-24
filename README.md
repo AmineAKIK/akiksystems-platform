@@ -287,6 +287,8 @@ AKS-124 fills the capabilities section with concrete bilingual engineering abili
 
 AKS-125 fills the collaboration section with the understand-first, frame-after-contact sequence in direct bilingual copy. The first exchange is explicitly for understanding the situation rather than qualifying a predefined project; only after that human exchange can a useful next step be framed together around boundaries, responsibilities, and expected evidence. `pnpm content:bootstrap-work-with-us-collaboration` provisions the copy idempotently, preserves authored collaboration drafts, exposes no internal methodology name, and leaves inquiry/contact capture and privacy to later L7 tickets.
 
+AKS-126 adds a deliberately small commercial proof layer by reusing the existing published `SystemReference` contract instead of copying System content into Work with us. The code-owned selection is ProtoCap plus Tugères: each card exposes only the published title, summary, role/maturity transparency and canonical System link. Oria Nutrition remains a published System but is intentionally excluded from this surface, proving that Work with us is not a second Systems library. The first-contact flow itself remains unchanged and no inquiry or qualification fields are introduced.
+
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication
 snapshots as public truth, schema v1 as the bounded semantic document contract,
