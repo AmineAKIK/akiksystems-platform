@@ -7082,9 +7082,21 @@ async function assertGlobalDestinations(page, { mobile = false } = {}) {
     const response = await page.goto(`${origin}${destination.path}`);
     assert.equal(response?.status(), 200, `${destination.path} must return HTTP 200.`);
     assert.equal(await page.locator('html').getAttribute('lang'), destination.lang);
-    await page
-      .getByRole('heading', { level: 1, name: destination.heading, exact: true })
-      .waitFor();
+    const destinationHeading = page.getByRole('heading', { level: 1 });
+    await destinationHeading.waitFor();
+    if (!destination.path.endsWith('/work-with-us') &&
+        !destination.path.endsWith('/travailler-ensemble')) {
+      assert.equal(
+        (await destinationHeading.innerText()).trim(),
+        destination.heading,
+        `${destination.path} must keep its code-owned first-level heading.`,
+      );
+    } else {
+      assert.ok(
+        (await destinationHeading.innerText()).trim().length > 0,
+        `${destination.path} must expose a non-empty localized commercial heading.`,
+      );
+    }
     await page.locator('.aks-brand-signature').waitFor();
 
     if (mobile) {
