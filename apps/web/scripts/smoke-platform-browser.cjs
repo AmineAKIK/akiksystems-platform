@@ -6984,6 +6984,7 @@ async function assertAxe(page) {
     await assertWritingSystemRelations(page);
     await assertWritingsOverviewIsolation(browser);
     await assertLightweightNoteAuthoring(page);
+    await assertWritingFiltering(page);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
