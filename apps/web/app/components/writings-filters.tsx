@@ -21,8 +21,12 @@ export function WritingsFilters({
   if (!model.enabled) return null;
 
   const showKinds = model.kinds.length >= 2;
-  const showCategories = model.categories.length >= 2;
-  const showTags = model.tags.length >= 2;
+  const showCategories = model.categories.some(
+    (option) => option.count < model.totalCount,
+  );
+  const showTags = model.tags.some(
+    (option) => option.count < model.totalCount,
+  );
   const hasThemeFilters = showCategories || showTags;
   const hasSelection =
     model.selection.kind !== null ||
