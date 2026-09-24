@@ -182,3 +182,126 @@ export async function bootstrapWorkWithUsOpenSituations(
     preservedDraftLocales,
   };
 }
+
+
+interface WorkWithUsCapabilitiesSeed {
+  capabilitiesTitle: string;
+  capabilitiesBody: string;
+}
+
+export const workWithUsCapabilitiesSeed: Record<
+  PlatformLocale,
+  WorkWithUsCapabilitiesSeed
+> = {
+  en: {
+    capabilitiesTitle: 'Capabilities that can be combined',
+    capabilitiesBody:
+      'Depending on the situation, AkikSystems can help turn an unclear operational or product problem into a bounded software system; design architecture and interfaces around explicit constraints; build web applications, internal tools, and data-backed workflows; connect existing systems and automate repetitive work; and make the result inspectable with tests, documentation, observability, and clear limits. These capabilities can be combined according to the situation; they do not define a menu the visitor has to choose from.',
+  },
+  fr: {
+    capabilitiesTitle: 'Des capacités à combiner',
+    capabilitiesBody:
+      'Selon la situation, AkikSystems peut aider à transformer un problème opérationnel ou produit encore flou en système logiciel délimité ; concevoir l’architecture et les interfaces autour de contraintes explicites ; construire des applications web, des outils internes et des flux appuyés sur les données ; relier des systèmes existants et automatiser des tâches répétitives ; puis rendre le résultat inspectable avec des tests, de la documentation, de l’observabilité et des limites claires. Ces capacités se combinent selon la situation ; elles ne définissent pas un menu dans lequel il faudrait choisir.',
+  },
+};
+
+export interface BootstrapWorkWithUsCapabilitiesResult {
+  pageId: string;
+  publishedLocales: PlatformLocale[];
+  preservedDraftLocales: PlatformLocale[];
+}
+
+export async function bootstrapWorkWithUsCapabilities(
+  db: Kysely<Database>,
+): Promise<BootstrapWorkWithUsCapabilitiesResult> {
+  const baseline = await bootstrapWorkWithUsOpenSituations(db);
+  const pageId = baseline.pageId;
+  const publishedLocales: PlatformLocale[] = [];
+  const preservedDraftLocales: PlatformLocale[] = [];
+
+  for (const locale of ['en', 'fr'] as const) {
+    const seed = workWithUsCapabilitiesSeed[locale];
+    const localization = await db
+      .selectFrom('work_with_us_localizations')
+      .select(['capabilities_title', 'capabilities_body'])
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .executeTakeFirstOrThrow();
+    const publication = await db
+      .selectFrom('work_with_us_publications')
+      .select('snapshot')
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .executeTakeFirst();
+
+    const hadAuthoredCapabilities =
+      localization.capabilities_title !== null ||
+      localization.capabilities_body !== null;
+
+    const updates: {
+      capabilities_title?: string;
+      capabilities_body?: string;
+    } = {};
+
+    if (localization.capabilities_title === null) {
+      updates.capabilities_title = seed.capabilitiesTitle;
+    }
+    if (localization.capabilities_body === null) {
+      updates.capabilities_body = seed.capabilitiesBody;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db
+        .updateTable('work_with_us_localizations')
+        .set({ ...updates, updated_at: new Date() })
+        .where('page_id', '=', pageId)
+        .where('locale', '=', locale)
+        .execute();
+    }
+
+    if (publication === undefined) {
+      await publishCommercialPageLocalization(db, pageId, locale);
+      publishedLocales.push(locale);
+      continue;
+    }
+
+    const published = parseCommercialPagePublicationSnapshot(
+      publication.snapshot,
+    );
+    if (
+      published === null ||
+      published.capabilitiesTitle !== null ||
+      published.capabilitiesBody !== null
+    ) {
+      continue;
+    }
+
+    if (hadAuthoredCapabilities) {
+      preservedDraftLocales.push(locale);
+      continue;
+    }
+
+    const now = new Date();
+    await db
+      .updateTable('work_with_us_publications')
+      .set({
+        snapshot: {
+          ...published,
+          capabilitiesTitle: seed.capabilitiesTitle,
+          capabilitiesBody: seed.capabilitiesBody,
+        } as unknown as Record<string, unknown>,
+        published_at: now,
+        updated_at: now,
+      })
+      .where('page_id', '=', pageId)
+      .where('locale', '=', locale)
+      .execute();
+    publishedLocales.push(locale);
+  }
+
+  return {
+    pageId,
+    publishedLocales,
+    preservedDraftLocales,
+  };
+}
