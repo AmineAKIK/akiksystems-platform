@@ -113,8 +113,12 @@ export function resolveWritingFilters(
     })),
   );
 
+  const hasUsefulCategory = categories.some(
+    (option) => option.count < writings.length,
+  );
+  const hasUsefulTag = tags.some((option) => option.count < writings.length);
   const hasUsefulDimension =
-    kinds.length >= 2 || categories.length >= 2 || tags.length >= 2;
+    kinds.length >= 2 || hasUsefulCategory || hasUsefulTag;
   const enabled =
     writings.length >= writingFilterVolumeThreshold && hasUsefulDimension;
 
