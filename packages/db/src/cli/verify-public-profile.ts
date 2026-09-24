@@ -24,6 +24,11 @@ try {
     throw migrationResult.error;
   }
 
+  // Deployment commissioning may already have published the initial Profile.
+  // Reset only the qualification snapshot boundary so this verifier can still
+  // prove draft/public separation deterministically.
+  await db.deleteFrom('profile_publications').execute();
+
   const profiles = await db.selectFrom('profiles').selectAll().execute();
   assert.equal(profiles.length, 1, 'Exactly one public Profile must exist.');
   assert.equal(profiles[0]?.singleton_key, 'public');
