@@ -274,6 +274,15 @@ editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
 
+AKS-118 gives every published Writing detail a first-class localized SEO
+contract. The publication snapshot drives title/description, canonical URL,
+published-only hreflang alternates, Open Graph/Twitter metadata, Article
+publication time, and server-rendered JSON-LD. Note, Article, and Essay remain
+one editorial system and therefore share the Schema.org `Article` type while
+retaining their form through `genre`. Categories, tags, and published System
+context enrich structured data without inventing missing translations or
+modification timestamps.
+
 AKS-117 keeps related editorial navigation contextual rather than promotional.
 A Writing detail may surface at most two other published Writings when they share
 one or more published System identities with the current Writing. The current
