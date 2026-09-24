@@ -370,7 +370,12 @@ export type {
 export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
 export {
+  bootstrapWorkWithUsCapabilities,
   bootstrapWorkWithUsOpenSituations,
+  workWithUsCapabilitiesSeed,
   workWithUsOpenSituationsSeed,
 } from './work-with-us-bootstrap.js';
-export type { BootstrapWorkWithUsOpenSituationsResult } from './work-with-us-bootstrap.js';
+export type {
+  BootstrapWorkWithUsCapabilitiesResult,
+  BootstrapWorkWithUsOpenSituationsResult,
+} from './work-with-us-bootstrap.js';
