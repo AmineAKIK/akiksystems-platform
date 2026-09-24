@@ -27,6 +27,7 @@
 .aks-writing-quote .aks-text,
 .aks-writing-callout .aks-text {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .aks-writing-content > .aks-text {
