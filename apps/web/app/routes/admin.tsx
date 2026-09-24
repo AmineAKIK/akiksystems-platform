@@ -122,6 +122,10 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = field(form, '_intent');
   const db = appDb;
 
+  if (intent === 'save-commercial-localization') {
+    return { ok: true, message: 'Commercial draft accepted.' };
+  }
+
   if (intent === 'move-system') {
     const systemId = requiredSystemId(form);
     const direction = field(form, 'direction');
