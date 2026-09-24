@@ -81,7 +81,8 @@
     "content:bootstrap-rendre-attention-essay": "pnpm --filter @akiksystems/web content:bootstrap-rendre-attention-essay",
     "db:verify-rendre-attention-essay": "pnpm --filter @akiksystems/db db:verify-rendre-attention-essay",
     "db:verify-lightweight-notes": "pnpm --filter @akiksystems/db db:verify-lightweight-notes",
-    "db:verify-writing-full-text-search": "pnpm --filter @akiksystems/db db:verify-writing-full-text-search"
+    "db:verify-writing-full-text-search": "pnpm --filter @akiksystems/db db:verify-writing-full-text-search",
+    "content:bootstrap-work-with-us-open-situations": "pnpm --filter @akiksystems/web content:bootstrap-work-with-us-open-situations"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
