@@ -13,35 +13,54 @@ import {
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
+const protoCapAssetId = randomUUID();
+const oriaAssetId = randomUUID();
+const tugeresAssetId = randomUUID();
+const createdSystemIds: string[] = [];
+const createdAssetIds: string[] = [];
 
 try {
-  await bootstrapProtoCapDomain(db, {
+  const protoCap = await bootstrapProtoCapDomain(db, {
     media: {
-      id: randomUUID(),
+      id: protoCapAssetId,
       storageKey: 'qualification/aks-126/protocap.png',
       originalFilename: 'protocap-commercial-proof.png',
       mimeType: 'image/png',
       byteSize: 1,
     },
   });
-  await bootstrapOriaDomain(db, {
+  if (protoCap.created) {
+    createdSystemIds.push(protoCap.systemId);
+    createdAssetIds.push(protoCapAssetId);
+  }
+
+  const oria = await bootstrapOriaDomain(db, {
     media: {
-      id: randomUUID(),
+      id: oriaAssetId,
       storageKey: 'qualification/aks-126/oria.webp',
       originalFilename: 'oria-non-selected-control.webp',
       mimeType: 'image/webp',
       byteSize: 1,
     },
   });
-  await bootstrapTugeresDomain(db, {
+  if (oria.created) {
+    createdSystemIds.push(oria.systemId);
+    createdAssetIds.push(oriaAssetId);
+  }
+
+  const tugeres = await bootstrapTugeresDomain(db, {
     media: {
-      id: randomUUID(),
+      id: tugeresAssetId,
       storageKey: 'qualification/aks-126/tugeres.webp',
       originalFilename: 'tugeres-commercial-proof.webp',
       mimeType: 'image/webp',
       byteSize: 1,
     },
   });
+  if (tugeres.created) {
+    createdSystemIds.push(tugeres.systemId);
+    createdAssetIds.push(tugeresAssetId);
+  }
 
   assert.deepEqual(workWithUsProofSystemSlugs, ['protocap', 'tugeres']);
 
@@ -78,5 +97,11 @@ try {
     'AKS-126 qualification passed: Work with us reuses exactly ProtoCap and Tugères as published SystemReference evidence, excludes the published Oria control, preserves transparency metadata, and links back to the canonical System detail.\n',
   );
 } finally {
+  if (createdSystemIds.length > 0) {
+    await db.deleteFrom('systems').where('id', 'in', createdSystemIds).execute();
+  }
+  if (createdAssetIds.length > 0) {
+    await db.deleteFrom('assets').where('id', 'in', createdAssetIds).execute();
+  }
   await db.destroy();
 }
