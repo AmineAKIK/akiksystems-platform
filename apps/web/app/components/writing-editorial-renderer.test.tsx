@@ -136,6 +136,8 @@ describe('WritingEditorialRenderer', () => {
     expect(html).toContain('<ol');
     expect(html).toContain('<blockquote');
     expect(html).toContain('<pre');
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('aria-label="Code block"');
     expect(html).toContain('<code>const safe = true;</code>');
     expect(html).toContain('data-language="typescript"');
     expect(html).toContain('<aside');
