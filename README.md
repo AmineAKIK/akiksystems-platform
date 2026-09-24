@@ -413,10 +413,11 @@ Minimal UI dictionaries live under `apps/web/app/i18n` and the document `lang` a
 
 `@akiksystems/ui` owns the reusable AkikSystems identity primitives.
 
-- `BrandMark` is an inline SVG mark that inherits `currentColor`, works without network assets, and can be decorative or explicitly labelled when used alone.
-- `BrandSignature` combines the mark and AkikSystems wordmark into one accessible linked signature with controlled size variants.
+- `BrandMark` renders the canonical uploaded emblem from `apps/web/public/brand/AKSYS.svg`; the vector master remains untouched and display treatment is handled by shared UI CSS.
+- `BrandSignature` combines that emblem and the AkikSystems wordmark into one accessible linked signature with controlled size variants.
+- The same canonical SVG is used for the global favicon and Safari mask icon, so browser identity and in-product identity cannot drift.
 - Brand markup and styling live in the shared UI package rather than individual routes or the Experience Shell.
-- The public shell consumes the shared signature and supplies only route-specific destination/accessibility context.
+- The public shell, Home portal, and private administrator sign-in consume the shared identity primitives.
 
 ### Global destinations
 
