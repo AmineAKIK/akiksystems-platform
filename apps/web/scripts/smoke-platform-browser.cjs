@@ -4587,6 +4587,23 @@ async function assertLongFormMobileReading(browser) {
         essayMetrics.readerWidth <= essayMetrics.viewportWidth,
         `AKS-120 essay reader must stay inside the ${viewport.width}px viewport.`,
       );
+
+      for (const sourceUrl of [
+        'https://github.com/AmineAKIK/protocap',
+        'https://protocap-production.up.railway.app/',
+      ]) {
+        const sourceParagraph = essayReader.getByText(sourceUrl, {
+          exact: true,
+        });
+        await sourceParagraph.waitFor();
+        assert.equal(
+          await sourceParagraph.evaluate(
+            (node) => node.scrollWidth <= node.clientWidth,
+          ),
+          true,
+          `Long source URL must wrap inside the ${viewport.width}px prose measure: ${sourceUrl}`,
+        );
+      }
       assert.ok(
         essayMetrics.paragraphFontSize >= 16,
         'Long-form mobile prose must remain at least 16px.',
