@@ -207,6 +207,7 @@ export const workWithUsCapabilitiesSeed: Record<
 
 export interface BootstrapWorkWithUsCapabilitiesResult {
   pageId: string;
+  createdPage: boolean;
   publishedLocales: PlatformLocale[];
   preservedDraftLocales: PlatformLocale[];
 }
@@ -301,6 +302,7 @@ export async function bootstrapWorkWithUsCapabilities(
 
   return {
     pageId,
+    createdPage: baseline.createdPage,
     publishedLocales,
     preservedDraftLocales,
   };
