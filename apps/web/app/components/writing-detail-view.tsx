@@ -27,6 +27,14 @@ export interface WritingDetailViewModel {
   systems: PublicSystemReference[];
 }
 
+export interface ContextualRelatedWriting {
+  writingId: string;
+  kind: WritingKind;
+  slug: string;
+  title: string;
+  summary: string;
+}
+
 function categoryHref(locale: PlatformLocale, slug: string): string {
   return locale === 'fr'
     ? `/fr/ecrits/categories/${slug}`
@@ -39,6 +47,10 @@ function tagHref(locale: PlatformLocale, slug: string): string {
     : `/en/writings/tags/${slug}`;
 }
 
+function writingHref(locale: PlatformLocale, slug: string): string {
+  return locale === 'fr' ? `/fr/ecrits/${slug}` : `/en/writings/${slug}`;
+}
+
 function kindLabel(kind: WritingKind, locale: PlatformLocale): string {
   if (kind === 'note') return 'Note';
   if (kind === 'article') return 'Article';
@@ -49,12 +61,14 @@ export function WritingDetailView({
   assetHref,
   backHref,
   backLabel,
+  relatedWritings = [],
   responsiveImages = false,
   writing,
 }: {
   assetHref: (assetId: string, width?: number) => string;
   backHref: string;
   backLabel: string;
+  relatedWritings?: ContextualRelatedWriting[];
   responsiveImages?: boolean;
   writing: WritingDetailViewModel;
 }) {
@@ -138,6 +152,43 @@ export function WritingDetailView({
                 responsiveImages={responsiveImages}
               />
             </section>
+
+            {relatedWritings.length > 0 ? (
+              <aside
+                aria-labelledby="writing-related-writings"
+                className="aks-proof-stack"
+                data-contextual-related-writings
+              >
+                <div className="aks-writing-related-heading">
+                  <Heading id="writing-related-writings" level={2} size="sm">
+                    {writing.locale === 'fr'
+                      ? 'Pour poursuivre dans ce contexte'
+                      : 'Continue in this context'}
+                  </Heading>
+                  <Text size="sm" tone="muted">
+                    {writing.locale === 'fr'
+                      ? 'Une sélection courte d’écrits publiés reliés aux mêmes systèmes.'
+                      : 'A short selection of published Writings connected to the same Systems.'}
+                  </Text>
+                </div>
+                <div className="aks-proof-stack">
+                  {relatedWritings.map((related) => (
+                    <article className="aks-admin-card" key={related.writingId}>
+                      <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                        {kindLabel(related.kind, writing.locale)}
+                      </Text>
+                      <Heading level={3} size="sm">
+                        {related.title}
+                      </Heading>
+                      <Text>{related.summary}</Text>
+                      <Link href={writingHref(writing.locale, related.slug)}>
+                        {writing.locale === 'fr' ? 'Lire' : 'Read'}
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              </aside>
+            ) : null}
 
             <footer className="aks-writing-detail-footer">
               <Text size="sm" tone="muted">
