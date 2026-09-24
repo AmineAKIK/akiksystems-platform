@@ -2823,6 +2823,200 @@ async function assertWritingFiltering(page) {
   await page.setViewportSize({ width: 1280, height: 800 });
 }
 
+async function assertWritingSearch(page) {
+  await page.goto(origin + '/en/writings');
+
+  const search = page.locator('[data-writing-search]');
+  await search.waitFor();
+  assert.equal(
+    await search.locator('form').getAttribute('role'),
+    'search',
+    'AKS-116 must expose a semantic search form.',
+  );
+  assert.equal(
+    await search.locator('form').getAttribute('action'),
+    '/en/writings',
+    'Writing search must stay on the unified editorial route.',
+  );
+  assert.equal(
+    await search.locator('input[name="q"]').getAttribute('maxlength'),
+    '160',
+    'Writing search input must cap abusive query length before PostgreSQL.',
+  );
+
+  await page.goto(origin + '/admin/writings');
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Writing',
+      exact: true,
+    }),
+  });
+  await createCard.locator('select[name="kind"]').selectOption('note');
+  await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
+  await createCard.getByRole('button', { name: 'Create Writing', exact: true }).click();
+  await page.getByText('Writing created.', { exact: true }).waitFor();
+
+  const draftCard = () =>
+    page
+      .locator('[data-writing-card]')
+      .filter({ hasText: 'NOTE · NORMAL' })
+      .last();
+  let englishDraft = draftCard().getByRole('group', { name: 'EN', exact: true });
+  await englishDraft.locator('input[name="slug"]').fill('unpublished-nebula');
+  await englishDraft.locator('input[name="title"]').fill('Unpublished nebula');
+  await englishDraft
+    .locator('[data-writing-note-editor] textarea')
+    .fill('The distinctive private search marker is zephyrcascade.');
+  await englishDraft
+    .getByRole('button', { name: 'Save EN draft', exact: true })
+    .click();
+  await page.getByText('EN Writing draft saved.', { exact: true }).waitFor();
+
+  await page.goto(origin + '/en/writings?q=zephyrcascade');
+  await page.locator('[data-writing-search]').waitFor();
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    0,
+    'Draft Writing content must never enter the public PostgreSQL search index.',
+  );
+  await page
+    .getByText('No published Writing matches this search.', { exact: true })
+    .waitFor();
+  assert.match(
+    await page.locator('[data-writing-search]').innerText(),
+    /0 results for “zephyrcascade”/,
+  );
+
+  await page.goto(origin + '/en/writings?q=%22page%20builders%22');
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Architecture Without Page Builders',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'Quoted PostgreSQL web-search syntax must resolve the matching published Writing.',
+  );
+  assert.equal(
+    await page.locator('[data-writing-search] input[name="q"]').inputValue(),
+    '"page builders"',
+  );
+
+  await page.goto(origin + '/en/writings?q=decorative%20chrome');
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Quiet interfaces reveal state',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'AKS-116 must search published body content, not titles only.',
+  );
+
+  await page.goto(origin + '/en/writings?q=architecture&type=essay');
+  const combinedSearch = page.locator('[data-writing-search]');
+  const combinedFilters = page.locator('[data-writing-filters]');
+  await combinedSearch.waitFor();
+  await combinedFilters.waitFor();
+  assert.equal(
+    await combinedSearch.locator('input[name="q"]').inputValue(),
+    'architecture',
+  );
+  assert.equal(
+    await combinedSearch.locator('input[name="type"]').inputValue(),
+    'essay',
+    'Search submissions must preserve active AKS-115 facets.',
+  );
+  assert.equal(
+    await combinedFilters.locator('input[name="q"]').inputValue(),
+    'architecture',
+    'Filter submissions must preserve the active AKS-116 query.',
+  );
+  assert.equal(
+    await combinedFilters.locator('select[name="type"]').inputValue(),
+    'essay',
+  );
+  assert.equal(
+    await page.locator('[data-writing-feed] [data-writing-kind]').count(),
+    1,
+    'Full-text search and type filtering must compose on the same feed.',
+  );
+  assert.equal(
+    await combinedFilters
+      .getByRole('link', { name: 'Clear filters', exact: true })
+      .getAttribute('href'),
+    '/en/writings?q=architecture',
+    'Clearing facets must preserve the active search.',
+  );
+  await assertAxe(page);
+
+  await page.goto(origin + '/fr/ecrits?q=ma%C3%AEtrise%20syst%C3%A8mes');
+  const frenchSearch = page.locator('[data-writing-search]');
+  await frenchSearch.waitFor();
+  await page
+    .getByRole('heading', {
+      level: 3,
+      name: 'Rendre l’attention au réel',
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await frenchSearch.locator('input[name="q"]').inputValue(),
+    'maîtrise systèmes',
+  );
+  assert.match(await frenchSearch.innerText(), /résultat/);
+  assert.equal(
+    await page
+      .locator('[data-writing-feed] [data-writing-kind="essay"]')
+      .filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: 'Rendre l’attention au réel',
+          exact: true,
+        }),
+      })
+      .count(),
+    1,
+    'French search must use the French PostgreSQL text-search configuration.',
+  );
+  await assertAxe(page);
+
+  const ssr = await page.context().request.get(
+    origin + '/en/writings?q=%22page%20builders%22',
+  );
+  assert.equal(ssr.status(), 200);
+  const html = await ssr.text();
+  assert.ok(
+    html.includes('Architecture Without Page Builders'),
+    'Search results must be present in initial server-rendered HTML.',
+  );
+  assert.ok(
+    !html.includes('Keep evidence near claims'),
+    'SSR search must not ship unrelated published Writings and hide them client-side.',
+  );
+  assert.ok(html.includes('data-writing-search'));
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(origin + '/en/writings?q=architecture');
+  await page.locator('[data-writing-search]').waitFor();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+    true,
+    'AKS-116 search must not overflow at 390px.',
+  );
+  await assertAxe(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+}
+
 async function assertWritingCategories(page) {
   await page.goto(origin + '/admin/writings');
   assert.equal(
@@ -6985,6 +7179,7 @@ async function assertAxe(page) {
     await assertWritingsOverviewIsolation(browser);
     await assertLightweightNoteAuthoring(page);
     await assertWritingFiltering(page);
+    await assertWritingSearch(page);
     await assertTrainingPublicJourney(browser);
     await assertCredentialPublicJourney(browser);
     await assertCredentialAdmin(page);
