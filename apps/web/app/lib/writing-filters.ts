@@ -1,5 +1,7 @@
-import { writingKinds, type WritingKind } from '@akiksystems/core';
+import type { WritingKind } from '@akiksystems/core';
 import type { PublishedWritingListItem } from '@akiksystems/db';
+
+const filterWritingKinds = ['note', 'article', 'essay'] as const satisfies readonly WritingKind[];
 
 export const writingFilterVolumeThreshold = 6;
 
@@ -82,7 +84,7 @@ export function resolveWritingFilters(
     kindCounts.set(writing.kind, (kindCounts.get(writing.kind) ?? 0) + 1);
   }
 
-  const kinds = writingKinds.flatMap((kind) => {
+  const kinds = filterWritingKinds.flatMap((kind) => {
     const count = kindCounts.get(kind) ?? 0;
     return count === 0
       ? []
@@ -140,7 +142,7 @@ export function resolveWritingFilters(
 
   const rawKind = selectedValue(params, 'type', kinds);
   const kind =
-    rawKind !== null && writingKinds.includes(rawKind as WritingKind)
+    rawKind !== null && filterWritingKinds.includes(rawKind as WritingKind)
       ? (rawKind as WritingKind)
       : null;
   const category = selectedValue(params, 'category', categories);
