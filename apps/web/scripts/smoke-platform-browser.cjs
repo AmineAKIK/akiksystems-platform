@@ -1755,35 +1755,10 @@ async function waitForPublishedWritingState(fieldset, locale) {
 }
 
 async function publishWritingLocale(page, fieldset, locale, buttonName) {
-  const button = fieldset.getByRole('button', {
-    name: buttonName,
-    exact: true,
-  });
-  await button.waitFor();
-
-  const navigationPromise = page.waitForNavigation({
-    waitUntil: 'domcontentloaded',
-  });
-  await button.evaluate((element) => {
-    const form = element.form;
-    if (form === null) {
-      throw new Error('Writing publication control must belong to a form.');
-    }
-    form.submit();
-  });
-  const response = await navigationPromise;
-  assert.ok(
-    response !== null && response.status() < 400,
-    'Writing publication form must complete successfully through the native admin boundary.',
+  await submitWritingAdminAction(
+    page,
+    fieldset.getByRole('button', { name: buttonName, exact: true }),
   );
-
-  await page
-    .getByRole('heading', {
-      level: 1,
-      name: 'Writings administration',
-      exact: true,
-    })
-    .waitFor();
   await waitForPublishedWritingState(fieldset, locale);
 }
 
@@ -2781,16 +2756,18 @@ async function assertWritingFiltering(page) {
         localized.body,
         locale + ' Note body must survive the admin save/revalidation round-trip.',
       );
-      await publishWritingLocale(
+      await submitWritingAdminAction(
         page,
-        fieldset,
-        locale,
-        'Publish ' + locale,
+        fieldset.getByRole('button', {
+          name: 'Publish ' + locale,
+          exact: true,
+        }),
       );
       fieldset = noteCard().getByRole('group', {
         name: locale,
         exact: true,
       });
+      await waitForPublishedWritingState(fieldset, locale);
     }
   }
 
@@ -4313,7 +4290,31 @@ async function assertRealArticleAuthoringFromAdmin(page) {
     name: 'EN',
     exact: true,
   });
-  await publishWritingLocale(page, fieldset, 'EN', 'Publish EN');
+  const publishButton = fieldset.getByRole('button', {
+    name: 'Publish EN',
+    exact: true,
+  });
+  await publishButton.waitFor();
+  const publicationNavigation = page.waitForNavigation({
+    waitUntil: 'domcontentloaded',
+  });
+  await publishButton.evaluate((element) => {
+    const form = element.form;
+    if (form === null) {
+      throw new Error('AKS-119 publication control must belong to a form.');
+    }
+    form.submit();
+  });
+  const publicationResponse = await publicationNavigation;
+  assert.ok(
+    publicationResponse !== null && publicationResponse.status() < 400,
+    'AKS-119 must publish through the real admin form boundary.',
+  );
+  fieldset = articleCard().getByRole('group', {
+    name: 'EN',
+    exact: true,
+  });
+  await waitForPublishedWritingState(fieldset, 'EN');
 
   const publicResponse = await page.goto(origin + publicPath);
   assert.equal(publicResponse?.status(), 200);
