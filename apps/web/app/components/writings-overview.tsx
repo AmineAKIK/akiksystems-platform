@@ -3,12 +3,16 @@ import { Container, Heading, Text } from '@akiksystems/ui';
 
 import { destinationById } from '../i18n/global-destinations';
 import type { Locale } from '../i18n/locales';
+import type { WritingFilterModel } from '../lib/writing-filters';
 import { WritingsFeed } from './writings-feed';
+import { WritingsFilters } from './writings-filters';
 
 export function WritingsOverview({
+  filterModel,
   locale,
   writings,
 }: {
+  filterModel: WritingFilterModel;
   locale: Locale;
   writings: PublishedWritingListItem[];
 }) {
@@ -44,11 +48,17 @@ export function WritingsOverview({
               </Text>
             </div>
 
+            <WritingsFilters locale={locale} model={filterModel} />
+
             <WritingsFeed
               emptyMessage={
-                locale === 'fr'
-                  ? 'Aucun écrit n’est encore publié.'
-                  : 'No writing is published yet.'
+                filterModel.enabled && filterModel.resultCount === 0
+                  ? locale === 'fr'
+                    ? 'Aucun écrit ne correspond à ces filtres.'
+                    : 'No writing matches these filters.'
+                  : locale === 'fr'
+                    ? 'Aucun écrit n’est encore publié.'
+                    : 'No writing is published yet.'
               }
               locale={locale}
               writings={writings}

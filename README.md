@@ -255,6 +255,24 @@ long-form layout forward. Notes still use the same bilingual publication
 snapshots, deep links, editorial feed, taxonomy, related-System model, preview,
 accessibility, and responsive reader as every other Writing.
 
+
+AKS-115 keeps that unified feed visually quiet until filtering is genuinely
+useful. The public overview exposes no filter chrome below six published
+Writings, and it also stays hidden when a larger corpus has no discriminating
+type, Category, or Tag dimension. Once the threshold is met, filtering remains
+on the same localized overview route through ordinary GET query parameters:
+`type`, `category`, and `tag`. Category and Tag are presented together as
+the thematic layer; no separate Theme entity, blog, tab, or route family is
+introduced.
+
+Filter options and counts are derived only from the published Writing read model.
+Unknown query values are ignored, multiple valid dimensions compose with AND
+semantics, editorial order is preserved, and filtered output is resolved in SSR
+rather than hidden client-side. Category and Tag deep routes remain available as
+their existing taxonomy inspection surfaces, while AKS-115 itself creates no new
+editorial silo. The filter form is keyboard/native-form accessible, bilingual,
+and collapses to one column on narrow screens.
+
 AKS-096 keeps Learning and Systems connected without duplicating evidence into
 the System domain. LearningArtifact remains the owner of its optional System
 relation and the private LearningArtifact admin remains the management surface.
