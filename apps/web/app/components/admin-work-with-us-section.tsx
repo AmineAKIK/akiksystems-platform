@@ -132,7 +132,7 @@ export function WorkWithUsAdminSection({
                     value={'save-commercial-localization:' + locale}
                   />
 
-                  <Heading level={4} size="sm">Hero</Heading>
+                  <Text tone="strong">Hero</Text>
                   <TextField
                     defaultValue={content.hero.eyebrow}
                     label="Eyebrow"
@@ -151,7 +151,7 @@ export function WorkWithUsAdminSection({
                     required
                   />
 
-                  <Heading level={4} size="sm">Approach</Heading>
+                  <Text tone="strong">Approach</Text>
                   <TextField
                     defaultValue={content.approach.eyebrow}
                     label="Eyebrow"
@@ -185,7 +185,7 @@ export function WorkWithUsAdminSection({
                     </div>
                   ))}
 
-                  <Heading level={4} size="sm">Contact</Heading>
+                  <Text tone="strong">Contact</Text>
                   <TextField defaultValue={content.contact.eyebrow} label="Eyebrow" name="contactEyebrow" />
                   <TextField defaultValue={content.contact.title} label="Title" name="contactTitle" />
                   <TextAreaField defaultValue={content.contact.introduction} label="Introduction" name="contactIntroduction" />
@@ -199,13 +199,13 @@ export function WorkWithUsAdminSection({
                   <TextAreaField defaultValue={content.contact.successMessage} label="Success message" name="contactSuccessMessage" />
                   <TextAreaField defaultValue={content.contact.privacyNote} label="Privacy note" name="contactPrivacyNote" />
 
-                  <Heading level={4} size="sm">About</Heading>
+                  <Text tone="strong">About</Text>
                   <TextField defaultValue={content.about.eyebrow} label="Eyebrow" name="aboutEyebrow" />
                   <TextField defaultValue={content.about.title} label="Title" name="aboutTitle" />
                   <TextAreaField defaultValue={content.about.body} label="Body" name="aboutBody" rows={6} />
                   <TextField defaultValue={content.about.profileLinkLabel} label="Profile link label" name="aboutProfileLinkLabel" />
 
-                  <Heading level={4} size="sm">Systems</Heading>
+                  <Text tone="strong">Systems</Text>
                   <TextField defaultValue={content.systems.eyebrow} label="Eyebrow" name="systemsEyebrow" />
                   <TextField defaultValue={content.systems.title} label="Title" name="systemsTitle" />
                   <TextAreaField defaultValue={content.systems.introduction} label="Introduction" name="systemsIntroduction" />
