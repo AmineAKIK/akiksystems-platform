@@ -8564,9 +8564,10 @@ async function assertAxe(page) {
       'Sentinel must render through the stable standard System renderer.',
     );
     await assertSystemProofTransparency(page, 'en', [
-      /Industrial-context software system/i,
-      /Inspectable implementation/i,
-      /no customer data exposed/i,
+      /Qualification system/i,
+      /Inspectable fixture/i,
+      /Synthetic qualification data/i,
+      /CI fixture only; no deployment claim/i,
     ]);
         const unavailableLanguage = page.locator('.aks-language-unavailable');
     await unavailableLanguage.waitFor();
@@ -8588,9 +8589,10 @@ async function assertAxe(page) {
     await page.goto(`${origin}/fr/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
     await assertSystemProofTransparency(page, 'fr', [
-      /contexte industriel/i,
-      /Implémentation inspectable/i,
-      /aucune donnée client exposée/i,
+      /Système de qualification/i,
+      /Fixture inspectable/i,
+      /Données synthétiques de qualification/i,
+      /Fixture CI uniquement/i,
     ]);
 
     bootstrapL4QualificationSystems();
