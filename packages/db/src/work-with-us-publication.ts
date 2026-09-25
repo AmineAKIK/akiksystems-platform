@@ -2,7 +2,7 @@ import {
   parseWorkWithUsContent,
   type PlatformLocale,
   type WorkWithUsEditableContent,
-} from '@akiksystems/core';
+} from '@akiksystems/core/work-with-us-content';
 import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
