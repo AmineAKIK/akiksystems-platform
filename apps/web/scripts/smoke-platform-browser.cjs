@@ -8442,7 +8442,7 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/admin`);
 
-    await page.getByRole('button', { name: 'Create Sentinel' }).click();
+    await page.getByRole('button', { name: 'Create System' }).click();
     await page.waitForURL(/\/admin\/systems\/[0-9a-f-]+$/i);
     page.systemPath = new URL(page.url()).pathname;
 
