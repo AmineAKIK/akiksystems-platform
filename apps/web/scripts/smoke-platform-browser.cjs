@@ -11,6 +11,8 @@ const axe = require('axe-core');
 const adminEmail = process.env.ADMIN_EMAIL;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
+const skipLighthouse = process.env.AKIKSYSTEMS_SKIP_LIGHTHOUSE === '1';
+
 if (!adminEmail || !adminPassword) {
   throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required.');
 }
@@ -9276,92 +9278,98 @@ async function assertAxe(page) {
       await mobile.close();
     }
 
-    const lighthouseBin = process.env.LIGHTHOUSE_BIN;
-    assert.ok(lighthouseBin, 'LIGHTHOUSE_BIN is required for performance qualification.');
-
-    const runMobileLighthouse = (attempt) => {
-      const lighthouseOutput = `/tmp/akiksystems-lighthouse-${attempt}.json`;
-      execFileSync(
-        lighthouseBin,
-        [
-          `${origin}/en/systems/sentinel`,
-          '--only-categories=performance',
-          '--form-factor=mobile',
-          '--throttling-method=simulate',
-          '--chrome-flags=--headless --no-sandbox',
-          '--output=json',
-          `--output-path=${lighthouseOutput}`,
-          '--quiet',
-        ],
-        {
-          env: {
-            ...process.env,
-            CHROME_PATH: chromium.executablePath(),
+    if (!skipLighthouse) {
+      const lighthouseBin = process.env.LIGHTHOUSE_BIN;
+      assert.ok(lighthouseBin, 'LIGHTHOUSE_BIN is required for performance qualification.');
+  
+      const runMobileLighthouse = (attempt) => {
+        const lighthouseOutput = `/tmp/akiksystems-lighthouse-${attempt}.json`;
+        execFileSync(
+          lighthouseBin,
+          [
+            `${origin}/en/systems/sentinel`,
+            '--only-categories=performance',
+            '--form-factor=mobile',
+            '--throttling-method=simulate',
+            '--chrome-flags=--headless --no-sandbox',
+            '--output=json',
+            `--output-path=${lighthouseOutput}`,
+            '--quiet',
+          ],
+          {
+            env: {
+              ...process.env,
+              CHROME_PATH: chromium.executablePath(),
+            },
+            stdio: 'pipe',
           },
-          stdio: 'pipe',
-        },
-      );
-
-      const report = JSON.parse(fs.readFileSync(lighthouseOutput, 'utf8'));
-      return {
-        performanceScore: report.categories?.performance?.score ?? 0,
-        lcp:
-          report.audits?.['largest-contentful-paint']?.numericValue ?? Infinity,
-        cls:
-          report.audits?.['cumulative-layout-shift']?.numericValue ?? Infinity,
-        tbt:
-          report.audits?.['total-blocking-time']?.numericValue ?? Infinity,
+        );
+  
+        const report = JSON.parse(fs.readFileSync(lighthouseOutput, 'utf8'));
+        return {
+          performanceScore: report.categories?.performance?.score ?? 0,
+          lcp:
+            report.audits?.['largest-contentful-paint']?.numericValue ?? Infinity,
+          cls:
+            report.audits?.['cumulative-layout-shift']?.numericValue ?? Infinity,
+          tbt:
+            report.audits?.['total-blocking-time']?.numericValue ?? Infinity,
+        };
       };
-    };
-
-    const lcpTargetMs = 4500;
-    const lcpCiVarianceAllowanceMs = 150;
-    const lcpCiCeilingMs = lcpTargetMs + lcpCiVarianceAllowanceMs;
-    const lcpBorderlineRetestWindowMs = 300;
-
-    const writeLighthouseObservation = (attempt, metrics) => {
-      process.stdout.write(
-        `Mobile Lighthouse observation #${attempt}: score=${metrics.performanceScore.toFixed(2)}, LCP=${Math.round(metrics.lcp)}ms, CLS=${metrics.cls.toFixed(3)}, TBT=${Math.round(metrics.tbt)}ms. Target LCP<=${lcpTargetMs}ms; CI variance ceiling<=${lcpCiCeilingMs}ms.\\n`,
+  
+      const lcpTargetMs = 4500;
+      const lcpCiVarianceAllowanceMs = 150;
+      const lcpCiCeilingMs = lcpTargetMs + lcpCiVarianceAllowanceMs;
+      const lcpBorderlineRetestWindowMs = 300;
+  
+      const writeLighthouseObservation = (attempt, metrics) => {
+        process.stdout.write(
+          `Mobile Lighthouse observation #${attempt}: score=${metrics.performanceScore.toFixed(2)}, LCP=${Math.round(metrics.lcp)}ms, CLS=${metrics.cls.toFixed(3)}, TBT=${Math.round(metrics.tbt)}ms. Target LCP<=${lcpTargetMs}ms; CI variance ceiling<=${lcpCiCeilingMs}ms.\\n`,
+        );
+      };
+  
+      let lighthouseMetrics = runMobileLighthouse(1);
+      writeLighthouseObservation(1, lighthouseMetrics);
+  
+      if (
+        lighthouseMetrics.lcp > lcpCiCeilingMs &&
+        lighthouseMetrics.lcp <= lcpCiCeilingMs + lcpBorderlineRetestWindowMs &&
+        lighthouseMetrics.cls <= 0.1 &&
+        lighthouseMetrics.tbt <= 600
+      ) {
+        process.stdout.write(
+          `Borderline synthetic LCP exceeded the CI ceiling by ${Math.round(lighthouseMetrics.lcp - lcpCiCeilingMs)}ms; retrying Lighthouse once without rerunning the functional browser qualification.\\n`,
+        );
+        lighthouseMetrics = runMobileLighthouse(2);
+        writeLighthouseObservation(2, lighthouseMetrics);
+      }
+  
+      if (
+        lighthouseMetrics.lcp > lcpTargetMs &&
+        lighthouseMetrics.lcp <= lcpCiCeilingMs
+      ) {
+        process.stdout.write(
+          `Mobile simulated LCP exceeded the 4.5s target by ${Math.round(lighthouseMetrics.lcp - lcpTargetMs)}ms but remained within the ${lcpCiVarianceAllowanceMs}ms synthetic-runner variance allowance.\\n`,
+        );
+      }
+  
+      assert.ok(
+        lighthouseMetrics.lcp <= lcpCiCeilingMs,
+        `Mobile simulated LCP exceeded the 4.5s target plus ${lcpCiVarianceAllowanceMs}ms CI variance allowance after qualification: ${lighthouseMetrics.lcp}ms`,
       );
-    };
-
-    let lighthouseMetrics = runMobileLighthouse(1);
-    writeLighthouseObservation(1, lighthouseMetrics);
-
-    if (
-      lighthouseMetrics.lcp > lcpCiCeilingMs &&
-      lighthouseMetrics.lcp <= lcpCiCeilingMs + lcpBorderlineRetestWindowMs &&
-      lighthouseMetrics.cls <= 0.1 &&
-      lighthouseMetrics.tbt <= 600
-    ) {
-      process.stdout.write(
-        `Borderline synthetic LCP exceeded the CI ceiling by ${Math.round(lighthouseMetrics.lcp - lcpCiCeilingMs)}ms; retrying Lighthouse once without rerunning the functional browser qualification.\\n`,
+      assert.ok(
+        lighthouseMetrics.cls <= 0.1,
+        `Mobile CLS regressed above 0.1: ${lighthouseMetrics.cls}`,
       );
-      lighthouseMetrics = runMobileLighthouse(2);
-      writeLighthouseObservation(2, lighthouseMetrics);
+      assert.ok(
+        lighthouseMetrics.tbt <= 600,
+        `Mobile TBT regressed above 600ms: ${lighthouseMetrics.tbt}ms`,
+      );
+    } else {
+      process.stdout.write(
+        'Lighthouse performance qualification is isolated in its dedicated CI gate.\n',
+      );
     }
-
-    if (
-      lighthouseMetrics.lcp > lcpTargetMs &&
-      lighthouseMetrics.lcp <= lcpCiCeilingMs
-    ) {
-      process.stdout.write(
-        `Mobile simulated LCP exceeded the 4.5s target by ${Math.round(lighthouseMetrics.lcp - lcpTargetMs)}ms but remained within the ${lcpCiVarianceAllowanceMs}ms synthetic-runner variance allowance.\\n`,
-      );
-    }
-
-    assert.ok(
-      lighthouseMetrics.lcp <= lcpCiCeilingMs,
-      `Mobile simulated LCP exceeded the 4.5s target plus ${lcpCiVarianceAllowanceMs}ms CI variance allowance after qualification: ${lighthouseMetrics.lcp}ms`,
-    );
-    assert.ok(
-      lighthouseMetrics.cls <= 0.1,
-      `Mobile CLS regressed above 0.1: ${lighthouseMetrics.cls}`,
-    );
-    assert.ok(
-      lighthouseMetrics.tbt <= 600,
-      `Mobile TBT regressed above 600ms: ${lighthouseMetrics.tbt}ms`,
-    );
 
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     try {
