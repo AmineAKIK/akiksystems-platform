@@ -8871,15 +8871,17 @@ async function assertAxe(page) {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-    await assertHomePortal(page, 'en');
-    await assertHomePortal(page, 'fr');
+    if (browserShard !== 'content') {
+      await assertHomePortal(page, 'en');
+      await assertHomePortal(page, 'fr');
 
-    await assertIntentPrefetching(browser);
+      await assertIntentPrefetching(browser);
 
-    await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
-    await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
-    await assertStaticHomeOrientation(browser, 'en', { width: 320, height: 720 });
-    await assertStaticHomeOrientation(browser, 'fr', { width: 320, height: 720 });
+      await assertStaticHomeOrientation(browser, 'en', { width: 1280, height: 800 });
+      await assertStaticHomeOrientation(browser, 'fr', { width: 1280, height: 800 });
+      await assertStaticHomeOrientation(browser, 'en', { width: 320, height: 720 });
+      await assertStaticHomeOrientation(browser, 'fr', { width: 320, height: 720 });
+    }
 
     await page.goto(`${origin}/admin/login`);
     await page
@@ -9442,10 +9444,10 @@ async function assertAxe(page) {
 
     process.stdout.write(
       browserShard === 'platform'
-        ? 'AkikSystems platform browser shard passed: Home, Profile, legal/privacy utility pages, Work with us, Systems, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, and no-JS reading are verified.\\n'
+        ? 'AkikSystems platform browser shard passed: Home, Profile, legal/privacy utility pages, Work with us, Systems, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, and no-JS reading are verified.\n'
         : skipLighthouse
-          ? 'AkikSystems functional browser qualification passed without the isolated Lighthouse gate.\\n'
-          : 'AkikSystems full browser qualification passed: Home, Profile, Systems, EN/FR publication, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, Lighthouse performance, and no-JS reading are verified.\\n',
+          ? 'AkikSystems functional browser qualification passed without the isolated Lighthouse gate.\n'
+          : 'AkikSystems full browser qualification passed: Home, Profile, Systems, EN/FR publication, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, Lighthouse performance, and no-JS reading are verified.\n',
     );
   } finally {
     await browser.close();
