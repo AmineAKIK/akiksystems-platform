@@ -166,6 +166,7 @@ export async function action({ request }: Route.ActionArgs) {
 
       if (/\bcssov\b/i.test(publicCopy)) {
         return {
+          scope: 'commercial' as const,
           ok: false,
           message:
             'Public collaboration copy must describe the practice directly without naming CSSOV.',
@@ -207,6 +208,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
 
       return {
+        scope: 'commercial' as const,
         ok: true,
         message: `${locale.toUpperCase()} Work with us draft saved.`,
       };
@@ -216,6 +218,7 @@ export async function action({ request }: Route.ActionArgs) {
       await publishCommercialPageLocalization(db, commercialPage.id, locale);
     } catch (error) {
       return {
+        scope: 'commercial' as const,
         ok: false,
         message:
           error instanceof Error
@@ -237,6 +240,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return {
+      scope: 'commercial' as const,
       ok: true,
       message: `${locale.toUpperCase()} Work with us content published.`,
     };
@@ -244,6 +248,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (intent.includes('commercial-localization')) {
     return {
+      scope: 'commercial' as const,
       ok: false,
       message: 'Invalid Work with us administration command.',
     };
@@ -457,7 +462,8 @@ export default function Admin() {
               </Text>
               {actionData !== undefined &&
               actionData !== null &&
-              'message' in actionData ? (
+              'scope' in actionData &&
+              actionData.scope === 'commercial' ? (
                 <Text
                   role={actionData.ok === false ? 'alert' : 'status'}
                   size="sm"
