@@ -101,6 +101,23 @@ export type {
   PublishedCommercialPage,
 } from './commercial-page.js';
 
+export {
+  getPublishedLegalPage,
+  isLegalPageKey,
+  legalPageDescription,
+  legalPageKeys,
+  listPublishedLegalPageKeys,
+  parseLegalPageDraftDocument,
+  parseLegalPagePublicationSnapshot,
+  publishLegalPageLocalization,
+  unpublishLegalPageLocalization,
+} from './legal-page.js';
+export type {
+  LegalPageKey,
+  LegalPagePublicationSnapshot,
+  PublishedLegalPage,
+} from './legal-page.js';
+
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
   PublicProfile,
@@ -216,6 +233,18 @@ export type {
   WritingSystemRow,
   WritingSystemsTable,
   WritingSystemUpdate,
+  LegalPageLocalizationRow,
+  LegalPageLocalizationsTable,
+  LegalPageLocalizationUpdate,
+  LegalPagePublicationRow,
+  LegalPagePublicationsTable,
+  LegalPagePublicationUpdate,
+  LegalPageRow,
+  LegalPagesTable,
+  LegalPageUpdate,
+  NewLegalPageLocalizationRow,
+  NewLegalPagePublicationRow,
+  NewLegalPageRow,
   Database,
   ExperienceLocalizationRow,
   ExperienceLocalizationUpdate,
