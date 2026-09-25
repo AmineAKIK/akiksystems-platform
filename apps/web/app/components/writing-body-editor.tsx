@@ -185,14 +185,21 @@ export function WritingBodyEditor({
   assets,
   initialDocument,
   locale,
+  label: labelOverride,
+  allowCode = true,
+  allowMedia = true,
 }: {
   assets: WritingBodyAsset[];
   initialDocument: WritingEditorDocument;
   locale: 'en' | 'fr';
+  label?: string;
+  allowCode?: boolean;
+  allowMedia?: boolean;
 }) {
   const documentInput = useRef<HTMLInputElement>(null);
   const bodyInput = useRef<HTMLInputElement>(null);
-  const label = locale === 'fr' ? 'Corps de l’écrit' : 'Writing body';
+  const label =
+    labelOverride ?? (locale === 'fr' ? 'Corps de l’écrit' : 'Writing body');
 
   const syncDocument = (value: unknown) => {
     const record =
@@ -396,17 +403,19 @@ export function WritingBodyEditor({
         >
           {labels.quote}
         </button>
-        <button
-          onClick={() =>
-            insertBlock({
-              type: 'codeBlock',
-              content: [{ type: 'text', text: labels.codeText }],
-            })
-          }
-          type="button"
-        >
-          {labels.code}
-        </button>
+        {allowCode ? (
+                  <button
+                    onClick={() =>
+                      insertBlock({
+                        type: 'codeBlock',
+                        content: [{ type: 'text', text: labels.codeText }],
+                      })
+                    }
+                    type="button"
+                  >
+                    {labels.code}
+                  </button>
+        ) : null}
         <button
           onClick={() =>
             insertBlock({
@@ -423,71 +432,77 @@ export function WritingBodyEditor({
         >
           {labels.callout}
         </button>
-        <button
-          disabled={galleryAssets.length < 2}
-          onClick={() =>
-            insertBlock({
-              type: 'gallery',
-              content: galleryAssets.map((asset) => ({
-                type: 'image',
-                attrs: { assetId: asset.id },
-              })),
-            })
-          }
-          title={
-            galleryAssets.length < 2
-              ? locale === 'fr'
-                ? 'Deux médias localisés sont nécessaires.'
-                : 'Two localized media items are required.'
-              : undefined
-          }
-          type="button"
-        >
-          {labels.gallery}
-        </button>
+        {allowMedia ? (
+                  <button
+                    disabled={galleryAssets.length < 2}
+                    onClick={() =>
+                      insertBlock({
+                        type: 'gallery',
+                        content: galleryAssets.map((asset) => ({
+                          type: 'image',
+                          attrs: { assetId: asset.id },
+                        })),
+                      })
+                    }
+                    title={
+                      galleryAssets.length < 2
+                        ? locale === 'fr'
+                          ? 'Deux médias localisés sont nécessaires.'
+                          : 'Two localized media items are required.'
+                        : undefined
+                    }
+                    type="button"
+                  >
+                    {labels.gallery}
+                  </button>
+        ) : null}
       </div>
 
       <EditorContent editor={editor} />
 
-      <div className="aks-writing-editor-assets">
-        <span>
-          {locale === 'fr'
-            ? 'Insérer un média de ce Writing'
-            : 'Insert media from this Writing'}
-        </span>
-        {assets.length === 0 ? (
-          <span className="aks-writing-editor-note">
-            {locale === 'fr'
-              ? 'Aucun média contextuel. Téléverse un média dans cette fiche Writing.'
-              : 'No contextual media. Upload media in this Writing card first.'}
-          </span>
-        ) : (
-          <div className="aks-proof-actions">
-            {assets.map((asset) => (
-              <button
-                disabled={asset.altText === null}
-                key={asset.id}
-                onClick={() => {
-                  insertBlock({
-                    type: 'image',
-                    attrs: { assetId: asset.id },
-                  });
-                }}
-                title={
-                  asset.altText === null
-                    ? locale === 'fr'
-                      ? 'Ajoute d’abord le texte alternatif français.'
-                      : 'Add English alt text first.'
-                    : asset.caption ?? asset.altText
-                }
-                type="button"
-              >
-                {locale === 'fr' ? 'Insérer' : 'Insert'} · {asset.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {allowMedia ? (
+        <>
+                <div className="aks-writing-editor-assets">
+                  <span>
+                    {locale === 'fr'
+                      ? 'Insérer un média de ce Writing'
+                      : 'Insert media from this Writing'}
+                  </span>
+                  {assets.length === 0 ? (
+                    <span className="aks-writing-editor-note">
+                      {locale === 'fr'
+                        ? 'Aucun média contextuel. Téléverse un média dans cette fiche Writing.'
+                        : 'No contextual media. Upload media in this Writing card first.'}
+                    </span>
+                  ) : (
+                    <div className="aks-proof-actions">
+                      {assets.map((asset) => (
+                        <button
+                          disabled={asset.altText === null}
+                          key={asset.id}
+                          onClick={() => {
+                            insertBlock({
+                              type: 'image',
+                              attrs: { assetId: asset.id },
+                            });
+                          }}
+                          title={
+                            asset.altText === null
+                              ? locale === 'fr'
+                                ? 'Ajoute d’abord le texte alternatif français.'
+                                : 'Add English alt text first.'
+                              : asset.caption ?? asset.altText
+                          }
+                          type="button"
+                        >
+                          {locale === 'fr' ? 'Insérer' : 'Insert'} · {asset.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+        </>
+      ) : null}
 
       <input
         defaultValue={initialDocumentJson}
