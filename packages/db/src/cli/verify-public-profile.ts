@@ -522,6 +522,27 @@ try {
   );
 
   await db
+    .insertInto('profile_technology_journey_stage_localizations')
+    .values([
+      { profile_id: profileId, stage_key: 'programming', locale: 'en', title: 'Programming qualification', summary: null },
+      { profile_id: profileId, stage_key: 'programming', locale: 'fr', title: 'Qualification programmation', summary: null },
+      { profile_id: profileId, stage_key: 'networks_telecom', locale: 'en', title: 'Networks qualification', summary: null },
+      { profile_id: profileId, stage_key: 'networks_telecom', locale: 'fr', title: 'Qualification réseaux', summary: null },
+      { profile_id: profileId, stage_key: 'it_support', locale: 'en', title: 'IT support qualification', summary: null },
+      { profile_id: profileId, stage_key: 'it_support', locale: 'fr', title: 'Qualification support informatique', summary: null },
+      { profile_id: profileId, stage_key: 'industry', locale: 'en', title: 'Industry qualification', summary: null },
+      { profile_id: profileId, stage_key: 'industry', locale: 'fr', title: 'Qualification industrie', summary: null },
+      { profile_id: profileId, stage_key: 'development_akiksystems', locale: 'en', title: 'Development qualification', summary: null },
+      { profile_id: profileId, stage_key: 'development_akiksystems', locale: 'fr', title: 'Qualification développement', summary: null },
+    ])
+    .onConflict((conflict) =>
+      conflict
+        .columns(['profile_id', 'stage_key', 'locale'])
+        .doNothing(),
+    )
+    .execute();
+
+  await db
     .updateTable('profile_technology_journey_stages')
     .set({
       evidence_system_id: secondSystemId,
