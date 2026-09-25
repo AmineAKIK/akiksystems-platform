@@ -7,14 +7,15 @@ export const app: Application = express();
 function runtimeAllowedActionOrigins(build: ServerBuild): string[] | undefined {
   const publicUrl = process.env.BETTER_AUTH_URL;
 
-  if (publicUrl === undefined) {
-    return build.allowedActionOrigins;
-  }
-
-  const publicHost = new URL(publicUrl).host;
   const configured = Array.isArray(build.allowedActionOrigins)
     ? build.allowedActionOrigins
     : [];
+
+  if (publicUrl === undefined) {
+    return configured.length === 0 ? undefined : configured;
+  }
+
+  const publicHost = new URL(publicUrl).host;
 
   return [...new Set([...configured, publicHost])];
 }
