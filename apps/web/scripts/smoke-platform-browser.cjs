@@ -2036,7 +2036,7 @@ async function publishLegalPageLocale(page, fixture) {
   );
 
   const reloaded = legalAdminFieldset(page, fixture.pageKey, fixture.locale);
-  await reloaded.getByText('Public snapshot available', { exact: true }).waitFor();
+  await reloaded.getByText(/Public snapshot available/).waitFor();
   await reloaded.getByRole('link', { name: 'Open public', exact: true }).waitFor();
 }
 
