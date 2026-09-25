@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { useActionData, useLoaderData } from 'react-router';
 
 import { WorkWithUsAdminSection } from '../components/admin-work-with-us-section';
+import { WorkWithUsSystemsSection } from '../components/admin-work-with-us-systems-section';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
@@ -20,6 +21,19 @@ function field(form: FormData, name: string): string {
 function optionalField(form: FormData, name: string): string | null {
   const value = field(form, name);
   return value === '' ? null : value;
+}
+
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function requiredSystemId(form: FormData): string {
+  const systemId = field(form, 'systemId');
+
+  if (!uuidPattern.test(systemId)) {
+    throw new Response('System not found.', { status: 404 });
+  }
+
+  return systemId;
 }
 
 function workWithUsContentFromForm(form: FormData) {
@@ -129,24 +143,86 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await requireAdminSession(request);
   const page = await ensureWorkWithUsPage();
 
-  const [localizations, publications] = await Promise.all([
-    appDb
-      .selectFrom('work_with_us_localizations')
-      .selectAll()
-      .where('page_id', '=', page.id)
-      .execute(),
-    appDb
-      .selectFrom('work_with_us_publications')
-      .select(['locale', 'published_at', 'updated_at'])
-      .where('page_id', '=', page.id)
-      .execute(),
-  ]);
+  const [localizations, publications, systemRows, selectedSystemRows] =
+    await Promise.all([
+      appDb
+        .selectFrom('work_with_us_localizations')
+        .selectAll()
+        .where('page_id', '=', page.id)
+        .execute(),
+      appDb
+        .selectFrom('work_with_us_publications')
+        .select(['locale', 'published_at', 'updated_at'])
+        .where('page_id', '=', page.id)
+        .execute(),
+      appDb
+        .selectFrom('systems')
+        .leftJoin(
+          'system_localizations as system_en',
+          (join) =>
+            join
+              .onRef('system_en.system_id', '=', 'systems.id')
+              .on('system_en.locale', '=', 'en'),
+        )
+        .leftJoin(
+          'system_localizations as system_fr',
+          (join) =>
+            join
+              .onRef('system_fr.system_id', '=', 'systems.id')
+              .on('system_fr.locale', '=', 'fr'),
+        )
+        .leftJoin(
+          'system_publications as publication_en',
+          (join) =>
+            join
+              .onRef('publication_en.system_id', '=', 'systems.id')
+              .on('publication_en.locale', '=', 'en'),
+        )
+        .leftJoin(
+          'system_publications as publication_fr',
+          (join) =>
+            join
+              .onRef('publication_fr.system_id', '=', 'systems.id')
+              .on('publication_fr.locale', '=', 'fr'),
+        )
+        .select([
+          'systems.id',
+          'systems.lifecycle',
+          'systems.editorial_position',
+          'system_en.title as title_en',
+          'system_fr.title as title_fr',
+          'publication_en.system_id as published_en_system_id',
+          'publication_fr.system_id as published_fr_system_id',
+        ])
+        .orderBy('systems.editorial_position')
+        .orderBy('systems.created_at')
+        .orderBy('systems.id')
+        .execute(),
+      appDb
+        .selectFrom('work_with_us_systems')
+        .select(['system_id', 'position'])
+        .where('page_id', '=', page.id)
+        .orderBy('position')
+        .execute(),
+    ]);
 
   return {
     email: session.user.email,
     pageId: page.id,
     localizations,
     publications,
+    systems: systemRows.map((system) => ({
+      id: system.id,
+      lifecycle: system.lifecycle,
+      titleEn: system.title_en,
+      titleFr: system.title_fr,
+      publishedEn: system.published_en_system_id !== null,
+      publishedFr: system.published_fr_system_id !== null,
+    })),
+    selectedSystems: selectedSystemRows.map((selection) => ({
+      systemId: selection.system_id,
+      position: selection.position,
+    })),
   };
 }
 
@@ -154,16 +230,246 @@ export async function action({ request }: Route.ActionArgs) {
   const session = await requireAdminSession(request);
   const form = await request.formData();
   const intent = field(form, '_intent');
+  const page = await ensureWorkWithUsPage();
+
+  if (intent === 'add-work-with-us-system') {
+    const systemId = requiredSystemId(form);
+    const system = await appDb
+      .selectFrom('systems')
+      .select(['id', 'lifecycle'])
+      .where('id', '=', systemId)
+      .executeTakeFirst();
+
+    if (system === undefined || system.lifecycle !== 'active') {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'Only active Systems can be selected.',
+      };
+    }
+
+    const selected = await appDb
+      .selectFrom('work_with_us_systems')
+      .select(['system_id', 'position'])
+      .where('page_id', '=', page.id)
+      .orderBy('position')
+      .execute();
+
+    if (selected.some((selection) => selection.system_id === systemId)) {
+      return {
+        scope: 'systems' as const,
+        ok: true,
+        message: 'System is already selected.',
+      };
+    }
+
+    if (selected.length >= 4) {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'Work with us can display at most four Systems.',
+      };
+    }
+
+    const usedPositions = new Set(selected.map(({ position }) => position));
+    const position = [0, 1, 2, 3].find(
+      (candidate) => !usedPositions.has(candidate),
+    );
+
+    if (position === undefined) {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'No Work with us System position is available.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('work_with_us_systems')
+        .values({
+          page_id: page.id,
+          system_id: systemId,
+          position,
+        })
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'work_with_us.system_selected',
+        entityType: 'work_with_us',
+        entityId: page.id,
+        systemId,
+        metadata: { position },
+      });
+    });
+
+    return {
+      scope: 'systems' as const,
+      ok: true,
+      message: 'System added to Work with us.',
+    };
+  }
+
+  if (intent === 'remove-work-with-us-system') {
+    const systemId = requiredSystemId(form);
+    const selected = await appDb
+      .selectFrom('work_with_us_systems')
+      .select(['system_id', 'position'])
+      .where('page_id', '=', page.id)
+      .orderBy('position')
+      .execute();
+
+    if (!selected.some((selection) => selection.system_id === systemId)) {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'System is not selected.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('work_with_us_systems')
+        .where('page_id', '=', page.id)
+        .where('system_id', '=', systemId)
+        .execute();
+
+      const remaining = await transaction
+        .selectFrom('work_with_us_systems')
+        .select(['system_id', 'position'])
+        .where('page_id', '=', page.id)
+        .orderBy('position')
+        .execute();
+
+      for (const [index, selection] of remaining.entries()) {
+        if (selection.position === index) continue;
+
+        await transaction
+          .updateTable('work_with_us_systems')
+          .set({ position: index })
+          .where('page_id', '=', page.id)
+          .where('system_id', '=', selection.system_id)
+          .execute();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'work_with_us.system_removed',
+        entityType: 'work_with_us',
+        entityId: page.id,
+        systemId,
+        metadata: {},
+      });
+    });
+
+    return {
+      scope: 'systems' as const,
+      ok: true,
+      message: 'System removed from Work with us.',
+    };
+  }
+
+  if (intent === 'move-work-with-us-system') {
+    const systemId = requiredSystemId(form);
+    const direction = field(form, 'direction');
+
+    if (direction !== 'up' && direction !== 'down') {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'Invalid System move direction.',
+      };
+    }
+
+    const selected = await appDb
+      .selectFrom('work_with_us_systems')
+      .select(['system_id', 'position'])
+      .where('page_id', '=', page.id)
+      .orderBy('position')
+      .execute();
+    const currentIndex = selected.findIndex(
+      (selection) => selection.system_id === systemId,
+    );
+
+    if (currentIndex === -1) {
+      return {
+        scope: 'systems' as const,
+        ok: false,
+        message: 'System is not selected.',
+      };
+    }
+
+    const targetIndex =
+      direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const current = selected[currentIndex];
+    const target = selected[targetIndex];
+
+    if (current === undefined || target === undefined) {
+      return {
+        scope: 'systems' as const,
+        ok: true,
+        message: 'System is already at that boundary.',
+      };
+    }
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .deleteFrom('work_with_us_systems')
+        .where('page_id', '=', page.id)
+        .where('system_id', 'in', [current.system_id, target.system_id])
+        .execute();
+
+      await transaction
+        .insertInto('work_with_us_systems')
+        .values([
+          {
+            page_id: page.id,
+            system_id: current.system_id,
+            position: target.position,
+          },
+          {
+            page_id: page.id,
+            system_id: target.system_id,
+            position: current.position,
+          },
+        ])
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'work_with_us.system_order_changed',
+        entityType: 'work_with_us',
+        entityId: page.id,
+        systemId,
+        metadata: {
+          direction,
+          previousPosition: current.position,
+          position: target.position,
+        },
+      });
+    });
+
+    return {
+      scope: 'systems' as const,
+      ok: true,
+      message: 'Work with us System order updated.',
+    };
+  }
+
   const command = parseWorkWithUsAdminCommand(intent);
 
   if (command === null) {
     return {
+      scope: 'content' as const,
       ok: false,
       message: 'Unsupported Work with us operation.',
     };
   }
 
-  const page = await ensureWorkWithUsPage();
   const { locale, operation } = command;
 
   if (operation === 'save') {
@@ -172,6 +478,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     if (/\bcssov\b/i.test(publicCopy)) {
       return {
+        scope: 'content' as const,
         ok: false,
         message:
           'Public collaboration copy must describe the practice directly without naming CSSOV.',
@@ -213,6 +520,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return {
+      scope: 'content' as const,
       ok: true,
       message: `${locale.toUpperCase()} Work with us draft saved.`,
     };
@@ -222,6 +530,7 @@ export async function action({ request }: Route.ActionArgs) {
     await publishWorkWithUsLocalization(appDb, page.id, locale);
   } catch (error) {
     return {
+      scope: 'content' as const,
       ok: false,
       message:
         error instanceof Error
@@ -243,6 +552,7 @@ export async function action({ request }: Route.ActionArgs) {
   });
 
   return {
+    scope: 'content' as const,
     ok: true,
     message: `${locale.toUpperCase()} Work with us content published.`,
   };
@@ -279,8 +589,18 @@ export default function AdminWorkWithUs() {
             </div>
           </section>
 
+          <WorkWithUsSystemsSection
+            actionData={
+              actionData?.scope === 'systems' ? actionData : null
+            }
+            selectedSystems={data.selectedSystems}
+            systems={data.systems}
+          />
+
           <WorkWithUsAdminSection
-            actionData={actionData}
+            actionData={
+              actionData?.scope === 'content' ? actionData : null
+            }
             localizations={data.localizations}
             publications={data.publications}
           />
