@@ -1,13 +1,17 @@
+import { listPublishedLegalPageKeys } from '@akiksystems/db';
 import { Outlet, useLoaderData, useLocation, useMatches } from 'react-router';
 
 import { ExperienceShell } from '../components/experience-shell';
 import { requireLocale, type Locale } from '../i18n/locales';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/locale-layout';
 
-export function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale);
   return {
-    locale: requireLocale(params.locale),
+    locale,
+    publishedLegalPageKeys: await listPublishedLegalPageKeys(appDb, locale),
   };
 }
 
@@ -39,7 +43,7 @@ function localContext(matches: ReturnType<typeof useMatches>) {
 }
 
 export default function LocaleLayout() {
-  const { locale } = useLoaderData<typeof loader>();
+  const { locale, publishedLegalPageKeys } = useLoaderData<typeof loader>();
   const location = useLocation();
   const matches = useMatches();
   const context = localContext(matches);
@@ -51,6 +55,7 @@ export default function LocaleLayout() {
       locale={locale as Locale}
       mode={context.shellMode ?? 'default'}
       pathname={location.pathname}
+      publishedLegalPageKeys={publishedLegalPageKeys}
     >
       <Outlet />
     </ExperienceShell>
