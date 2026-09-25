@@ -8892,6 +8892,25 @@ async function assertAxe(page) {
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL(`${origin}/admin`);
 
+    if (browserShard === 'content') {
+      const sentinel = await context.request.get(
+        `${origin}/en/systems/sentinel`,
+      );
+      assert.equal(
+        sentinel.status(),
+        200,
+        'The content shard requires the isolated published Sentinel CI fixture.',
+      );
+
+      bootstrapL4QualificationSystems();
+      await runEditorialAndLearningQualification(browser, page);
+
+      process.stdout.write(
+        'AkikSystems content browser shard passed: Writings and Learning admin/publication, search/filtering, long-form reading, credentials, artifacts, DWWM, Sentinel dossier, responsive behavior, SEO, and accessibility are verified.\n',
+      );
+      return;
+    }
+
     await assertProfileAdministration(page);
     await assertLegalPageAdministration(page);
 
