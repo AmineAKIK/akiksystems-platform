@@ -313,6 +313,7 @@ export function WorkWithUsView({
 
               {contactFormVisible && activeSubmissionToken !== undefined ? (
                 <Form
+                  aria-busy={inquirySubmitting || undefined}
                   className="aks-work-with-us-inquiry-form"
                   key={activeSubmissionToken}
                   method="post"
