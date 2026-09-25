@@ -3,12 +3,9 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
-export interface CommercialPagePublicationSnapshot {
-  version: 1;
-  pageId: string;
-  locale: PlatformLocale;
-  title: string;
-  introduction: string;
+export type WorkWithUsApproachStepKey = 'understand' | 'structure' | 'build';
+
+export interface CommercialPageLegacyCompatibility {
   situationsTitle: string | null;
   situationsBody: string | null;
   capabilitiesTitle: string | null;
@@ -20,38 +17,93 @@ export interface CommercialPagePublicationSnapshot {
   privacyNote: string | null;
 }
 
+export interface CommercialPagePublicationSnapshotV1
+  extends CommercialPageLegacyCompatibility {
+  version: 1;
+  pageId: string;
+  locale: PlatformLocale;
+  title: string;
+  introduction: string;
+}
+
+export interface WorkWithUsApproachStep {
+  key: WorkWithUsApproachStepKey;
+  title: string | null;
+  body: string | null;
+}
+
+export interface CommercialPagePublicationSnapshotV2 {
+  version: 2;
+  pageId: string;
+  locale: PlatformLocale;
+  hero: {
+    eyebrow: string | null;
+    title: string;
+    introduction: string;
+  };
+  approach: {
+    eyebrow: string | null;
+    title: string | null;
+    introduction: string | null;
+    steps: [
+      WorkWithUsApproachStep,
+      WorkWithUsApproachStep,
+      WorkWithUsApproachStep,
+    ];
+  };
+  contact: {
+    eyebrow: string | null;
+    title: string | null;
+    introduction: string | null;
+    nameLabel: string | null;
+    emailLabel: string | null;
+    organizationLabel: string | null;
+    messageLabel: string | null;
+    messagePlaceholder: string | null;
+    listenLabel: string | null;
+    submitLabel: string | null;
+    successMessage: string | null;
+    privacyNote: string | null;
+  };
+  about: {
+    eyebrow: string | null;
+    title: string | null;
+    body: string | null;
+    profileLinkLabel: string | null;
+  };
+  systems: {
+    eyebrow: string | null;
+    title: string | null;
+    introduction: string | null;
+    allSystemsLinkLabel: string | null;
+  };
+  legacy: CommercialPageLegacyCompatibility;
+}
+
+export type CommercialPagePublicationSnapshot =
+  | CommercialPagePublicationSnapshotV1
+  | CommercialPagePublicationSnapshotV2;
+
 export type PublishedCommercialPage = CommercialPagePublicationSnapshot;
 
 function nullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
-export function parseCommercialPagePublicationSnapshot(
-  value: unknown,
-): CommercialPagePublicationSnapshot | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    return null;
-  }
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
 
-  const record = value as Record<string, unknown>;
-  if (
-    record.version !== 1 ||
-    typeof record.pageId !== 'string' ||
-    (record.locale !== 'en' && record.locale !== 'fr') ||
-    typeof record.title !== 'string' ||
-    record.title.trim() === '' ||
-    typeof record.introduction !== 'string' ||
-    record.introduction.trim() === ''
-  ) {
-    return null;
-  }
+function objectRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
 
+function parseLegacyCompatibility(
+  record: Record<string, unknown>,
+): CommercialPageLegacyCompatibility {
   return {
-    version: 1,
-    pageId: record.pageId,
-    locale: record.locale,
-    title: record.title,
-    introduction: record.introduction,
     situationsTitle: nullableString(record.situationsTitle),
     situationsBody: nullableString(record.situationsBody),
     capabilitiesTitle: nullableString(record.capabilitiesTitle),
@@ -64,11 +116,188 @@ export function parseCommercialPagePublicationSnapshot(
   };
 }
 
+function parseApproachStep(
+  value: unknown,
+  key: WorkWithUsApproachStepKey,
+): WorkWithUsApproachStep | null {
+  const record = objectRecord(value);
+  if (record === null || record.key !== key) return null;
+
+  return {
+    key,
+    title: nullableString(record.title),
+    body: nullableString(record.body),
+  };
+}
+
+function parseV2(
+  record: Record<string, unknown>,
+): CommercialPagePublicationSnapshotV2 | null {
+  if (
+    record.version !== 2 ||
+    typeof record.pageId !== 'string' ||
+    (record.locale !== 'en' && record.locale !== 'fr')
+  ) {
+    return null;
+  }
+
+  const hero = objectRecord(record.hero);
+  const approach = objectRecord(record.approach);
+  const contact = objectRecord(record.contact);
+  const about = objectRecord(record.about);
+  const systems = objectRecord(record.systems);
+  const legacy = objectRecord(record.legacy);
+  const heroTitle = nonEmptyString(hero?.title);
+  const heroIntroduction = nonEmptyString(hero?.introduction);
+
+  if (
+    hero === null ||
+    approach === null ||
+    contact === null ||
+    about === null ||
+    systems === null ||
+    legacy === null ||
+    heroTitle === null ||
+    heroIntroduction === null ||
+    !Array.isArray(approach.steps) ||
+    approach.steps.length !== 3
+  ) {
+    return null;
+  }
+
+  const understand = parseApproachStep(approach.steps[0], 'understand');
+  const structure = parseApproachStep(approach.steps[1], 'structure');
+  const build = parseApproachStep(approach.steps[2], 'build');
+
+  if (understand === null || structure === null || build === null) return null;
+
+  return {
+    version: 2,
+    pageId: record.pageId,
+    locale: record.locale,
+    hero: {
+      eyebrow: nullableString(hero.eyebrow),
+      title: heroTitle,
+      introduction: heroIntroduction,
+    },
+    approach: {
+      eyebrow: nullableString(approach.eyebrow),
+      title: nullableString(approach.title),
+      introduction: nullableString(approach.introduction),
+      steps: [understand, structure, build],
+    },
+    contact: {
+      eyebrow: nullableString(contact.eyebrow),
+      title: nullableString(contact.title),
+      introduction: nullableString(contact.introduction),
+      nameLabel: nullableString(contact.nameLabel),
+      emailLabel: nullableString(contact.emailLabel),
+      organizationLabel: nullableString(contact.organizationLabel),
+      messageLabel: nullableString(contact.messageLabel),
+      messagePlaceholder: nullableString(contact.messagePlaceholder),
+      listenLabel: nullableString(contact.listenLabel),
+      submitLabel: nullableString(contact.submitLabel),
+      successMessage: nullableString(contact.successMessage),
+      privacyNote: nullableString(contact.privacyNote),
+    },
+    about: {
+      eyebrow: nullableString(about.eyebrow),
+      title: nullableString(about.title),
+      body: nullableString(about.body),
+      profileLinkLabel: nullableString(about.profileLinkLabel),
+    },
+    systems: {
+      eyebrow: nullableString(systems.eyebrow),
+      title: nullableString(systems.title),
+      introduction: nullableString(systems.introduction),
+      allSystemsLinkLabel: nullableString(systems.allSystemsLinkLabel),
+    },
+    legacy: parseLegacyCompatibility(legacy),
+  };
+}
+
+export function parseCommercialPagePublicationSnapshot(
+  value: unknown,
+): CommercialPagePublicationSnapshot | null {
+  const record = objectRecord(value);
+  if (record === null) return null;
+
+  if (record.version === 2) return parseV2(record);
+
+  if (
+    record.version !== 1 ||
+    typeof record.pageId !== 'string' ||
+    (record.locale !== 'en' && record.locale !== 'fr') ||
+    nonEmptyString(record.title) === null ||
+    nonEmptyString(record.introduction) === null
+  ) {
+    return null;
+  }
+
+  return {
+    version: 1,
+    pageId: record.pageId,
+    locale: record.locale,
+    title: record.title as string,
+    introduction: record.introduction as string,
+    ...parseLegacyCompatibility(record),
+  };
+}
+
+export function commercialPageHero(
+  snapshot: CommercialPagePublicationSnapshot,
+): { title: string; introduction: string } {
+  return snapshot.version === 2
+    ? {
+        title: snapshot.hero.title,
+        introduction: snapshot.hero.introduction,
+      }
+    : {
+        title: snapshot.title,
+        introduction: snapshot.introduction,
+      };
+}
+
+export function commercialPageLegacyCompatibility(
+  snapshot: CommercialPagePublicationSnapshot,
+): CommercialPageLegacyCompatibility {
+  return snapshot.version === 2
+    ? snapshot.legacy
+    : {
+        situationsTitle: snapshot.situationsTitle,
+        situationsBody: snapshot.situationsBody,
+        capabilitiesTitle: snapshot.capabilitiesTitle,
+        capabilitiesBody: snapshot.capabilitiesBody,
+        collaborationTitle: snapshot.collaborationTitle,
+        collaborationBody: snapshot.collaborationBody,
+        inquiryTitle: snapshot.inquiryTitle,
+        inquiryBody: snapshot.inquiryBody,
+        privacyNote: snapshot.privacyNote,
+      };
+}
+
+export function patchCommercialPageLegacyCompatibility(
+  snapshot: CommercialPagePublicationSnapshot,
+  patch: Partial<CommercialPageLegacyCompatibility>,
+): CommercialPagePublicationSnapshot {
+  if (snapshot.version === 1) {
+    return { ...snapshot, ...patch };
+  }
+
+  return {
+    ...snapshot,
+    legacy: {
+      ...snapshot.legacy,
+      ...patch,
+    },
+  };
+}
+
 export async function buildCommercialPagePublicationSnapshot(
   db: Kysely<Database>,
   pageId: string,
   locale: PlatformLocale,
-): Promise<CommercialPagePublicationSnapshot> {
+): Promise<CommercialPagePublicationSnapshotV2> {
   const row = await db
     .selectFrom('work_with_us_localizations')
     .select([
@@ -100,12 +329,7 @@ export async function buildCommercialPagePublicationSnapshot(
     );
   }
 
-  return {
-    version: 1,
-    pageId,
-    locale,
-    title: row.title,
-    introduction: row.introduction,
+  const legacy: CommercialPageLegacyCompatibility = {
     situationsTitle: row.situations_title,
     situationsBody: row.situations_body,
     capabilitiesTitle: row.capabilities_title,
@@ -116,13 +340,73 @@ export async function buildCommercialPagePublicationSnapshot(
     inquiryBody: row.inquiry_body,
     privacyNote: row.privacy_note,
   };
+
+  return {
+    version: 2,
+    pageId,
+    locale,
+    hero: {
+      eyebrow: null,
+      title: row.title,
+      introduction: row.introduction,
+    },
+    approach: {
+      eyebrow: null,
+      title: row.collaboration_title,
+      introduction: row.collaboration_body,
+      steps: [
+        {
+          key: 'understand',
+          title: row.situations_title,
+          body: row.situations_body,
+        },
+        {
+          key: 'structure',
+          title: row.capabilities_title,
+          body: row.capabilities_body,
+        },
+        {
+          key: 'build',
+          title: null,
+          body: null,
+        },
+      ],
+    },
+    contact: {
+      eyebrow: null,
+      title: row.inquiry_title,
+      introduction: row.inquiry_body,
+      nameLabel: null,
+      emailLabel: null,
+      organizationLabel: null,
+      messageLabel: null,
+      messagePlaceholder: null,
+      listenLabel: null,
+      submitLabel: null,
+      successMessage: null,
+      privacyNote: row.privacy_note,
+    },
+    about: {
+      eyebrow: null,
+      title: null,
+      body: null,
+      profileLinkLabel: null,
+    },
+    systems: {
+      eyebrow: null,
+      title: null,
+      introduction: null,
+      allSystemsLinkLabel: null,
+    },
+    legacy,
+  };
 }
 
 export async function publishCommercialPageLocalization(
   db: Kysely<Database>,
   pageId: string,
   locale: PlatformLocale,
-): Promise<CommercialPagePublicationSnapshot> {
+): Promise<CommercialPagePublicationSnapshotV2> {
   const snapshot = await buildCommercialPagePublicationSnapshot(
     db,
     pageId,

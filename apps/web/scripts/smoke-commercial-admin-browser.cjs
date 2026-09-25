@@ -4,6 +4,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { chromium } = require('playwright');
+const { Pool } = require('pg');
 
 const adminEmail = process.env.ADMIN_EMAIL;
 const adminPassword = process.env.ADMIN_PASSWORD;
@@ -15,6 +16,7 @@ if (!adminEmail || !adminPassword) {
 const port = '4179';
 const origin = `http://127.0.0.1:${port}`;
 let stderr = '';
+const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const server = spawn(process.execPath, ['server.js'], {
   cwd: path.join(process.cwd(), 'apps/web'),
@@ -132,6 +134,19 @@ async function assertPersisted(card, copy) {
   );
 }
 
+async function assertPublishedSnapshotVersion(locale) {
+  const result = await db.query(
+    'select snapshot from work_with_us_publications where locale = $1',
+    [locale],
+  );
+  assert.equal(result.rowCount, 1);
+  assert.equal(
+    result.rows[0].snapshot.version,
+    2,
+    `${locale.toUpperCase()} Work with us publication must use snapshot v2.`,
+  );
+}
+
 async function assertPublicCopy(page, pathName, copy) {
   const response = await page.goto(origin + pathName);
   assert.equal(response?.status(), 200);
@@ -225,6 +240,7 @@ async function assertPublicCopy(page, pathName, copy) {
       'publish-commercial-localization:en',
       'EN Work with us content published.',
     );
+    await assertPublishedSnapshotVersion('en');
     await assertPublicCopy(page, '/en/work-with-us', english);
 
     await page.goto(`${origin}/admin`);
@@ -246,6 +262,7 @@ async function assertPublicCopy(page, pathName, copy) {
       'publish-commercial-localization:fr',
       'FR Work with us content published.',
     );
+    await assertPublishedSnapshotVersion('fr');
     await assertPublicCopy(page, '/fr/travailler-ensemble', french);
 
     await page.goto(`${origin}/admin`);
@@ -277,6 +294,7 @@ async function assertPublicCopy(page, pathName, copy) {
     process.exitCode = 1;
   })
   .finally(async () => {
+    await db.end();
     server.kill('SIGTERM');
     await Promise.race([
       new Promise((resolve) => server.once('exit', resolve)),

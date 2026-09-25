@@ -4,7 +4,9 @@ import type { PlatformLocale } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
 import {
+  commercialPageLegacyCompatibility,
   parseCommercialPagePublicationSnapshot,
+  patchCommercialPageLegacyCompatibility,
   publishCommercialPageLocalization,
 } from './commercial-page.js';
 import type { Database } from './schema.js';
@@ -146,8 +148,8 @@ export async function bootstrapWorkWithUsOpenSituations(
     );
     if (
       published === null ||
-      published.situationsTitle !== null ||
-      published.situationsBody !== null
+      commercialPageLegacyCompatibility(published).situationsTitle !== null ||
+      commercialPageLegacyCompatibility(published).situationsBody !== null
     ) {
       continue;
     }
@@ -161,11 +163,10 @@ export async function bootstrapWorkWithUsOpenSituations(
     await db
       .updateTable('work_with_us_publications')
       .set({
-        snapshot: {
-          ...published,
+        snapshot: patchCommercialPageLegacyCompatibility(published, {
           situationsTitle: seed.situationsTitle,
           situationsBody: seed.situationsBody,
-        } as unknown as Record<string, unknown>,
+        }) as unknown as Record<string, unknown>,
         published_at: now,
         updated_at: now,
       })
@@ -271,8 +272,8 @@ export async function bootstrapWorkWithUsCapabilities(
     );
     if (
       published === null ||
-      published.capabilitiesTitle !== null ||
-      published.capabilitiesBody !== null
+      commercialPageLegacyCompatibility(published).capabilitiesTitle !== null ||
+      commercialPageLegacyCompatibility(published).capabilitiesBody !== null
     ) {
       continue;
     }
@@ -286,11 +287,10 @@ export async function bootstrapWorkWithUsCapabilities(
     await db
       .updateTable('work_with_us_publications')
       .set({
-        snapshot: {
-          ...published,
+        snapshot: patchCommercialPageLegacyCompatibility(published, {
           capabilitiesTitle: seed.capabilitiesTitle,
           capabilitiesBody: seed.capabilitiesBody,
-        } as unknown as Record<string, unknown>,
+        }) as unknown as Record<string, unknown>,
         published_at: now,
         updated_at: now,
       })
@@ -396,8 +396,8 @@ export async function bootstrapWorkWithUsCollaboration(
     );
     if (
       published === null ||
-      published.collaborationTitle !== null ||
-      published.collaborationBody !== null
+      commercialPageLegacyCompatibility(published).collaborationTitle !== null ||
+      commercialPageLegacyCompatibility(published).collaborationBody !== null
     ) {
       continue;
     }
@@ -411,11 +411,10 @@ export async function bootstrapWorkWithUsCollaboration(
     await db
       .updateTable('work_with_us_publications')
       .set({
-        snapshot: {
-          ...published,
+        snapshot: patchCommercialPageLegacyCompatibility(published, {
           collaborationTitle: seed.collaborationTitle,
           collaborationBody: seed.collaborationBody,
-        } as unknown as Record<string, unknown>,
+        }) as unknown as Record<string, unknown>,
         published_at: now,
         updated_at: now,
       })
