@@ -5,6 +5,7 @@ export default [
   route('admin/login', 'routes/admin-login.tsx'),
   route('admin/two-factor', 'routes/admin-two-factor.tsx'),
   route('admin/security', 'routes/admin-security.tsx'),
+  route('admin/work-with-us', 'routes/admin-work-with-us.tsx'),
   route('admin/profile', 'routes/admin-profile.tsx'),
   route('admin/learning', 'routes/admin-learning.tsx'),
   route('admin/learning/trainings', 'routes/admin-learning-trainings.tsx'),

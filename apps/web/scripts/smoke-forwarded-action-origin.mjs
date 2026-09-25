@@ -57,7 +57,7 @@ async function waitForServer() {
  * @param {string} origin
  */
 function postAdminData(origin) {
-  const body = '_intent=save-commercial-localization%3Aen';
+  const body = '_intent=csrf-boundary-probe';
 
   return new Promise((resolve, reject) => {
     const request = http.request(

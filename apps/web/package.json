@@ -21,8 +21,8 @@
     "typecheck": "react-router typegen && tsc -b",
     "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts",
     "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts",
-    "smoke:admin-commercial": "node scripts/smoke-commercial-admin-browser.cjs",
-    "smoke:forwarded-actions": "node scripts/smoke-forwarded-action-origin.mjs"
+    "smoke:forwarded-actions": "node scripts/smoke-forwarded-action-origin.mjs",
+    "smoke:admin-work-with-us": "node scripts/smoke-work-with-us-admin-browser.cjs"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
