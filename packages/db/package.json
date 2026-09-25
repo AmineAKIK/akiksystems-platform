@@ -71,7 +71,7 @@
     "db:verify-work-with-us-selected-proof": "tsx src/cli/verify-work-with-us-selected-proof.ts",
     "db:verify-sentinel-bootstrap": "tsx src/cli/verify-sentinel-bootstrap.ts",
     "db:verify-legal-pages": "tsx src/cli/verify-legal-pages.ts",
-    "db:bootstrap-sentinel-performance": "tsx src/cli/bootstrap-sentinel-performance.ts"
+    "db:bootstrap-sentinel-ci": "tsx src/cli/bootstrap-sentinel-ci.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
