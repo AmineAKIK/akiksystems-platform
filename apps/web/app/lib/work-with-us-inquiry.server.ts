@@ -1,3 +1,4 @@
+import { createLogger } from '@akiksystems/config/observability';
 import type { PlatformLocale } from '@akiksystems/core';
 import { createWorkWithUsInquiry } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
@@ -10,6 +11,8 @@ import {
   workWithUsInquiryMessage,
   type WorkWithUsInquiryActionData,
 } from './work-with-us-inquiry';
+
+const logger = createLogger({ service: 'web' });
 
 function contentLength(request: Request): number | null {
   const raw = request.headers.get('content-length');
@@ -52,7 +55,9 @@ export async function handleWorkWithUsInquirySubmission(
   let form: FormData;
   try {
     form = await request.formData();
-  } catch {
+  } catch (error) {
+    logger.error('work_with_us.inquiry_persistence_failed', error, { locale });
+
     return actionData(
       {
         ok: false,
@@ -90,6 +95,8 @@ export async function handleWorkWithUsInquirySubmission(
     });
 
     if (result.status === 'rate_limited') {
+      logger.warn('work_with_us.inquiry_rate_limited', { locale });
+
       return actionData(
         {
           ok: false,
