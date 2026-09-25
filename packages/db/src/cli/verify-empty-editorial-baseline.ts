@@ -39,8 +39,6 @@ try {
     'profile_capability_groups',
     'profile_capabilities',
     'profile_languages',
-    'profile_mobility',
-    'profile_technology_journey_stages',
     'profile_experiences',
     'profile_systems',
   ]) {
@@ -70,6 +68,39 @@ try {
     assert.equal(locale.introduction, null);
     assert.equal(locale.foundational_copy, null);
   }
+
+  const mobility = await db
+    .selectFrom('profile_mobility')
+    .select(['worldwide', 'remote', 'relocation'])
+    .where('profile_id', '=', profile.id)
+    .executeTakeFirstOrThrow();
+  assert.deepEqual(mobility, {
+    worldwide: false,
+    remote: false,
+    relocation: false,
+  });
+
+  const journeyStages = await db
+    .selectFrom('profile_technology_journey_stages')
+    .select(['stage_key', 'position', 'evidence_experience_id', 'evidence_system_id'])
+    .where('profile_id', '=', profile.id)
+    .orderBy('position')
+    .execute();
+  assert.deepEqual(
+    journeyStages.map(({ stage_key }) => stage_key),
+    [
+      'programming',
+      'networks_telecom',
+      'it_support',
+      'industry',
+      'development_akiksystems',
+    ],
+  );
+  for (const stage of journeyStages) {
+    assert.equal(stage.evidence_experience_id, null);
+    assert.equal(stage.evidence_system_id, null);
+  }
+  assert.equal(await count('profile_technology_journey_stage_localizations'), 0);
 
   const legalPages = await db
     .selectFrom('legal_pages')
