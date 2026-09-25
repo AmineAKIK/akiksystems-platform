@@ -62,15 +62,15 @@
   max-width: 40rem;
 }
 
-.aks-work-with-us-hero-title {
-  max-width: 13ch !important;
-  font-size: clamp(2.6rem, 2rem + 3vw, 4.75rem) !important;
-  line-height: 0.98 !important;
+.aks-work-with-us .aks-work-with-us-hero-title {
+  max-width: 13ch;
+  font-size: clamp(2.6rem, 2rem + 3vw, 4.75rem);
+  line-height: 0.98;
 }
 
-.aks-work-with-us-hero-introduction {
+.aks-work-with-us .aks-work-with-us-hero-introduction {
   max-width: 50ch;
-  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.18rem) !important;
+  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.18rem);
   line-height: 1.6;
 }
 
@@ -209,10 +209,10 @@
   text-align: center;
 }
 
-.aks-work-with-us-approach-title {
-  max-width: 22ch !important;
-  font-size: clamp(2.35rem, 1.7rem + 2.6vw, 4.15rem) !important;
-  line-height: 1.02 !important;
+.aks-work-with-us .aks-work-with-us-approach-title {
+  max-width: 22ch;
+  font-size: clamp(2.35rem, 1.7rem + 2.6vw, 4.15rem);
+  line-height: 1.02;
 }
 
 .aks-work-with-us-approach-introduction {
@@ -440,7 +440,7 @@
 
 .aks-work-with-us-system-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: var(--aks-space-4);
 }
 
@@ -516,8 +516,8 @@
     padding-block: var(--aks-space-7);
   }
 
-  .aks-work-with-us-hero-title {
-    font-size: clamp(2.45rem, 12vw, 3.7rem) !important;
+  .aks-work-with-us .aks-work-with-us-hero-title {
+    font-size: clamp(2.45rem, 12vw, 3.7rem);
   }
 
   .aks-work-with-us-orbital-field {
@@ -536,8 +536,8 @@
     text-align: left;
   }
 
-  .aks-work-with-us-approach-title {
-    font-size: clamp(2.1rem, 10vw, 3rem) !important;
+  .aks-work-with-us .aks-work-with-us-approach-title {
+    font-size: clamp(2.1rem, 10vw, 3rem);
   }
 
   .aks-work-with-us-approach-steps {
