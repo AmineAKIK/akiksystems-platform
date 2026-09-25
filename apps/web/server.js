@@ -33,6 +33,10 @@ const app = express();
 
 app.disable('x-powered-by');
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function isAdminRequestPath(path) {
   return (
     path === '/admin' ||
