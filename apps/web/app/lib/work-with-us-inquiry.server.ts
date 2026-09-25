@@ -56,7 +56,7 @@ export async function handleWorkWithUsInquirySubmission(
   try {
     form = await request.formData();
   } catch (error) {
-    logger.warn('work_with_us.inquiry_form_parse_failed', { locale });
+    logger.error('work_with_us.inquiry_form_parse_failed', error, { locale });
 
     return actionData(
       {
