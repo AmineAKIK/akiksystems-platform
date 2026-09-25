@@ -24,7 +24,7 @@ export function meta() {
   return [{ title: 'Travailler ensemble · AkikSystems' }];
 }
 
-export default function GlobalDestinationRoute() {
+export default function WorkWithUsRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'fr');
   const { content, systemReferences } = useLoaderData<typeof loader>();
