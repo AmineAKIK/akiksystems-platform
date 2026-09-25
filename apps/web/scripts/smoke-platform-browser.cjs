@@ -9033,37 +9033,17 @@ async function assertAxe(page) {
     ]);
 
     bootstrapL4QualificationSystems();
-    bootstrapL6RendreAttentionEssay();
 
     await assertWorkWithUsContentAdministration(page);
     await assertSystemsOverview(browser);
-    await assertRendreAttentionEssay(browser);
     await assertProtoCapGuidedDemo(browser);
     await assertOriaInteractiveEntry(browser);
     await assertTugeresStandardSystem(browser);
-    await assertWritingAdminAndPublic(page);
-    await assertWritingCategories(page);
-    await assertWritingTags(page);
-    await assertWritingSystemRelations(page);
-    await assertWritingsOverviewIsolation(browser);
-    await assertLightweightNoteAuthoring(page);
-    await assertWritingFiltering(page);
-    await assertWritingSearch(page);
-    await assertRealArticleAuthoringFromAdmin(page);
-    await assertLongFormMobileReading(browser);
-    await assertTrainingPublicJourney(browser);
-    await assertCredentialPublicJourney(browser);
-    await assertCredentialAdmin(page);
-    await assertFutureCredentialExtensibility(page);
-    await assertLearningArtifactPublicJourney(browser);
-    await assertLearningOverviewExperience(browser);
-    await assertLearningSeo(browser);
-    await assertLearningArtifactAdmin(page);
-    await assertStandaloneLearningArtifactExtensibility(page);
-    await assertLearningAdminWorkspace(page);
-    await assertDwwmTrainingJourney(browser, page);
-    await assertSentinelDossierJourney(browser, page);
-    await assertLearningInspectionDepth(browser);
+
+    if (browserShard === 'full') {
+      await runEditorialAndLearningQualification(browser, page);
+    }
+
     await assertTechnicalEvaluatorPaths(browser);
 
     await assertRepresentativeSystemSelection(page);
