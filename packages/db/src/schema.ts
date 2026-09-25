@@ -155,6 +155,32 @@ export interface WorkWithUsPublicationsTable {
   updated_at: TimestampColumn;
 }
 
+export interface LegalPagesTable {
+  id: string;
+  page_key: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface LegalPageLocalizationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  title: string | null;
+  editor_document: Record<string, unknown> | null;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface LegalPagePublicationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface ProfileWorkPrinciplesTable {
   id: string;
   profile_id: string;
@@ -599,6 +625,18 @@ export type WorkWithUsPublicationRow = Selectable<WorkWithUsPublicationsTable>;
 export type NewWorkWithUsPublicationRow = Insertable<WorkWithUsPublicationsTable>;
 export type WorkWithUsPublicationUpdate = Updateable<WorkWithUsPublicationsTable>;
 
+export type LegalPageRow = Selectable<LegalPagesTable>;
+export type NewLegalPageRow = Insertable<LegalPagesTable>;
+export type LegalPageUpdate = Updateable<LegalPagesTable>;
+
+export type LegalPageLocalizationRow = Selectable<LegalPageLocalizationsTable>;
+export type NewLegalPageLocalizationRow = Insertable<LegalPageLocalizationsTable>;
+export type LegalPageLocalizationUpdate = Updateable<LegalPageLocalizationsTable>;
+
+export type LegalPagePublicationRow = Selectable<LegalPagePublicationsTable>;
+export type NewLegalPagePublicationRow = Insertable<LegalPagePublicationsTable>;
+export type LegalPagePublicationUpdate = Updateable<LegalPagePublicationsTable>;
+
 export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
 export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
 export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
@@ -809,6 +847,9 @@ export interface Database {
   work_with_us_pages: WorkWithUsPagesTable;
   work_with_us_localizations: WorkWithUsLocalizationsTable;
   work_with_us_publications: WorkWithUsPublicationsTable;
+  legal_pages: LegalPagesTable;
+  legal_page_localizations: LegalPageLocalizationsTable;
+  legal_page_publications: LegalPagePublicationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
   profile_capability_groups: ProfileCapabilityGroupsTable;
