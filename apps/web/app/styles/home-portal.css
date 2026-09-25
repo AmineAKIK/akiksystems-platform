@@ -139,6 +139,7 @@
 .aks-home-active-description {
   width: min(24rem, 38vw);
   min-height: 5rem;
+  justify-self: center;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -273,19 +274,24 @@
   }
 
   .aks-home-meta {
+    max-width: calc(100% - 1.5rem);
     inset-block-start: clamp(1.25rem, 3vw, 1.75rem);
   }
 
   .aks-home-clock {
-    gap: 0.55rem;
+    min-width: 0;
+    gap: clamp(0.4rem, 1.5vw, 0.55rem);
+    font-size: clamp(0.62rem, 2.9vw, 0.68rem);
   }
 
   .aks-home-language {
-    margin-inline-start: 0.75rem;
-    padding-inline-start: 0.75rem;
+    margin-inline-start: clamp(0.55rem, 2vw, 0.75rem);
+    padding-inline-start: clamp(0.55rem, 2vw, 0.75rem);
+    font-size: clamp(0.62rem, 2.9vw, 0.68rem);
   }
 
   .aks-home-portal {
+    min-width: 0;
     width: 100%;
     min-height: auto;
     display: grid;
@@ -296,6 +302,7 @@
 
   .aks-home-center {
     position: static;
+    min-width: 0;
     width: min(100%, 42rem);
     margin-inline: auto;
     transform: none;
@@ -325,6 +332,7 @@
 
   .aks-home-orbit {
     position: static;
+    min-width: 0;
     width: min(100%, 40rem);
     min-height: 0;
     display: grid;
