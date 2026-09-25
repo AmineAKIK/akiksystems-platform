@@ -794,6 +794,17 @@ try {
     .execute();
 
   await db
+    .insertInto('profile_mobility')
+    .values({
+      profile_id: profileId,
+      worldwide: false,
+      remote: false,
+      relocation: false,
+    })
+    .onConflict((conflict) => conflict.column('profile_id').doNothing())
+    .execute();
+
+  await db
     .updateTable('profile_mobility')
     .set({
       worldwide: true,
