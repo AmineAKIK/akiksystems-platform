@@ -8816,6 +8816,35 @@ async function assertStaticHomeOrientation(browser, locale, viewport) {
   }
 }
 
+async function runEditorialAndLearningQualification(browser, page) {
+  bootstrapL6RendreAttentionEssay();
+
+  await assertRendreAttentionEssay(browser);
+  await assertWritingAdminAndPublic(page);
+  await assertWritingCategories(page);
+  await assertWritingTags(page);
+  await assertWritingSystemRelations(page);
+  await assertWritingsOverviewIsolation(browser);
+  await assertLightweightNoteAuthoring(page);
+  await assertWritingFiltering(page);
+  await assertWritingSearch(page);
+  await assertRealArticleAuthoringFromAdmin(page);
+  await assertLongFormMobileReading(browser);
+  await assertTrainingPublicJourney(browser);
+  await assertCredentialPublicJourney(browser);
+  await assertCredentialAdmin(page);
+  await assertFutureCredentialExtensibility(page);
+  await assertLearningArtifactPublicJourney(browser);
+  await assertLearningOverviewExperience(browser);
+  await assertLearningSeo(browser);
+  await assertLearningArtifactAdmin(page);
+  await assertStandaloneLearningArtifactExtensibility(page);
+  await assertLearningAdminWorkspace(page);
+  await assertDwwmTrainingJourney(browser, page);
+  await assertSentinelDossierJourney(browser, page);
+  await assertLearningInspectionDepth(browser);
+}
+
 async function assertAxe(page) {
   await page.addScriptTag({ content: axe.source });
   const result = await page.evaluate(async () => globalThis.axe.run(document));
