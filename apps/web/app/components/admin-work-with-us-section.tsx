@@ -1,4 +1,4 @@
-import { parseWorkWithUsContent } from '@akiksystems/core';
+import { parseWorkWithUsContent } from '@akiksystems/core/work-with-us-content';
 import { Button, Heading, Text } from '@akiksystems/ui';
 import { Form } from 'react-router';
 
