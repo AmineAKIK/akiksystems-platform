@@ -375,7 +375,4 @@ export type {
 
 export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
-export {
-  listWorkWithUsProofReferences,
-  workWithUsProofSystemSlugs,
-} from './work-with-us-proof.js';
+export { listWorkWithUsProofReferences } from './work-with-us-proof.js';
