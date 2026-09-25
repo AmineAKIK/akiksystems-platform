@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
@@ -25,7 +26,7 @@ server.stderr.on('data', (chunk) => {
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
-      const response = await fetch(`${origin}/en`);
+      const response = await globalThis.fetch(`${origin}/en`);
       if (response.ok) return;
     } catch {
       // Server is still starting.
