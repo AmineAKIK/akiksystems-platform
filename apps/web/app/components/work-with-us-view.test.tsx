@@ -152,7 +152,7 @@ describe('WorkWithUsView', () => {
     expect(html).toContain('data-approach-step="understand"');
     expect(html).toContain('data-approach-step="structure"');
     expect(html).toContain('data-approach-step="build"');
-    expect(html).toContain('Du contexte').not;
+    expect(html).not.toContain('Du contexte');
     expect(html).toContain('From context to durable solutions.');
     expect(html).not.toContain('aks-admin-card');
   });
