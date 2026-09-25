@@ -6,7 +6,7 @@ import {
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
-import { Form, redirect, useLoaderData } from 'react-router';
+import { Form, redirect, useActionData, useLoaderData } from 'react-router';
 
 import { authClient } from '../lib/auth.client';
 import { requireAdminSession } from '../lib/admin.server';
@@ -27,12 +27,24 @@ function optionalField(form: FormData, name: string): string | null {
   return value === '' ? null : value;
 }
 
-function requiredCommercialLocale(form: FormData): 'en' | 'fr' {
-  const locale = field(form, 'locale');
-  if (locale !== 'en' && locale !== 'fr') {
-    throw new Response('Invalid commercial-page locale.', { status: 400 });
-  }
-  return locale;
+type CommercialAdminOperation = 'save' | 'publish';
+type CommercialAdminLocale = 'en' | 'fr';
+
+interface CommercialAdminCommand {
+  operation: CommercialAdminOperation;
+  locale: CommercialAdminLocale;
+}
+
+function parseCommercialAdminCommand(intent: string): CommercialAdminCommand | null {
+  const match =
+    /^(save|publish)-commercial-localization:(en|fr)$/.exec(intent);
+
+  if (match === null) return null;
+
+  return {
+    operation: match[1] as CommercialAdminOperation,
+    locale: match[2] as CommercialAdminLocale,
+  };
 }
 
 async function ensureCommercialPage() {
@@ -127,14 +139,13 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = field(form, '_intent');
   const db = appDb;
 
-  if (
-    intent === 'save-commercial-localization' ||
-    intent === 'publish-commercial-localization'
-  ) {
-    const commercialPage = await ensureCommercialPage();
-    const locale = requiredCommercialLocale(form);
+  const commercialCommand = parseCommercialAdminCommand(intent);
 
-    if (intent === 'save-commercial-localization') {
+  if (commercialCommand !== null) {
+    const commercialPage = await ensureCommercialPage();
+    const { locale, operation } = commercialCommand;
+
+    if (operation === 'save') {
       const values = {
         title: optionalField(form, 'title'),
         introduction: optionalField(form, 'introduction'),
@@ -155,6 +166,7 @@ export async function action({ request }: Route.ActionArgs) {
 
       if (/\bcssov\b/i.test(publicCopy)) {
         return {
+          scope: 'commercial' as const,
           ok: false,
           message:
             'Public collaboration copy must describe the practice directly without naming CSSOV.',
@@ -196,6 +208,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
 
       return {
+        scope: 'commercial' as const,
         ok: true,
         message: `${locale.toUpperCase()} Work with us draft saved.`,
       };
@@ -205,6 +218,7 @@ export async function action({ request }: Route.ActionArgs) {
       await publishCommercialPageLocalization(db, commercialPage.id, locale);
     } catch (error) {
       return {
+        scope: 'commercial' as const,
         ok: false,
         message:
           error instanceof Error
@@ -226,8 +240,17 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return {
+      scope: 'commercial' as const,
       ok: true,
       message: `${locale.toUpperCase()} Work with us content published.`,
+    };
+  }
+
+  if (intent.includes('commercial-localization')) {
+    return {
+      scope: 'commercial' as const,
+      ok: false,
+      message: 'Invalid Work with us administration command.',
     };
   }
 
@@ -381,6 +404,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const sentinelSystem = data.systems.find(
     (system) => system.slug_en === 'sentinel',
   );
@@ -436,6 +460,18 @@ export default function Admin() {
                 The public section order remains code-defined. This surface edits
                 localized copy and publishes each locale independently.
               </Text>
+              {actionData !== undefined &&
+              actionData !== null &&
+              'scope' in actionData &&
+              actionData.scope === 'commercial' ? (
+                <Text
+                  role={actionData.ok === false ? 'alert' : 'status'}
+                  size="sm"
+                  tone={actionData.ok === false ? 'muted' : 'strong'}
+                >
+                  {actionData.message}
+                </Text>
+              ) : null}
 
               {(['en', 'fr'] as const).map((locale) => {
                 const localized = data.commercial.localizations.find(
@@ -462,9 +498,8 @@ export default function Admin() {
                         <input
                           name="_intent"
                           type="hidden"
-                          value="save-commercial-localization"
+                          value={`save-commercial-localization:${locale}`}
                         />
-                        <input name="locale" type="hidden" value={locale} />
                         <label>
                           <span>Page title</span>
                           <input
@@ -563,9 +598,8 @@ export default function Admin() {
                         <input
                           name="_intent"
                           type="hidden"
-                          value="publish-commercial-localization"
+                          value={`publish-commercial-localization:${locale}`}
                         />
-                        <input name="locale" type="hidden" value={locale} />
                         <Button
                           disabled={
                             localized?.title === null ||

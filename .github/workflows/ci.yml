@@ -107,9 +107,6 @@ jobs:
       - name: Bootstrap CI administrator
         run: pnpm auth:bootstrap-admin
 
-      - name: Smoke authentication boundary
-        run: pnpm smoke:auth
-
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
         uses: actions/cache@v4
@@ -129,6 +126,15 @@ jobs:
           npm init -y
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Smoke Work with us administration
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: node apps/web/scripts/smoke-commercial-admin-browser.cjs
+
+      - name: Smoke authentication boundary
+        run: pnpm smoke:auth
 
       - name: Smoke responsive Home
         env:

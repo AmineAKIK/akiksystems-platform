@@ -33,6 +33,18 @@ const app = express();
 
 app.disable('x-powered-by');
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
+function isAdminRequestPath(path) {
+  return (
+    path === '/admin' ||
+    path.startsWith('/admin/') ||
+    path.startsWith('/admin.')
+  );
+}
+
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
 const contentSecurityPolicy = [
@@ -79,7 +91,7 @@ app.use((request, response, next) => {
     response.setHeader('X-Robots-Tag', noIndexDirective);
   }
 
-  if (request.path.startsWith('/admin')) {
+  if (isAdminRequestPath(request.path)) {
     response.setHeader('Cache-Control', 'private, no-store, max-age=0');
     response.setHeader('Pragma', 'no-cache');
     response.setHeader('X-Robots-Tag', noIndexDirective);
@@ -88,8 +100,11 @@ app.use((request, response, next) => {
   next();
 });
 
-app.use('/admin', (request, response, next) => {
-  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+app.use((request, response, next) => {
+  if (
+    !isAdminRequestPath(request.path) ||
+    ['GET', 'HEAD', 'OPTIONS'].includes(request.method)
+  ) {
     next();
     return;
   }

@@ -96,6 +96,16 @@ try {
   });
   assert.equal(rejectedAdminMutation.status, 403);
 
+  const rejectedAdminDataMutation = await globalThis.fetch(`${origin}/admin.data`, {
+    method: 'POST',
+    redirect: 'manual',
+  });
+  assert.equal(
+    rejectedAdminDataMutation.status,
+    403,
+    'React Router admin data mutations must share the same CSRF boundary as /admin.',
+  );
+
   const signup = await postJson('/api/auth/sign-up/email', {
     email: 'attacker@example.invalid',
     password: 'this-password-is-long-enough',
