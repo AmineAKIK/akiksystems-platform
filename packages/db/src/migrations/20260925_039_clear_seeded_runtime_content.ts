@@ -62,10 +62,14 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       categories,
       tags,
       experiences,
-      technologies,
-      assets
+      technologies
     restart identity cascade
   `.execute(db);
+
+  // Assets are deleted after every editorial reference has been removed.
+  // DELETE is intentional here: TRUNCATE ... CASCADE would also truncate the
+  // Profile singleton table because it owns nullable asset foreign keys.
+  await sql`delete from assets`.execute(db);
 }
 
 export async function down(): Promise<void> {
