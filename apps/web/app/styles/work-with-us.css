@@ -350,6 +350,13 @@
   border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
+.aks-work-with-us-contact-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(var(--aks-space-7), 8vw, 8rem);
+  align-items: start;
+}
+
 .aks-work-with-us-contact-copy {
   display: grid;
   gap: var(--aks-space-4);
@@ -368,6 +375,123 @@
 .aks-work-with-us-contact-privacy {
   max-width: 58ch;
   padding-block-start: var(--aks-space-2);
+}
+
+.aks-work-with-us-inquiry-form {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: var(--aks-space-4);
+}
+
+.aks-work-with-us-inquiry-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-work-with-us-inquiry-field {
+  min-width: 0;
+  display: grid;
+  gap: var(--aks-space-2);
+  color: rgb(255 255 255 / 72%);
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-work-with-us-inquiry-field > span:first-child {
+  font-size: var(--aks-font-size-xs);
+  letter-spacing: 0.06em;
+}
+
+.aks-work-with-us-inquiry-field input,
+.aks-work-with-us-inquiry-field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0.22rem;
+  outline: none;
+  background: rgb(255 255 255 / 1.5%);
+  color: rgb(255 255 255 / 94%);
+  font: inherit;
+  transition:
+    border-color var(--aks-motion-standard) var(--aks-ease-standard),
+    background-color var(--aks-motion-standard) var(--aks-ease-standard);
+}
+
+.aks-work-with-us-inquiry-field input {
+  min-height: 3rem;
+  padding: 0.72rem 0.85rem;
+}
+
+.aks-work-with-us-inquiry-field textarea {
+  min-height: 10rem;
+  resize: vertical;
+  padding: 0.85rem;
+  line-height: 1.55;
+}
+
+.aks-work-with-us-inquiry-field input::placeholder,
+.aks-work-with-us-inquiry-field textarea::placeholder {
+  color: rgb(255 255 255 / 38%);
+}
+
+.aks-work-with-us-inquiry-field input:hover,
+.aks-work-with-us-inquiry-field textarea:hover {
+  border-color: rgb(255 255 255 / 30%);
+}
+
+.aks-work-with-us-inquiry-field input:focus-visible,
+.aks-work-with-us-inquiry-field textarea:focus-visible {
+  border-color: rgb(181 233 247 / 72%);
+  background: rgb(181 233 247 / 4%);
+  box-shadow: 0 0 0 2px rgb(181 233 247 / 10%);
+}
+
+.aks-work-with-us-inquiry-field input[aria-invalid='true'],
+.aks-work-with-us-inquiry-field textarea[aria-invalid='true'] {
+  border-color: rgb(246 181 181 / 62%);
+}
+
+.aks-work-with-us-inquiry-message {
+  grid-column: 1 / -1;
+}
+
+.aks-work-with-us-inquiry-field-error {
+  color: rgb(255 205 205 / 82%);
+  font-size: var(--aks-font-size-xs);
+  line-height: 1.4;
+}
+
+.aks-work-with-us-inquiry-feedback {
+  max-width: 62ch;
+  padding: var(--aks-space-3) var(--aks-space-4);
+  border-left: 1px solid rgb(181 233 247 / 48%);
+  background: rgb(181 233 247 / 4%);
+}
+
+.aks-work-with-us-inquiry-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.aks-work-with-us-inquiry-submit {
+  min-width: min(100%, 13rem);
+}
+
+.aks-work-with-us-inquiry-trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-work-with-us-inquiry-field input,
+  .aks-work-with-us-inquiry-field textarea {
+    transition: none;
+  }
 }
 
 .aks-work-with-us-about {
@@ -493,6 +617,11 @@
 }
 
 @media (max-width: 64rem) {
+  .aks-work-with-us-contact-layout {
+    grid-template-columns: minmax(13rem, 0.62fr) minmax(0, 1.38fr);
+    gap: var(--aks-space-7);
+  }
+
   .aks-work-with-us-hero-layout {
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
     gap: var(--aks-space-7);
@@ -581,8 +710,29 @@
     padding-block: var(--aks-space-7);
   }
 
+  .aks-work-with-us-contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--aks-space-6);
+  }
+
   .aks-work-with-us-contact-copy .aks-heading {
     font-size: clamp(2.45rem, 12vw, 3.65rem);
+  }
+
+  .aks-work-with-us-inquiry-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-work-with-us-inquiry-message {
+    grid-column: auto;
+  }
+
+  .aks-work-with-us-inquiry-actions {
+    justify-content: stretch;
+  }
+
+  .aks-work-with-us-inquiry-submit {
+    width: 100%;
   }
 
   .aks-work-with-us-about {
