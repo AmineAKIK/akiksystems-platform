@@ -21,14 +21,15 @@ export function ExperienceLocalContext({
   const dictionary = dictionaryFor(locale);
   const destination =
     destinationId === null ? null : destinationById(destinationId);
+  const normalizedCurrentTitle = currentTitle?.trim() ?? '';
   const sectionLabel =
     destination === null
-      ? dictionary.shell.homeLabel
+      ? normalizedCurrentTitle || dictionary.shell.homeLabel
       : destination.label[locale];
   const hasChildContext =
-    currentTitle !== null &&
-    currentTitle.trim().length > 0 &&
-    currentTitle !== sectionLabel;
+    destination !== null &&
+    normalizedCurrentTitle.length > 0 &&
+    normalizedCurrentTitle !== sectionLabel;
 
   return (
     <nav
