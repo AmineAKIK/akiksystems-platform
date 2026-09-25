@@ -1,0 +1,121 @@
+.aks-experience-footer {
+  border-top: 1px solid var(--aks-border-subtle);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-experience-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4) var(--aks-space-7);
+  align-items: center;
+  justify-content: space-between;
+  min-height: 5.5rem;
+  padding-block: var(--aks-space-4);
+  color: var(--aks-text-muted);
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-experience-footer-inner p {
+  margin: 0;
+}
+.aks-experience-footer-inner nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-3) var(--aks-space-5);
+}
+
+.aks-legal-page {
+  min-height: calc(100dvh - 4.5rem);
+  padding-block: clamp(var(--aks-space-7), 7vw, var(--aks-space-9));
+}
+
+.aks-legal-document {
+  width: min(100%, 48rem);
+  display: grid;
+  gap: clamp(var(--aks-space-7), 6vw, var(--aks-space-9));
+  margin-inline: auto;
+}
+
+.aks-legal-header {
+  display: grid;
+  gap: var(--aks-space-4);
+}
+.aks-legal-header .aks-heading {
+  max-width: 18ch;
+  font-size: clamp(2.35rem, 1.7rem + 3vw, 4.15rem);
+  line-height: 1.05;
+}
+.aks-legal-description {
+  max-width: 60ch;
+  line-height: 1.65;
+}
+.aks-legal-updated {
+  padding-block-start: var(--aks-space-2);
+}
+
+.aks-legal-toc {
+  display: grid;
+  gap: var(--aks-space-3);
+  padding: var(--aks-space-5);
+  border: 1px solid var(--aks-border-subtle);
+  border-radius: var(--aks-radius-md);
+  background: var(--aks-surface-subtle);
+}
+
+.aks-legal-toc ol {
+  display: grid;
+  gap: var(--aks-space-2);
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+.aks-legal-sections {
+  display: grid;
+  gap: var(--aks-space-8);
+}
+.aks-legal-sections section {
+  display: grid;
+  gap: var(--aks-space-4);
+  scroll-margin-top: 6rem;
+}
+.aks-legal-sections .aks-text {
+  max-width: 72ch;
+  line-height: 1.75;
+}
+.aks-legal-sections ul {
+  display: grid;
+  gap: var(--aks-space-3);
+  margin: 0;
+  padding-inline-start: 1.35rem;
+  line-height: 1.7;
+}
+
+.aks-legal-document-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-3) var(--aks-space-5);
+  padding-block-start: var(--aks-space-5);
+  border-top: 1px solid var(--aks-border-subtle);
+}
+
+@media (max-width: 40rem) {
+  .aks-experience-footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: var(--aks-space-5);
+  }
+  .aks-experience-footer-inner nav {
+    display: grid;
+  }
+  .aks-legal-page {
+    padding-block: var(--aks-space-7);
+  }
+  .aks-legal-header .aks-heading {
+    font-size: clamp(2.15rem, 10vw, 3.2rem);
+  }
+  .aks-legal-toc {
+    padding: var(--aks-space-4);
+  }
+  .aks-legal-sections {
+    gap: var(--aks-space-7);
+  }
+}

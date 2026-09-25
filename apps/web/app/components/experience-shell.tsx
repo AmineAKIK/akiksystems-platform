@@ -7,6 +7,7 @@ import {
   destinationHref,
   globalDestinations,
 } from '../i18n/global-destinations';
+import { ExperienceFooter } from './experience-footer';
 import { ExperienceLocalContext } from './experience-local-context';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
@@ -40,8 +41,7 @@ export function ExperienceShell({
     destinationId === null
       ? `/${alternateLocale}`
       : destinationHref(destinationId, alternateLocale);
-  const languageHref =
-    alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
+  const languageHref = alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
 
   return (
     <>
@@ -67,10 +67,7 @@ export function ExperienceShell({
               <span className="aks-brand-wordmark">AkikSystems</span>
             </RouterLink>
 
-            <nav
-              aria-label={dictionary.shell.navigationLabel}
-              className="aks-experience-nav"
-            >
+            <nav aria-label={dictionary.shell.navigationLabel} className="aks-experience-nav">
               <RouterLink
                 aria-current={destinationId === null ? 'page' : undefined}
                 className="aks-link"
@@ -143,10 +140,7 @@ export function ExperienceShell({
                 locale={locale}
               />
               {languageHref === null ? (
-                <span
-                  aria-disabled="true"
-                  className="aks-language-unavailable"
-                >
+                <span aria-disabled="true" className="aks-language-unavailable">
                   {dictionary.shell.languageUnavailableLabel}
                 </span>
               ) : (
@@ -166,8 +160,11 @@ export function ExperienceShell({
         </Container>
       </header>
 
-      <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
-        {children}
+      <div className="aks-experience-frame" data-home={destinationId === null || undefined}>
+        <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
+          {children}
+        </div>
+        <ExperienceFooter home={destinationId === null} locale={locale} />
       </div>
     </>
   );

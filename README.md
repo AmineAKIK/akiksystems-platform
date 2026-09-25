@@ -237,13 +237,12 @@ with the article. The admin preview reuses the same reader component, preserving
 preview/public rendering parity without adding a second presentation system.
 
 AKS-113 confronts that reader with the existing 25-page French essay
-*Rendre l’attention au réel*. The native Writing is generated from the original
+_Rendre l’attention au réel_. The native Writing is generated from the original
 ProtoCap PDF rather than rewritten for the portfolio, publishes as `ESSAY / MAJOR`,
 retains the source publication date (16 September 2026), and deliberately does
 not fabricate an English localization. When the published ProtoCap System is
 available, the Writing links to it through the existing Writing↔System relation
 instead of copying System content into the essay.
-
 
 AKS-114 keeps Notes inside that same Writing domain while giving them a
 deliberately lighter authoring contract. A Note localization needs a slug, title,
@@ -254,7 +253,6 @@ rich structure so changing an Article or Essay to NOTE cannot carry hidden
 long-form layout forward. Notes still use the same bilingual publication
 snapshots, deep links, editorial feed, taxonomy, related-System model, preview,
 accessibility, and responsive reader as every other Writing.
-
 
 AKS-115 keeps that unified feed visually quiet until filtering is genuinely
 useful. The public overview exposes no filter chrome below six published
@@ -272,7 +270,6 @@ rather than hidden client-side. Category and Tag deep routes remain available as
 their existing taxonomy inspection surfaces, while AKS-115 itself creates no new
 editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
-
 
 AKS-122 begins L7 with a narrow Work with us content boundary. The public
 destination keeps section order and layout in code while the private admin owns
@@ -796,17 +793,15 @@ idempotent commissioning command:
 pnpm provision:initial
 ```
 
-It performs normal migrations/content publication bootstraps, provisions the single configured
-administrator, provisions the L4 reference Systems (ProtoCap, Oria Nutrition, Tugères), creates a
-minimal bilingual Sentinel draft if Sentinel is still missing, re-runs System publication bootstrapping,
-and provisions the published DWWM training.
-
-The command publishes the canonical initial Profile identity used by the qualified public journey when those fields are still empty. Existing operator-authored Profile fields are preserved. It does not fabricate the Sentinel learning dossier before Sentinel itself satisfies publication readiness; the final Sentinel dossier remains an operator-authored/published boundary.
+It applies authentication and application schema migrations, then provisions only the single
+configured administrator. It does not create, modify, or publish editorial content. A new environment
+therefore starts with an empty public catalog and is populated exclusively through authenticated
+administration or an explicitly invoked, operator-chosen bootstrap command.
 
 After successful commissioning, normal deployments must return to `pnpm deploy:migrate`.
+`deploy:migrate` applies schema migrations only and must never invoke content bootstraps.
 `ADMIN_PASSWORD` is a one-time provisioning secret and must not be treated as a permanent runtime
 credential mechanism.
-
 
 ## Containers
 

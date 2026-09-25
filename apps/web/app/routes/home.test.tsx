@@ -15,6 +15,12 @@ describe('HomePortal', () => {
     expect(html).toContain('class="aks-home-portal"');
     expect(html).toContain('id="aks-home-title"');
     expect(html).toContain('>AkikSystems</h1>');
+    expect(html).toContain('>Systemic scale</p>');
+    expect(html).toContain('aria-label="Time in Paris"');
+    expect(html).toContain('aria-label="View in French"');
+    expect(html).toContain('href="/fr"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('Products · Projects · Live');
     expect(html).toContain('aria-label="Explore AkikSystems"');
 
     for (const [href, label] of [
@@ -37,6 +43,8 @@ describe('HomePortal', () => {
     );
 
     expect(html).toContain('aria-label="Explorer AkikSystems"');
+    expect(html).toContain('aria-label="Afficher en anglais"');
+    expect(html).toContain('href="/en"');
 
     for (const [href, label] of [
       ['/fr/profil', 'Profil'],

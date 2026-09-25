@@ -83,6 +83,11 @@ export default [
     route('apprentissage/:slug', 'routes/learning-detail-fr.tsx'),
     route('work-with-us', 'routes/work-with-us.tsx'),
     route('travailler-ensemble', 'routes/work-with-us-fr.tsx'),
+    route('privacy', 'routes/privacy.tsx'),
+    route('confidentialite', 'routes/privacy-fr.tsx'),
+    route('legal-notice', 'routes/legal-notice.tsx'),
+    route('mentions-legales', 'routes/legal-notice-fr.tsx'),
+    route('cookies', 'routes/cookies.tsx'),
     route('about', 'routes/about.tsx'),
     route('systems/:slug', 'routes/system-detail.tsx'),
     route(

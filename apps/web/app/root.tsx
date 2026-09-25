@@ -1,5 +1,11 @@
+import '@fontsource/archivo/latin-400.css';
+import '@fontsource/archivo/latin-500.css';
+import '@fontsource/archivo/latin-600.css';
+import '@fontsource/archivo-black/latin-400.css';
 import '@akiksystems/ui/styles.css';
 import './styles/app.css';
+import './styles/home-portal.css';
+import './styles/legal.css';
 
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import type { ReactNode } from 'react';
@@ -50,9 +56,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   let status = 500;
   let title = locale === 'fr' ? 'Erreur inattendue' : 'Unexpected error';
   let details =
-    locale === 'fr'
-      ? 'La requête n’a pas pu être traitée.'
-      : 'The request could not be completed.';
+    locale === 'fr' ? 'La requête n’a pas pu être traitée.' : 'The request could not be completed.';
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
