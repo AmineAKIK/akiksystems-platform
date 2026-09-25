@@ -101,14 +101,6 @@ async function fillCommercialDraft(card, copy) {
 }
 
 async function assertPersisted(card, copy) {
-  await assert.rejects(
-    async () => {
-      const value = await card.locator('input[name="title"]').inputValue();
-      assert.notEqual(value, copy.title);
-    },
-    undefined,
-  ).catch(() => {});
-
   assert.equal(await card.locator('input[name="title"]').inputValue(), copy.title);
   assert.equal(
     await card.locator('textarea[name="introduction"]').inputValue(),
