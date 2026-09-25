@@ -104,14 +104,12 @@ try {
     202,
     `A same-origin HTTPS action forwarded to the internal HTTP server must reach the route action instead of React Router's CSRF rejection. body=${forwardedSameOrigin.body}`,
   );
-  assert.match(
-    forwardedSameOrigin.body,
-    /"redirect","\\/admin\\/login"/,
+  assert.ok(
+    forwardedSameOrigin.body.includes('"redirect","/admin/login"'),
     'React Router must encode the admin login redirect in the single-fetch response.',
   );
-  assert.match(
-    forwardedSameOrigin.body,
-    /"status",302/,
+  assert.ok(
+    forwardedSameOrigin.body.includes('"status",302'),
     'The single-fetch redirect envelope must preserve the route redirect status.',
   );
 
