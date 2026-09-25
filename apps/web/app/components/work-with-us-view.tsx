@@ -169,7 +169,9 @@ export function WorkWithUsView({
 
       {approachVisible && approach !== undefined ? (
         <section
-          aria-labelledby="work-with-us-approach-title"
+          aria-labelledby={
+            approach.title === null ? undefined : 'work-with-us-approach-title'
+          }
           className="aks-work-with-us-approach"
         >
           <Container width="wide">
@@ -237,7 +239,9 @@ export function WorkWithUsView({
 
       {contactVisible && contact !== undefined ? (
         <section
-          aria-labelledby="work-with-us-contact-title"
+          aria-labelledby={
+            contact.title === null ? undefined : 'work-with-us-contact-title'
+          }
           className="aks-work-with-us-contact"
         >
           <Container width="wide">
@@ -284,7 +288,9 @@ export function WorkWithUsView({
 
       {aboutVisible && about !== undefined ? (
         <section
-          aria-labelledby="work-with-us-about-title"
+          aria-labelledby={
+            about.title === null ? undefined : 'work-with-us-about-title'
+          }
           className="aks-work-with-us-about"
         >
           <Container width="wide">
@@ -330,7 +336,9 @@ export function WorkWithUsView({
 
       {systemsVisible && systems !== undefined ? (
         <section
-          aria-labelledby="work-with-us-systems-title"
+          aria-labelledby={
+            systems.title === null ? undefined : 'work-with-us-systems-title'
+          }
           className="aks-work-with-us-systems"
         >
           <Container width="wide">
