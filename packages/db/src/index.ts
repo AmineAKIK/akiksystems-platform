@@ -298,6 +298,7 @@ export type {
   WorkWithUsSystemsTable,
   WorkWithUsSystemUpdate,
   NewProfilePublicationRow,
+  NewWorkWithUsInquiryRow,
   NewWorkWithUsLocalizationRow,
   NewWorkWithUsPageRow,
   NewWorkWithUsPublicationRow,
