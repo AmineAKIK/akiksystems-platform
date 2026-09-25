@@ -1883,6 +1883,423 @@ async function fillWritingBodyEditor(fieldset, body) {
   );
 }
 
+function legalAdminFieldset(page, pageKey, locale) {
+  return page.locator(
+    '[data-legal-page-key="' +
+      pageKey +
+      '"] [data-legal-page-locale="' +
+      locale +
+      '"]',
+  );
+}
+
+async function fillLegalPageEditor(fieldset, body) {
+  await fieldset
+    .locator('[data-writing-editor][data-editor-ready="true"]')
+    .waitFor();
+
+  const editor = fieldset.locator('[data-writing-editor] [contenteditable="true"]');
+  await editor.waitFor();
+  await editor.fill(body);
+
+  const document = JSON.parse(
+    await fieldset.locator('input[name="editorDocument"]').inputValue(),
+  );
+  assert.equal(document.version, 1);
+  assert.equal(document.type, 'doc');
+  assert.deepEqual(
+    document.content,
+    [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: body }],
+      },
+    ],
+    'Legal-page authoring must persist the same controlled document contract used by editorial content.',
+  );
+}
+
+async function submitLegalPageAdminAction(page, button) {
+  const identity = await button.evaluate((element) => {
+    const form = element.form;
+    if (form === null) {
+      throw new Error('Legal-page admin action control must belong to a form.');
+    }
+
+    const data = new FormData(form);
+    const read = (name) => {
+      const value = data.get(name);
+      return typeof value === 'string' && value !== '' ? value : null;
+    };
+
+    return {
+      intent: read('_intent'),
+      pageKey: read('pageKey'),
+      locale: read('locale'),
+    };
+  });
+
+  assert.ok(identity.intent !== null);
+  assert.ok(identity.pageKey !== null);
+  assert.ok(identity.locale !== null);
+
+  const responsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    const pathname = new URL(response.url()).pathname;
+
+    if (
+      request.method() !== 'POST' ||
+      (pathname !== '/admin/legal-pages' &&
+        pathname !== '/admin/legal-pages.data')
+    ) {
+      return false;
+    }
+
+    const body =
+      request.postData() ??
+      request.postDataBuffer()?.toString('utf8') ??
+      '';
+
+    return (
+      requestCarriesFormValue(body, '_intent', identity.intent) &&
+      requestCarriesFormValue(body, 'pageKey', identity.pageKey) &&
+      requestCarriesFormValue(body, 'locale', identity.locale)
+    );
+  });
+
+  await button.click();
+  const response = await responsePromise;
+
+  if (response.status() !== 200) {
+    let responseBody = '';
+    try {
+      responseBody = await response.text();
+    } catch {
+      responseBody = '<unavailable>';
+    }
+
+    throw new Error(
+      'Legal-page admin action ' +
+        identity.intent +
+        ' failed with HTTP ' +
+        response.status() +
+        ' for ' +
+        identity.pageKey +
+        ' / ' +
+        identity.locale.toUpperCase() +
+        '. Response: ' +
+        responseBody.slice(0, 800) +
+        '. Server stdout tail: ' +
+        stdout.slice(-4000) +
+        '. Server stderr tail: ' +
+        stderr.slice(-2000),
+    );
+  }
+
+  const reload = await page.goto(origin + '/admin/legal-pages');
+  assert.equal(
+    reload?.status(),
+    200,
+    'Legal-page administration must reload after a persisted mutation.',
+  );
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Legal, privacy & cookies',
+      exact: true,
+    })
+    .waitFor();
+}
+
+async function saveLegalPageLocale(page, fixture) {
+  const fieldset = legalAdminFieldset(page, fixture.pageKey, fixture.locale);
+  await fieldset.waitFor();
+  await fieldset.locator('input[name="title"]').fill(fixture.title);
+  await fillLegalPageEditor(fieldset, fixture.body);
+
+  await submitLegalPageAdminAction(
+    page,
+    fieldset.getByRole('button', {
+      name: 'Save ' + fixture.locale.toUpperCase() + ' draft',
+      exact: true,
+    }),
+  );
+}
+
+async function publishLegalPageLocale(page, fixture) {
+  const fieldset = legalAdminFieldset(page, fixture.pageKey, fixture.locale);
+  await submitLegalPageAdminAction(
+    page,
+    fieldset.getByRole('button', {
+      name: /Publish(?: update)? (EN|FR)/,
+    }),
+  );
+
+  const reloaded = legalAdminFieldset(page, fixture.pageKey, fixture.locale);
+  await reloaded.getByText('Public snapshot available', { exact: true }).waitFor();
+  await reloaded.getByRole('link', { name: 'Open public', exact: true }).waitFor();
+}
+
+async function assertLegalPageAdministration(page) {
+  const fixtures = [
+    {
+      pageKey: 'privacy',
+      locale: 'en',
+      path: '/en/privacy',
+      title: 'Qualification Privacy',
+      body: 'Qualification privacy body describing the administered publication boundary.',
+      alternatePath: '/fr/confidentialite',
+    },
+    {
+      pageKey: 'privacy',
+      locale: 'fr',
+      path: '/fr/confidentialite',
+      title: 'Qualification Confidentialité',
+      body: 'Contenu de qualification de confidentialité administré et publié.',
+      alternatePath: '/en/privacy',
+    },
+    {
+      pageKey: 'legal',
+      locale: 'en',
+      path: '/en/legal-notice',
+      title: 'Qualification Legal Notice',
+      body: 'Qualification legal-notice body authored only through private administration.',
+      alternatePath: '/fr/mentions-legales',
+    },
+    {
+      pageKey: 'legal',
+      locale: 'fr',
+      path: '/fr/mentions-legales',
+      title: 'Qualification Mentions légales',
+      body: 'Contenu de qualification des mentions légales administré sans texte applicatif codé en dur.',
+      alternatePath: '/en/legal-notice',
+    },
+    {
+      pageKey: 'cookies',
+      locale: 'en',
+      path: '/en/cookies',
+      title: 'Qualification Cookies',
+      body: 'Qualification cookies body managed through the same editorial publication boundary.',
+      alternatePath: '/fr/cookies',
+    },
+    {
+      pageKey: 'cookies',
+      locale: 'fr',
+      path: '/fr/cookies',
+      title: 'Qualification Cookies FR',
+      body: 'Contenu de qualification des cookies géré par le même cycle éditorial.',
+      alternatePath: '/en/cookies',
+    },
+  ];
+
+  for (const fixture of fixtures) {
+    const beforePublication = await page.context().request.get(
+      origin + fixture.path,
+    );
+    assert.equal(
+      beforePublication.status(),
+      404,
+      fixture.path + ' must stay private until an administrator publishes it.',
+    );
+    assert.match(
+      beforePublication.headers()['x-robots-tag'] ?? '',
+      /noindex/i,
+      'Unpublished legal routes must be explicitly noindex.',
+    );
+  }
+
+  await page.goto(origin + '/en');
+  assert.equal(
+    await page.locator('.aks-legal-footer').count(),
+    0,
+    'No legal utility navigation should appear while every legal page is unpublished.',
+  );
+
+  const adminResponse = await page.goto(origin + '/admin/legal-pages');
+  assert.equal(adminResponse?.status(), 200);
+  await page
+    .getByRole('heading', {
+      level: 1,
+      name: 'Legal, privacy & cookies',
+      exact: true,
+    })
+    .waitFor();
+
+  assert.equal(
+    await page.locator('[data-legal-page-key]').count(),
+    3,
+    'Administration must expose exactly Privacy, Legal notice and Cookies.',
+  );
+  assert.equal(
+    await page.locator('[data-legal-page-locale]').count(),
+    6,
+    'Each managed legal page must expose independent EN and FR drafts.',
+  );
+  assert.equal(
+    await page.getByRole('button', { name: 'Code', exact: true }).count(),
+    0,
+    'Legal pages must not expose code blocks.',
+  );
+  assert.equal(
+    await page.getByRole('button', { name: 'Gallery', exact: true }).count(),
+    0,
+    'Legal pages must not expose media galleries.',
+  );
+  assert.equal(
+    await page.locator('.aks-writing-editor-assets').count(),
+    0,
+    'Legal pages must not expose contextual media insertion.',
+  );
+
+  // Publish English Privacy first to prove alternate-locale isolation.
+  const privacyEn = fixtures[0];
+  await saveLegalPageLocale(page, privacyEn);
+  await publishLegalPageLocale(page, privacyEn);
+
+  await page.goto(origin + privacyEn.path);
+  await page
+    .getByRole('heading', { level: 1, name: privacyEn.title, exact: true })
+    .waitFor();
+  await page.getByText(privacyEn.body, { exact: true }).waitFor();
+  assert.equal(
+    await page.locator('a[hreflang="fr"]').count(),
+    0,
+    'A legal page must not invent a language alternate before that locale is published.',
+  );
+  await page.locator('.aks-language-unavailable').waitFor();
+  assert.equal(
+    await page.locator('.aks-experience-nav a[href="/en"][aria-current="page"]').count(),
+    0,
+    'Utility legal pages must not mark Home as the active primary destination.',
+  );
+  await page
+    .locator('.aks-experience-context')
+    .getByText(privacyEn.title, { exact: true })
+    .waitFor();
+
+  for (const fixture of fixtures.slice(1)) {
+    await page.goto(origin + '/admin/legal-pages');
+    await saveLegalPageLocale(page, fixture);
+    await publishLegalPageLocale(page, fixture);
+  }
+
+  for (const fixture of fixtures) {
+    const response = await page.goto(origin + fixture.path);
+    assert.equal(response?.status(), 200, fixture.path + ' must be public after publication.');
+    await page
+      .getByRole('heading', { level: 1, name: fixture.title, exact: true })
+      .waitFor();
+    await page.getByText(fixture.body, { exact: true }).waitFor();
+
+    assert.equal(
+      await page.locator('link[rel="canonical"]').getAttribute('href'),
+      'https://akiksystems.com' + fixture.path,
+      fixture.path + ' must expose its canonical public URL.',
+    );
+    assert.equal(
+      await page
+        .locator(
+          'link[rel="alternate"][hreflang="' +
+            (fixture.locale === 'en' ? 'fr' : 'en') +
+            '"]',
+        )
+        .getAttribute('href'),
+      'https://akiksystems.com' + fixture.alternatePath,
+      fixture.path + ' must expose only its actually published alternate.',
+    );
+
+    await assertAxe(page);
+  }
+
+  for (const locale of ['en', 'fr']) {
+    await page.goto(origin + '/' + locale);
+    const footer = page.locator('.aks-legal-footer');
+    await footer.waitFor();
+    assert.equal(
+      await footer.locator('a').count(),
+      3,
+      'Published legal utility navigation must expose exactly three pages per locale.',
+    );
+  }
+
+  // A saved draft must not mutate the existing public snapshot.
+  const updatedPrivacyBody =
+    'Updated qualification Privacy draft that is deliberately private until republication.';
+  await page.goto(origin + '/admin/legal-pages');
+  const privacyDraftFieldset = legalAdminFieldset(page, 'privacy', 'en');
+  await fillLegalPageEditor(privacyDraftFieldset, updatedPrivacyBody);
+  await submitLegalPageAdminAction(
+    page,
+    privacyDraftFieldset.getByRole('button', {
+      name: 'Save EN draft',
+      exact: true,
+    }),
+  );
+
+  await page.goto(origin + '/en/privacy');
+  await page.getByText(privacyEn.body, { exact: true }).waitFor();
+  assert.equal(
+    await page.getByText(updatedPrivacyBody, { exact: true }).count(),
+    0,
+    'Saving a legal-page draft must preserve the previous public snapshot.',
+  );
+
+  await page.goto(origin + '/admin/legal-pages');
+  await publishLegalPageLocale(page, privacyEn);
+  await page.goto(origin + '/en/privacy');
+  await page.getByText(updatedPrivacyBody, { exact: true }).waitFor();
+
+  // Unpublishing one locale must remove that public route and utility link only.
+  await page.goto(origin + '/admin/legal-pages');
+  const cookiesFrFieldset = legalAdminFieldset(page, 'cookies', 'fr');
+  await submitLegalPageAdminAction(
+    page,
+    cookiesFrFieldset.getByRole('button', {
+      name: 'Unpublish FR',
+      exact: true,
+    }),
+  );
+
+  const cookiesFrGone = await page.context().request.get(origin + '/fr/cookies');
+  assert.equal(cookiesFrGone.status(), 404);
+
+  await page.goto(origin + '/fr');
+  assert.equal(
+    await page.locator('.aks-legal-footer a[href="/fr/cookies"]').count(),
+    0,
+    'Unpublishing FR Cookies must remove only that footer link.',
+  );
+  assert.equal(
+    await page.locator('.aks-legal-footer a').count(),
+    2,
+  );
+
+  await page.goto(origin + '/en/cookies');
+  assert.equal(
+    await page.locator('a[hreflang="fr"]').count(),
+    0,
+    'EN Cookies must stop advertising FR after FR is unpublished.',
+  );
+
+  // Restore the qualification state so both localized journeys remain testable.
+  await page.goto(origin + '/admin/legal-pages');
+  await publishLegalPageLocale(page, fixtures[5]);
+
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto(origin + '/fr/mentions-legales');
+  assert.equal(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+    true,
+    'Legal long-form reading must not overflow at 320px.',
+  );
+  await assertAxe(page);
+  await page.setViewportSize({ width: 1280, height: 720 });
+}
+
 async function submitRootAdminAction(page, button, intent, locale) {
   const responsePromise = page.waitForResponse((response) => {
     const request = response.request();
@@ -8434,6 +8851,7 @@ async function assertAxe(page) {
     await page.waitForURL(`${origin}/admin`);
 
     await assertProfileAdministration(page);
+    await assertLegalPageAdministration(page);
 
     await assertGlobalDestinations(page);
     await assertRealDeviceClasses(browser);
