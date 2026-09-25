@@ -13,40 +13,24 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NODE_ENV: test
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
+  BETTER_AUTH_SECRET: ci-only-better-auth-secret-with-more-than-32-characters
+  BETTER_AUTH_URL: http://127.0.0.1:4177
+  ADMIN_EMAIL: admin@example.invalid
+  ADMIN_PASSWORD: ci-only-admin-password-12345
+  BUCKET: ci-placeholder
+  REGION: us-east-1
+  ENDPOINT: https://example.invalid
+  ACCESS_KEY_ID: ci-placeholder
+  SECRET_ACCESS_KEY: ci-placeholder
+
 jobs:
-  quality:
-    name: quality
+  static-quality:
+    name: static-quality
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_DB: akiksystems
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d akiksystems"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
-      BETTER_AUTH_SECRET: ci-only-better-auth-secret-with-more-than-32-characters
-      BETTER_AUTH_URL: http://127.0.0.1:4177
-      ADMIN_EMAIL: admin@example.invalid
-      ADMIN_PASSWORD: ci-only-admin-password-12345
-      BUCKET: ci-placeholder
-      REGION: us-east-1
-      ENDPOINT: https://example.invalid
-      ACCESS_KEY_ID: ci-placeholder
-      SECRET_ACCESS_KEY: ci-placeholder
-
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,9 +46,6 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-
-      - name: Install image processing runtime
-        run: sudo apt-get update && sudo apt-get install -y libvips-tools
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
@@ -90,13 +71,104 @@ jobs:
       - name: Verify client bundle contains no server secrets
         run: pnpm --filter @akiksystems/web check:client-secrets
 
+  runtime-smokes:
+    name: runtime-smokes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Migrate runtime database
+        run: pnpm auth:migrate && pnpm db:migrate
+
       - name: Smoke Web observability
         run: pnpm smoke:observability
 
       - name: Smoke asynchronous worker
         run: pnpm smoke:worker
 
-      - name: Migrate L1 qualification database
+      - name: Bootstrap administrator
+        run: pnpm auth:bootstrap-admin
+
+      - name: Smoke private admin authentication
+        run: pnpm smoke:auth
+
+  domain-systems-profile:
+    name: domain-systems-profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
+
+      - name: Migrate qualification database
         run: pnpm deploy:migrate
 
       - name: Verify L1 System domain rules
@@ -123,6 +195,78 @@ jobs:
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
 
+      - name: Bootstrap AKS-123 open-situations content
+        run: pnpm content:bootstrap-work-with-us-open-situations
+
+      - name: Verify AKS-123 open-situations content
+        run: pnpm db:verify-work-with-us-open-situations
+
+      - name: Bootstrap AKS-124 capabilities content
+        run: pnpm content:bootstrap-work-with-us-capabilities
+
+      - name: Verify AKS-124 capabilities content
+        run: pnpm db:verify-work-with-us-capabilities
+
+      - name: Bootstrap AKS-125 collaboration content
+        run: pnpm content:bootstrap-work-with-us-collaboration
+
+      - name: Verify AKS-125 collaboration content
+        run: pnpm db:verify-work-with-us-collaboration
+
+      - name: Verify AKS-126 selected commercial proof
+        run: pnpm db:verify-work-with-us-selected-proof
+
+      - name: Verify Sentinel remains bootstrapable after existing Systems
+        run: pnpm db:verify-sentinel-bootstrap
+
+      - name: Verify administered legal/privacy pages
+        run: pnpm db:verify-legal-pages
+
+  domain-learning:
+    name: domain-learning
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
+
+      - name: Migrate qualification database
+        run: pnpm db:migrate
+
       - name: Verify L5 Training domain
         run: pnpm --filter @akiksystems/db db:verify-training-domain
 
@@ -140,6 +284,54 @@ jobs:
 
       - name: Verify L5 Learning and System bidirectional navigation
         run: pnpm --filter @akiksystems/db db:verify-learning-system-navigation
+
+  domain-writings:
+    name: domain-writings
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
+
+      - name: Migrate qualification database
+        run: pnpm db:migrate
+
+      - name: Bootstrap canonical essay
+        run: pnpm content:bootstrap-rendre-attention-essay
 
       - name: Verify L6 Writing domain
         run: pnpm --filter @akiksystems/db db:verify-writing-domain
@@ -174,35 +366,51 @@ jobs:
       - name: Verify AKS-116 PostgreSQL full-text Writing search
         run: pnpm --filter @akiksystems/db db:verify-writing-full-text-search
 
-      - name: Bootstrap AKS-123 open-situations content
-        run: pnpm content:bootstrap-work-with-us-open-situations
+  browser-platform:
+    name: browser-platform
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Verify AKS-123 open-situations content
-        run: pnpm db:verify-work-with-us-open-situations
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
 
-      - name: Bootstrap AKS-124 capabilities content
-        run: pnpm content:bootstrap-work-with-us-capabilities
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
 
-      - name: Verify AKS-124 capabilities content
-        run: pnpm db:verify-work-with-us-capabilities
+      - name: Install image processing runtime
+        run: sudo apt-get update && sudo apt-get install -y libvips-tools
 
-      - name: Bootstrap AKS-125 collaboration content
-        run: pnpm content:bootstrap-work-with-us-collaboration
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Verify AKS-125 collaboration content
-        run: pnpm db:verify-work-with-us-collaboration
+      - name: Build
+        run: pnpm build
 
-      - name: Verify AKS-126 selected commercial proof
-        run: pnpm db:verify-work-with-us-selected-proof
-
-      - name: Verify Sentinel remains bootstrapable after existing Systems
-        run: pnpm db:verify-sentinel-bootstrap
-
-      - name: Verify administered legal/privacy pages
-        run: pnpm db:verify-legal-pages
-
-      - name: Bootstrap browser-smoke administrator
-        run: pnpm auth:bootstrap-admin
+      - name: Migrate and bootstrap browser database
+        run: pnpm deploy:migrate && pnpm auth:bootstrap-admin
 
       - name: Cache browser qualification runtime
         id: browser-runtime-cache
@@ -224,12 +432,208 @@ jobs:
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
           ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Full browser qualification (L2-L4)
+      - name: Browser platform qualification
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
           LIGHTHOUSE_BIN: /tmp/akiksystems-browser-runtime/node_modules/.bin/lighthouse
+          AKIKSYSTEMS_SKIP_LIGHTHOUSE: "1"
+          AKIKSYSTEMS_BROWSER_SHARD: platform
         run: node apps/web/scripts/smoke-platform-browser.cjs
 
-      - name: Smoke private admin authentication
-        run: pnpm smoke:auth
+  browser-content:
+    name: browser-content
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install image processing runtime
+        run: sudo apt-get update && sudo apt-get install -y libvips-tools
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Migrate and bootstrap browser database
+        run: |
+          pnpm deploy:migrate
+          pnpm auth:bootstrap-admin
+          pnpm db:bootstrap-sentinel-ci
+
+      - name: Cache browser qualification runtime
+        id: browser-runtime-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/akiksystems-browser-runtime/node_modules
+            /tmp/akiksystems-browser-runtime/ms-playwright
+          key: ${{ runner.os }}-node24-browser-runtime-v2-pw1.55.0-axe4.10.3-lh12.8.2
+
+      - name: Install browser qualification runtime
+        if: steps.browser-runtime-cache.outputs.cache-hit != 'true'
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: |
+          mkdir -p /tmp/akiksystems-browser-runtime
+          cd /tmp/akiksystems-browser-runtime
+          npm init -y
+          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Browser content qualification
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+          LIGHTHOUSE_BIN: /tmp/akiksystems-browser-runtime/node_modules/.bin/lighthouse
+          AKIKSYSTEMS_SKIP_LIGHTHOUSE: "1"
+          AKIKSYSTEMS_BROWSER_SHARD: content
+        run: node apps/web/scripts/smoke-platform-browser.cjs
+
+  browser-performance:
+    name: browser-performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: akiksystems
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d akiksystems"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Prepare isolated Sentinel performance route
+        run: |
+          pnpm auth:migrate
+          pnpm db:migrate
+          pnpm db:bootstrap-sentinel-ci
+
+      - name: Cache browser qualification runtime
+        id: browser-runtime-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/akiksystems-browser-runtime/node_modules
+            /tmp/akiksystems-browser-runtime/ms-playwright
+          key: ${{ runner.os }}-node24-browser-runtime-v2-pw1.55.0-axe4.10.3-lh12.8.2
+
+      - name: Install browser qualification runtime
+        if: steps.browser-runtime-cache.outputs.cache-hit != 'true'
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: |
+          mkdir -p /tmp/akiksystems-browser-runtime
+          cd /tmp/akiksystems-browser-runtime
+          npm init -y
+          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Lighthouse Sentinel performance budget
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+          LIGHTHOUSE_BIN: /tmp/akiksystems-browser-runtime/node_modules/.bin/lighthouse
+        run: node apps/web/scripts/smoke-performance.cjs
+
+  quality:
+    name: quality
+    if: always()
+    needs:
+      - static-quality
+      - runtime-smokes
+      - domain-systems-profile
+      - domain-learning
+      - domain-writings
+      - browser-platform
+      - browser-content
+      - browser-performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every independent quality gate
+        env:
+          STATIC: ${{ needs.static-quality.result }}
+          RUNTIME: ${{ needs.runtime-smokes.result }}
+          SYSTEMS: ${{ needs.domain-systems-profile.result }}
+          LEARNING: ${{ needs.domain-learning.result }}
+          WRITINGS: ${{ needs.domain-writings.result }}
+          BROWSER_PLATFORM: ${{ needs.browser-platform.result }}
+          BROWSER_CONTENT: ${{ needs.browser-content.result }}
+          PERFORMANCE: ${{ needs.browser-performance.result }}
+        run: |
+          gates=(
+            "$STATIC"
+            "$RUNTIME"
+            "$SYSTEMS"
+            "$LEARNING"
+            "$WRITINGS"
+            "$BROWSER_PLATFORM"
+            "$BROWSER_CONTENT"
+            "$PERFORMANCE"
+          )
+
+          for gate in "${gates[@]}"; do
+            if [ "$gate" != "success" ]; then
+              echo "Required quality gate did not succeed: $gate"
+              exit 1
+            fi
+          done
+
+          echo "All independent quality gates succeeded."

@@ -92,7 +92,8 @@
     "content:bootstrap-sentinel-system": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-system",
     "db:verify-sentinel-bootstrap": "pnpm --filter @akiksystems/db db:verify-sentinel-bootstrap",
     "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin && pnpm content:bootstrap-l4-reference-systems && pnpm content:bootstrap-sentinel-system && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-dwwm",
-    "db:verify-legal-pages": "pnpm --filter @akiksystems/db db:verify-legal-pages"
+    "db:verify-legal-pages": "pnpm --filter @akiksystems/db db:verify-legal-pages",
+    "db:bootstrap-sentinel-ci": "pnpm --filter @akiksystems/db db:bootstrap-sentinel-ci"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
