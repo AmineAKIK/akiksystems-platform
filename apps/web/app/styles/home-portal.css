@@ -238,27 +238,27 @@
 .aks-home-door[data-destination='work-with-us'] {
   inset-block-start: 16%;
   inset-inline-start: 50%;
-  translate: -50% 0;
+  transform: translate(-50%, 0);
 }
 .aks-home-door[data-destination='profile'] {
   inset-block-start: 43%;
   inset-inline-start: 20.5%;
-  translate: -50% -50%;
+  transform: translate(-50%, -50%);
 }
 .aks-home-door[data-destination='systems'] {
   inset-block-start: 43%;
   inset-inline-start: 79.5%;
-  translate: -50% -50%;
+  transform: translate(-50%, -50%);
 }
 .aks-home-door[data-destination='writings'] {
   inset-block-start: 79%;
   inset-inline-start: 26%;
-  translate: -50% -50%;
+  transform: translate(-50%, -50%);
 }
 .aks-home-door[data-destination='learning'] {
   inset-block-start: 79%;
   inset-inline-start: 74%;
-  translate: -50% -50%;
+  transform: translate(-50%, -50%);
 }
 
 @media (min-width: 48.0625rem) and (max-height: 56.24rem) {
@@ -343,7 +343,6 @@
     padding: 1rem 0;
     border-bottom: 1px solid #182125;
     transform: none;
-    translate: none;
   }
   .aks-home-door-label {
     white-space: nowrap;
@@ -434,7 +433,6 @@
     padding: 0.75rem 1rem;
     border-bottom: 1px solid rgb(255 255 255 / 8%);
     transform: none;
-    translate: none;
   }
 
   .aks-home-door[data-destination='work-with-us'] {
