@@ -215,7 +215,7 @@ describe('WorkWithUsView', () => {
     expect(html).toContain('name="email"');
     expect(html).toContain('name="organization"');
     expect(html).toContain('name="message"');
-    expect(html).toContain('maxlength="5000"');
+    expect(html).toContain('maxLength="5000"');
     expect(html).toContain('Send');
     expect(html).not.toContain('Listen to my message');
   });
