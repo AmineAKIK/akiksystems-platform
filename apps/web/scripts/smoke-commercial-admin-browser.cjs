@@ -155,7 +155,7 @@ async function assertPersisted(card, copy) {
   );
 }
 
-async function assertPublishedSnapshotVersion(locale) {
+async function assertPublishedSnapshotVersion(locale, copy) {
   const result = await db.query(
     'select snapshot from work_with_us_publications where locale = $1',
     [locale],
@@ -172,6 +172,11 @@ async function assertPublishedSnapshotVersion(locale) {
     false,
     'Work with us v2 snapshots must not carry a legacy compatibility payload.',
   );
+  assert.equal(snapshot.hero.title, copy.heroTitle);
+  assert.equal(snapshot.approach.title, copy.approachTitle);
+  assert.equal(snapshot.contact.title, copy.contactTitle);
+  assert.equal(snapshot.about.title, copy.aboutTitle);
+  assert.equal(snapshot.systems.title, copy.systemsTitle);
 }
 
 async function assertPublicCopy(page, pathName, copy) {
@@ -187,7 +192,6 @@ async function assertPublicCopy(page, pathName, copy) {
   await page.getByText(copy.buildTitle, { exact: true }).waitFor();
   await page.getByText(copy.contactTitle, { exact: true }).waitFor();
   await page.getByText(copy.aboutTitle, { exact: true }).waitFor();
-  await page.getByText(copy.systemsTitle, { exact: true }).waitFor();
 }
 
 (async () => {
@@ -273,7 +277,7 @@ async function assertPublicCopy(page, pathName, copy) {
       'publish-commercial-localization:en',
       'EN Work with us content published.',
     );
-    await assertPublishedSnapshotVersion('en');
+    await assertPublishedSnapshotVersion('en', english);
     await assertPublicCopy(page, '/en/work-with-us', english);
 
     await page.goto(`${origin}/admin`);
@@ -295,7 +299,7 @@ async function assertPublicCopy(page, pathName, copy) {
       'publish-commercial-localization:fr',
       'FR Work with us content published.',
     );
-    await assertPublishedSnapshotVersion('fr');
+    await assertPublishedSnapshotVersion('fr', french);
     await assertPublicCopy(page, '/fr/travailler-ensemble', french);
 
     await page.goto(`${origin}/admin`);
