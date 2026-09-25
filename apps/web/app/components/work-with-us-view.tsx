@@ -65,14 +65,14 @@ function WorkWithUsSystemCard({
         className="aks-work-with-us-system-card-link"
         href={reference.href}
       >
-        <span className="aks-work-with-us-system-card-copy">
+        <div className="aks-work-with-us-system-card-copy">
           <Heading level={3} size="sm">
             {reference.title}
           </Heading>
           <Text size="sm" tone="muted">
             {reference.summary}
           </Text>
-        </span>
+        </div>
         <span aria-hidden="true" className="aks-work-with-us-system-card-arrow">
           ↗
         </span>
