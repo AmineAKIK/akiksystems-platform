@@ -7614,6 +7614,17 @@ async function saveLocalization(page, locale, values) {
   await form.locator('input[name="slug"]').fill(values.slug);
   await form.locator('input[name="title"]').fill(values.title);
   await form.locator('textarea[name="summary"]').fill(values.summary);
+  await form.locator('input[name="proofRole"]').fill(values.proofRole);
+  await form.locator('input[name="proofMaturity"]').fill(values.proofMaturity);
+  await form
+    .locator('input[name="proofDemoNature"]')
+    .fill(values.proofDemoNature);
+  await form
+    .locator('input[name="proofDataNature"]')
+    .fill(values.proofDataNature);
+  await form
+    .locator('textarea[name="proofLimits"]')
+    .fill(values.proofLimits);
   await form.getByRole('button', { name: button }).click();
   await page.getByText(locale === 'en' ? 'EN content updated independently.' : 'FR content updated independently.').waitFor();
 }
@@ -8931,11 +8942,23 @@ async function assertAxe(page) {
       slug: 'sentinel',
       title: 'Sentinel',
       summary: 'Operational visibility built from industrial context and inspectable evidence.',
+      proofRole: 'Industrial-context software system',
+      proofMaturity: 'Inspectable implementation',
+      proofDemoNature: 'No separate public demo',
+      proofDataNature: 'Real-world context; no customer data exposed',
+      proofLimits:
+        'Origin context alone is not evidence of current deployment or publicly exposed operational data.',
     });
     await saveLocalization(page, 'fr', {
       slug: 'sentinel',
       title: 'Sentinel',
       summary: 'Visibilité opérationnelle issue d’un contexte industriel et de preuves inspectables.',
+      proofRole: 'Système logiciel issu d’un contexte industriel',
+      proofMaturity: 'Implémentation inspectable',
+      proofDemoNature: 'Aucune démo publique séparée',
+      proofDataNature: 'Contexte réel ; aucune donnée client exposée',
+      proofLimits:
+        'Le contexte d’origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
     });
 
     await savePresentation(
@@ -9198,6 +9221,12 @@ async function assertAxe(page) {
       slug: 'sentinel',
       title: 'Sentinel',
       summary: 'Visibilité opérationnelle, contexte industriel et preuves inspectables.',
+      proofRole: 'Système logiciel issu d’un contexte industriel',
+      proofMaturity: 'Implémentation inspectable',
+      proofDemoNature: 'Aucune démo publique séparée',
+      proofDataNature: 'Contexte réel ; aucune donnée client exposée',
+      proofLimits:
+        'Le contexte d’origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
     });
 
     const englishAfterFrenchEdit = await context.request.get(
