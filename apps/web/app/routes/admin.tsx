@@ -1,5 +1,4 @@
 import {
-  bootstrapSentinelSystemDraft,
   publishCommercialPageLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
@@ -33,6 +32,35 @@ function requiredCommercialLocale(form: FormData): 'en' | 'fr' {
     throw new Response('Invalid commercial-page locale.', { status: 400 });
   }
   return locale;
+}
+
+async function createBlankSystemDraft() {
+  const highest = await appDb
+    .selectFrom('systems')
+    .select(({ fn }) =>
+      fn.max<number>('editorial_position').as('max_position'),
+    )
+    .executeTakeFirst();
+
+  const id = randomUUID();
+  const editorialPosition = (highest?.max_position ?? -1) + 1;
+
+  await appDb.transaction().execute(async (transaction) => {
+    await transaction
+      .insertInto('systems')
+      .values({ id, editorial_position: editorialPosition })
+      .execute();
+
+    await transaction
+      .insertInto('system_localizations')
+      .values([
+        { system_id: id, locale: 'en' },
+        { system_id: id, locale: 'fr' },
+      ])
+      .execute();
+  });
+
+  return { systemId: id, editorialPosition };
 }
 
 async function ensureCommercialPage() {
@@ -352,38 +380,33 @@ export async function action({ request }: Route.ActionArgs) {
     };
   }
 
-  if (intent !== 'create-sentinel') {
+  if (intent !== 'create-system') {
     return null;
   }
 
-  const result = await bootstrapSentinelSystemDraft(db);
+  const result = await createBlankSystemDraft();
 
-  if (result.created) {
-    await writeAdminAuditEvent(db, {
-      actorUserId: session.user.id,
-      actorEmail: session.user.email,
-      action: 'system.created',
-      entityType: 'system',
-      entityId: result.systemId,
-      systemId: result.systemId,
-      metadata: {
-        initialLocales: ['en', 'fr'],
-        initialSlug: 'sentinel',
-        editorialPosition: result.editorialPosition,
-        featured: false,
-        source: 'admin',
-      },
-    });
-  }
+  await writeAdminAuditEvent(db, {
+    actorUserId: session.user.id,
+    actorEmail: session.user.email,
+    action: 'system.created',
+    entityType: 'system',
+    entityId: result.systemId,
+    systemId: result.systemId,
+    metadata: {
+      initialLocales: ['en', 'fr'],
+      editorialPosition: result.editorialPosition,
+      featured: false,
+      source: 'admin',
+      initialContent: 'empty',
+    },
+  });
 
   return redirect(`/admin/systems/${result.systemId}`);
 }
 
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
-  const sentinelSystem = data.systems.find(
-    (system) => system.slug_en === 'sentinel',
-  );
   const [pending, setPending] = useState(false);
 
   async function signOut() {
@@ -596,19 +619,14 @@ export default function Admin() {
                 Order and prominence are shared System-level editorial controls,
                 independent from EN/FR publication state.
               </Text>
-              {sentinelSystem === undefined ? (
-                <>
-                  <Text tone="muted">
-                    Sentinel has not been initialized yet. Create its stable
-                    bilingual identity without affecting existing reference
-                    Systems.
-                  </Text>
-                  <Form method="post">
-                    <input name="_intent" type="hidden" value="create-sentinel" />
-                    <Button type="submit">Create Sentinel</Button>
-                  </Form>
-                </>
-              ) : null}
+              <Text tone="muted">
+                Create an empty System draft, then author its localized identity,
+                evidence and presentation yourself.
+              </Text>
+              <Form method="post">
+                <input name="_intent" type="hidden" value="create-system" />
+                <Button type="submit">Create System</Button>
+              </Form>
 
               {data.systems.length > 0 ? (
                 <div className="aks-admin-asset-list">
