@@ -104,9 +104,9 @@ describe('Work with us publication snapshots', () => {
   it('rejects a v2 snapshot whose structural approach order is changed', () => {
     const fixture = v2Fixture();
     fixture.approach.steps = [
-      { key: 'structure', title: null, body: null },
-      { key: 'understand', title: null, body: null },
-      { key: 'build', title: null, body: null },
+      { key: 'structure', title: 'Structurer', body: 'Options' },
+      { key: 'understand', title: 'Comprendre', body: 'Contexte' },
+      { key: 'build', title: 'Construire', body: 'Solutions' },
     ];
 
     expect(parseCommercialPagePublicationSnapshot(fixture)).toBeNull();
