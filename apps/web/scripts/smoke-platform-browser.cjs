@@ -1805,6 +1805,50 @@ async function submitWritingAdminAction(page, button) {
     .waitFor();
 }
 
+async function createWritingAdminDraft(page, kind, editorialWeight) {
+  const cards = page.locator('[data-writing-card]');
+  const beforeIds = new Set(
+    await cards.evaluateAll((elements) =>
+      elements
+        .map((element) => element.getAttribute('data-writing-card'))
+        .filter((value) => value !== null),
+    ),
+  );
+
+  const createCard = page.locator('section.aks-admin-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Create Writing',
+      exact: true,
+    }),
+  });
+  await createCard.locator('select[name="kind"]').selectOption(kind);
+  await createCard
+    .locator('select[name="editorialWeight"]')
+    .selectOption(editorialWeight);
+  await submitWritingAdminAction(
+    page,
+    createCard.getByRole('button', { name: 'Create Writing', exact: true }),
+  );
+
+  const afterIds = await page
+    .locator('[data-writing-card]')
+    .evaluateAll((elements) =>
+      elements
+        .map((element) => element.getAttribute('data-writing-card'))
+        .filter((value) => value !== null),
+    );
+  const newIds = afterIds.filter((id) => !beforeIds.has(id));
+
+  assert.equal(
+    newIds.length,
+    1,
+    'Creating a Writing must add exactly one persisted admin card.',
+  );
+
+  return newIds[0];
+}
+
 async function ensureCheckboxChecked(checkbox, message) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (await checkbox.isChecked()) return;
@@ -2674,23 +2718,10 @@ async function assertWritingAdminAndPublic(page) {
     })
     .waitFor();
 
-  const createCard = page.locator('section.aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 2,
-      name: 'Create Writing',
-      exact: true,
-    }),
-  });
-  await createCard.locator('select[name="kind"]').selectOption('essay');
-  await createCard
-    .locator('select[name="editorialWeight"]')
-    .selectOption('major');
-  await createCard
-    .getByRole('button', { name: 'Create Writing', exact: true })
-    .click();
-  await page.getByText('Writing created.', { exact: true }).waitFor();
+  const writingId = await createWritingAdminDraft(page, 'essay', 'major');
 
-  const writingCard = () => page.locator('[data-writing-card]').last();
+  const writingCard = () =>
+    page.locator('[data-writing-card="' + writingId + '"]');
 
   await writingCard().waitFor();
   assert.match(
@@ -3384,19 +3415,10 @@ async function assertWritingAdminAndPublic(page) {
 
 async function assertLightweightNoteAuthoring(page) {
   await page.goto(origin + '/admin/writings');
-  const createCard = page.locator('section.aks-admin-card').filter({
-    has: page.getByRole('heading', { level: 2, name: 'Create Writing', exact: true }),
-  });
-  await createCard.locator('select[name="kind"]').selectOption('note');
-  await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
-  await createCard.getByRole('button', { name: 'Create Writing', exact: true }).click();
-  await page.getByText('Writing created.', { exact: true }).waitFor();
+  const writingId = await createWritingAdminDraft(page, 'note', 'normal');
 
   const noteCard = () =>
-    page
-      .locator('[data-writing-card]')
-      .filter({ hasText: 'NOTE · NORMAL' })
-      .last();
+    page.locator('[data-writing-card="' + writingId + '"]');
   const items = [
     {
       locale: 'EN',
@@ -3561,25 +3583,10 @@ async function assertWritingFiltering(page) {
 
   for (const note of qualificationNotes) {
     await page.goto(origin + '/admin/writings');
-    const createCard = page.locator('section.aks-admin-card').filter({
-      has: page.getByRole('heading', {
-        level: 2,
-        name: 'Create Writing',
-        exact: true,
-      }),
-    });
-    await createCard.locator('select[name="kind"]').selectOption('note');
-    await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
-    await createCard
-      .getByRole('button', { name: 'Create Writing', exact: true })
-      .click();
-    await page.getByText('Writing created.', { exact: true }).waitFor();
+    const writingId = await createWritingAdminDraft(page, 'note', 'normal');
 
     const noteCard = () =>
-      page
-        .locator('[data-writing-card]')
-        .filter({ hasText: 'NOTE · NORMAL' })
-        .last();
+      page.locator('[data-writing-card="' + writingId + '"]');
 
     for (const [locale, localized] of [
       ['EN', note.en],
@@ -3834,23 +3841,10 @@ async function assertWritingSearch(page) {
   );
 
   await page.goto(origin + '/admin/writings');
-  const createCard = page.locator('section.aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 2,
-      name: 'Create Writing',
-      exact: true,
-    }),
-  });
-  await createCard.locator('select[name="kind"]').selectOption('note');
-  await createCard.locator('select[name="editorialWeight"]').selectOption('normal');
-  await createCard.getByRole('button', { name: 'Create Writing', exact: true }).click();
-  await page.getByText('Writing created.', { exact: true }).waitFor();
+  const writingId = await createWritingAdminDraft(page, 'note', 'normal');
 
   const draftCard = () =>
-    page
-      .locator('[data-writing-card]')
-      .filter({ hasText: 'NOTE · NORMAL' })
-      .last();
+    page.locator('[data-writing-card="' + writingId + '"]');
   let englishDraft = draftCard().getByRole('group', { name: 'EN', exact: true });
   await englishDraft.locator('input[name="slug"]').fill('unpublished-nebula');
   await englishDraft.locator('input[name="title"]').fill('Unpublished nebula');
