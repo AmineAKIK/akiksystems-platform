@@ -1,6 +1,6 @@
+import type { PlatformLocale } from '@akiksystems/core';
 import {
   parseWorkWithUsContent,
-  type PlatformLocale,
   type WorkWithUsEditableContent,
 } from '@akiksystems/core/work-with-us-content';
 import type { Kysely } from 'kysely';
