@@ -768,6 +768,39 @@ AKS-021 consolidates the Sentinel slice into one domain-specific System workspac
 - The origin context is managed as a shared Experience relation, not duplicated System text.
 - Publication state is visible but remains intentionally read-only here; publication readiness and EN/FR publishing controls belong to AKS-022/023.
 
+## Administered legal, privacy, and cookie pages
+
+Privacy, legal notice, and cookie information are fixed utility-page identities,
+not additional primary product destinations. Their routing and publication
+boundaries are code-owned, while their public copy is entirely
+administrator-owned.
+
+- Public routes are explicit and localized: `/en/privacy` ↔
+  `/fr/confidentialite`, `/en/legal-notice` ↔
+  `/fr/mentions-legales`, and `/en/cookies` ↔ `/fr/cookies`.
+- Migration `20260925_039_create_legal_pages.ts` provisions only the three
+  structural page identities and empty EN/FR drafts. It deliberately seeds no
+  legal wording, title, policy text, or publication.
+- `/admin/legal-pages` owns localized title/body authoring and independent
+  EN/FR publish/unpublish controls. Save, publish, and unpublish mutations are
+  recorded in the existing admin audit log.
+- Legal-page bodies reuse the controlled Writing document schema and editor for
+  semantic headings, paragraphs, lists, quotations, and callouts. Media,
+  galleries, code blocks, arbitrary HTML, free layout, and page-builder
+  behavior are rejected for this surface.
+- Public routes resolve publication snapshots only. Editing a draft does not
+  mutate the live page until an explicit republication.
+- Unpublished locales return 404 with noindex behavior. Canonical and hreflang
+  metadata advertise only actually published locales.
+- The global legal/privacy utility navigation is separate from the five primary
+  destinations and exposes only pages published in the current locale, so the
+  shell never creates a dead legal link.
+
+This capability provides the publication infrastructure needed by the later
+privacy/data-retention reviews. It does not invent or certify legal wording;
+the deployed text must be authored and validated against the real production
+system.
+
 ## Private administration
 
 The administration surface is intentionally single-user and closed to public registration.
