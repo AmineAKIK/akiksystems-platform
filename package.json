@@ -83,6 +83,7 @@
     "db:verify-lightweight-notes": "pnpm --filter @akiksystems/db db:verify-lightweight-notes",
     "db:verify-writing-full-text-search": "pnpm --filter @akiksystems/db db:verify-writing-full-text-search",
     "db:verify-work-with-us-selected-proof": "pnpm --filter @akiksystems/db db:verify-work-with-us-selected-proof",
+    "db:verify-work-with-us-inquiries": "pnpm --filter @akiksystems/db db:verify-work-with-us-inquiries",
     "content:bootstrap-sentinel-system": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-system",
     "db:verify-sentinel-bootstrap": "pnpm --filter @akiksystems/db db:verify-sentinel-bootstrap",
     "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin"
