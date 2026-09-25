@@ -95,6 +95,9 @@ jobs:
       - name: Verify database connectivity
         run: pnpm db:check
 
+      - name: Verify Work with us System selection
+        run: pnpm db:verify-work-with-us-selected-proof
+
       - name: Smoke SSR
         run: pnpm smoke:web
 

@@ -292,9 +292,11 @@ requirement.
 
 AKS-126 keeps the deliberately small proof layer by reusing published
 `SystemReference` objects rather than copying System-owned content into Work
-with us. Selection itself is still the earlier code-owned ProtoCap/Tugères
-baseline and will move to the dedicated Work with us administration boundary in
-the following page implementation work.
+with us. The dedicated Work with us administration now owns an ordered selection
+of at most four Systems. Selection is shared across locales, while each public
+locale only renders Systems that have a publication snapshot in that locale.
+The database constrains positions to 0–3, so a fifth selection is impossible;
+the admin also warns when a selected System is unavailable in EN or FR.
 
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication

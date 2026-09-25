@@ -284,10 +284,14 @@ export type {
   WorkWithUsPublicationRow,
   WorkWithUsPublicationsTable,
   WorkWithUsPublicationUpdate,
+  WorkWithUsSystemRow,
+  WorkWithUsSystemsTable,
+  WorkWithUsSystemUpdate,
   NewProfilePublicationRow,
   NewWorkWithUsLocalizationRow,
   NewWorkWithUsPageRow,
   NewWorkWithUsPublicationRow,
+  NewWorkWithUsSystemRow,
   ProfileCapabilityGroupLocalizationRow,
   ProfileCapabilityGroupLocalizationsTable,
   ProfileCapabilityGroupLocalizationUpdate,
@@ -371,7 +375,4 @@ export type {
 
 export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
-export {
-  listWorkWithUsProofReferences,
-  workWithUsProofSystemSlugs,
-} from './work-with-us-proof.js';
+export { listWorkWithUsProofReferences } from './work-with-us-proof.js';
