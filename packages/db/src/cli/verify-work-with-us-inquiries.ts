@@ -9,6 +9,7 @@ const db = createDatabase(databaseUrlFromEnv());
 const marker = randomUUID();
 const email = `inquiry-${marker}@example.invalid`;
 const secondEmail = `inquiry-other-${marker}@example.invalid`;
+const concurrentEmail = `inquiry-concurrent-${marker}@example.invalid`;
 const createdIds: string[] = [];
 
 try {
@@ -79,6 +80,33 @@ try {
   assert.equal(independent.status, 'created');
   if (independent.status === 'created') createdIds.push(independent.inquiryId);
 
+  const concurrentResults = await Promise.all(
+    Array.from({ length: 4 }, (_, index) =>
+      createWorkWithUsInquiry(db, {
+        submissionToken: randomUUID(),
+        locale: 'en',
+        name: `Concurrent qualification ${index + 1}`,
+        email: concurrentEmail,
+        organization: null,
+        message: `Concurrent message ${index + 1}.`,
+      }),
+    ),
+  );
+
+  assert.equal(
+    concurrentResults.filter(({ status }) => status === 'created').length,
+    3,
+    'Exactly three concurrent inquiries should be admitted into one email bucket.',
+  );
+  assert.equal(
+    concurrentResults.filter(({ status }) => status === 'rate_limited').length,
+    1,
+    'The fourth concurrent inquiry should observe the transactional rate limit.',
+  );
+  for (const result of concurrentResults) {
+    if (result.status === 'created') createdIds.push(result.inquiryId);
+  }
+
   const persisted = await db
     .selectFrom('work_with_us_inquiries')
     .select([
@@ -104,7 +132,7 @@ try {
   );
 
   process.stdout.write(
-    'Work with us inquiry qualification passed: persistence is durable, retries are idempotent, and the database-backed email bucket rate limit is atomic.\n',
+    'Work with us inquiry qualification passed: persistence is durable, retries are idempotent, and concurrent submissions respect the transactional email-bucket rate limit.\n',
   );
 } finally {
   if (createdIds.length > 0) {
