@@ -589,6 +589,27 @@ async function assertTechnologicalJourney(page) {
     }),
   });
 
+  const journeyFixture = [
+    ['programming', 'Programming foundations', 'Fondations en programmation'],
+    ['networks_telecom', 'Networks and telecom', 'Réseaux et télécoms'],
+    ['it_support', 'IT support', 'Support informatique'],
+    ['industry', 'Relevant industry', 'Industrie pertinente'],
+    [
+      'development_akiksystems',
+      'Development and AkikSystems',
+      'Développement et AkikSystems',
+    ],
+  ];
+
+  for (const [key, englishTitle, frenchTitle] of journeyFixture) {
+    await journeyForm
+      .locator(`input[name="journey-${key}-title-en"]`)
+      .fill(englishTitle);
+    await journeyForm
+      .locator(`input[name="journey-${key}-title-fr"]`)
+      .fill(frenchTitle);
+  }
+
   await journeyForm
     .locator('select[name="journey-industry-evidence"]')
     .selectOption({ label: 'Experience · Marelli' });
