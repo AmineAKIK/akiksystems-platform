@@ -28,7 +28,7 @@
     "db:verify-system-domain": "pnpm --filter @akiksystems/db db:verify-system-domain",
     "db:verify-system-experiences": "pnpm --filter @akiksystems/db db:verify-system-experiences",
     "db:verify-system-technologies": "pnpm --filter @akiksystems/db db:verify-system-technologies",
-    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate && pnpm --filter @akiksystems/db profile:bootstrap-publications && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-rendre-attention-essay && pnpm content:bootstrap-work-with-us-open-situations && pnpm content:bootstrap-work-with-us-capabilities && pnpm content:bootstrap-work-with-us-collaboration",
+    "deploy:migrate": "pnpm auth:migrate && pnpm db:migrate",
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "dev:worker": "pnpm --filter @akiksystems/worker dev",
     "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
@@ -91,7 +91,9 @@
     "db:verify-work-with-us-selected-proof": "pnpm --filter @akiksystems/db db:verify-work-with-us-selected-proof",
     "content:bootstrap-sentinel-system": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-system",
     "db:verify-sentinel-bootstrap": "pnpm --filter @akiksystems/db db:verify-sentinel-bootstrap",
-    "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin && pnpm content:bootstrap-l4-reference-systems && pnpm content:bootstrap-sentinel-system && pnpm --filter @akiksystems/db systems:bootstrap-publications && pnpm content:bootstrap-dwwm"
+    "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin",
+    "db:verify-empty-deployment": "pnpm --filter @akiksystems/db db:verify-empty-deployment",
+    "content:purge-editorial-storage": "pnpm --filter @akiksystems/web content:purge-editorial-storage"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

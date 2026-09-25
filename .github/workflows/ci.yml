@@ -99,6 +99,9 @@ jobs:
       - name: Migrate L1 qualification database
         run: pnpm deploy:migrate
 
+      - name: Verify deployment starts editorially empty
+        run: pnpm db:verify-empty-deployment
+
       - name: Verify L1 System domain rules
         run: |
           pnpm db:verify-system-domain

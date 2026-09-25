@@ -1,5 +1,4 @@
 import {
-  bootstrapSentinelSystemDraft,
   publishCommercialPageLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
@@ -352,38 +351,57 @@ export async function action({ request }: Route.ActionArgs) {
     };
   }
 
-  if (intent !== 'create-sentinel') {
+  if (intent !== 'create-system') {
     return null;
   }
 
-  const result = await bootstrapSentinelSystemDraft(db);
+  const lastSystem = await db
+    .selectFrom('systems')
+    .select('editorial_position')
+    .orderBy('editorial_position', 'desc')
+    .executeTakeFirst();
+  const editorialPosition = (lastSystem?.editorial_position ?? -1) + 1;
+  const systemId = randomUUID();
 
-  if (result.created) {
-    await writeAdminAuditEvent(db, {
+  await db.transaction().execute(async (transaction) => {
+    await transaction
+      .insertInto('systems')
+      .values({
+        id: systemId,
+        editorial_position: editorialPosition,
+      })
+      .execute();
+
+    await transaction
+      .insertInto('system_localizations')
+      .values([
+        { system_id: systemId, locale: 'en' },
+        { system_id: systemId, locale: 'fr' },
+      ])
+      .execute();
+
+    await writeAdminAuditEvent(transaction, {
       actorUserId: session.user.id,
       actorEmail: session.user.email,
       action: 'system.created',
       entityType: 'system',
-      entityId: result.systemId,
-      systemId: result.systemId,
+      entityId: systemId,
+      systemId,
       metadata: {
         initialLocales: ['en', 'fr'],
-        initialSlug: 'sentinel',
-        editorialPosition: result.editorialPosition,
+        editorialPosition,
         featured: false,
         source: 'admin',
+        contentSeeded: false,
       },
     });
-  }
+  });
 
-  return redirect(`/admin/systems/${result.systemId}`);
+  return redirect(`/admin/systems/${systemId}`);
 }
 
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
-  const sentinelSystem = data.systems.find(
-    (system) => system.slug_en === 'sentinel',
-  );
   const [pending, setPending] = useState(false);
 
   async function signOut() {
@@ -595,19 +613,15 @@ export default function Admin() {
                 Order and prominence are shared System-level editorial controls,
                 independent from EN/FR publication state.
               </Text>
-              {sentinelSystem === undefined ? (
-                <>
-                  <Text tone="muted">
-                    Sentinel has not been initialized yet. Create its stable
-                    bilingual identity without affecting existing reference
-                    Systems.
-                  </Text>
-                  <Form method="post">
-                    <input name="_intent" type="hidden" value="create-sentinel" />
-                    <Button type="submit">Create Sentinel</Button>
-                  </Form>
-                </>
-              ) : null}
+              <Text tone="muted">
+                Create an empty System shell, then author EN/FR identity,
+                presentation, evidence and media explicitly. No title, slug or
+                public copy is prefilled by the application.
+              </Text>
+              <Form method="post">
+                <input name="_intent" type="hidden" value="create-system" />
+                <Button type="submit">Create System</Button>
+              </Form>
 
               {data.systems.length > 0 ? (
                 <div className="aks-admin-asset-list">

@@ -589,6 +589,27 @@ async function assertTechnologicalJourney(page) {
     }),
   });
 
+  const journeyFixture = [
+    ['programming', 'Programming foundations', 'Fondations en programmation'],
+    ['networks_telecom', 'Networks and telecom', 'Réseaux et télécoms'],
+    ['it_support', 'IT support', 'Support informatique'],
+    ['industry', 'Relevant industry', 'Industrie pertinente'],
+    [
+      'development_akiksystems',
+      'Development and AkikSystems',
+      'Développement et AkikSystems',
+    ],
+  ];
+
+  for (const [key, englishTitle, frenchTitle] of journeyFixture) {
+    await journeyForm
+      .locator(`input[name="journey-${key}-title-en"]`)
+      .fill(englishTitle);
+    await journeyForm
+      .locator(`input[name="journey-${key}-title-fr"]`)
+      .fill(frenchTitle);
+  }
+
   await journeyForm
     .locator('select[name="journey-industry-evidence"]')
     .selectOption({ label: 'Experience · Marelli' });
@@ -7184,6 +7205,46 @@ async function saveLocalization(page, locale, values) {
   await form.locator('input[name="slug"]').fill(values.slug);
   await form.locator('input[name="title"]').fill(values.title);
   await form.locator('textarea[name="summary"]').fill(values.summary);
+  await form
+    .locator('input[name="proofRole"]')
+    .fill(
+      values.proofRole ??
+        (locale === 'fr'
+          ? 'Système de qualification'
+          : 'Qualification system'),
+    );
+  await form
+    .locator('input[name="proofMaturity"]')
+    .fill(
+      values.proofMaturity ??
+        (locale === 'fr'
+          ? 'Fixture inspectable'
+          : 'Inspectable fixture'),
+    );
+  await form
+    .locator('input[name="proofDemoNature"]')
+    .fill(
+      values.proofDemoNature ??
+        (locale === 'fr'
+          ? 'Aucune démo séparée'
+          : 'No separate demo'),
+    );
+  await form
+    .locator('input[name="proofDataNature"]')
+    .fill(
+      values.proofDataNature ??
+        (locale === 'fr'
+          ? 'Données synthétiques de qualification'
+          : 'Synthetic qualification data'),
+    );
+  await form
+    .locator('textarea[name="proofLimits"]')
+    .fill(
+      values.proofLimits ??
+        (locale === 'fr'
+          ? 'Fixture CI uniquement ; aucune affirmation de déploiement.'
+          : 'CI fixture only; no deployment claim.'),
+    );
   await form.getByRole('button', { name: button }).click();
   await page.getByText(locale === 'en' ? 'EN content updated independently.' : 'FR content updated independently.').waitFor();
 }
@@ -8442,7 +8503,7 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/admin`);
 
-    await page.getByRole('button', { name: 'Create Sentinel' }).click();
+    await page.getByRole('button', { name: 'Create System' }).click();
     await page.waitForURL(/\/admin\/systems\/[0-9a-f-]+$/i);
     page.systemPath = new URL(page.url()).pathname;
 
@@ -8524,9 +8585,10 @@ async function assertAxe(page) {
       'Sentinel must render through the stable standard System renderer.',
     );
     await assertSystemProofTransparency(page, 'en', [
-      /Industrial-context software system/i,
-      /Inspectable implementation/i,
-      /no customer data exposed/i,
+      /Qualification system/i,
+      /Inspectable fixture/i,
+      /Synthetic qualification data/i,
+      /CI fixture only; no deployment claim/i,
     ]);
         const unavailableLanguage = page.locator('.aks-language-unavailable');
     await unavailableLanguage.waitFor();
@@ -8548,9 +8610,10 @@ async function assertAxe(page) {
     await page.goto(`${origin}/fr/systems/sentinel`);
     await page.getByRole('heading', { level: 1, name: 'Sentinel', exact: true }).waitFor();
     await assertSystemProofTransparency(page, 'fr', [
-      /contexte industriel/i,
-      /Implémentation inspectable/i,
-      /aucune donnée client exposée/i,
+      /Système de qualification/i,
+      /Fixture inspectable/i,
+      /Données synthétiques de qualification/i,
+      /Fixture CI uniquement/i,
     ]);
 
     bootstrapL4QualificationSystems();
