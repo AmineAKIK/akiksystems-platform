@@ -2533,3 +2533,39 @@
     padding: var(--aks-space-4);
   }
 }
+
+
+/* Admin-managed legal/privacy pages stay outside the five primary destinations. */
+.aks-legal-page {
+  min-height: calc(100dvh - 4.5rem);
+  padding-block: clamp(var(--aks-space-6), 7vh, var(--aks-space-9));
+}
+
+.aks-legal-page .aks-writing-reader {
+  display: grid;
+  gap: var(--aks-space-6);
+}
+
+.aks-legal-footer {
+  border-top: 1px solid var(--aks-border-subtle);
+  padding-block: var(--aks-space-5);
+}
+
+.aks-legal-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-3) var(--aks-space-5);
+  align-items: center;
+  font-size: var(--aks-font-size-sm);
+}
+
+@media (max-width: 40rem) {
+  .aks-legal-page {
+    padding-block: var(--aks-space-6);
+  }
+
+  .aks-legal-footer-nav {
+    display: grid;
+    gap: var(--aks-space-3);
+  }
+}
