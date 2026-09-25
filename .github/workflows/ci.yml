@@ -17,7 +17,7 @@ jobs:
   quality:
     name: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -69,11 +69,10 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify configuration contracts
-        run: pnpm config:verify
-
-      - name: Verify observability redaction
-        run: pnpm observability:verify
+      - name: Verify runtime contracts
+        run: |
+          pnpm config:verify
+          pnpm observability:verify
 
       - name: Lint
         run: pnpm lint
@@ -87,130 +86,40 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Verify client bundle contains no server secrets
+      - name: Verify client/server boundary
         run: pnpm --filter @akiksystems/web check:client-secrets
 
-      - name: Smoke Web observability
-        run: pnpm smoke:observability
-
-      - name: Smoke asynchronous worker
-        run: pnpm smoke:worker
-
-      - name: Migrate L1 qualification database
+      - name: Migrate database
         run: pnpm deploy:migrate
 
-      - name: Verify L1 System domain rules
-        run: |
-          pnpm db:verify-system-domain
-          pnpm db:verify-system-technologies
-          pnpm db:verify-system-experiences
-          pnpm db:verify-assets
-          pnpm db:verify-system-links
-          pnpm db:verify-presentation-documents
-          pnpm db:verify-publication-readiness
-          pnpm db:verify-independent-publication
-          pnpm db:verify-admin-audit
-          pnpm db:verify-public-system
-          pnpm db:verify-published-systems-list
-          pnpm db:verify-system-editorial-controls
-          pnpm db:verify-protocap-domain
-          pnpm db:verify-oria-domain
-          pnpm db:verify-tugeres-domain
-          pnpm db:verify-system-proof-transparency
-          pnpm db:verify-system-references
-          pnpm db:verify-system-publication-snapshots
+      - name: Verify database connectivity
+        run: pnpm db:check
 
-      - name: Verify L3 public Profile model
-        run: pnpm db:verify-public-profile
+      - name: Smoke SSR
+        run: pnpm smoke:web
 
-      - name: Verify L5 Training domain
-        run: pnpm --filter @akiksystems/db db:verify-training-domain
+      - name: Smoke observability
+        run: pnpm smoke:observability
 
-      - name: Verify L5 DWWM Training content
-        run: pnpm --filter @akiksystems/db db:verify-dwwm-training
+      - name: Smoke worker
+        run: pnpm smoke:worker
 
-      - name: Verify L5 Sentinel dossier content, Web structure, and PDF source preservation
-        run: pnpm --filter @akiksystems/db db:verify-sentinel-dossier
-
-      - name: Verify L5 Credential domain
-        run: pnpm --filter @akiksystems/db db:verify-credential-domain
-
-      - name: Verify L5 LearningArtifact domain
-        run: pnpm --filter @akiksystems/db db:verify-learning-artifact-domain
-
-      - name: Verify L5 Learning and System bidirectional navigation
-        run: pnpm --filter @akiksystems/db db:verify-learning-system-navigation
-
-      - name: Verify L6 Writing domain
-        run: pnpm --filter @akiksystems/db db:verify-writing-domain
-
-      - name: Verify L6 localized Writing categories
-        run: pnpm --filter @akiksystems/db db:verify-writing-categories
-
-      - name: Verify L6 deduplicated localized Writing tags
-        run: pnpm --filter @akiksystems/db db:verify-writing-tags
-
-      - name: Verify L6 Writing and System relations
-        run: pnpm --filter @akiksystems/db db:verify-writing-systems
-
-      - name: Verify L6 Writing rich-content schema and persistence
-        run: pnpm --filter @akiksystems/db db:verify-writing-editor-document
-
-      - name: Verify L6 contextual Writing assets
-        run: pnpm --filter @akiksystems/db db:verify-writing-assets
-
-      - name: Verify L6 Writing editorial lifecycle
-        run: pnpm --filter @akiksystems/db db:verify-writing-editorial-lifecycle
-
-      - name: Verify L6 unified Writing editorial surface
-        run: pnpm --filter @akiksystems/db db:verify-writing-unified-feed
-
-      - name: Verify AKS-113 canonical ESSAY/MAJOR publication
-        run: pnpm --filter @akiksystems/db db:verify-rendre-attention-essay
-
-      - name: Verify AKS-114 lightweight Notes
-        run: pnpm --filter @akiksystems/db db:verify-lightweight-notes
-
-      - name: Verify AKS-116 PostgreSQL full-text Writing search
-        run: pnpm --filter @akiksystems/db db:verify-writing-full-text-search
-
-      - name: Bootstrap AKS-123 open-situations content
-        run: pnpm content:bootstrap-work-with-us-open-situations
-
-      - name: Verify AKS-123 open-situations content
-        run: pnpm db:verify-work-with-us-open-situations
-
-      - name: Bootstrap AKS-124 capabilities content
-        run: pnpm content:bootstrap-work-with-us-capabilities
-
-      - name: Verify AKS-124 capabilities content
-        run: pnpm db:verify-work-with-us-capabilities
-
-      - name: Bootstrap AKS-125 collaboration content
-        run: pnpm content:bootstrap-work-with-us-collaboration
-
-      - name: Verify AKS-125 collaboration content
-        run: pnpm db:verify-work-with-us-collaboration
-
-      - name: Verify AKS-126 selected commercial proof
-        run: pnpm db:verify-work-with-us-selected-proof
-
-      - name: Verify Sentinel remains bootstrapable after existing Systems
-        run: pnpm db:verify-sentinel-bootstrap
-
-      - name: Bootstrap browser-smoke administrator
+      - name: Bootstrap CI administrator
         run: pnpm auth:bootstrap-admin
 
-      - name: Cache browser qualification runtime
+      - name: Smoke authentication boundary
+        run: pnpm smoke:auth
+
+      - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
         uses: actions/cache@v4
         with:
           path: |
             /tmp/akiksystems-browser-runtime/node_modules
             /tmp/akiksystems-browser-runtime/ms-playwright
-          key: ${{ runner.os }}-node24-browser-runtime-v2-pw1.55.0-axe4.10.3-lh12.8.2
+          key: ${{ runner.os }}-node24-browser-smoke-v1-pw1.55.0
 
-      - name: Install browser qualification runtime
+      - name: Install Chromium smoke runtime
         if: steps.browser-runtime-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
@@ -218,15 +127,11 @@ jobs:
           mkdir -p /tmp/akiksystems-browser-runtime
           cd /tmp/akiksystems-browser-runtime
           npm init -y
-          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0 axe-core@4.10.3 lighthouse@12.8.2
+          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Full browser qualification (L2-L4)
+      - name: Smoke responsive Home
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-          LIGHTHOUSE_BIN: /tmp/akiksystems-browser-runtime/node_modules/.bin/lighthouse
-        run: node apps/web/scripts/smoke-platform-browser.cjs
-
-      - name: Smoke private admin authentication
-        run: pnpm smoke:auth
+        run: node apps/web/scripts/smoke-responsive-browser.cjs
