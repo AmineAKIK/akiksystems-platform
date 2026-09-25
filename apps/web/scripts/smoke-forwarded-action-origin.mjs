@@ -101,13 +101,18 @@ try {
   const forwardedSameOrigin = await postAdminData(publicOrigin);
   assert.equal(
     forwardedSameOrigin.status,
-    302,
+    202,
     `A same-origin HTTPS action forwarded to the internal HTTP server must reach the route action instead of React Router's CSRF rejection. body=${forwardedSameOrigin.body}`,
   );
-  assert.equal(
-    forwardedSameOrigin.headers.location,
-    '/admin/login',
-    'The unauthenticated forwarded action should reach the admin session boundary.',
+  assert.match(
+    forwardedSameOrigin.body,
+    /"redirect","\\/admin\\/login"/,
+    'React Router must encode the admin login redirect in the single-fetch response.',
+  );
+  assert.match(
+    forwardedSameOrigin.body,
+    /"status",302/,
+    'The single-fetch redirect envelope must preserve the route redirect status.',
   );
 
   const attacker = await postAdminData('https://attacker.example.invalid');
