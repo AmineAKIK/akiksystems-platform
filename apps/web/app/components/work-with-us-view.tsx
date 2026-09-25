@@ -466,7 +466,7 @@ export function WorkWithUsView({
                         defaultValue={inquiryValues?.message ?? ''}
                         maxLength={workWithUsInquiryLimits.message}
                         name="message"
-                        placeholder={contact.messagePlaceholder}
+                        placeholder={contact.messagePlaceholder ?? undefined}
                         required
                         rows={7}
                       />
