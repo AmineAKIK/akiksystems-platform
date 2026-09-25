@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert';
+import { Buffer } from 'node:buffer';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -38,7 +39,7 @@ server.stderr.on('data', (chunk) => {
 async function waitForServer() {
   for (let attempt = 0; attempt < 80; attempt += 1) {
     try {
-      const response = await fetch(`${internalOrigin}/en`);
+      const response = await globalThis.fetch(`${internalOrigin}/en`);
       if (response.ok) return;
     } catch {
       // Server still starting.
