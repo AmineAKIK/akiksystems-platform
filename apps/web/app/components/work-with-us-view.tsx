@@ -314,6 +314,7 @@ export function WorkWithUsView({
               {contactFormVisible && activeSubmissionToken !== undefined ? (
                 <Form
                   className="aks-work-with-us-inquiry-form"
+                  key={activeSubmissionToken}
                   method="post"
                   noValidate
                 >
