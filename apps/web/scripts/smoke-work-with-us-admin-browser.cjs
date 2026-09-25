@@ -117,6 +117,26 @@ async function fillCommercialDraft(card, copy) {
     .locator('textarea[name="approach_build_body"]')
     .fill(copy.buildBody);
   await card.locator('input[name="contactTitle"]').fill(copy.contactTitle);
+  await card.locator('input[name="contactNameLabel"]').fill(copy.contactNameLabel);
+  await card.locator('input[name="contactEmailLabel"]').fill(copy.contactEmailLabel);
+  await card
+    .locator('input[name="contactOrganizationLabel"]')
+    .fill(copy.contactOrganizationLabel);
+  await card
+    .locator('input[name="contactMessageLabel"]')
+    .fill(copy.contactMessageLabel);
+  await card
+    .locator('textarea[name="contactMessagePlaceholder"]')
+    .fill(copy.contactMessagePlaceholder);
+  await card
+    .locator('input[name="contactSubmitLabel"]')
+    .fill(copy.contactSubmitLabel);
+  await card
+    .locator('textarea[name="contactSuccessMessage"]')
+    .fill(copy.contactSuccessMessage);
+  await card
+    .locator('textarea[name="contactPrivacyNote"]')
+    .fill(copy.contactPrivacyNote);
   await card.locator('input[name="aboutTitle"]').fill(copy.aboutTitle);
   await card.locator('input[name="systemsTitle"]').fill(copy.systemsTitle);
 }
@@ -145,6 +165,14 @@ async function assertPersisted(card, copy) {
   assert.equal(
     await card.locator('input[name="contactTitle"]').inputValue(),
     copy.contactTitle,
+  );
+  assert.equal(
+    await card.locator('input[name="contactNameLabel"]').inputValue(),
+    copy.contactNameLabel,
+  );
+  assert.equal(
+    await card.locator('input[name="contactSubmitLabel"]').inputValue(),
+    copy.contactSubmitLabel,
   );
   assert.equal(
     await card.locator('input[name="aboutTitle"]').inputValue(),
@@ -176,6 +204,12 @@ async function assertPublishedSnapshotVersion(locale, copy) {
   assert.equal(snapshot.hero.title, copy.heroTitle);
   assert.equal(snapshot.approach.title, copy.approachTitle);
   assert.equal(snapshot.contact.title, copy.contactTitle);
+  assert.equal(snapshot.contact.nameLabel, copy.contactNameLabel);
+  assert.equal(snapshot.contact.emailLabel, copy.contactEmailLabel);
+  assert.equal(snapshot.contact.organizationLabel, copy.contactOrganizationLabel);
+  assert.equal(snapshot.contact.messageLabel, copy.contactMessageLabel);
+  assert.equal(snapshot.contact.submitLabel, copy.contactSubmitLabel);
+  assert.equal(snapshot.contact.successMessage, copy.contactSuccessMessage);
   assert.equal(snapshot.about.title, copy.aboutTitle);
   assert.equal(snapshot.systems.title, copy.systemsTitle);
 }
@@ -218,9 +252,30 @@ async function assertPublicCopy(
     'The public Work with us renderer must not reuse administration-card layout.',
   );
   assert.equal(
-    await renderer.locator('form').count(),
+    await renderer.locator('form.aks-work-with-us-inquiry-form').count(),
+    1,
+    'Step 5 must expose exactly one inquiry form backed by a public route action.',
+  );
+  assert.equal(
+    await renderer.locator('button').filter({ hasText: /Listen|Écouter/ }).count(),
     0,
-    'Step 4 must not expose an inert inquiry form before the server boundary exists.',
+    'Speech playback belongs to step 6 and must not leak into the step 5 boundary.',
+  );
+  assert.equal(
+    await renderer.locator('input[name="name"]').getAttribute('maxlength'),
+    '120',
+  );
+  assert.equal(
+    await renderer.locator('input[name="email"]').getAttribute('maxlength'),
+    '254',
+  );
+  assert.equal(
+    await renderer.locator('input[name="organization"]').getAttribute('maxlength'),
+    '160',
+  );
+  assert.equal(
+    await renderer.locator('textarea[name="message"]').getAttribute('maxlength'),
+    '5000',
   );
 
   const sectionTops = await page.evaluate(() =>
@@ -256,6 +311,80 @@ async function assertPublicCopy(
     horizontalGeometry.page <= horizontalGeometry.viewport + 1,
     `Work with us must not overflow horizontally at ${viewport.width}×${viewport.height}.`,
   );
+
+  const inquiry = renderer.locator('form.aks-work-with-us-inquiry-form');
+  const email = copy.inquiryEmail;
+
+  await inquiry.locator('input[name="name"]').fill('');
+  await inquiry.locator('input[name="email"]').fill('invalid-email');
+  await inquiry.locator('textarea[name="message"]').fill('');
+
+  const invalidResponsePromise = page.waitForResponse((candidate) => {
+    const request = candidate.request();
+    const pathname = new URL(candidate.url()).pathname;
+    return request.method() === 'POST' && pathname.startsWith(pathName);
+  });
+  await inquiry.getByRole('button', { name: copy.contactSubmitLabel, exact: true }).click();
+  const invalidResponse = await invalidResponsePromise;
+  assert.equal(
+    invalidResponse.status(),
+    422,
+    'Invalid inquiry input must be rejected by the server boundary.',
+  );
+  await page.getByText(copy.validationMessage, { exact: true }).waitFor();
+
+  const invalidPersisted = await db.query(
+    'select count(*)::int as count from work_with_us_inquiries where email = $1',
+    ['invalid-email'],
+  );
+  assert.equal(
+    invalidPersisted.rows[0].count,
+    0,
+    'Rejected inquiry input must never reach durable storage.',
+  );
+
+  const activeForm = renderer.locator('form.aks-work-with-us-inquiry-form');
+  await activeForm.locator('input[name="name"]').fill(copy.inquiryName);
+  await activeForm.locator('input[name="email"]').fill(email);
+  await activeForm
+    .locator('input[name="organization"]')
+    .fill(copy.inquiryOrganization);
+  await activeForm.locator('textarea[name="message"]').fill(copy.inquiryMessage);
+
+  const acceptedResponsePromise = page.waitForResponse((candidate) => {
+    const request = candidate.request();
+    const pathname = new URL(candidate.url()).pathname;
+    return request.method() === 'POST' && pathname.startsWith(pathName);
+  });
+  await activeForm
+    .getByRole('button', { name: copy.contactSubmitLabel, exact: true })
+    .click();
+  const acceptedResponse = await acceptedResponsePromise;
+  assert.equal(
+    acceptedResponse.status(),
+    200,
+    'A valid inquiry must cross the public action boundary successfully.',
+  );
+  await page.getByText(copy.contactSuccessMessage, { exact: true }).waitFor();
+
+  const persisted = await db.query(
+    `select locale, name, email, organization, message
+       from work_with_us_inquiries
+       where email = $1`,
+    [email],
+  );
+  assert.equal(persisted.rowCount, 1);
+  assert.equal(persisted.rows[0].locale, copy.locale);
+  assert.equal(persisted.rows[0].name, copy.inquiryName);
+  assert.equal(persisted.rows[0].email, email);
+  assert.equal(persisted.rows[0].organization, copy.inquiryOrganization);
+  assert.equal(persisted.rows[0].message, copy.inquiryMessage);
+
+  assert.equal(
+    await renderer.locator('input[name="name"]').inputValue(),
+    '',
+    'A successful inquiry must rotate its token and reset entered values.',
+  );
 }
 
 (async () => {
@@ -274,6 +403,20 @@ async function assertPublicCopy(
     buildTitle: 'Build',
     buildBody: 'Implement the justified next step with care.',
     contactTitle: 'Your turn.',
+    contactNameLabel: 'Name',
+    contactEmailLabel: 'Email',
+    contactOrganizationLabel: 'Organization (optional)',
+    contactMessageLabel: 'Message',
+    contactMessagePlaceholder: 'Your message…',
+    contactSubmitLabel: 'Send',
+    contactSuccessMessage: 'Message received.',
+    contactPrivacyNote: 'Contact data remains limited to this exchange.',
+    validationMessage: 'Please review the highlighted fields.',
+    inquiryName: 'English browser inquiry',
+    inquiryEmail: 'work-with-us-en-browser@example.invalid',
+    inquiryOrganization: 'AkikSystems qualification',
+    inquiryMessage: 'A durable English inquiry submitted through the real public form.',
+    locale: 'en',
     aboutTitle: 'About me.',
     systemsTitle: 'Selected systems.',
   };
@@ -290,6 +433,20 @@ async function assertPublicCopy(
     buildTitle: 'Construire',
     buildBody: 'Mettre en œuvre la prochaine étape justifiée avec soin.',
     contactTitle: 'À vous.',
+    contactNameLabel: 'Nom',
+    contactEmailLabel: 'E-mail',
+    contactOrganizationLabel: 'Organisation (optionnel)',
+    contactMessageLabel: 'Message',
+    contactMessagePlaceholder: 'Votre message…',
+    contactSubmitLabel: 'Envoyer',
+    contactSuccessMessage: 'Message reçu.',
+    contactPrivacyNote: 'Les données de contact restent limitées à cet échange.',
+    validationMessage: 'Vérifiez les champs indiqués.',
+    inquiryName: 'Demande navigateur française',
+    inquiryEmail: 'work-with-us-fr-browser@example.invalid',
+    inquiryOrganization: 'Qualification AkikSystems',
+    inquiryMessage: 'Une demande française persistée par le véritable formulaire public.',
+    locale: 'fr',
     aboutTitle: 'Qui je suis.',
     systemsTitle: 'Quelques systèmes.',
   };
@@ -404,7 +561,7 @@ async function assertPublicCopy(
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us admin smoke passed: EN/FR authoring and publication remain isolated, the dedicated renderer preserves hierarchy without horizontal overflow on desktop/mobile, and later drafts preserve the public snapshot.\n',
+      'Work with us smoke passed: EN/FR publication stays isolated, the dedicated renderer remains responsive, invalid inquiries are rejected, and valid public inquiries persist before success is shown.\n',
     );
   } finally {
     await browser.close();
