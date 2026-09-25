@@ -131,6 +131,13 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (intent === 'save-localization') {
     const title = field(form, 'title');
+    if (title.length > 180) {
+      return {
+        ok: false,
+        message: 'Legal page title must be 180 characters or fewer.',
+      };
+    }
+
     const document = requiredEditorDocument(form);
 
     await appDb.transaction().execute(async (transaction) => {
