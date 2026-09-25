@@ -107,6 +107,17 @@ function assertInsideViewport(rect, width, label) {
   assert.ok(rect.right <= width + 1, `${label} must stay inside the right viewport edge.`);
 }
 
+function centerX(rect) {
+  return rect.left + rect.width / 2;
+}
+
+function assertHorizontallyAligned(first, second, label) {
+  assert.ok(
+    Math.abs(centerX(first) - centerX(second)) <= 2,
+    `${label} must share the same horizontal center.`,
+  );
+}
+
 async function assertCompactHome(browser, locale, viewport, name) {
   const context = await browser.newContext({
     viewport,
@@ -156,6 +167,19 @@ async function assertCompactHome(browser, locale, viewport, name) {
       measurement.viewportWidth,
       `${name} footer navigation`,
     );
+
+    if (viewport.width > viewport.height) {
+      assertHorizontallyAligned(
+        measurement.copyrightRect,
+        measurement.centerRect,
+        `${name} footer copyright and identity`,
+      );
+      assertHorizontallyAligned(
+        measurement.legalNavRect,
+        measurement.orbitRect,
+        `${name} legal navigation and primary destinations`,
+      );
+    }
 
     for (const [index, doorRect] of measurement.doorRects.entries()) {
       assertInsideViewport(doorRect, measurement.viewportWidth, `${name} door ${index + 1}`);
