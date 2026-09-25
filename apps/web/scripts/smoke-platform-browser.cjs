@@ -9441,7 +9441,11 @@ async function assertAxe(page) {
     }
 
     process.stdout.write(
-      'AkikSystems full browser qualification passed: Home, Profile, Systems, EN/FR publication, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, Lighthouse performance, and no-JS reading are verified.\\n',
+      browserShard === 'platform'
+        ? 'AkikSystems platform browser shard passed: Home, Profile, legal/privacy utility pages, Work with us, Systems, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, and no-JS reading are verified.\\n'
+        : skipLighthouse
+          ? 'AkikSystems functional browser qualification passed without the isolated Lighthouse gate.\\n'
+          : 'AkikSystems full browser qualification passed: Home, Profile, Systems, EN/FR publication, deep links, responsive media, accessibility, keyboard access, 320px reflow, reduced motion, Lighthouse performance, and no-JS reading are verified.\\n',
     );
   } finally {
     await browser.close();
