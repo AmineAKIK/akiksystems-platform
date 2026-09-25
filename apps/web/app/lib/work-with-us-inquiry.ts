@@ -5,7 +5,10 @@ export const workWithUsInquiryLimits = {
   email: 254,
   organization: 160,
   message: 5000,
-  requestBytes: 16 * 1024,
+  // URL-encoded Unicode can expand substantially beyond the visible field
+  // lengths; keep the transport ceiling protective without rejecting valid
+  // 5,000-character messages.
+  requestBytes: 64 * 1024,
 } as const;
 
 export interface WorkWithUsInquiryValues {
