@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 import {
   bootstrapWorkWithUsCollaboration,
+  commercialPageHero,
+  commercialPageLegacyCompatibility,
   getPublishedCommercialPage,
   workWithUsCapabilitiesSeed,
   workWithUsCollaborationSeed,
@@ -25,23 +27,23 @@ try {
     const situations = workWithUsOpenSituationsSeed[locale];
 
     assert.ok(published);
-    assert.equal(published.title, situations.title);
-    assert.equal(published.introduction, situations.introduction);
-    assert.equal(published.situationsTitle, situations.situationsTitle);
-    assert.equal(published.situationsBody, situations.situationsBody);
-    assert.equal(published.capabilitiesTitle, capabilities.capabilitiesTitle);
-    assert.equal(published.capabilitiesBody, capabilities.capabilitiesBody);
+    assert.equal(commercialPageHero(published).title, situations.title);
+    assert.equal(commercialPageHero(published).introduction, situations.introduction);
+    assert.equal(commercialPageLegacyCompatibility(published).situationsTitle, situations.situationsTitle);
+    assert.equal(commercialPageLegacyCompatibility(published).situationsBody, situations.situationsBody);
+    assert.equal(commercialPageLegacyCompatibility(published).capabilitiesTitle, capabilities.capabilitiesTitle);
+    assert.equal(commercialPageLegacyCompatibility(published).capabilitiesBody, capabilities.capabilitiesBody);
     assert.equal(
-      published.collaborationTitle,
+      commercialPageLegacyCompatibility(published).collaborationTitle,
       collaboration.collaborationTitle,
     );
     assert.equal(
-      published.collaborationBody,
+      commercialPageLegacyCompatibility(published).collaborationBody,
       collaboration.collaborationBody,
     );
-    assert.equal(published.inquiryTitle, null);
-    assert.equal(published.inquiryBody, null);
-    assert.equal(published.privacyNote, null);
+    assert.equal(commercialPageLegacyCompatibility(published).inquiryTitle, null);
+    assert.equal(commercialPageLegacyCompatibility(published).inquiryBody, null);
+    assert.equal(commercialPageLegacyCompatibility(published).privacyNote, null);
   }
 
   const english = workWithUsCollaborationSeed.en.collaborationBody;

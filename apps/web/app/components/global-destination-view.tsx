@@ -1,4 +1,8 @@
-import type { PublishedCommercialPage, PublicSystemReference } from '@akiksystems/db';
+import type {
+  CommercialPageLegacyCompatibility,
+  PublishedCommercialPage,
+  PublicSystemReference,
+} from '@akiksystems/db';
 import { Container, Heading, Text } from '@akiksystems/ui';
 
 import {
@@ -15,6 +19,36 @@ export interface GlobalDestinationViewProps {
   commercialContent?: PublishedCommercialPage | null;
 }
 
+function commercialHero(content: PublishedCommercialPage) {
+  return content.version === 2
+    ? {
+        title: content.hero.title,
+        introduction: content.hero.introduction,
+      }
+    : {
+        title: content.title,
+        introduction: content.introduction,
+      };
+}
+
+function legacyCompatibility(
+  content: PublishedCommercialPage,
+): CommercialPageLegacyCompatibility {
+  return content.version === 2
+    ? content.legacy
+    : {
+        situationsTitle: content.situationsTitle,
+        situationsBody: content.situationsBody,
+        capabilitiesTitle: content.capabilitiesTitle,
+        capabilitiesBody: content.capabilitiesBody,
+        collaborationTitle: content.collaborationTitle,
+        collaborationBody: content.collaborationBody,
+        inquiryTitle: content.inquiryTitle,
+        inquiryBody: content.inquiryBody,
+        privacyNote: content.privacyNote,
+      };
+}
+
 export function GlobalDestinationView({
   destinationId,
   locale,
@@ -22,6 +56,12 @@ export function GlobalDestinationView({
   commercialContent = null,
 }: GlobalDestinationViewProps) {
   const destination = destinationById(destinationId);
+  const hero =
+    commercialContent === null ? null : commercialHero(commercialContent);
+  const legacyContent =
+    commercialContent === null
+      ? null
+      : legacyCompatibility(commercialContent);
 
   return (
     <main className="aks-proof-page">
@@ -31,76 +71,76 @@ export function GlobalDestinationView({
             AkikSystems
           </Text>
           <Heading level={1} size="md">
-            {commercialContent?.title ?? destination.label[locale]}
+            {hero?.title ?? destination.label[locale]}
           </Heading>
           <Text size="lg" tone="muted">
-            {commercialContent?.introduction ?? destination.description[locale]}
+            {hero?.introduction ?? destination.description[locale]}
           </Text>
-          {destinationId === 'work-with-us' && commercialContent !== null ? (
+          {destinationId === 'work-with-us' && legacyContent !== null ? (
             <>
-              {commercialContent.situationsTitle !== null ||
-              commercialContent.situationsBody !== null ? (
+              {legacyContent.situationsTitle !== null ||
+              legacyContent.situationsBody !== null ? (
                 <section className="aks-admin-card">
                   <div className="aks-proof-stack">
-                    {commercialContent.situationsTitle === null ? null : (
+                    {legacyContent.situationsTitle === null ? null : (
                       <Heading level={2} size="sm">
-                        {commercialContent.situationsTitle}
+                        {legacyContent.situationsTitle}
                       </Heading>
                     )}
-                    {commercialContent.situationsBody === null ? null : (
-                      <Text>{commercialContent.situationsBody}</Text>
+                    {legacyContent.situationsBody === null ? null : (
+                      <Text>{legacyContent.situationsBody}</Text>
                     )}
                   </div>
                 </section>
               ) : null}
-              {commercialContent.capabilitiesTitle !== null ||
-              commercialContent.capabilitiesBody !== null ? (
+              {legacyContent.capabilitiesTitle !== null ||
+              legacyContent.capabilitiesBody !== null ? (
                 <section className="aks-admin-card">
                   <div className="aks-proof-stack">
-                    {commercialContent.capabilitiesTitle === null ? null : (
+                    {legacyContent.capabilitiesTitle === null ? null : (
                       <Heading level={2} size="sm">
-                        {commercialContent.capabilitiesTitle}
+                        {legacyContent.capabilitiesTitle}
                       </Heading>
                     )}
-                    {commercialContent.capabilitiesBody === null ? null : (
-                      <Text>{commercialContent.capabilitiesBody}</Text>
+                    {legacyContent.capabilitiesBody === null ? null : (
+                      <Text>{legacyContent.capabilitiesBody}</Text>
                     )}
                   </div>
                 </section>
               ) : null}
-              {commercialContent.collaborationTitle !== null ||
-              commercialContent.collaborationBody !== null ? (
+              {legacyContent.collaborationTitle !== null ||
+              legacyContent.collaborationBody !== null ? (
                 <section className="aks-admin-card">
                   <div className="aks-proof-stack">
-                    {commercialContent.collaborationTitle === null ? null : (
+                    {legacyContent.collaborationTitle === null ? null : (
                       <Heading level={2} size="sm">
-                        {commercialContent.collaborationTitle}
+                        {legacyContent.collaborationTitle}
                       </Heading>
                     )}
-                    {commercialContent.collaborationBody === null ? null : (
-                      <Text>{commercialContent.collaborationBody}</Text>
+                    {legacyContent.collaborationBody === null ? null : (
+                      <Text>{legacyContent.collaborationBody}</Text>
                     )}
                   </div>
                 </section>
               ) : null}
-              {commercialContent.inquiryTitle !== null ||
-              commercialContent.inquiryBody !== null ? (
+              {legacyContent.inquiryTitle !== null ||
+              legacyContent.inquiryBody !== null ? (
                 <section className="aks-admin-card">
                   <div className="aks-proof-stack">
-                    {commercialContent.inquiryTitle === null ? null : (
+                    {legacyContent.inquiryTitle === null ? null : (
                       <Heading level={2} size="sm">
-                        {commercialContent.inquiryTitle}
+                        {legacyContent.inquiryTitle}
                       </Heading>
                     )}
-                    {commercialContent.inquiryBody === null ? null : (
-                      <Text>{commercialContent.inquiryBody}</Text>
+                    {legacyContent.inquiryBody === null ? null : (
+                      <Text>{legacyContent.inquiryBody}</Text>
                     )}
                   </div>
                 </section>
               ) : null}
-              {commercialContent.privacyNote === null ? null : (
+              {legacyContent.privacyNote === null ? null : (
                 <Text data-commercial-privacy-note size="sm" tone="muted">
-                  {commercialContent.privacyNote}
+                  {legacyContent.privacyNote}
                 </Text>
               )}
             </>

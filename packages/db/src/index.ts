@@ -92,13 +92,21 @@ export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
 export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
 export {
   buildCommercialPagePublicationSnapshot,
+  commercialPageHero,
+  commercialPageLegacyCompatibility,
   getPublishedCommercialPage,
   parseCommercialPagePublicationSnapshot,
+  patchCommercialPageLegacyCompatibility,
   publishCommercialPageLocalization,
 } from './commercial-page.js';
 export type {
+  CommercialPageLegacyCompatibility,
   CommercialPagePublicationSnapshot,
+  CommercialPagePublicationSnapshotV1,
+  CommercialPagePublicationSnapshotV2,
   PublishedCommercialPage,
+  WorkWithUsApproachStep,
+  WorkWithUsApproachStepKey,
 } from './commercial-page.js';
 
 export { getDraftProfile, getPublicProfile } from './public-profile.js';

@@ -235,7 +235,7 @@ export async function action({ request }: Route.ActionArgs) {
       entityId: commercialPage.id,
       locale,
       metadata: {
-        snapshotVersion: 1,
+        snapshotVersion: 2,
       },
     });
 

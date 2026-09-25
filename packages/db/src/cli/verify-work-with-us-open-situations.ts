@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 import {
   bootstrapWorkWithUsOpenSituations,
+  commercialPageHero,
+  commercialPageLegacyCompatibility,
   getPublishedCommercialPage,
   workWithUsOpenSituationsSeed,
 } from '../index.js';
@@ -22,13 +24,13 @@ try {
     const seed = workWithUsOpenSituationsSeed[locale];
 
     assert.ok(published);
-    assert.equal(published.title, seed.title);
-    assert.equal(published.introduction, seed.introduction);
-    assert.equal(published.situationsTitle, seed.situationsTitle);
-    assert.equal(published.situationsBody, seed.situationsBody);
-    assert.equal(published.inquiryTitle, null);
-    assert.equal(published.inquiryBody, null);
-    assert.equal(published.privacyNote, null);
+    assert.equal(commercialPageHero(published).title, seed.title);
+    assert.equal(commercialPageHero(published).introduction, seed.introduction);
+    assert.equal(commercialPageLegacyCompatibility(published).situationsTitle, seed.situationsTitle);
+    assert.equal(commercialPageLegacyCompatibility(published).situationsBody, seed.situationsBody);
+    assert.equal(commercialPageLegacyCompatibility(published).inquiryTitle, null);
+    assert.equal(commercialPageLegacyCompatibility(published).inquiryBody, null);
+    assert.equal(commercialPageLegacyCompatibility(published).privacyNote, null);
   }
 
   const english = workWithUsOpenSituationsSeed.en;
