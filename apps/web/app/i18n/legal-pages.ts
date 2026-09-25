@@ -1,8 +1,8 @@
 import {
   legalPageKeys,
   type LegalPageKey,
-  type PlatformLocale,
-} from '@akiksystems/core';
+} from '@akiksystems/core/legal-page';
+import type { PlatformLocale } from '@akiksystems/core';
 
 export interface LegalPageDefinition {
   key: LegalPageKey;
