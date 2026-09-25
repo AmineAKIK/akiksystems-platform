@@ -88,23 +88,21 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 
-  const pages = pageKeys.map((pageKey) => ({
-    id: randomUUID(),
-    page_key: pageKey,
-  }));
+  for (const pageKey of pageKeys) {
+    const pageId = randomUUID();
 
-  await db.insertInto('legal_pages').values(pages).execute();
-  await db
-    .insertInto('legal_page_localizations')
-    .values(
-      pages.flatMap((page) =>
-        (['en', 'fr'] as const).map((locale) => ({
-          page_id: page.id,
-          locale,
-        })),
-      ),
-    )
-    .execute();
+    await sql`
+      insert into legal_pages (id, page_key)
+      values (${pageId}::uuid, ${pageKey})
+    `.execute(db);
+
+    await sql`
+      insert into legal_page_localizations (page_id, locale)
+      values
+        (${pageId}::uuid, 'en'),
+        (${pageId}::uuid, 'fr')
+    `.execute(db);
+  }
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
