@@ -163,6 +163,11 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
+
       - name: Migrate qualification database
         run: pnpm deploy:migrate
 
@@ -254,6 +259,11 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
+
       - name: Migrate qualification database
         run: pnpm db:migrate
 
@@ -311,6 +321,11 @@ jobs:
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build workspace libraries required by DB CLIs
+        run: |
+          pnpm --filter @akiksystems/core build
+          pnpm --filter @akiksystems/db build
 
       - name: Migrate qualification database
         run: pnpm db:migrate
