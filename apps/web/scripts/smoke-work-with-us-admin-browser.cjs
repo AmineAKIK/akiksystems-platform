@@ -180,7 +180,13 @@ async function assertPublishedSnapshotVersion(locale, copy) {
   assert.equal(snapshot.systems.title, copy.systemsTitle);
 }
 
-async function assertPublicCopy(page, pathName, copy) {
+async function assertPublicCopy(
+  page,
+  pathName,
+  copy,
+  viewport = { width: 1280, height: 800 },
+) {
+  await page.setViewportSize(viewport);
   const response = await page.goto(origin + pathName);
   assert.equal(response?.status(), 200);
   await page
@@ -193,6 +199,63 @@ async function assertPublicCopy(page, pathName, copy) {
   await page.getByText(copy.buildTitle, { exact: true }).waitFor();
   await page.getByText(copy.contactTitle, { exact: true }).waitFor();
   await page.getByText(copy.aboutTitle, { exact: true }).waitFor();
+
+  const renderer = page.locator('.aks-work-with-us');
+  await renderer.waitFor();
+  assert.equal(
+    await renderer.locator('.aks-work-with-us-approach-step').count(),
+    3,
+    'Work with us must keep exactly three structural approach steps.',
+  );
+  assert.equal(
+    await renderer.locator('.aks-work-with-us-orbital-focus').count(),
+    1,
+    'The renderer must keep one decorative focal point in the hero composition.',
+  );
+  assert.equal(
+    await renderer.locator('.aks-admin-card').count(),
+    0,
+    'The public Work with us renderer must not reuse administration-card layout.',
+  );
+  assert.equal(
+    await renderer.locator('form').count(),
+    0,
+    'Step 4 must not expose an inert inquiry form before the server boundary exists.',
+  );
+
+  const sectionTops = await page.evaluate(() =>
+    [
+      '.aks-work-with-us-hero',
+      '.aks-work-with-us-approach',
+      '.aks-work-with-us-contact',
+      '.aks-work-with-us-about',
+      '.aks-work-with-us-systems',
+    ].map((selector) => {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) return null;
+      return element.getBoundingClientRect().top + window.scrollY;
+    }),
+  );
+  assert.equal(
+    sectionTops.every((value) => typeof value === 'number'),
+    true,
+    'Every Work with us section must be present in the validated order.',
+  );
+  for (let index = 1; index < sectionTops.length; index += 1) {
+    assert.ok(
+      sectionTops[index] > sectionTops[index - 1],
+      'Work with us sections must preserve hero → approach → contact → about → Systems order.',
+    );
+  }
+
+  const horizontalGeometry = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    page: document.documentElement.scrollWidth,
+  }));
+  assert.ok(
+    horizontalGeometry.page <= horizontalGeometry.viewport + 1,
+    `Work with us must not overflow horizontally at ${viewport.width}×${viewport.height}.`,
+  );
 }
 
 (async () => {
@@ -292,7 +355,10 @@ async function assertPublicCopy(page, pathName, copy) {
       'EN Work with us content published.',
     );
     await assertPublishedSnapshotVersion('en', english);
-    await assertPublicCopy(page, '/en/work-with-us', english);
+    await assertPublicCopy(page, '/en/work-with-us', english, {
+      width: 1440,
+      height: 900,
+    });
 
     await page.goto(`${origin}/admin/work-with-us`);
     let frenchCard = localeCard(page, 'fr');
@@ -314,7 +380,11 @@ async function assertPublicCopy(page, pathName, copy) {
       'FR Work with us content published.',
     );
     await assertPublishedSnapshotVersion('fr', french);
-    await assertPublicCopy(page, '/fr/travailler-ensemble', french);
+    await assertPublicCopy(page, '/fr/travailler-ensemble', french, {
+      width: 390,
+      height: 844,
+    });
+    await page.setViewportSize({ width: 1280, height: 800 });
 
     await page.goto(`${origin}/admin/work-with-us`);
     englishCard = localeCard(page, 'en');
@@ -334,7 +404,7 @@ async function assertPublicCopy(page, pathName, copy) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us admin smoke passed: atomic locale commands serialize correctly, EN/FR drafts persist across reload, publication succeeds, and later drafts preserve the public snapshot.\n',
+      'Work with us admin smoke passed: EN/FR authoring and publication remain isolated, the dedicated renderer preserves hierarchy without horizontal overflow on desktop/mobile, and later drafts preserve the public snapshot.\n',
     );
   } finally {
     await browser.close();

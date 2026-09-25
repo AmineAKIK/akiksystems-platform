@@ -4,7 +4,7 @@ import {
 } from '@akiksystems/db';
 import { useLoaderData, useParams } from 'react-router';
 
-import { GlobalDestinationView } from '../components/global-destination-view';
+import { WorkWithUsView } from '../components/work-with-us-view';
 import { requireExactLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
 
@@ -24,15 +24,14 @@ export function meta() {
   return [{ title: 'Work with us · AkikSystems' }];
 }
 
-export default function GlobalDestinationRoute() {
+export default function WorkWithUsRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'en');
   const { content, systemReferences } = useLoaderData<typeof loader>();
 
   return (
-    <GlobalDestinationView
-      commercialContent={content}
-      destinationId="work-with-us"
+    <WorkWithUsView
+      content={content}
       locale={locale}
       systemReferences={systemReferences}
     />
