@@ -306,3 +306,5 @@ export * from './presentation-document.js';
 export * from './writing-document.js';
 
 export * from './system-publication-readiness.js';
+
+export * from './work-with-us-content.js';

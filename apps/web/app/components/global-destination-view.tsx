@@ -1,6 +1,5 @@
 import type {
-  CommercialPageLegacyCompatibility,
-  PublishedCommercialPage,
+  PublishedWorkWithUsPage,
   PublicSystemReference,
 } from '@akiksystems/db';
 import { Container, Heading, Text } from '@akiksystems/ui';
@@ -16,37 +15,11 @@ export interface GlobalDestinationViewProps {
   destinationId: GlobalDestinationId;
   locale: Locale;
   systemReferences?: PublicSystemReference[];
-  commercialContent?: PublishedCommercialPage | null;
+  commercialContent?: PublishedWorkWithUsPage | null;
 }
 
-function commercialHero(content: PublishedCommercialPage) {
-  return content.version === 2
-    ? {
-        title: content.hero.title,
-        introduction: content.hero.introduction,
-      }
-    : {
-        title: content.title,
-        introduction: content.introduction,
-      };
-}
-
-function legacyCompatibility(
-  content: PublishedCommercialPage,
-): CommercialPageLegacyCompatibility {
-  return content.version === 2
-    ? content.legacy
-    : {
-        situationsTitle: content.situationsTitle,
-        situationsBody: content.situationsBody,
-        capabilitiesTitle: content.capabilitiesTitle,
-        capabilitiesBody: content.capabilitiesBody,
-        collaborationTitle: content.collaborationTitle,
-        collaborationBody: content.collaborationBody,
-        inquiryTitle: content.inquiryTitle,
-        inquiryBody: content.inquiryBody,
-        privacyNote: content.privacyNote,
-      };
+function hasCopy(...values: Array<string | null>): boolean {
+  return values.some((value) => value !== null);
 }
 
 export function GlobalDestinationView({
@@ -56,12 +29,10 @@ export function GlobalDestinationView({
   commercialContent = null,
 }: GlobalDestinationViewProps) {
   const destination = destinationById(destinationId);
-  const hero =
-    commercialContent === null ? null : commercialHero(commercialContent);
-  const legacyContent =
-    commercialContent === null
-      ? null
-      : legacyCompatibility(commercialContent);
+  const approach = commercialContent?.approach;
+  const contact = commercialContent?.contact;
+  const about = commercialContent?.about;
+  const systems = commercialContent?.systems;
 
   return (
     <main className="aks-proof-page">
@@ -71,111 +42,130 @@ export function GlobalDestinationView({
             AkikSystems
           </Text>
           <Heading level={1} size="md">
-            {hero?.title ?? destination.label[locale]}
+            {commercialContent?.hero.title ?? destination.label[locale]}
           </Heading>
           <Text size="lg" tone="muted">
-            {hero?.introduction ?? destination.description[locale]}
+            {commercialContent?.hero.introduction ??
+              destination.description[locale]}
           </Text>
-          {destinationId === 'work-with-us' && legacyContent !== null ? (
-            <>
-              {legacyContent.situationsTitle !== null ||
-              legacyContent.situationsBody !== null ? (
-                <section className="aks-admin-card">
-                  <div className="aks-proof-stack">
-                    {legacyContent.situationsTitle === null ? null : (
-                      <Heading level={2} size="sm">
-                        {legacyContent.situationsTitle}
-                      </Heading>
-                    )}
-                    {legacyContent.situationsBody === null ? null : (
-                      <Text>{legacyContent.situationsBody}</Text>
-                    )}
-                  </div>
-                </section>
-              ) : null}
-              {legacyContent.capabilitiesTitle !== null ||
-              legacyContent.capabilitiesBody !== null ? (
-                <section className="aks-admin-card">
-                  <div className="aks-proof-stack">
-                    {legacyContent.capabilitiesTitle === null ? null : (
-                      <Heading level={2} size="sm">
-                        {legacyContent.capabilitiesTitle}
-                      </Heading>
-                    )}
-                    {legacyContent.capabilitiesBody === null ? null : (
-                      <Text>{legacyContent.capabilitiesBody}</Text>
-                    )}
-                  </div>
-                </section>
-              ) : null}
-              {legacyContent.collaborationTitle !== null ||
-              legacyContent.collaborationBody !== null ? (
-                <section className="aks-admin-card">
-                  <div className="aks-proof-stack">
-                    {legacyContent.collaborationTitle === null ? null : (
-                      <Heading level={2} size="sm">
-                        {legacyContent.collaborationTitle}
-                      </Heading>
-                    )}
-                    {legacyContent.collaborationBody === null ? null : (
-                      <Text>{legacyContent.collaborationBody}</Text>
-                    )}
-                  </div>
-                </section>
-              ) : null}
-              {legacyContent.inquiryTitle !== null ||
-              legacyContent.inquiryBody !== null ? (
-                <section className="aks-admin-card">
-                  <div className="aks-proof-stack">
-                    {legacyContent.inquiryTitle === null ? null : (
-                      <Heading level={2} size="sm">
-                        {legacyContent.inquiryTitle}
-                      </Heading>
-                    )}
-                    {legacyContent.inquiryBody === null ? null : (
-                      <Text>{legacyContent.inquiryBody}</Text>
-                    )}
-                  </div>
-                </section>
-              ) : null}
-              {legacyContent.privacyNote === null ? null : (
-                <Text data-commercial-privacy-note size="sm" tone="muted">
-                  {legacyContent.privacyNote}
-                </Text>
-              )}
-            </>
+
+          {approach !== undefined &&
+          hasCopy(
+            approach.eyebrow,
+            approach.title,
+            approach.introduction,
+            ...approach.steps.flatMap((step) => [step.title, step.body]),
+          ) ? (
+            <section className="aks-admin-card">
+              <div className="aks-proof-stack">
+                {approach.eyebrow === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {approach.eyebrow}
+                  </Text>
+                )}
+                {approach.title === null ? null : (
+                  <Heading level={2} size="sm">
+                    {approach.title}
+                  </Heading>
+                )}
+                {approach.introduction === null ? null : (
+                  <Text>{approach.introduction}</Text>
+                )}
+                <div className="aks-system-reference-grid">
+                  {approach.steps.map((step) =>
+                    hasCopy(step.title, step.body) ? (
+                      <article className="aks-admin-card" key={step.key}>
+                        <div className="aks-proof-stack">
+                          {step.title === null ? null : (
+                            <Heading level={3} size="sm">
+                              {step.title}
+                            </Heading>
+                          )}
+                          {step.body === null ? null : <Text>{step.body}</Text>}
+                        </div>
+                      </article>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+            </section>
           ) : null}
-          {systemReferences.length > 0 ? (
+
+          {contact !== undefined &&
+          hasCopy(
+            contact.eyebrow,
+            contact.title,
+            contact.introduction,
+            contact.privacyNote,
+          ) ? (
+            <section className="aks-admin-card">
+              <div className="aks-proof-stack">
+                {contact.eyebrow === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {contact.eyebrow}
+                  </Text>
+                )}
+                {contact.title === null ? null : (
+                  <Heading level={2} size="sm">
+                    {contact.title}
+                  </Heading>
+                )}
+                {contact.introduction === null ? null : (
+                  <Text>{contact.introduction}</Text>
+                )}
+                {contact.privacyNote === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {contact.privacyNote}
+                  </Text>
+                )}
+              </div>
+            </section>
+          ) : null}
+
+          {about !== undefined &&
+          hasCopy(about.eyebrow, about.title, about.body) ? (
+            <section className="aks-admin-card">
+              <div className="aks-proof-stack">
+                {about.eyebrow === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {about.eyebrow}
+                  </Text>
+                )}
+                {about.title === null ? null : (
+                  <Heading level={2} size="sm">
+                    {about.title}
+                  </Heading>
+                )}
+                {about.body === null ? null : <Text>{about.body}</Text>}
+              </div>
+            </section>
+          ) : null}
+
+          {systems !== undefined &&
+          systems.title !== null &&
+          systemReferences.length > 0 ? (
             <section
-              aria-labelledby={`${destinationId}-system-references`}
+              aria-labelledby={destinationId + '-system-references'}
               className="aks-related-system-references"
-              data-work-with-us-proof={
-                destinationId === 'work-with-us' ? '' : undefined
-              }
             >
               <div className="aks-profile-section-heading">
+                {systems.eyebrow === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {systems.eyebrow}
+                  </Text>
+                )}
                 <Heading
-                  id={`${destinationId}-system-references`}
+                  id={destinationId + '-system-references'}
                   level={2}
                   size="sm"
                 >
-                  {destinationId === 'work-with-us'
-                    ? locale === 'fr'
-                      ? 'Preuves sélectionnées'
-                      : 'Selected proof'
-                    : locale === 'fr'
-                      ? 'Systèmes liés'
-                      : 'Related Systems'}
+                  {systems.title}
                 </Heading>
-                <Text size="sm" tone="muted">
-                  {destinationId === 'work-with-us'
-                    ? locale === 'fr'
-                      ? 'Une sélection volontairement courte de Systems publiés. Chaque carte renvoie vers le System complet, son périmètre et ses limites.'
-                      : 'A deliberately short selection of published Systems. Each card links to the complete System, its scope, and its limits.'
-                    : locale === 'fr'
-                      ? 'Références publiées réutilisant le même contrat de preuve.'
-                      : 'Published references using the same evidence contract.'}
-                </Text>
+                {systems.introduction === null ? null : (
+                  <Text size="sm" tone="muted">
+                    {systems.introduction}
+                  </Text>
+                )}
               </div>
               <div className="aks-system-reference-grid">
                 {systemReferences.map((reference) => (

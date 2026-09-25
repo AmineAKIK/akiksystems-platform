@@ -1,5 +1,5 @@
 import {
-  getPublishedCommercialPage,
+  getPublishedWorkWithUsPage,
   listWorkWithUsProofReferences,
 } from '@akiksystems/db';
 import { useLoaderData, useParams } from 'react-router';
@@ -13,7 +13,7 @@ import type { Route } from './+types/work-with-us';
 export async function loader({ params }: Route.LoaderArgs) {
   const locale = requireExactLocale(params.locale, 'en');
   const [content, systemReferences] = await Promise.all([
-    getPublishedCommercialPage(appDb, locale),
+    getPublishedWorkWithUsPage(appDb, locale),
     listWorkWithUsProofReferences(appDb, locale),
   ]);
 

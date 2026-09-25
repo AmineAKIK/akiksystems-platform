@@ -271,20 +271,27 @@ their existing taxonomy inspection surfaces, while AKS-115 itself creates no new
 editorial silo. The filter form is keyboard/native-form accessible, bilingual,
 and collapses to one column on narrow screens.
 
-AKS-122 begins L7 with a narrow Work with us content boundary. The public
-destination keeps section order and layout in code while the private admin owns
-localized EN/FR copy and publishes each locale independently as a snapshot. The
-model reserves the fixed L7 sections for the following tickets without exposing
-page-builder controls. AKS-122 intentionally does not create the public inquiry
-form or persist contact details; AKS-127+ owns that boundary.
+AKS-122 established the first Work with us content boundary. During the
+subsequent product-design iteration, that exploratory copy model was deliberately
+retired rather than preserved as a compatibility layer. Work with us now has one
+current v2 editorial contract: code owns the fixed page structure, while the
+localized admin content fills the hero, approach, contact, about, and Systems
+slots. The approach always contains exactly three structural steps
+(`understand`, `structure`, `build`); their visible copy remains editable.
 
-AKS-123 fills the first reserved L7 section with bilingual open-situations copy. It welcomes both organizations and individuals, asks visitors to describe the situation in their own words, and explicitly keeps framing after the first human exchange. The content is provisioned with `pnpm content:bootstrap-work-with-us-open-situations`; the bootstrap is idempotent and does not overwrite an already-authored situations draft. It deliberately leaves capabilities, collaboration, inquiry, and privacy sections for their later tickets.
+Localized Work with us drafts are stored as one typed JSON content document
+rather than a growing set of one-off columns. Publication emits only snapshot
+version 2. The development reset clears the earlier Work with us snapshots and
+draft copy instead of carrying v1 parsing, legacy projections, or seeded-copy
+bootstraps forward. This is intentional: AkikSystems is still in product
+immersion, so iteration history is not treated as a production compatibility
+requirement.
 
-AKS-124 fills the capabilities section with concrete bilingual engineering abilities while keeping them deliberately combinable rather than packaging them as services. The copy covers bounded system design, architecture and interfaces, web/internal/data-backed software, integration and automation, and inspectability through tests, documentation, observability, and explicit limits. `pnpm content:bootstrap-work-with-us-capabilities` provisions the copy idempotently, preserves authored capability drafts, and leaves collaboration, inquiry, privacy, pricing, and project qualification to later boundaries.
-
-AKS-125 fills the collaboration section with the understand-first, frame-after-contact sequence in direct bilingual copy. The first exchange is explicitly for understanding the situation rather than qualifying a predefined project; only after that human exchange can a useful next step be framed together around boundaries, responsibilities, and expected evidence. `pnpm content:bootstrap-work-with-us-collaboration` provisions the copy idempotently, preserves authored collaboration drafts, exposes no internal methodology name, and leaves inquiry/contact capture and privacy to later L7 tickets.
-
-AKS-126 adds a deliberately small commercial proof layer by reusing the existing published `SystemReference` contract instead of copying System content into Work with us. The code-owned selection is ProtoCap plus Tugères: each card exposes only the published title, summary, role/maturity transparency and canonical System link. Oria Nutrition remains a published System but is intentionally excluded from this surface, proving that Work with us is not a second Systems library. The first-contact flow itself remains unchanged and no inquiry or qualification fields are introduced.
+AKS-126 keeps the deliberately small proof layer by reusing published
+`SystemReference` objects rather than copying System-owned content into Work
+with us. Selection itself is still the earlier code-owned ProtoCap/Tugères
+baseline and will move to the dedicated Work with us administration boundary in
+the following page implementation work.
 
 AKS-121 closes the L6 architecture review using the real authoring and mobile
 evidence from AKS-119/120. The review keeps one Writing domain, publication

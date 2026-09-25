@@ -92,45 +92,66 @@ function localeCard(page, locale) {
 }
 
 async function fillCommercialDraft(card, copy) {
-  await card.locator('input[name="title"]').fill(copy.title);
-  await card.locator('textarea[name="introduction"]').fill(copy.introduction);
-  await card.locator('input[name="situationsTitle"]').fill(copy.situationsTitle);
-  await card.locator('textarea[name="situationsBody"]').fill(copy.situationsBody);
-  await card.locator('input[name="capabilitiesTitle"]').fill(copy.capabilitiesTitle);
-  await card.locator('textarea[name="capabilitiesBody"]').fill(copy.capabilitiesBody);
-  await card.locator('input[name="collaborationTitle"]').fill(copy.collaborationTitle);
-  await card.locator('textarea[name="collaborationBody"]').fill(copy.collaborationBody);
+  await card.locator('input[name="heroTitle"]').fill(copy.heroTitle);
+  await card
+    .locator('textarea[name="heroIntroduction"]')
+    .fill(copy.heroIntroduction);
+  await card.locator('input[name="approachTitle"]').fill(copy.approachTitle);
+  await card
+    .locator('input[name="approach_understand_title"]')
+    .fill(copy.understandTitle);
+  await card
+    .locator('textarea[name="approach_understand_body"]')
+    .fill(copy.understandBody);
+  await card
+    .locator('input[name="approach_structure_title"]')
+    .fill(copy.structureTitle);
+  await card
+    .locator('textarea[name="approach_structure_body"]')
+    .fill(copy.structureBody);
+  await card
+    .locator('input[name="approach_build_title"]')
+    .fill(copy.buildTitle);
+  await card
+    .locator('textarea[name="approach_build_body"]')
+    .fill(copy.buildBody);
+  await card.locator('input[name="contactTitle"]').fill(copy.contactTitle);
+  await card.locator('input[name="aboutTitle"]').fill(copy.aboutTitle);
+  await card.locator('input[name="systemsTitle"]').fill(copy.systemsTitle);
 }
 
 async function assertPersisted(card, copy) {
-  assert.equal(await card.locator('input[name="title"]').inputValue(), copy.title);
   assert.equal(
-    await card.locator('textarea[name="introduction"]').inputValue(),
-    copy.introduction,
+    await card.locator('input[name="heroTitle"]').inputValue(),
+    copy.heroTitle,
   );
   assert.equal(
-    await card.locator('input[name="situationsTitle"]').inputValue(),
-    copy.situationsTitle,
+    await card.locator('textarea[name="heroIntroduction"]').inputValue(),
+    copy.heroIntroduction,
   );
   assert.equal(
-    await card.locator('textarea[name="situationsBody"]').inputValue(),
-    copy.situationsBody,
+    await card.locator('input[name="approachTitle"]').inputValue(),
+    copy.approachTitle,
   );
   assert.equal(
-    await card.locator('input[name="capabilitiesTitle"]').inputValue(),
-    copy.capabilitiesTitle,
+    await card.locator('input[name="approach_understand_title"]').inputValue(),
+    copy.understandTitle,
   );
   assert.equal(
-    await card.locator('textarea[name="capabilitiesBody"]').inputValue(),
-    copy.capabilitiesBody,
+    await card.locator('input[name="approach_build_title"]').inputValue(),
+    copy.buildTitle,
   );
   assert.equal(
-    await card.locator('input[name="collaborationTitle"]').inputValue(),
-    copy.collaborationTitle,
+    await card.locator('input[name="contactTitle"]').inputValue(),
+    copy.contactTitle,
   );
   assert.equal(
-    await card.locator('textarea[name="collaborationBody"]').inputValue(),
-    copy.collaborationBody,
+    await card.locator('input[name="aboutTitle"]').inputValue(),
+    copy.aboutTitle,
+  );
+  assert.equal(
+    await card.locator('input[name="systemsTitle"]').inputValue(),
+    copy.systemsTitle,
   );
 }
 
@@ -140,10 +161,16 @@ async function assertPublishedSnapshotVersion(locale) {
     [locale],
   );
   assert.equal(result.rowCount, 1);
+  const snapshot = result.rows[0].snapshot;
   assert.equal(
-    result.rows[0].snapshot.version,
+    snapshot.version,
     2,
     `${locale.toUpperCase()} Work with us publication must use snapshot v2.`,
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(snapshot, 'legacy'),
+    false,
+    'Work with us v2 snapshots must not carry a legacy compatibility payload.',
   );
 }
 
@@ -151,12 +178,16 @@ async function assertPublicCopy(page, pathName, copy) {
   const response = await page.goto(origin + pathName);
   assert.equal(response?.status(), 200);
   await page
-    .getByRole('heading', { level: 1, name: copy.title, exact: true })
+    .getByRole('heading', { level: 1, name: copy.heroTitle, exact: true })
     .waitFor();
-  await page.getByText(copy.introduction, { exact: true }).waitFor();
-  await page.getByText(copy.situationsTitle, { exact: true }).waitFor();
-  await page.getByText(copy.capabilitiesTitle, { exact: true }).waitFor();
-  await page.getByText(copy.collaborationTitle, { exact: true }).waitFor();
+  await page.getByText(copy.heroIntroduction, { exact: true }).waitFor();
+  await page.getByText(copy.approachTitle, { exact: true }).waitFor();
+  await page.getByText(copy.understandTitle, { exact: true }).waitFor();
+  await page.getByText(copy.structureTitle, { exact: true }).waitFor();
+  await page.getByText(copy.buildTitle, { exact: true }).waitFor();
+  await page.getByText(copy.contactTitle, { exact: true }).waitFor();
+  await page.getByText(copy.aboutTitle, { exact: true }).waitFor();
+  await page.getByText(copy.systemsTitle, { exact: true }).waitFor();
 }
 
 (async () => {
@@ -164,33 +195,35 @@ async function assertPublicCopy(page, pathName, copy) {
   const browser = await chromium.launch({ headless: true });
 
   const english = {
-    title: 'Work with AkikSystems',
-    introduction:
-      'AkikSystems works with people and organizations on software and systems that need clear framing and reliable execution.',
-    situationsTitle: 'Start with the situation',
-    situationsBody:
-      'Bring a problem, an idea, an existing system, or a result you are trying to reach. The first exchange is about understanding the context before defining the work.',
-    capabilitiesTitle: 'What AkikSystems can help with',
-    capabilitiesBody:
-      'The work can combine product framing, software architecture, web applications, internal tools, integrations, automation, testing, documentation, and observability.',
-    collaborationTitle: 'How collaboration begins',
-    collaborationBody:
-      'Collaboration starts with a direct conversation, then the scope, responsibilities, technical decisions, and expected outcomes are made explicit.',
+    heroTitle: 'Work with AkikSystems',
+    heroIntroduction:
+      'A clean v2 editorial contract for the Work with us destination.',
+    approachTitle: 'How we work',
+    understandTitle: 'Understand',
+    understandBody: 'Read the context before choosing an intervention.',
+    structureTitle: 'Structure',
+    structureBody: 'Make constraints, options, and boundaries explicit.',
+    buildTitle: 'Build',
+    buildBody: 'Implement the justified next step with care.',
+    contactTitle: 'Your turn.',
+    aboutTitle: 'About me.',
+    systemsTitle: 'Selected systems.',
   };
 
   const french = {
-    title: 'Travailler avec AkikSystems',
-    introduction:
-      'AkikSystems accompagne des personnes et des organisations sur des sujets logiciels et systèmes qui demandent un cadrage clair et une exécution fiable.',
-    situationsTitle: 'Partir de la situation',
-    situationsBody:
-      'Vous pouvez venir avec un problème, une idée, un système existant ou un résultat à atteindre. Le premier échange sert à comprendre le contexte avant de définir le travail.',
-    capabilitiesTitle: 'Ce qu’AkikSystems peut prendre en charge',
-    capabilitiesBody:
-      'Le travail peut combiner cadrage produit, architecture logicielle, applications web, outils internes, intégrations, automatisation, tests, documentation et observabilité.',
-    collaborationTitle: 'Comment commence une collaboration',
-    collaborationBody:
-      'La collaboration commence par un échange direct, puis le périmètre, les responsabilités, les décisions techniques et les résultats attendus sont explicités.',
+    heroTitle: 'Travailler avec AkikSystems',
+    heroIntroduction:
+      'Un contrat éditorial v2 propre pour la destination Travailler ensemble.',
+    approachTitle: 'Comment nous travaillons',
+    understandTitle: 'Comprendre',
+    understandBody: 'Lire le contexte avant de choisir une intervention.',
+    structureTitle: 'Structurer',
+    structureBody: 'Rendre explicites les contraintes, options et limites.',
+    buildTitle: 'Construire',
+    buildBody: 'Mettre en œuvre la prochaine étape justifiée avec soin.',
+    contactTitle: 'À vous.',
+    aboutTitle: 'Qui je suis.',
+    systemsTitle: 'Quelques systèmes.',
   };
 
   try {
@@ -268,7 +301,7 @@ async function assertPublicCopy(page, pathName, copy) {
     await page.goto(`${origin}/admin`);
     englishCard = localeCard(page, 'en');
     await englishCard
-      .locator('input[name="title"]')
+      .locator('input[name="heroTitle"]')
       .fill('Private draft must remain private');
     await submitCommand(
       page,

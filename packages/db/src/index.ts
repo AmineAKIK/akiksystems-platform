@@ -91,23 +91,15 @@ export type { BootstrapOriaInput, BootstrapOriaResult, OriaMediaInput } from './
 export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
 export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
 export {
-  buildCommercialPagePublicationSnapshot,
-  commercialPageHero,
-  commercialPageLegacyCompatibility,
-  getPublishedCommercialPage,
-  parseCommercialPagePublicationSnapshot,
-  patchCommercialPageLegacyCompatibility,
-  publishCommercialPageLocalization,
-} from './commercial-page.js';
+  buildWorkWithUsPublicationSnapshot,
+  getPublishedWorkWithUsPage,
+  parseWorkWithUsPublicationSnapshot,
+  publishWorkWithUsLocalization,
+} from './work-with-us-publication.js';
 export type {
-  CommercialPageLegacyCompatibility,
-  CommercialPagePublicationSnapshot,
-  CommercialPagePublicationSnapshotV1,
-  CommercialPagePublicationSnapshotV2,
-  PublishedCommercialPage,
-  WorkWithUsApproachStep,
-  WorkWithUsApproachStepKey,
-} from './commercial-page.js';
+  PublishedWorkWithUsPage,
+  WorkWithUsPublicationSnapshot,
+} from './work-with-us-publication.js';
 
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
@@ -379,19 +371,6 @@ export type {
 
 export { bootstrapRendreAttentionEssay } from './rendre-attention-essay-bootstrap.js';
 export type { BootstrapRendreAttentionEssayResult } from './rendre-attention-essay-bootstrap.js';
-export {
-  bootstrapWorkWithUsCapabilities,
-  bootstrapWorkWithUsCollaboration,
-  bootstrapWorkWithUsOpenSituations,
-  workWithUsCapabilitiesSeed,
-  workWithUsCollaborationSeed,
-  workWithUsOpenSituationsSeed,
-} from './work-with-us-bootstrap.js';
-export type {
-  BootstrapWorkWithUsCapabilitiesResult,
-  BootstrapWorkWithUsCollaborationResult,
-  BootstrapWorkWithUsOpenSituationsResult,
-} from './work-with-us-bootstrap.js';
 export {
   listWorkWithUsProofReferences,
   workWithUsProofSystemSlugs,
