@@ -103,6 +103,7 @@ try {
   const profileId = profiles[0]?.id;
   assert.ok(profileId);
 
+  // CI-only fixture: production/staging must not receive Profile journey content.
   const technologyJourneyFixture = [
     {
       key: 'programming',
