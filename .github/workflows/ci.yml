@@ -198,6 +198,9 @@ jobs:
       - name: Verify Sentinel remains bootstrapable after existing Systems
         run: pnpm db:verify-sentinel-bootstrap
 
+      - name: Verify administered legal/privacy pages
+        run: pnpm db:verify-legal-pages
+
       - name: Bootstrap browser-smoke administrator
         run: pnpm auth:bootstrap-admin
 
