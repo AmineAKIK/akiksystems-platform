@@ -416,6 +416,7 @@ export default function Admin() {
                 <Link href="/admin/profile">Professional identity</Link>
                 <Link href="/admin/learning">Learning</Link>
                 <Link href="/admin/writings">Writings</Link>
+                <Link href="/admin/legal-pages">Legal, privacy & cookies</Link>
                 <Link href="/admin/security">Security settings</Link>
                 <Button disabled={pending} emphasis="quiet" onClick={signOut}>
                   {pending ? 'Signing out…' : 'Sign out'}
