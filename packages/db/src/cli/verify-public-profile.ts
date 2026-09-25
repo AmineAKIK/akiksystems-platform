@@ -103,6 +103,68 @@ try {
   const profileId = profiles[0]?.id;
   assert.ok(profileId);
 
+  // Production migrations intentionally leave Profile editorial subcontent
+  // empty. This verifier owns the fixtures it needs to qualify those
+  // structures instead of relying on deployment-seeded copy.
+  await db
+    .insertInto('profile_mobility')
+    .values({
+      profile_id: profileId,
+      worldwide: false,
+      remote: false,
+      relocation: false,
+    })
+    .onConflict((conflict) => conflict.column('profile_id').doNothing())
+    .execute();
+
+  const qualificationJourneyStages = [
+    ['programming', 0, 'Programming qualification', 'Qualification programmation'],
+    ['networks_telecom', 1, 'Networks qualification', 'Qualification réseaux'],
+    ['it_support', 2, 'Support qualification', 'Qualification support'],
+    ['industry', 3, 'Industry qualification', 'Qualification industrie'],
+    [
+      'development_akiksystems',
+      4,
+      'Development qualification',
+      'Qualification développement',
+    ],
+  ] as const;
+
+  await db
+    .insertInto('profile_technology_journey_stages')
+    .values(
+      qualificationJourneyStages.map(([stage_key, position]) => ({
+        profile_id: profileId,
+        stage_key,
+        position,
+      })),
+    )
+    .execute();
+
+  await db
+    .insertInto('profile_technology_journey_stage_localizations')
+    .values(
+      qualificationJourneyStages.flatMap(
+        ([stage_key, _position, enTitle, frTitle]) => [
+          {
+            profile_id: profileId,
+            stage_key,
+            locale: 'en' as const,
+            title: enTitle,
+            summary: 'Qualification-only technology journey fixture.',
+          },
+          {
+            profile_id: profileId,
+            stage_key,
+            locale: 'fr' as const,
+            title: frTitle,
+            summary: 'Fixture de qualification du parcours technologique.',
+          },
+        ],
+      ),
+    )
+    .execute();
+
   const portraitId = randomUUID();
   await db
     .insertInto('assets')
