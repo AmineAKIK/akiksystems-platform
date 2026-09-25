@@ -89,9 +89,25 @@ try {
     createdAssetIds.push(tugeresAssetId);
   }
 
+  const lastSystem = await db
+    .selectFrom('systems')
+    .select('editorial_position')
+    .orderBy('editorial_position', 'desc')
+    .executeTakeFirst();
+  const fixturePosition = (lastSystem?.editorial_position ?? -1) + 1;
+
   await db
     .insertInto('systems')
-    .values([{ id: localePartialSystemId }, { id: overflowSystemId }])
+    .values([
+      {
+        id: localePartialSystemId,
+        editorial_position: fixturePosition,
+      },
+      {
+        id: overflowSystemId,
+        editorial_position: fixturePosition + 1,
+      },
+    ])
     .execute();
 
   const fixtureSlug = `selection-fixture-${localePartialSystemId.slice(0, 8)}`;
