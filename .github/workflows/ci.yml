@@ -195,6 +195,9 @@ jobs:
           pnpm db:verify-system-references
           pnpm db:verify-system-publication-snapshots
 
+      - name: Seed Profile qualification fixture only
+        run: pnpm --filter @akiksystems/db profile:bootstrap-publications
+
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
 
