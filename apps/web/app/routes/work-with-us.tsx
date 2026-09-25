@@ -24,7 +24,7 @@ export function meta() {
   return [{ title: 'Work with us · AkikSystems' }];
 }
 
-export default function GlobalDestinationRoute() {
+export default function WorkWithUsRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'en');
   const { content, systemReferences } = useLoaderData<typeof loader>();
