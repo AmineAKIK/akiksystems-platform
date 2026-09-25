@@ -104,15 +104,35 @@ try {
   assert.ok(profileId);
 
   const technologyJourneyFixture = [
-    { key: 'programming', position: 0, en: 'Programming', fr: 'Programmation' },
-    { key: 'networks_telecom', position: 1, en: 'Networks', fr: 'Réseaux' },
-    { key: 'it_support', position: 2, en: 'IT support', fr: 'Support informatique' },
-    { key: 'industry', position: 3, en: 'Industry', fr: 'Industrie' },
+    {
+      key: 'programming',
+      position: 0,
+      en: 'Programming foundations',
+      fr: 'Fondations en programmation',
+    },
+    {
+      key: 'networks_telecom',
+      position: 1,
+      en: 'Networks and telecom',
+      fr: 'Réseaux et télécoms',
+    },
+    {
+      key: 'it_support',
+      position: 2,
+      en: 'IT support',
+      fr: 'Support informatique',
+    },
+    {
+      key: 'industry',
+      position: 3,
+      en: 'Relevant industry',
+      fr: 'Industrie pertinente',
+    },
     {
       key: 'development_akiksystems',
       position: 4,
-      en: 'Development',
-      fr: 'Développement',
+      en: 'Development and AkikSystems',
+      fr: 'Développement et AkikSystems',
     },
   ] as const;
 
