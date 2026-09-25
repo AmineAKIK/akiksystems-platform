@@ -7184,6 +7184,27 @@ async function saveLocalization(page, locale, values) {
   await form.locator('input[name="slug"]').fill(values.slug);
   await form.locator('input[name="title"]').fill(values.title);
   await form.locator('textarea[name="summary"]').fill(values.summary);
+  await form.locator('input[name="proofRole"]').fill(
+    locale === 'en'
+      ? 'Industrial-context software system'
+      : 'Système logiciel issu d’un contexte industriel',
+  );
+  await form.locator('input[name="proofMaturity"]').fill(
+    locale === 'en' ? 'Inspectable implementation' : 'Implémentation inspectable',
+  );
+  await form.locator('input[name="proofDemoNature"]').fill(
+    locale === 'en' ? 'No separate public demo' : 'Aucune démo publique séparée',
+  );
+  await form.locator('input[name="proofDataNature"]').fill(
+    locale === 'en'
+      ? 'Real-world context; no customer data exposed'
+      : 'Contexte réel ; aucune donnée client exposée',
+  );
+  await form.locator('textarea[name="proofLimits"]').fill(
+    locale === 'en'
+      ? 'Origin context alone is not evidence of current deployment or publicly exposed operational data.'
+      : 'Le contexte d’origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
+  );
   await form.getByRole('button', { name: button }).click();
   await page.getByText(locale === 'en' ? 'EN content updated independently.' : 'FR content updated independently.').waitFor();
 }
@@ -8442,7 +8463,7 @@ async function assertAxe(page) {
 
     await page.goto(`${origin}/admin`);
 
-    await page.getByRole('button', { name: 'Create Sentinel' }).click();
+    await page.getByRole('button', { name: 'Create System' }).click();
     await page.waitForURL(/\/admin\/systems\/[0-9a-f-]+$/i);
     page.systemPath = new URL(page.url()).pathname;
 

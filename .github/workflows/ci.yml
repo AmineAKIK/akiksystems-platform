@@ -120,6 +120,9 @@ jobs:
           pnpm db:verify-system-references
           pnpm db:verify-system-publication-snapshots
 
+      - name: Bootstrap Profile qualification fixture
+        run: pnpm --filter @akiksystems/db profile:bootstrap-publications
+
       - name: Verify L3 public Profile model
         run: pnpm db:verify-public-profile
 

@@ -103,6 +103,52 @@ try {
   const profileId = profiles[0]?.id;
   assert.ok(profileId);
 
+  const technologyJourneyFixture = [
+    { key: 'programming', position: 0, en: 'Programming', fr: 'Programmation' },
+    { key: 'networks_telecom', position: 1, en: 'Networks', fr: 'Réseaux' },
+    { key: 'it_support', position: 2, en: 'IT support', fr: 'Support informatique' },
+    { key: 'industry', position: 3, en: 'Industry', fr: 'Industrie' },
+    {
+      key: 'development_akiksystems',
+      position: 4,
+      en: 'Development',
+      fr: 'Développement',
+    },
+  ] as const;
+
+  await db
+    .insertInto('profile_technology_journey_stages')
+    .values(
+      technologyJourneyFixture.map(({ key, position }) => ({
+        profile_id: profileId,
+        stage_key: key,
+        position,
+      })),
+    )
+    .execute();
+
+  await db
+    .insertInto('profile_technology_journey_stage_localizations')
+    .values(
+      technologyJourneyFixture.flatMap(({ key, en, fr }) => [
+        {
+          profile_id: profileId,
+          stage_key: key,
+          locale: 'en' as const,
+          title: en,
+          summary: null,
+        },
+        {
+          profile_id: profileId,
+          stage_key: key,
+          locale: 'fr' as const,
+          title: fr,
+          summary: null,
+        },
+      ]),
+    )
+    .execute();
+
   const portraitId = randomUUID();
   await db
     .insertInto('assets')
@@ -745,6 +791,17 @@ try {
       { profile_id: profileId, language_code: 'en', position: 1 },
       { profile_id: profileId, language_code: 'ar', position: 2 },
     ])
+    .execute();
+
+  await db
+    .insertInto('profile_mobility')
+    .values({
+      profile_id: profileId,
+      worldwide: false,
+      remote: false,
+      relocation: false,
+    })
+    .onConflict((conflict) => conflict.column('profile_id').doNothing())
     .execute();
 
   await db
