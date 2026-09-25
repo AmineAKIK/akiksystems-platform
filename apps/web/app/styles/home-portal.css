@@ -21,10 +21,10 @@
 
 .aks-home {
   --aks-home-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --aks-home-brand-size: clamp(13rem, min(24vw, 34vh), 23rem);
-  --aks-home-word-size: clamp(3.4rem, min(6.4vw, 8.8vh), 7rem);
+  --aks-home-brand-size: clamp(12rem, 18vw, 20rem);
+  --aks-home-word-size: clamp(3rem, 5vw, 6rem);
   position: relative;
-  min-height: calc(100dvh - 4.75rem);
+  min-height: max(calc(100dvh - 4.75rem), 42rem);
   display: block;
   align-items: initial;
   overflow: hidden;
@@ -137,7 +137,8 @@
 }
 
 .aks-home-active-description {
-  min-height: 4.3rem;
+  width: min(24rem, 38vw);
+  min-height: 5rem;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -161,7 +162,7 @@
 }
 
 .aks-home-active-description p {
-  max-width: 34rem;
+  max-width: 100%;
   margin: 0;
   color: rgb(255 255 255 / 76%);
   font-size: 0.82rem;
@@ -236,7 +237,7 @@
 }
 
 .aks-home-door[data-destination='work-with-us'] {
-  inset-block-start: 16%;
+  inset-block-start: 10%;
   inset-inline-start: 50%;
   transform: translate(-50%, 0);
 }
@@ -251,51 +252,17 @@
   transform: translate(-50%, -50%);
 }
 .aks-home-door[data-destination='writings'] {
-  inset-block-start: 79%;
+  inset-block-start: 82%;
   inset-inline-start: 26%;
   transform: translate(-50%, -50%);
 }
 .aks-home-door[data-destination='learning'] {
-  inset-block-start: 79%;
+  inset-block-start: 82%;
   inset-inline-start: 74%;
   transform: translate(-50%, -50%);
 }
 
-@media (min-width: 48.0625rem) and (max-height: 56.24rem) {
-  .aks-home {
-    --aks-home-brand-size: clamp(11rem, min(21vw, 27vh), 15rem);
-    --aks-home-word-size: clamp(3rem, min(5.4vw, 7vh), 4.75rem);
-  }
-
-  .aks-home-center {
-    transform: translate(-50%, -42%);
-  }
-
-  .aks-home-center .aks-heading {
-    margin-block-start: clamp(1rem, 2vh, 1.4rem);
-  }
-
-  .aks-home-scale {
-    margin-block-start: 1rem;
-    font-size: 0.72rem;
-  }
-
-  .aks-home-active-description {
-    min-height: 3.7rem;
-    margin-block-start: 0.9rem;
-  }
-
-  .aks-home-door[data-destination='work-with-us'] {
-    inset-block-start: 13%;
-  }
-
-  .aks-home-door[data-destination='writings'],
-  .aks-home-door[data-destination='learning'] {
-    inset-block-start: 78%;
-  }
-}
-
-@media (max-width: 64rem) {
+@media (max-width: 80rem) {
   .aks-home {
     min-height: calc(100dvh - 4.75rem);
     display: grid;
@@ -341,7 +308,8 @@
 
   .aks-home-center .aks-heading {
     margin-block-start: clamp(1rem, 2.5vw, 1.5rem);
-    font-size: clamp(3rem, 11vw, 5.4rem);
+    max-width: 100%;
+    font-size: clamp(2.15rem, 13.333vw, 5.4rem);
     line-height: 0.9;
   }
 
@@ -408,7 +376,7 @@
   }
 }
 
-@media (max-width: 64rem) and (orientation: landscape) {
+@media (max-width: 80rem) and (orientation: landscape) {
   .aks-experience-frame[data-home='true'] {
     --aks-home-landscape-inline: clamp(1.25rem, 4vw, 3rem);
     --aks-home-landscape-identity: minmax(12rem, 0.82fr);
@@ -564,7 +532,7 @@ html[data-motion='reduced'] .aks-home-scale::after {
   opacity: 1;
 }
 
-@media (max-width: 64rem) {
+@media (max-width: 80rem) {
   .aks-experience-footer[data-home='true'] > .aks-container {
     width: calc(100% - clamp(2.5rem, 5vw, 4rem));
   }
@@ -595,7 +563,7 @@ html[data-motion='reduced'] .aks-home-scale::after {
   }
 }
 
-@media (max-width: 64rem) and (orientation: landscape) {
+@media (max-width: 80rem) and (orientation: landscape) {
   .aks-experience-footer[data-home='true'] > .aks-container {
     width: calc(100% - 2 * var(--aks-home-landscape-inline));
   }
