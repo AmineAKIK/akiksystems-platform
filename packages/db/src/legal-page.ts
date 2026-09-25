@@ -12,6 +12,9 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
+export { isLegalPageKey, legalPageKeys } from '@akiksystems/core';
+export type { LegalPageKey } from '@akiksystems/core';
+
 export interface LegalPagePublicationSnapshot {
   version: 1;
   pageId: string;
