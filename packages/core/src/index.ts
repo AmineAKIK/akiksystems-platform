@@ -304,5 +304,6 @@ export interface SystemLink {
 
 export * from './presentation-document.js';
 export * from './writing-document.js';
+export * from './legal-page.js';
 
 export * from './system-publication-readiness.js';
