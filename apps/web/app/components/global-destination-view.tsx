@@ -1,8 +1,7 @@
-import {
-  commercialPageHero,
-  commercialPageLegacyCompatibility,
-  type PublishedCommercialPage,
-  type PublicSystemReference,
+import type {
+  CommercialPageLegacyCompatibility,
+  PublishedCommercialPage,
+  PublicSystemReference,
 } from '@akiksystems/db';
 import { Container, Heading, Text } from '@akiksystems/ui';
 
@@ -20,6 +19,36 @@ export interface GlobalDestinationViewProps {
   commercialContent?: PublishedCommercialPage | null;
 }
 
+function commercialHero(content: PublishedCommercialPage) {
+  return content.version === 2
+    ? {
+        title: content.hero.title,
+        introduction: content.hero.introduction,
+      }
+    : {
+        title: content.title,
+        introduction: content.introduction,
+      };
+}
+
+function legacyCompatibility(
+  content: PublishedCommercialPage,
+): CommercialPageLegacyCompatibility {
+  return content.version === 2
+    ? content.legacy
+    : {
+        situationsTitle: content.situationsTitle,
+        situationsBody: content.situationsBody,
+        capabilitiesTitle: content.capabilitiesTitle,
+        capabilitiesBody: content.capabilitiesBody,
+        collaborationTitle: content.collaborationTitle,
+        collaborationBody: content.collaborationBody,
+        inquiryTitle: content.inquiryTitle,
+        inquiryBody: content.inquiryBody,
+        privacyNote: content.privacyNote,
+      };
+}
+
 export function GlobalDestinationView({
   destinationId,
   locale,
@@ -28,11 +57,11 @@ export function GlobalDestinationView({
 }: GlobalDestinationViewProps) {
   const destination = destinationById(destinationId);
   const hero =
-    commercialContent === null ? null : commercialPageHero(commercialContent);
+    commercialContent === null ? null : commercialHero(commercialContent);
   const legacyContent =
     commercialContent === null
       ? null
-      : commercialPageLegacyCompatibility(commercialContent);
+      : legacyCompatibility(commercialContent);
 
   return (
     <main className="aks-proof-page">
