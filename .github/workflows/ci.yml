@@ -107,6 +107,9 @@ jobs:
       - name: Bootstrap CI administrator
         run: pnpm auth:bootstrap-admin
 
+      - name: Smoke forwarded HTTPS action origin
+        run: pnpm --filter @akiksystems/web smoke:forwarded-actions
+
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
         uses: actions/cache@v4
