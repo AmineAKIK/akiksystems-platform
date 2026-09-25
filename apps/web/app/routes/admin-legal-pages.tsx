@@ -261,7 +261,11 @@ export default function AdminLegalPages() {
             const definition = legalPageDefinition(page.pageKey);
 
             return (
-              <section className="aks-admin-card" key={page.pageKey}>
+              <section
+                className="aks-admin-card"
+                data-legal-page-key={page.pageKey}
+                key={page.pageKey}
+              >
                 <div className="aks-proof-stack">
                   <Text className="aks-proof-eyebrow" size="sm" tone="muted">
                     Managed public page
@@ -283,7 +287,11 @@ export default function AdminLegalPages() {
                     );
 
                     return (
-                      <fieldset className="aks-admin-card" key={locale}>
+                      <fieldset
+                        className="aks-admin-card"
+                        data-legal-page-locale={locale}
+                        key={locale}
+                      >
                         <legend>
                           {locale === 'en' ? 'English' : 'Français'}
                         </legend>
