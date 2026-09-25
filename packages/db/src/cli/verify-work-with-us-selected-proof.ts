@@ -5,26 +5,53 @@ import { bootstrapOriaDomain } from '../oria-bootstrap.js';
 import { bootstrapProtoCapDomain } from '../protocap-bootstrap.js';
 import { bootstrapTugeresDomain } from '../tugeres-bootstrap.js';
 import { createDatabase } from '../database.js';
-import { listPublishedSystemReferences } from '../system-reference.js';
-import {
-  listWorkWithUsProofReferences,
-  workWithUsProofSystemSlugs,
-} from '../work-with-us-proof.js';
+import { listWorkWithUsProofReferences } from '../work-with-us-proof.js';
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
 const protoCapAssetId = randomUUID();
 const oriaAssetId = randomUUID();
 const tugeresAssetId = randomUUID();
+const localePartialSystemId = randomUUID();
+const overflowSystemId = randomUUID();
 const createdSystemIds: string[] = [];
 const createdAssetIds: string[] = [];
 
+const existingPage = await db
+  .selectFrom('work_with_us_pages')
+  .select('id')
+  .where('singleton_key', '=', 'public')
+  .executeTakeFirst();
+const pageId = existingPage?.id ?? randomUUID();
+const createdPage = existingPage === undefined;
+const previousSelections =
+  existingPage === undefined
+    ? []
+    : await db
+        .selectFrom('work_with_us_systems')
+        .select(['system_id', 'position'])
+        .where('page_id', '=', pageId)
+        .orderBy('position')
+        .execute();
+
 try {
+  if (createdPage) {
+    await db
+      .insertInto('work_with_us_pages')
+      .values({ id: pageId, singleton_key: 'public' })
+      .execute();
+  } else {
+    await db
+      .deleteFrom('work_with_us_systems')
+      .where('page_id', '=', pageId)
+      .execute();
+  }
+
   const protoCap = await bootstrapProtoCapDomain(db, {
     media: {
       id: protoCapAssetId,
-      storageKey: 'qualification/aks-126/protocap.png',
-      originalFilename: 'protocap-commercial-proof.png',
+      storageKey: 'qualification/work-with-us-selection/protocap.png',
+      originalFilename: 'protocap-work-with-us-selection.png',
       mimeType: 'image/png',
       byteSize: 1,
     },
@@ -37,8 +64,8 @@ try {
   const oria = await bootstrapOriaDomain(db, {
     media: {
       id: oriaAssetId,
-      storageKey: 'qualification/aks-126/oria.webp',
-      originalFilename: 'oria-non-selected-control.webp',
+      storageKey: 'qualification/work-with-us-selection/oria.webp',
+      originalFilename: 'oria-work-with-us-selection.webp',
       mimeType: 'image/webp',
       byteSize: 1,
     },
@@ -51,8 +78,8 @@ try {
   const tugeres = await bootstrapTugeresDomain(db, {
     media: {
       id: tugeresAssetId,
-      storageKey: 'qualification/aks-126/tugeres.webp',
-      originalFilename: 'tugeres-commercial-proof.webp',
+      storageKey: 'qualification/work-with-us-selection/tugeres.webp',
+      originalFilename: 'tugeres-work-with-us-selection.webp',
       mimeType: 'image/webp',
       byteSize: 1,
     },
@@ -62,41 +89,122 @@ try {
     createdAssetIds.push(tugeresAssetId);
   }
 
-  assert.deepEqual(workWithUsProofSystemSlugs, ['protocap', 'tugeres']);
+  await db
+    .insertInto('systems')
+    .values([{ id: localePartialSystemId }, { id: overflowSystemId }])
+    .execute();
 
-  for (const locale of ['en', 'fr'] as const) {
-    const library = await listPublishedSystemReferences(db, { locale });
-    const selected = await listWorkWithUsProofReferences(db, locale);
+  const fixtureSlug = `selection-fixture-${localePartialSystemId.slice(0, 8)}`;
+  const now = new Date();
+  await db
+    .insertInto('system_publications')
+    .values({
+      system_id: localePartialSystemId,
+      locale: 'en',
+      slug: fixtureSlug,
+      snapshot: {
+        version: 1,
+        systemId: localePartialSystemId,
+        locale: 'en',
+        presentationKind: 'standard',
+        evidencePolicy: 'standard',
+        slug: fixtureSlug,
+        title: 'Locale-partial System',
+        summary: 'Published in English only for Work with us selection qualification.',
+        proofTransparency: {
+          role: 'Qualification System',
+          maturity: 'Inspectable fixture',
+          demoNature: 'No demo',
+          dataNature: 'Synthetic qualification data',
+          limits: 'Qualification fixture only.',
+        },
+        presentationDocument: {},
+        technologies: [],
+        origin: null,
+        links: [],
+        media: [],
+      },
+      published_at: now,
+      updated_at: now,
+    })
+    .execute();
 
-    assert.ok(
-      library.some(({ slug }) => slug === 'oria-nutrition'),
-      'Qualification must include a published non-selected System control.',
-    );
-    assert.deepEqual(
-      selected.map(({ slug }) => slug),
-      ['protocap', 'tugeres'],
-      'Work with us must keep a stable, deliberately short proof selection.',
-    );
-    assert.equal(selected.length, 2);
-    assert.equal(
-      selected.some(({ slug }) => slug === 'oria-nutrition'),
-      false,
-      'Work with us must not mirror the Systems library.',
-    );
+  await db
+    .insertInto('work_with_us_systems')
+    .values([
+      { page_id: pageId, system_id: protoCap.systemId, position: 0 },
+      { page_id: pageId, system_id: localePartialSystemId, position: 1 },
+      { page_id: pageId, system_id: tugeres.systemId, position: 2 },
+      { page_id: pageId, system_id: oria.systemId, position: 3 },
+    ])
+    .execute();
 
-    for (const reference of selected) {
-      assert.ok(reference.title.length > 0);
-      assert.ok(reference.summary.length > 0);
-      assert.ok(reference.proofTransparency.role.length > 0);
-      assert.ok(reference.proofTransparency.maturity.length > 0);
-      assert.match(reference.href, new RegExp(`^/${locale}/systems/`));
-    }
-  }
+  const english = await listWorkWithUsProofReferences(db, 'en');
+  assert.deepEqual(
+    english.map(({ slug }) => slug),
+    ['protocap', fixtureSlug, 'tugeres', 'oria-nutrition'],
+    'Public Work with us references must follow the administrated relation order.',
+  );
+
+  const french = await listWorkWithUsProofReferences(db, 'fr');
+  assert.deepEqual(
+    french.map(({ slug }) => slug),
+    ['protocap', 'tugeres', 'oria-nutrition'],
+    'A selected System without a publication in the current locale must be omitted without disturbing the remaining order.',
+  );
+
+  await assert.rejects(
+    () =>
+      db
+        .insertInto('work_with_us_systems')
+        .values({
+          page_id: pageId,
+          system_id: overflowSystemId,
+          position: 4,
+        })
+        .execute(),
+    /work_with_us_systems_position_check/,
+    'The database must make a fifth Work with us System impossible.',
+  );
 
   process.stdout.write(
-    'AKS-126 qualification passed: Work with us reuses exactly ProtoCap and Tugères as published SystemReference evidence, excludes the published Oria control, preserves transparency metadata, and links back to the canonical System detail.\n',
+    'Work with us System selection qualification passed: selection is data-owned, ordered, capped at four, and locale-unpublished Systems are omitted from public references.\n',
   );
 } finally {
+  await db
+    .deleteFrom('work_with_us_systems')
+    .where('page_id', '=', pageId)
+    .execute();
+
+  if (previousSelections.length > 0) {
+    await db
+      .insertInto('work_with_us_systems')
+      .values(
+        previousSelections.map((selection) => ({
+          page_id: pageId,
+          system_id: selection.system_id,
+          position: selection.position,
+        })),
+      )
+      .execute();
+  }
+
+  if (createdPage) {
+    await db
+      .deleteFrom('work_with_us_pages')
+      .where('id', '=', pageId)
+      .execute();
+  }
+
+  await db
+    .deleteFrom('system_publications')
+    .where('system_id', '=', localePartialSystemId)
+    .execute();
+  await db
+    .deleteFrom('systems')
+    .where('id', 'in', [localePartialSystemId, overflowSystemId])
+    .execute();
+
   if (createdSystemIds.length > 0) {
     await db.deleteFrom('systems').where('id', 'in', createdSystemIds).execute();
   }
