@@ -2,15 +2,15 @@ import {
   parseWritingDocument,
   writingDocumentExcerpt,
   writingDocumentToPlainText,
+  isLegalPageKey,
+  legalPageKeys,
+  type LegalPageKey,
   type PlatformLocale,
   type WritingDocument,
 } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
-
-export const legalPageKeys = ['privacy', 'legal', 'cookies'] as const;
-export type LegalPageKey = (typeof legalPageKeys)[number];
 
 export interface LegalPagePublicationSnapshot {
   version: 1;
@@ -23,10 +23,6 @@ export interface LegalPagePublicationSnapshot {
 
 export interface PublishedLegalPage extends LegalPagePublicationSnapshot {
   publishedAt: Date;
-}
-
-export function isLegalPageKey(value: string): value is LegalPageKey {
-  return legalPageKeys.includes(value as LegalPageKey);
 }
 
 export function parseLegalPageDraftDocument(
