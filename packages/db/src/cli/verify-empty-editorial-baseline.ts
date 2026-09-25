@@ -1,17 +1,19 @@
 import { strict as assert } from 'node:assert';
 
+import { sql } from 'kysely';
+
 import { createDatabase } from '../database.js';
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
 
 async function count(table: string): Promise<number> {
-  const result = await db
-    .selectFrom(table as never)
-    .select(({ fn }) => fn.countAll<number>().as('count'))
-    .executeTakeFirstOrThrow();
+  const result = await sql<{ count: string }>`
+    select count(*)::text as count
+    from ${sql.raw(table)}
+  `.execute(db);
 
-  return Number((result as { count: number | string }).count);
+  return Number(result.rows[0]?.count ?? '0');
 }
 
 try {
