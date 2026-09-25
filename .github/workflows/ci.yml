@@ -171,6 +171,9 @@ jobs:
       - name: Migrate qualification database
         run: pnpm deploy:migrate
 
+      - name: Verify deploy starts from an empty editorial baseline
+        run: pnpm db:verify-empty-editorial-baseline
+
       - name: Verify L1 System domain rules
         run: |
           pnpm db:verify-system-domain
@@ -409,8 +412,18 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Migrate and bootstrap browser database
-        run: pnpm deploy:migrate && pnpm auth:bootstrap-admin
+      - name: Migrate empty browser database
+        run: |
+          pnpm deploy:migrate
+          pnpm db:verify-empty-editorial-baseline
+          pnpm auth:bootstrap-admin
+
+      - name: Seed platform qualification fixtures only
+        run: |
+          pnpm --filter @akiksystems/db profile:bootstrap-publications
+          pnpm content:bootstrap-work-with-us-open-situations
+          pnpm content:bootstrap-work-with-us-capabilities
+          pnpm content:bootstrap-work-with-us-collaboration
 
       - name: Cache browser qualification runtime
         id: browser-runtime-cache
@@ -484,11 +497,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Migrate and bootstrap browser database
+      - name: Migrate empty browser database
         run: |
           pnpm deploy:migrate
+          pnpm db:verify-empty-editorial-baseline
           pnpm auth:bootstrap-admin
-          pnpm db:bootstrap-sentinel-ci
+
+      - name: Seed content qualification fixtures only
+        run: pnpm db:bootstrap-sentinel-ci
 
       - name: Cache browser qualification runtime
         id: browser-runtime-cache
@@ -559,10 +575,11 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Prepare isolated Sentinel performance route
+      - name: Prepare isolated performance fixture
         run: |
           pnpm auth:migrate
           pnpm db:migrate
+          pnpm db:verify-empty-editorial-baseline
           pnpm db:bootstrap-sentinel-ci
 
       - name: Cache browser qualification runtime
