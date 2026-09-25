@@ -23,9 +23,22 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`delete from profile_capability_group_localizations`.execute(db);
   await sql`delete from profile_capability_groups`.execute(db);
   await sql`delete from profile_languages`.execute(db);
-  await sql`delete from profile_mobility`.execute(db);
+  await sql`
+    update profile_mobility
+    set
+      worldwide = false,
+      remote = false,
+      relocation = false,
+      updated_at = now()
+  `.execute(db);
   await sql`delete from profile_technology_journey_stage_localizations`.execute(db);
-  await sql`delete from profile_technology_journey_stages`.execute(db);
+  await sql`
+    update profile_technology_journey_stages
+    set
+      evidence_experience_id = null,
+      evidence_system_id = null,
+      updated_at = now()
+  `.execute(db);
   await sql`delete from profile_experiences`.execute(db);
   await sql`delete from profile_systems`.execute(db);
 
