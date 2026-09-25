@@ -98,6 +98,9 @@ jobs:
       - name: Verify Work with us System selection
         run: pnpm db:verify-work-with-us-selected-proof
 
+      - name: Verify Work with us inquiry persistence
+        run: pnpm db:verify-work-with-us-inquiries
+
       - name: Smoke SSR
         run: pnpm smoke:web
 
@@ -133,7 +136,7 @@ jobs:
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Smoke Work with us administration
+      - name: Smoke Work with us end to end
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright

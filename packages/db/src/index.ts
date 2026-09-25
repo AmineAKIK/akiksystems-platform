@@ -100,6 +100,14 @@ export type {
   PublishedWorkWithUsPage,
   WorkWithUsPublicationSnapshot,
 } from './work-with-us-publication.js';
+export {
+  createWorkWithUsInquiry,
+  workWithUsInquiryRateLimit,
+} from './work-with-us-inquiry.js';
+export type {
+  CreateWorkWithUsInquiryInput,
+  CreateWorkWithUsInquiryResult,
+} from './work-with-us-inquiry.js';
 
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
@@ -284,10 +292,13 @@ export type {
   WorkWithUsPublicationRow,
   WorkWithUsPublicationsTable,
   WorkWithUsPublicationUpdate,
+  WorkWithUsInquiryRow,
+  WorkWithUsInquiriesTable,
   WorkWithUsSystemRow,
   WorkWithUsSystemsTable,
   WorkWithUsSystemUpdate,
   NewProfilePublicationRow,
+  NewWorkWithUsInquiryRow,
   NewWorkWithUsLocalizationRow,
   NewWorkWithUsPageRow,
   NewWorkWithUsPublicationRow,

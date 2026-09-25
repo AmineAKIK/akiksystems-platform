@@ -152,6 +152,17 @@ export interface WorkWithUsSystemsTable {
   created_at: TimestampColumn;
 }
 
+export interface WorkWithUsInquiriesTable {
+  id: string;
+  submission_token: string;
+  locale: PlatformLocale;
+  name: string;
+  email: string;
+  organization: string | null;
+  message: string;
+  created_at: TimestampColumn;
+}
+
 export interface ProfileWorkPrinciplesTable {
   id: string;
   profile_id: string;
@@ -600,6 +611,9 @@ export type WorkWithUsSystemRow = Selectable<WorkWithUsSystemsTable>;
 export type NewWorkWithUsSystemRow = Insertable<WorkWithUsSystemsTable>;
 export type WorkWithUsSystemUpdate = Updateable<WorkWithUsSystemsTable>;
 
+export type WorkWithUsInquiryRow = Selectable<WorkWithUsInquiriesTable>;
+export type NewWorkWithUsInquiryRow = Insertable<WorkWithUsInquiriesTable>;
+
 export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
 export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
 export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
@@ -811,6 +825,7 @@ export interface Database {
   work_with_us_localizations: WorkWithUsLocalizationsTable;
   work_with_us_publications: WorkWithUsPublicationsTable;
   work_with_us_systems: WorkWithUsSystemsTable;
+  work_with_us_inquiries: WorkWithUsInquiriesTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
   profile_capability_groups: ProfileCapabilityGroupsTable;

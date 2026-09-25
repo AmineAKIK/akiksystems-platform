@@ -3,6 +3,7 @@ import type {
   PublicSystemReference,
 } from '@akiksystems/db';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { WorkWithUsView } from './work-with-us-view';
@@ -124,6 +125,22 @@ function reference(
   };
 }
 
+function renderRoutedView(
+  props: React.ComponentProps<typeof WorkWithUsView>,
+): string {
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/en/work-with-us',
+        element: <WorkWithUsView {...props} />,
+      },
+    ],
+    { initialEntries: ['/en/work-with-us'] },
+  );
+
+  return renderToStaticMarkup(<RouterProvider router={router} />);
+}
+
 describe('WorkWithUsView', () => {
   it('renders the validated section hierarchy and visual approach sequence', () => {
     const html = renderToStaticMarkup(
@@ -177,14 +194,63 @@ describe('WorkWithUsView', () => {
     expect(html).not.toContain('aks-system-reference-meta');
   });
 
-  it('does not ship an inert public inquiry form before the server boundary exists', () => {
-    const html = renderToStaticMarkup(
+  it('renders the inquiry form only with a real server submission token', () => {
+    const withoutBoundary = renderToStaticMarkup(
       <WorkWithUsView content={content()} locale="en" />,
     );
+    expect(withoutBoundary).not.toContain('<form');
+
+    const html = renderRoutedView({
+      content: content(),
+      locale: 'en',
+      submissionToken: '00000000-0000-4000-8000-000000000042',
+    });
 
     expect(html).toContain('Your turn.');
-    expect(html).not.toContain('<form');
-    expect(html).not.toContain('name="email"');
+    expect(html).toContain('<form');
+    expect(html).toContain('name="_intent"');
+    expect(html).toContain('value="submit-work-with-us-inquiry"');
+    expect(html).toContain('name="submissionToken"');
+    expect(html).toContain('name="name"');
+    expect(html).toContain('name="email"');
+    expect(html).toContain('name="organization"');
+    expect(html).toContain('name="message"');
+    expect(html).toContain('maxLength="5000"');
+    expect(html).toContain('Send');
+    expect(html).not.toContain('Listen to my message');
+  });
+
+  it('associates server validation errors with the fields and preserves values', () => {
+    const html = renderRoutedView({
+      content: content(),
+      inquiryActionData: {
+        ok: false,
+        kind: 'invalid',
+        message: 'Please review the highlighted fields.',
+        values: {
+          name: 'Ada',
+          email: 'invalid',
+          organization: 'Analytical Systems',
+          message: 'A concrete request.',
+        },
+        errors: {
+          email: 'Enter a valid email address.',
+        },
+        submissionToken: '00000000-0000-4000-8000-000000000042',
+      },
+      locale: 'en',
+      submissionToken: '00000000-0000-4000-8000-000000000099',
+    });
+
+    expect(html).toContain('role="alert"');
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain('aria-describedby="work-with-us-email-error"');
+    expect(html).toContain('value="invalid"');
+    expect(html).toContain('value="Analytical Systems"');
+    expect(html).toContain('A concrete request.');
+    expect(html).toContain(
+      'value="00000000-0000-4000-8000-000000000042"',
+    );
   });
 
   it('keeps a useful localized hero when no Work with us snapshot is published', () => {
