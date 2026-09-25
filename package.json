@@ -92,7 +92,8 @@
     "content:bootstrap-sentinel-system": "pnpm --filter @akiksystems/web content:bootstrap-sentinel-system",
     "db:verify-sentinel-bootstrap": "pnpm --filter @akiksystems/db db:verify-sentinel-bootstrap",
     "provision:initial": "pnpm deploy:migrate && pnpm auth:bootstrap-admin",
-    "db:verify-empty-deployment": "pnpm --filter @akiksystems/db db:verify-empty-deployment"
+    "db:verify-empty-deployment": "pnpm --filter @akiksystems/db db:verify-empty-deployment",
+    "content:purge-editorial-storage": "pnpm --filter @akiksystems/web content:purge-editorial-storage"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
