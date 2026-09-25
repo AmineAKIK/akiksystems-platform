@@ -1,9 +1,10 @@
 import type {
   AnchorHTMLAttributes,
-  SVGAttributes,
+  ImgHTMLAttributes,
 } from 'react';
 
-export interface BrandMarkProps extends SVGAttributes<SVGSVGElement> {
+export interface BrandMarkProps
+  extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> {
   title?: string;
 }
 
@@ -15,37 +16,17 @@ export function BrandMark({
   const labelled = title !== undefined;
 
   return (
-    <svg
+    <img
+      alt={labelled ? title : ''}
       aria-hidden={labelled ? undefined : true}
-      aria-label={labelled ? title : undefined}
       className={['aks-brand-mark', className].filter(Boolean).join(' ')}
-      fill="none"
-      role={labelled ? 'img' : undefined}
-      viewBox="0 0 24 24"
+      decoding="async"
+      draggable={false}
+      height={2048}
+      src="/brand/AKSYS.svg"
+      width={2048}
       {...props}
-    >
-      <path
-        d="M5 7.25V5h5.25M19 7.25V5h-5.25M5 16.75V19h5.25M19 16.75V19h-5.25"
-        stroke="currentColor"
-        strokeLinecap="square"
-        strokeWidth="1.75"
-      />
-      <path
-        d="M8.25 12h7.5M12 8.25v7.5"
-        stroke="currentColor"
-        strokeLinecap="square"
-        strokeWidth="1.5"
-      />
-      <rect
-        height="3.5"
-        rx="0.35"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        width="3.5"
-        x="10.25"
-        y="10.25"
-      />
-    </svg>
+    />
   );
 }
 

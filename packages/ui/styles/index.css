@@ -103,6 +103,8 @@
     width: 1.35em;
     height: 1.35em;
     flex: 0 0 auto;
+    object-fit: contain;
+    filter: invert(1);
   }
 
   .aks-brand-signature {

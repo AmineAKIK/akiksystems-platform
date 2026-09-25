@@ -24,6 +24,10 @@ export function Layout({ children }: { children: ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#11110f" />
+        <link href="/brand/AKSYS.svg" rel="icon" type="image/svg+xml" />
+        <link href="/brand/AKSYS.svg" rel="shortcut icon" type="image/svg+xml" />
+        <link href="/brand/AKSYS.svg" rel="mask-icon" color="#11110f" />
         <Meta />
         <Links />
       </head>
