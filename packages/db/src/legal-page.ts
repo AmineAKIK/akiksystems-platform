@@ -2,18 +2,20 @@ import {
   parseWritingDocument,
   writingDocumentExcerpt,
   writingDocumentToPlainText,
-  isLegalPageKey,
-  legalPageKeys,
-  type LegalPageKey,
   type PlatformLocale,
   type WritingDocument,
 } from '@akiksystems/core';
+import {
+  isLegalPageKey,
+  legalPageKeys,
+  type LegalPageKey,
+} from '@akiksystems/core/legal-page';
 import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
-export { isLegalPageKey, legalPageKeys } from '@akiksystems/core';
-export type { LegalPageKey } from '@akiksystems/core';
+export { isLegalPageKey, legalPageKeys } from '@akiksystems/core/legal-page';
+export type { LegalPageKey } from '@akiksystems/core/legal-page';
 
 export interface LegalPagePublicationSnapshot {
   version: 1;
