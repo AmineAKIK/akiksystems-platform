@@ -56,7 +56,7 @@ export async function handleWorkWithUsInquirySubmission(
   try {
     form = await request.formData();
   } catch (error) {
-    logger.error('work_with_us.inquiry_persistence_failed', error, { locale });
+    logger.warn('work_with_us.inquiry_form_parse_failed', { locale });
 
     return actionData(
       {
@@ -123,7 +123,9 @@ export async function handleWorkWithUsInquirySubmission(
       },
       200,
     );
-  } catch {
+  } catch (error) {
+    logger.error('work_with_us.inquiry_persistence_failed', error, { locale });
+
     return actionData(
       {
         ok: false,
