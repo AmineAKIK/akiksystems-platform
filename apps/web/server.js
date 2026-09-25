@@ -32,6 +32,10 @@ const databaseHealth =
 const app = express();
 
 app.disable('x-powered-by');
+// Railway is the single public reverse-proxy hop in front of this process.
+// Keep the outer Express app aligned with the React Router sub-app so request
+// protocol/host semantics consistently describe the original public request.
+app.set('trust proxy', 1);
 
 /**
  * @param {string} path
