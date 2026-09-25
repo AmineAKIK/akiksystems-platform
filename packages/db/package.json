@@ -70,7 +70,8 @@
     "db:verify-work-with-us-collaboration": "tsx src/cli/verify-work-with-us-collaboration.ts",
     "db:verify-work-with-us-selected-proof": "tsx src/cli/verify-work-with-us-selected-proof.ts",
     "db:verify-sentinel-bootstrap": "tsx src/cli/verify-sentinel-bootstrap.ts",
-    "db:verify-legal-pages": "tsx src/cli/verify-legal-pages.ts"
+    "db:verify-legal-pages": "tsx src/cli/verify-legal-pages.ts",
+    "db:bootstrap-sentinel-performance": "tsx src/cli/bootstrap-sentinel-performance.ts"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
