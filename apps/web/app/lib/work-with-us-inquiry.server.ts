@@ -1,5 +1,6 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import { createWorkWithUsInquiry } from '@akiksystems/db';
+import { randomUUID } from 'node:crypto';
 import { data } from 'react-router';
 
 import { appDb } from './db.server';
@@ -108,6 +109,10 @@ export async function handleWorkWithUsInquirySubmission(
       {
         ok: true,
         kind: 'success',
+        // A successful or idempotent retry consumes the previous token.
+        // Issue a fresh one so a deliberate second message is a new inquiry
+        // even if the router does not revalidate the loader immediately.
+        submissionToken: randomUUID(),
       },
       200,
     );
