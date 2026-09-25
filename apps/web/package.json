@@ -23,7 +23,8 @@
     "content:bootstrap-work-with-us-open-situations": "tsx scripts/bootstrap-work-with-us-open-situations.ts",
     "content:bootstrap-work-with-us-capabilities": "tsx scripts/bootstrap-work-with-us-capabilities.ts",
     "content:bootstrap-work-with-us-collaboration": "tsx scripts/bootstrap-work-with-us-collaboration.ts",
-    "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts"
+    "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts",
+    "smoke:admin-commercial": "node scripts/smoke-commercial-admin-browser.cjs"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
