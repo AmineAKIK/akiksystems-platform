@@ -7184,6 +7184,46 @@ async function saveLocalization(page, locale, values) {
   await form.locator('input[name="slug"]').fill(values.slug);
   await form.locator('input[name="title"]').fill(values.title);
   await form.locator('textarea[name="summary"]').fill(values.summary);
+  await form
+    .locator('input[name="proofRole"]')
+    .fill(
+      values.proofRole ??
+        (locale === 'fr'
+          ? 'Système de qualification'
+          : 'Qualification system'),
+    );
+  await form
+    .locator('input[name="proofMaturity"]')
+    .fill(
+      values.proofMaturity ??
+        (locale === 'fr'
+          ? 'Fixture inspectable'
+          : 'Inspectable fixture'),
+    );
+  await form
+    .locator('input[name="proofDemoNature"]')
+    .fill(
+      values.proofDemoNature ??
+        (locale === 'fr'
+          ? 'Aucune démo séparée'
+          : 'No separate demo'),
+    );
+  await form
+    .locator('input[name="proofDataNature"]')
+    .fill(
+      values.proofDataNature ??
+        (locale === 'fr'
+          ? 'Données synthétiques de qualification'
+          : 'Synthetic qualification data'),
+    );
+  await form
+    .locator('textarea[name="proofLimits"]')
+    .fill(
+      values.proofLimits ??
+        (locale === 'fr'
+          ? 'Fixture CI uniquement ; aucune affirmation de déploiement.'
+          : 'CI fixture only; no deployment claim.'),
+    );
   await form.getByRole('button', { name: button }).click();
   await page.getByText(locale === 'en' ? 'EN content updated independently.' : 'FR content updated independently.').waitFor();
 }
