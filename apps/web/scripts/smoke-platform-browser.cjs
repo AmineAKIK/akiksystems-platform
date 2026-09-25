@@ -12,6 +12,13 @@ const adminEmail = process.env.ADMIN_EMAIL;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
 const skipLighthouse = process.env.AKIKSYSTEMS_SKIP_LIGHTHOUSE === '1';
+const browserShard = process.env.AKIKSYSTEMS_BROWSER_SHARD ?? 'full';
+
+if (!['full', 'platform', 'content'].includes(browserShard)) {
+  throw new Error(
+    'AKIKSYSTEMS_BROWSER_SHARD must be one of: full, platform, content.',
+  );
+}
 
 if (!adminEmail || !adminPassword) {
   throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required.');
