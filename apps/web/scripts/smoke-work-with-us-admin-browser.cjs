@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const { strict: assert } = require('node:assert');
+const { randomUUID } = require('node:crypto');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
@@ -15,6 +16,9 @@ if (!adminEmail || !adminPassword) {
 
 const port = '4179';
 const origin = `http://127.0.0.1:${port}`;
+const inquiryMarker = randomUUID();
+const englishInquiryEmail = `work-with-us-browser-${inquiryMarker}-en@example.invalid`;
+const frenchInquiryEmail = `work-with-us-browser-${inquiryMarker}-fr@example.invalid`;
 let stderr = '';
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -413,7 +417,7 @@ async function assertPublicCopy(
     contactPrivacyNote: 'Contact data remains limited to this exchange.',
     validationMessage: 'Please review the highlighted fields.',
     inquiryName: 'English browser inquiry',
-    inquiryEmail: 'work-with-us-en-browser@example.invalid',
+    inquiryEmail: englishInquiryEmail,
     inquiryOrganization: 'AkikSystems qualification',
     inquiryMessage: 'A durable English inquiry submitted through the real public form.',
     locale: 'en',
@@ -443,7 +447,7 @@ async function assertPublicCopy(
     contactPrivacyNote: 'Les données de contact restent limitées à cet échange.',
     validationMessage: 'Vérifiez les champs indiqués.',
     inquiryName: 'Demande navigateur française',
-    inquiryEmail: 'work-with-us-fr-browser@example.invalid',
+    inquiryEmail: frenchInquiryEmail,
     inquiryOrganization: 'Qualification AkikSystems',
     inquiryMessage: 'Une demande française persistée par le véritable formulaire public.',
     locale: 'fr',
@@ -572,6 +576,10 @@ async function assertPublicCopy(
     process.exitCode = 1;
   })
   .finally(async () => {
+    await db.query(
+      'delete from work_with_us_inquiries where email = any($1::text[])',
+      [[englishInquiryEmail, frenchInquiryEmail]],
+    );
     await db.end();
     server.kill('SIGTERM');
     await Promise.race([
