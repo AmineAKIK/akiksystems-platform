@@ -281,7 +281,10 @@ slots. The approach always contains exactly three structural steps
 
 Localized Work with us drafts are stored as one typed JSON content document
 rather than a growing set of one-off columns. Publication emits only snapshot
-version 2. The development reset clears the earlier Work with us snapshots and
+version 2. The domain now has its own authenticated administration route at
+`/admin/work-with-us`; the administration home links to that workspace instead
+of embedding its editor. Save/publish actions, loading, and qualification live
+with that route so the root administration no longer owns Work with us behavior. The development reset clears the earlier Work with us snapshots and
 draft copy instead of carrying v1 parsing, legacy projections, or seeded-copy
 bootstraps forward. This is intentional: AkikSystems is still in product
 immersion, so iteration history is not treated as a production compatibility

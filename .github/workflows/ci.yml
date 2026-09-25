@@ -134,7 +134,7 @@ jobs:
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: node apps/web/scripts/smoke-commercial-admin-browser.cjs
+        run: node apps/web/scripts/smoke-work-with-us-admin-browser.cjs
 
       - name: Smoke authentication boundary
         run: pnpm smoke:auth

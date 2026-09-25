@@ -44,7 +44,7 @@ async function waitForServer() {
     await sleep(100);
   }
 
-  throw new Error(`Commercial admin smoke server did not become ready. stderr=${stderr}`);
+  throw new Error(`Work with us admin smoke server did not become ready. stderr=${stderr}`);
 }
 
 function requestCarriesCommand(response, command) {
@@ -57,7 +57,8 @@ function requestCarriesCommand(response, command) {
 
   return (
     request.method() === 'POST' &&
-    (pathname === '/admin' || pathname === '/admin.data') &&
+    (pathname === '/admin/work-with-us' ||
+      pathname === '/admin/work-with-us.data') &&
     new URLSearchParams(body).get('_intent') === command
   );
 }
@@ -240,6 +241,19 @@ async function assertPublicCopy(page, pathName, copy) {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL(`${origin}/admin`);
 
+    assert.equal(
+      await page.locator('#admin-work-with-us').count(),
+      0,
+      'Work with us must not be embedded in the administration home.',
+    );
+    const workWithUsLink = page.getByRole('link', {
+      name: 'Work with us',
+      exact: true,
+    });
+    await workWithUsLink.waitFor();
+    await workWithUsLink.click();
+    await page.waitForURL(`${origin}/admin/work-with-us`);
+
     const adminSection = page.locator('#admin-work-with-us');
     await adminSection.waitFor();
 
@@ -254,11 +268,11 @@ async function assertPublicCopy(page, pathName, copy) {
     await submitCommand(
       page,
       englishCard.getByRole('button', { name: 'Save EN draft', exact: true }),
-      'save-commercial-localization:en',
+      'save-work-with-us-localization:en',
       'EN Work with us draft saved.',
     );
 
-    await page.goto(`${origin}/admin`);
+    await page.goto(`${origin}/admin/work-with-us`);
     englishCard = localeCard(page, 'en');
     await assertPersisted(englishCard, english);
 
@@ -274,35 +288,35 @@ async function assertPublicCopy(page, pathName, copy) {
     await submitCommand(
       page,
       englishCard.getByRole('button', { name: 'Publish EN', exact: true }),
-      'publish-commercial-localization:en',
+      'publish-work-with-us-localization:en',
       'EN Work with us content published.',
     );
     await assertPublishedSnapshotVersion('en', english);
     await assertPublicCopy(page, '/en/work-with-us', english);
 
-    await page.goto(`${origin}/admin`);
+    await page.goto(`${origin}/admin/work-with-us`);
     let frenchCard = localeCard(page, 'fr');
     await fillCommercialDraft(frenchCard, french);
     await submitCommand(
       page,
       frenchCard.getByRole('button', { name: 'Save FR draft', exact: true }),
-      'save-commercial-localization:fr',
+      'save-work-with-us-localization:fr',
       'FR Work with us draft saved.',
     );
 
-    await page.goto(`${origin}/admin`);
+    await page.goto(`${origin}/admin/work-with-us`);
     frenchCard = localeCard(page, 'fr');
     await assertPersisted(frenchCard, french);
     await submitCommand(
       page,
       frenchCard.getByRole('button', { name: 'Publish FR', exact: true }),
-      'publish-commercial-localization:fr',
+      'publish-work-with-us-localization:fr',
       'FR Work with us content published.',
     );
     await assertPublishedSnapshotVersion('fr', french);
     await assertPublicCopy(page, '/fr/travailler-ensemble', french);
 
-    await page.goto(`${origin}/admin`);
+    await page.goto(`${origin}/admin/work-with-us`);
     englishCard = localeCard(page, 'en');
     await englishCard
       .locator('input[name="heroTitle"]')
@@ -310,7 +324,7 @@ async function assertPublicCopy(page, pathName, copy) {
     await submitCommand(
       page,
       englishCard.getByRole('button', { name: 'Save EN draft', exact: true }),
-      'save-commercial-localization:en',
+      'save-work-with-us-localization:en',
       'EN Work with us draft saved.',
     );
 
@@ -320,7 +334,7 @@ async function assertPublicCopy(page, pathName, copy) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Commercial admin smoke passed: atomic locale commands serialize correctly, EN/FR drafts persist across reload, publication succeeds, and later drafts preserve the public snapshot.\n',
+      'Work with us admin smoke passed: atomic locale commands serialize correctly, EN/FR drafts persist across reload, publication succeeds, and later drafts preserve the public snapshot.\n',
     );
   } finally {
     await browser.close();

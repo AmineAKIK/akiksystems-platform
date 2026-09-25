@@ -13,7 +13,6 @@ interface WorkWithUsAdminPublication {
 }
 
 interface WorkWithUsAdminActionData {
-  scope?: string;
   ok?: boolean;
   message?: string;
 }
@@ -82,9 +81,6 @@ export function WorkWithUsAdminSection({
   return (
     <section className="aks-admin-card" id="admin-work-with-us">
       <div className="aks-proof-stack">
-        <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-          L7 · Work with us
-        </Text>
         <Heading level={2} size="sm">
           Localized page content
         </Heading>
@@ -93,7 +89,7 @@ export function WorkWithUsAdminSection({
           placed into that structure.
         </Text>
 
-        {actionData?.scope === 'commercial' ? (
+        {actionData?.message ? (
           <Text
             role={actionData.ok === false ? 'alert' : 'status'}
             size="sm"
@@ -129,7 +125,7 @@ export function WorkWithUsAdminSection({
                   <input
                     name="_intent"
                     type="hidden"
-                    value={'save-commercial-localization:' + locale}
+                    value={'save-work-with-us-localization:' + locale}
                   />
 
                   <Text tone="strong">Hero</Text>
@@ -220,7 +216,7 @@ export function WorkWithUsAdminSection({
                   <input
                     name="_intent"
                     type="hidden"
-                    value={'publish-commercial-localization:' + locale}
+                    value={'publish-work-with-us-localization:' + locale}
                   />
                   <Button
                     disabled={
