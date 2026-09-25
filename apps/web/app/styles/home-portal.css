@@ -374,14 +374,14 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-content: center;
-    justify-items: start;
+    justify-items: center;
     align-self: stretch;
     justify-self: stretch;
     gap: 0.42rem;
     padding: clamp(0.95rem, 3vw, 1.15rem) 0;
     border: 0;
     background: transparent;
-    text-align: start;
+    text-align: center;
     transform: none;
   }
 
@@ -446,7 +446,7 @@
 
   .aks-home-orbit {
     width: min(100%, 36rem);
-    margin-inline: 0;
+    margin-inline: auto;
   }
 
   .aks-home-door,
