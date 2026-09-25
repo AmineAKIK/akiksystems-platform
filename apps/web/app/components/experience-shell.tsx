@@ -1,3 +1,4 @@
+import type { LegalPageKey } from '@akiksystems/core';
 import { useEffect, useState, type ReactNode } from 'react';
 import { BrandMark, Container } from '@akiksystems/ui';
 import { Link as RouterLink } from 'react-router';
@@ -8,6 +9,10 @@ import {
   globalDestinations,
 } from '../i18n/global-destinations';
 import { ExperienceLocalContext } from './experience-local-context';
+import {
+  legalPageHref,
+  orderedPublishedLegalPageDefinitions,
+} from '../i18n/legal-pages';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 
 export interface ExperienceShellProps {
@@ -16,6 +21,7 @@ export interface ExperienceShellProps {
   alternateHref?: string | null;
   currentTitle?: string | null;
   mode?: 'default' | 'reading';
+  publishedLegalPageKeys?: LegalPageKey[];
   children: ReactNode;
 }
 
@@ -25,6 +31,7 @@ export function ExperienceShell({
   alternateHref,
   currentTitle = null,
   mode = 'default',
+  publishedLegalPageKeys = [],
   children,
 }: ExperienceShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,6 +42,9 @@ export function ExperienceShell({
 
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
+  const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
+  const publishedLegalPages =
+    orderedPublishedLegalPageDefinitions(publishedLegalPageKeys);
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
   const derivedLanguageHref =
     destinationId === null
@@ -72,7 +82,7 @@ export function ExperienceShell({
               className="aks-experience-nav"
             >
               <RouterLink
-                aria-current={destinationId === null ? 'page' : undefined}
+                aria-current={isHome ? 'page' : undefined}
                 className="aks-link"
                 prefetch="intent"
                 to={`/${locale}`}
@@ -111,7 +121,7 @@ export function ExperienceShell({
                 className="aks-experience-mobile-nav"
               >
                 <RouterLink
-                  aria-current={destinationId === null ? 'page' : undefined}
+                  aria-current={isHome ? 'page' : undefined}
                   className="aks-link"
                   onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
@@ -169,6 +179,33 @@ export function ExperienceShell({
       <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
         {children}
       </div>
+
+      {publishedLegalPages.length > 0 ? (
+        <footer className="aks-legal-footer">
+          <Container width="wide">
+            <nav
+              aria-label={
+                locale === 'fr'
+                  ? 'Informations légales et confidentialité'
+                  : 'Legal and privacy information'
+              }
+              className="aks-legal-footer-nav"
+            >
+              {publishedLegalPages.map((page) => (
+                <RouterLink
+                  className="aks-link"
+                  key={page.key}
+                  prefetch="intent"
+                  to={legalPageHref(page.key, locale)}
+                  viewTransition
+                >
+                  {page.label[locale]}
+                </RouterLink>
+              ))}
+            </nav>
+          </Container>
+        </footer>
+      ) : null}
     </>
   );
 }
