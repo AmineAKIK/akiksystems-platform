@@ -34,6 +34,34 @@ server.stderr.on('data', (chunk) => {
   stderr += chunk.toString();
 });
 
+async function warmPerformanceRoute() {
+  const browser = await chromium.launch({ headless: true });
+
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+    });
+    const response = await page.goto(
+      `${origin}/en/systems/sentinel`,
+      { waitUntil: 'networkidle' },
+    );
+    assert.equal(
+      response?.status(),
+      200,
+      'Sentinel warm-up navigation must reach the real published route.',
+    );
+    await page
+      .getByRole('heading', { level: 1, name: 'Sentinel', exact: true })
+      .waitFor();
+  } finally {
+    await browser.close();
+  }
+
+  process.stdout.write(
+    'Performance route warm-up completed before measured Lighthouse observations.\n',
+  );
+}
+
 async function waitForSentinel() {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
@@ -135,6 +163,7 @@ function writeObservation(observation, metrics, target, ceiling) {
 
 (async () => {
   await waitForSentinel();
+  await warmPerformanceRoute();
 
   const lcpTargetMs = 4500;
   const lcpCiVarianceAllowanceMs = 150;
