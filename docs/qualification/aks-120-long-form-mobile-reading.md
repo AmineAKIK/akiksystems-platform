@@ -6,9 +6,7 @@ Prove that the shared Writing reader remains comfortable on small screens during
 sustained long-form reading, not only that the page avoids a single obvious
 overflow.
 
-The reproducible browser scenario lives in
-`apps/web/scripts/smoke-platform-browser.cjs` as
-`assertLongFormMobileReading`.
+This document records the historical AKS-120 qualification evidence. The former milestone-specific browser harness has been retired from CI; current CI keeps only durable platform-level quality gates and a compact responsive Home smoke.
 
 ## Evidence used
 

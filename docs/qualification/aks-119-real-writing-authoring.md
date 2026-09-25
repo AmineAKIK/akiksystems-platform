@@ -7,9 +7,7 @@ private administration surface, previewed, related to the existing editorial
 graph, and published without SQL, bootstrap content, direct JSON editing, or a
 code change to manufacture the Article itself.
 
-The reproducible browser scenario lives in
-`apps/web/scripts/smoke-platform-browser.cjs` as
-`assertRealArticleAuthoringFromAdmin`.
+This document records the historical AKS-119 qualification evidence. The former milestone-specific browser harness has been retired from CI; current CI keeps only durable platform-level quality gates and a compact responsive Home smoke.
 
 ## Qualified scenario
 

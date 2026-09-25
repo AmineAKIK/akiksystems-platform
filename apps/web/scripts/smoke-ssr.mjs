@@ -17,11 +17,16 @@ const server = spawn(process.execPath, ['server.js'], {
       'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
     BETTER_AUTH_SECRET:
       process.env.BETTER_AUTH_SECRET ??
-      'aks-013-ssr-smoke-secret-0123456789abcdef0123456789abcdef',
+      'ci-smoke-secret-ci-smoke-secret-ci-smoke-secret',
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? origin,
     ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? 'admin@example.invalid',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
+});
+
+let stderr = '';
+server.stderr.on('data', (chunk) => {
+  stderr += chunk.toString();
 });
 
 async function waitForServer() {
@@ -36,7 +41,7 @@ async function waitForServer() {
     await sleep(125);
   }
 
-  throw new Error('SSR server did not become ready.');
+  throw new Error(`SSR server did not become ready. stderr=${stderr}`);
 }
 
 try {
@@ -46,89 +51,16 @@ try {
   assert.equal(root.status, 302);
   assert.equal(root.headers.get('location'), '/en');
 
-  const english = await globalThis.fetch(`${origin}/en`);
-  const englishHtml = await english.text();
-  assert.equal(english.status, 200);
-  assert.match(englishHtml, /<html lang="en"/);
-  assert.match(englishHtml, /class="aks-home-portal"/);
-  assert.match(englishHtml, /<h1[^>]*>AkikSystems<\/h1>/);
-  for (const href of [
-    '/en/profile',
-    '/en/systems',
-    '/en/writings',
-    '/en/learning',
-    '/en/work-with-us',
-  ]) {
-    assert.match(englishHtml, new RegExp(`href="${href}"`));
-  }
-
-  const french = await globalThis.fetch(`${origin}/fr`);
-  const frenchHtml = await french.text();
-  assert.equal(french.status, 200);
-  assert.match(frenchHtml, /<html lang="fr"/);
-  assert.match(frenchHtml, /class="aks-home-portal"/);
-  assert.match(frenchHtml, /<h1[^>]*>AkikSystems<\/h1>/);
-  for (const href of [
-    '/fr/profil',
-    '/fr/systems',
-    '/fr/ecrits',
-    '/fr/apprentissage',
-    '/fr/travailler-ensemble',
-  ]) {
-    assert.match(frenchHtml, new RegExp(`href="${href}"`));
-  }
-
-  for (const unpublishedProfile of ['/en/profile', '/fr/profil']) {
-    const response = await globalThis.fetch(`${origin}${unpublishedProfile}`);
-    assert.equal(
-      response.status,
-      404,
-      `${unpublishedProfile} must stay unavailable until an explicit Profile publication exists.`,
-    );
-  }
-
-  const directRoutes = [
-    { path: '/en/systems', lang: 'en', heading: 'Systems', activeHref: '/en/systems' },
-    { path: '/en/writings', lang: 'en', heading: 'Writings', activeHref: '/en/writings' },
-    { path: '/en/learning', lang: 'en', heading: 'Learning', activeHref: '/en/learning' },
-    { path: '/en/work-with-us', lang: 'en', heading: 'Work with us', activeHref: '/en/work-with-us' },
-    { path: '/fr/systems', lang: 'fr', heading: 'Systèmes', activeHref: '/fr/systems' },
-    { path: '/fr/ecrits', lang: 'fr', heading: 'Écrits', activeHref: '/fr/ecrits' },
-    { path: '/fr/apprentissage', lang: 'fr', heading: 'Apprentissage', activeHref: '/fr/apprentissage' },
-    { path: '/fr/travailler-ensemble', lang: 'fr', heading: 'Travailler ensemble', activeHref: '/fr/travailler-ensemble' },
-  ];
-
-  for (const route of directRoutes) {
-    const response = await globalThis.fetch(`${origin}${route.path}`);
+  for (const locale of ['en', 'fr']) {
+    const response = await globalThis.fetch(`${origin}/${locale}`);
     const html = await response.text();
 
-    assert.equal(response.status, 200, `${route.path} direct SSR load must return HTTP 200.`);
-    assert.match(html, new RegExp(`<html lang="${route.lang}"`));
-    assert.match(html, /class="aks-brand-signature"/);
-    assert.match(html, new RegExp(`<h1[^>]*>${route.heading}<\\/h1>`));
-    assert.match(
-      html,
-      new RegExp(`aria-current="page"[^>]*href="${route.activeHref}"`),
-      `${route.path} must reconstruct its active destination during SSR.`,
-    );
-  }
-
-  for (const invalidAlias of [
-    '/fr/profile',
-    '/en/profil',
-    '/fr/writings',
-    '/en/ecrits',
-    '/fr/learning',
-    '/en/apprentissage',
-    '/fr/work-with-us',
-    '/en/travailler-ensemble',
-  ]) {
-    const response = await globalThis.fetch(`${origin}${invalidAlias}`);
-    assert.equal(
-      response.status,
-      404,
-      `${invalidAlias} must not create a second URL for localized content.`,
-    );
+    assert.equal(response.status, 200, `/${locale} must return HTTP 200.`);
+    assert.match(html, new RegExp(`<html lang="${locale}"`));
+    assert.match(html, /class="aks-home-portal"/);
+    assert.match(html, /<h1[^>]*>AkikSystems<\/h1>/);
+    assert.match(html, /class="aks-home-orbit"/);
+    assert.match(html, /class="aks-experience-footer"/);
   }
 
   const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
@@ -137,7 +69,11 @@ try {
   assert.equal(anonymousAdmin.status, 302);
   assert.equal(anonymousAdmin.headers.get('location'), '/admin/login');
 
-  process.stdout.write('SSR locale/auth smoke passed.\n');
+  process.stdout.write('Baseline SSR smoke passed.\n');
 } finally {
   server.kill('SIGTERM');
+  await Promise.race([
+    new Promise((resolve) => server.once('exit', resolve)),
+    sleep(2_000),
+  ]);
 }

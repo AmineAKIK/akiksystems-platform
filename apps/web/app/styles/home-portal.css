@@ -295,148 +295,201 @@
   }
 }
 
-@media (max-width: 48rem) {
-  .aks-home {
-    min-height: auto;
-    overflow: visible;
-    padding: 6.5rem 1.25rem 3rem;
-  }
-  .aks-home-meta {
-    inset-block-start: 1.5rem;
-  }
-  .aks-home-portal {
-    display: grid;
-    gap: 3rem;
-    min-height: auto;
-  }
-  .aks-home-center {
-    position: static;
-    width: 100%;
-    transform: none;
-  }
-  .aks-home-brand-mark {
-    width: clamp(10rem, 48vw, 13rem);
-    height: clamp(10rem, 48vw, 13rem);
-  }
-  .aks-home-center .aks-heading {
-    font-size: clamp(3.1rem, 15vw, 4.8rem);
-  }
-  .aks-home-active-description {
-    display: none;
-  }
-  .aks-home-orbit {
-    position: static;
-    display: grid;
-    border-block: 1px solid #182125;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    grid-template-areas: none;
-  }
-  .aks-home-door,
-  .aks-home-door[data-destination] {
-    position: static;
-    min-width: 0;
-    width: 100%;
-    grid-template-columns: minmax(0, 1fr);
-    justify-self: stretch;
-    align-self: auto;
-    padding: 1rem 0;
-    border-bottom: 1px solid #182125;
-    transform: none;
-  }
-  .aks-home-door-label {
-    white-space: nowrap;
-  }
-  .aks-home-door:last-child {
-    border-bottom: 0;
-  }
-
-  @media (hover: hover) {
-    .aks-home-door:hover::after,
-    .aks-home-door:focus-visible::after {
-      display: block;
-      color: rgb(255 255 255 / 80%);
-      content: attr(data-preview-copy);
-      font-size: 0.76rem;
-      line-height: 1.5;
-    }
-  }
-}
-
-@media (min-width: 48.0625rem) and (max-height: 40rem) and (orientation: landscape) {
+@media (max-width: 64rem) {
   .aks-home {
     min-height: calc(100dvh - 4.75rem);
+    display: grid;
+    align-items: center;
     overflow: visible;
-    padding: 3.75rem clamp(1.5rem, 4vw, 4rem) 1rem;
+    padding: clamp(5.75rem, 10vh, 7rem) clamp(1.25rem, 5vw, 3rem)
+      clamp(2.25rem, 6vh, 3.5rem);
   }
 
   .aks-home-meta {
-    inset-block-start: 1rem;
+    inset-block-start: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  .aks-home-clock {
+    gap: 0.55rem;
+  }
+
+  .aks-home-language {
+    margin-inline-start: 0.75rem;
+    padding-inline-start: 0.75rem;
   }
 
   .aks-home-portal {
+    width: 100%;
     min-height: auto;
     display: grid;
-    grid-template-columns: minmax(15rem, 0.8fr) minmax(25rem, 1.2fr);
-    gap: clamp(2rem, 5vw, 5rem);
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 3rem);
     align-items: center;
   }
 
   .aks-home-center {
     position: static;
-    width: 100%;
+    width: min(100%, 42rem);
+    margin-inline: auto;
     transform: none;
   }
 
   .aks-home-brand-mark {
-    width: clamp(6.5rem, 30vh, 9rem);
-    height: clamp(6.5rem, 30vh, 9rem);
+    width: clamp(8rem, 28vw, 13rem);
+    height: clamp(8rem, 28vw, 13rem);
   }
 
   .aks-home-center .aks-heading {
-    margin-block-start: 0.75rem;
-    font-size: clamp(2.2rem, 4.5vw, 3.75rem);
+    margin-block-start: clamp(1rem, 2.5vw, 1.5rem);
+    font-size: clamp(3rem, 11vw, 5.4rem);
+    line-height: 0.9;
   }
 
   .aks-home-scale {
-    margin-block-start: 0.75rem;
-    font-size: 0.62rem;
+    margin-block-start: 1rem;
+    font-size: clamp(0.68rem, 1.9vw, 0.82rem);
+    letter-spacing: 0.34em;
   }
 
   .aks-home-active-description {
-    min-height: 2.75rem;
-    margin-block-start: 0.65rem;
-  }
-
-  .aks-home-active-description p {
-    font-size: 0.72rem;
+    display: none;
   }
 
   .aks-home-orbit {
     position: static;
+    width: min(100%, 44rem);
+    min-height: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto;
-    grid-template-areas: none;
-    gap: 0;
-    min-height: 0;
+    margin-inline: auto;
+    border-block: 1px solid rgb(255 255 255 / 9%);
   }
 
   .aks-home-door,
   .aks-home-door[data-destination] {
     position: static;
-    width: 100%;
     min-width: 0;
+    width: 100%;
+    min-height: 5.4rem;
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
-    justify-self: stretch;
+    align-content: center;
+    justify-items: start;
     align-self: stretch;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgb(255 255 255 / 8%);
+    justify-self: stretch;
+    padding: 1.05rem clamp(0.9rem, 3vw, 1.35rem);
+    border: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 9%);
+    background: transparent;
+    text-align: start;
     transform: none;
+  }
+
+  .aks-home-door:not([data-destination='work-with-us']):nth-child(odd) {
+    border-inline-end: 1px solid rgb(255 255 255 / 9%);
   }
 
   .aks-home-door[data-destination='work-with-us'] {
     grid-column: 1 / -1;
+    min-height: 4.9rem;
+    border-bottom: 0;
+  }
+
+  .aks-home-door:hover,
+  .aks-home-door:focus-visible,
+  .aks-home-door.is-active {
+    background: rgb(255 255 255 / 2.5%);
+  }
+
+  .aks-home-door-label {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .aks-home-door-summary {
+    max-width: 26ch;
+    font-size: clamp(0.63rem, 1.8vw, 0.7rem);
+    line-height: 1.45;
+  }
+
+  .aks-home-door[data-destination='work-with-us'] .aks-home-door-summary {
+    max-width: none;
+  }
+}
+
+@media (max-width: 64rem) and (orientation: landscape) {
+  .aks-home {
+    min-height: calc(100dvh - 4rem);
+    padding: clamp(3.25rem, 12vh, 4.25rem) clamp(1.25rem, 4vw, 3rem)
+      clamp(1rem, 4vh, 1.5rem);
+  }
+
+  .aks-home-meta {
+    inset-block-start: 0.8rem;
+  }
+
+  .aks-home-portal {
+    grid-template-columns: minmax(12rem, 0.82fr) minmax(0, 1.18fr);
+    gap: clamp(1.75rem, 5vw, 4rem);
+  }
+
+  .aks-home-center {
+    width: min(100%, 24rem);
+  }
+
+  .aks-home-brand-mark {
+    width: clamp(5rem, 22vh, 8.5rem);
+    height: clamp(5rem, 22vh, 8.5rem);
+  }
+
+  .aks-home-center .aks-heading {
+    margin-block-start: 0.65rem;
+    font-size: clamp(2.2rem, 5.2vw, 3.8rem);
+  }
+
+  .aks-home-scale {
+    margin-block-start: 0.65rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+  }
+
+  .aks-home-orbit {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .aks-home-door,
+  .aks-home-door[data-destination] {
+    min-height: 4.3rem;
+    padding: 0.72rem clamp(0.8rem, 2vw, 1rem);
+  }
+
+  .aks-home-door[data-destination='work-with-us'] {
+    min-height: 4rem;
+  }
+
+  .aks-home-door-label {
+    font-size: 0.86rem;
+  }
+
+  .aks-home-door-summary {
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 22rem) {
+  .aks-home-orbit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-home-door,
+  .aks-home-door[data-destination='work-with-us'] {
+    grid-column: 1;
+  }
+
+  .aks-home-door:not([data-destination='work-with-us']):nth-child(odd) {
+    border-inline-end: 0;
   }
 }
 
@@ -530,20 +583,61 @@ html[data-motion='reduced'] .aks-home-scale::after {
   opacity: 1;
 }
 
-@media (max-width: 40rem) {
+@media (max-width: 64rem) {
+  .aks-experience-footer[data-home='true'] > .aks-container {
+    width: calc(100% - clamp(2.5rem, 5vw, 4rem));
+  }
+
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    min-height: 5rem;
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
+    justify-items: center;
+    gap: 0.8rem;
+    padding-block: 1rem 1.25rem;
+    text-align: center;
   }
 
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p,
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
     grid-column: 1;
+    justify-self: center;
   }
 
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 0.6rem clamp(1rem, 4vw, 1.5rem);
+  }
+}
+
+@media (max-width: 64rem) and (orientation: landscape) {
+  .aks-experience-footer[data-home='true'] > .aks-container {
+    width: calc(100% - clamp(3rem, 6vw, 5rem));
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    min-height: 4rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: stretch;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    padding-block: 0.75rem;
+    text-align: start;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
+    grid-column: 2;
+    width: auto;
+    justify-self: end;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
   }
 }
