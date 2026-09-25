@@ -3607,6 +3607,16 @@ async function assertWritingFiltering(page) {
         exact: true,
       });
       await waitForWritingFieldValue(
+        fieldset.locator('input[name="slug"]'),
+        localized.slug,
+        locale + ' Note slug must survive the admin save/revalidation round-trip.',
+      );
+      await waitForWritingFieldValue(
+        fieldset.locator('input[name="title"]'),
+        localized.title,
+        locale + ' Note title must survive the admin save/revalidation round-trip.',
+      );
+      await waitForWritingFieldValue(
         fieldset.locator('input[name="body"]'),
         localized.body,
         locale + ' Note body must survive the admin save/revalidation round-trip.',
