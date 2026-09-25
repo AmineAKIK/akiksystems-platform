@@ -11,6 +11,10 @@
     "./writing-document": {
       "types": "./src/writing-document.ts",
       "default": "./src/writing-document.ts"
+    },
+    "./legal-page": {
+      "types": "./src/legal-page.ts",
+      "default": "./src/legal-page.ts"
     }
   },
   "types": "./dist/index.d.ts",
