@@ -65,9 +65,6 @@
     "db:verify-rendre-attention-essay": "tsx src/cli/verify-rendre-attention-essay.ts",
     "db:verify-lightweight-notes": "tsx src/cli/verify-lightweight-notes.ts",
     "db:verify-writing-full-text-search": "tsx src/cli/verify-writing-full-text-search.ts",
-    "db:verify-work-with-us-open-situations": "tsx src/cli/verify-work-with-us-open-situations.ts",
-    "db:verify-work-with-us-capabilities": "tsx src/cli/verify-work-with-us-capabilities.ts",
-    "db:verify-work-with-us-collaboration": "tsx src/cli/verify-work-with-us-collaboration.ts",
     "db:verify-work-with-us-selected-proof": "tsx src/cli/verify-work-with-us-selected-proof.ts",
     "db:verify-sentinel-bootstrap": "tsx src/cli/verify-sentinel-bootstrap.ts"
   },

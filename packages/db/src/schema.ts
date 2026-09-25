@@ -130,17 +130,7 @@ export interface WorkWithUsPagesTable {
 export interface WorkWithUsLocalizationsTable {
   page_id: string;
   locale: PlatformLocale;
-  title: string | null;
-  introduction: string | null;
-  situations_title: string | null;
-  situations_body: string | null;
-  capabilities_title: string | null;
-  capabilities_body: string | null;
-  collaboration_title: string | null;
-  collaboration_body: string | null;
-  inquiry_title: string | null;
-  inquiry_body: string | null;
-  privacy_note: string | null;
+  content: DefaultedColumn<Record<string, unknown>>;
   editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
   created_at: TimestampColumn;

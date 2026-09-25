@@ -1,6 +1,6 @@
 import {
   bootstrapSentinelSystemDraft,
-  publishCommercialPageLocalization,
+  publishWorkWithUsLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { useState } from 'react';
 import { Form, redirect, useActionData, useLoaderData } from 'react-router';
 
+import { WorkWithUsAdminSection } from '../components/admin-work-with-us-section';
 import { authClient } from '../lib/auth.client';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
@@ -25,6 +26,64 @@ function field(form: FormData, name: string): string {
 function optionalField(form: FormData, name: string): string | null {
   const value = field(form, name);
   return value === '' ? null : value;
+}
+
+function workWithUsContentFromForm(form: FormData) {
+  return {
+    hero: {
+      eyebrow: optionalField(form, 'heroEyebrow'),
+      title: optionalField(form, 'heroTitle'),
+      introduction: optionalField(form, 'heroIntroduction'),
+    },
+    approach: {
+      eyebrow: optionalField(form, 'approachEyebrow'),
+      title: optionalField(form, 'approachTitle'),
+      introduction: optionalField(form, 'approachIntroduction'),
+      steps: [
+        {
+          key: 'understand' as const,
+          title: optionalField(form, 'approach_understand_title'),
+          body: optionalField(form, 'approach_understand_body'),
+        },
+        {
+          key: 'structure' as const,
+          title: optionalField(form, 'approach_structure_title'),
+          body: optionalField(form, 'approach_structure_body'),
+        },
+        {
+          key: 'build' as const,
+          title: optionalField(form, 'approach_build_title'),
+          body: optionalField(form, 'approach_build_body'),
+        },
+      ],
+    },
+    contact: {
+      eyebrow: optionalField(form, 'contactEyebrow'),
+      title: optionalField(form, 'contactTitle'),
+      introduction: optionalField(form, 'contactIntroduction'),
+      nameLabel: optionalField(form, 'contactNameLabel'),
+      emailLabel: optionalField(form, 'contactEmailLabel'),
+      organizationLabel: optionalField(form, 'contactOrganizationLabel'),
+      messageLabel: optionalField(form, 'contactMessageLabel'),
+      messagePlaceholder: optionalField(form, 'contactMessagePlaceholder'),
+      listenLabel: optionalField(form, 'contactListenLabel'),
+      submitLabel: optionalField(form, 'contactSubmitLabel'),
+      successMessage: optionalField(form, 'contactSuccessMessage'),
+      privacyNote: optionalField(form, 'contactPrivacyNote'),
+    },
+    about: {
+      eyebrow: optionalField(form, 'aboutEyebrow'),
+      title: optionalField(form, 'aboutTitle'),
+      body: optionalField(form, 'aboutBody'),
+      profileLinkLabel: optionalField(form, 'aboutProfileLinkLabel'),
+    },
+    systems: {
+      eyebrow: optionalField(form, 'systemsEyebrow'),
+      title: optionalField(form, 'systemsTitle'),
+      introduction: optionalField(form, 'systemsIntroduction'),
+      allSystemsLinkLabel: optionalField(form, 'systemsAllSystemsLinkLabel'),
+    },
+  };
 }
 
 type CommercialAdminOperation = 'save' | 'publish';
@@ -146,23 +205,8 @@ export async function action({ request }: Route.ActionArgs) {
     const { locale, operation } = commercialCommand;
 
     if (operation === 'save') {
-      const values = {
-        title: optionalField(form, 'title'),
-        introduction: optionalField(form, 'introduction'),
-        situations_title: optionalField(form, 'situationsTitle'),
-        situations_body: optionalField(form, 'situationsBody'),
-        capabilities_title: optionalField(form, 'capabilitiesTitle'),
-        capabilities_body: optionalField(form, 'capabilitiesBody'),
-        collaboration_title: optionalField(form, 'collaborationTitle'),
-        collaboration_body: optionalField(form, 'collaborationBody'),
-        inquiry_title: optionalField(form, 'inquiryTitle'),
-        inquiry_body: optionalField(form, 'inquiryBody'),
-        privacy_note: optionalField(form, 'privacyNote'),
-      };
-
-      const publicCopy = Object.values(values)
-        .filter((value) => value !== null)
-        .join(' ');
+      const content = workWithUsContentFromForm(form);
+      const publicCopy = JSON.stringify(content);
 
       if (/\bcssov\b/i.test(publicCopy)) {
         return {
@@ -179,13 +223,13 @@ export async function action({ request }: Route.ActionArgs) {
           .values({
             page_id: commercialPage.id,
             locale,
-            ...values,
+            content: content as unknown as Record<string, unknown>,
             editorial_state: 'draft',
             published_at: null,
           })
           .onConflict((conflict) =>
             conflict.columns(['page_id', 'locale']).doUpdateSet({
-              ...values,
+              content: content as unknown as Record<string, unknown>,
               editorial_state: 'draft',
               published_at: null,
               updated_at: new Date(),
@@ -215,7 +259,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     try {
-      await publishCommercialPageLocalization(db, commercialPage.id, locale);
+      await publishWorkWithUsLocalization(db, commercialPage.id, locale);
     } catch (error) {
       return {
         scope: 'commercial' as const,
@@ -448,177 +492,11 @@ export default function Admin() {
             </div>
           </section>
 
-          <section className="aks-admin-card" id="admin-work-with-us">
-            <div className="aks-proof-stack">
-              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                L7 · Work with us
-              </Text>
-              <Heading level={2} size="sm">
-                Localized page copy
-              </Heading>
-              <Text tone="muted">
-                The public section order remains code-defined. This surface edits
-                localized copy and publishes each locale independently.
-              </Text>
-              {actionData !== undefined &&
-              actionData !== null &&
-              'scope' in actionData &&
-              actionData.scope === 'commercial' ? (
-                <Text
-                  role={actionData.ok === false ? 'alert' : 'status'}
-                  size="sm"
-                  tone={actionData.ok === false ? 'muted' : 'strong'}
-                >
-                  {actionData.message}
-                </Text>
-              ) : null}
-
-              {(['en', 'fr'] as const).map((locale) => {
-                const localized = data.commercial.localizations.find(
-                  (candidate) => candidate.locale === locale,
-                );
-                const publication = data.commercial.publications.find(
-                  (candidate) => candidate.locale === locale,
-                );
-
-                return (
-                  <div className="aks-admin-card" key={locale}>
-                    <div className="aks-proof-stack">
-                      <Heading level={3} size="sm">
-                        {locale === 'en' ? 'English' : 'Français'}
-                      </Heading>
-                      <Text size="sm" tone="muted">
-                        {localized?.editorial_state ?? 'not started'} ·{' '}
-                        {publication === undefined
-                          ? 'No public snapshot'
-                          : 'Public snapshot available'}
-                      </Text>
-
-                      <Form className="aks-admin-form" method="post">
-                        <input
-                          name="_intent"
-                          type="hidden"
-                          value={`save-commercial-localization:${locale}`}
-                        />
-                        <label>
-                          <span>Page title</span>
-                          <input
-                            defaultValue={localized?.title ?? ''}
-                            maxLength={140}
-                            name="title"
-                            required
-                            type="text"
-                          />
-                        </label>
-                        <label>
-                          <span>Introduction</span>
-                          <textarea
-                            defaultValue={localized?.introduction ?? ''}
-                            maxLength={700}
-                            name="introduction"
-                            required
-                            rows={4}
-                          />
-                        </label>
-                        <label>
-                          <span>Open situations heading</span>
-                          <input
-                            defaultValue={localized?.situations_title ?? ''}
-                            name="situationsTitle"
-                            required
-                            type="text"
-                          />
-                        </label>
-                        <label>
-                          <span>Open situations copy</span>
-                          <textarea
-                            defaultValue={localized?.situations_body ?? ''}
-                            name="situationsBody"
-                            required
-                            rows={6}
-                          />
-                        </label>
-                        <Text size="sm" tone="muted">
-                          Keep this open to organizations and individuals. Do not
-                          ask visitors to choose a service, budget, deadline, or
-                          project type here.
-                        </Text>
-                        <label>
-                          <span>Capabilities heading</span>
-                          <input
-                            defaultValue={localized?.capabilities_title ?? ''}
-                            name="capabilitiesTitle"
-                            required
-                            type="text"
-                          />
-                        </label>
-                        <label>
-                          <span>Capabilities copy</span>
-                          <textarea
-                            defaultValue={localized?.capabilities_body ?? ''}
-                            name="capabilitiesBody"
-                            required
-                            rows={8}
-                          />
-                        </label>
-                        <Text size="sm" tone="muted">
-                          Describe concrete abilities that can be combined. Do not
-                          turn them into a catalogue, pricing grid, or project
-                          qualification step.
-                        </Text>
-                        <label>
-                          <span>Collaboration heading</span>
-                          <input
-                            defaultValue={localized?.collaboration_title ?? ''}
-                            name="collaborationTitle"
-                            required
-                            type="text"
-                          />
-                        </label>
-                        <label>
-                          <span>Collaboration copy</span>
-                          <textarea
-                            defaultValue={localized?.collaboration_body ?? ''}
-                            name="collaborationBody"
-                            required
-                            rows={7}
-                          />
-                        </label>
-                        <Text size="sm" tone="muted">
-                          Explain the understand-first, frame-after-contact
-                          sequence directly. Keep the first exchange human and do
-                          not name internal methodology.
-                        </Text>
-                        <Button type="submit">
-                          Save {locale.toUpperCase()} draft
-                        </Button>
-                      </Form>
-
-                      <Form method="post">
-                        <input
-                          name="_intent"
-                          type="hidden"
-                          value={`publish-commercial-localization:${locale}`}
-                        />
-                        <Button
-                          disabled={
-                            localized?.title === null ||
-                            localized?.title === undefined ||
-                            localized?.introduction === null ||
-                            localized?.introduction === undefined
-                          }
-                          emphasis="quiet"
-                          type="submit"
-                        >
-                          Publish {locale.toUpperCase()}
-                        </Button>
-                      </Form>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <WorkWithUsAdminSection
+            actionData={actionData}
+            localizations={data.commercial.localizations}
+            publications={data.commercial.publications}
+          />
 
           <section className="aks-admin-card">
             <div className="aks-proof-stack">
