@@ -603,8 +603,18 @@ jobs:
           BROWSER_CONTENT: ${{ needs.browser-content.result }}
           PERFORMANCE: ${{ needs.browser-performance.result }}
         run: |
-          for gate in             "$STATIC"             "$RUNTIME"             "$SYSTEMS"             "$LEARNING"             "$WRITINGS"             "$BROWSER_PLATFORM"             "$BROWSER_CONTENT"             "$PERFORMANCE"
-          do
+          gates=(
+            "$STATIC"
+            "$RUNTIME"
+            "$SYSTEMS"
+            "$LEARNING"
+            "$WRITINGS"
+            "$BROWSER_PLATFORM"
+            "$BROWSER_CONTENT"
+            "$PERFORMANCE"
+          )
+
+          for gate in "${gates[@]}"; do
             if [ "$gate" != "success" ]; then
               echo "Required quality gate did not succeed: $gate"
               exit 1
