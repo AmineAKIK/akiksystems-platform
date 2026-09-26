@@ -5,14 +5,16 @@
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  background:
+  background: var(
+    --aks-experience-space-background,
     radial-gradient(
-      ellipse at 50% 42vh,
+      ellipse at 50% 50vh,
       #071216 0%,
       #050c10 28%,
       #03080a 72%,
       #010304 100%
-    );
+    )
+  );
   background-attachment: fixed;
   color: var(--aks-text-primary);
 }
@@ -74,6 +76,10 @@
   font-size: 0.58rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.aks-admin-profile-inline-editor {
+  min-width: 0;
 }
 
 .aks-admin-profile-toolbar {
@@ -166,7 +172,7 @@
   background: rgb(157 187 196 / 5%);
 }
 
-.aks-admin-profile-editor-canvas .aks-proof-page {
+.aks-admin-profile-canvas {
   background: transparent;
 }
 
@@ -174,18 +180,21 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  display: block;
   margin: 0;
-  padding: 0.08em 0.14em;
+  padding: 0.1em 0.16em;
   border: 1px solid transparent;
   border-radius: 0.24rem;
   outline: none;
   background: transparent;
   color: inherit;
   font: inherit;
+  font-size: inherit;
   font-weight: inherit;
   letter-spacing: inherit;
   line-height: inherit;
   text-align: inherit;
+  text-transform: inherit;
   transition:
     border-color var(--aks-motion-fast) var(--aks-ease-standard),
     background-color var(--aks-motion-fast) var(--aks-ease-standard),
@@ -194,13 +203,13 @@
 
 textarea.aks-admin-profile-inline {
   field-sizing: content;
-  min-height: 1.25em;
+  min-height: 1.4em;
   overflow: hidden;
   resize: none;
 }
 
 .aks-admin-profile-inline::placeholder {
-  color: rgb(181 233 247 / 32%);
+  color: rgb(181 233 247 / 34%);
   opacity: 1;
 }
 
@@ -215,21 +224,124 @@ textarea.aks-admin-profile-inline {
   box-shadow: 0 0 0 2px rgb(181 233 247 / 9%);
 }
 
-.aks-admin-profile-editor-note {
-  padding-block: 1rem 2.5rem;
-  border-top: 1px solid var(--aks-admin-profile-line);
-  color: rgb(221 238 243 / 44%);
+.aks-admin-profile-display-name-editor,
+.aks-admin-profile-professional-title-editor,
+.aks-admin-profile-card-title-editor {
+  min-height: 1.15em;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.aks-admin-profile-introduction-editor,
+.aks-admin-profile-foundational-editor,
+.aks-admin-profile-card-copy-editor {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.aks-admin-profile-locked-surface {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  min-height: 3rem;
+  padding: 0.8rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: var(--aks-radius-md);
+  background:
+    linear-gradient(rgb(255 255 255 / 3%), rgb(255 255 255 / 3%)),
+    rgb(117 126 130 / 8%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 16%);
+  color: rgb(221 238 243 / 48%);
+  cursor: not-allowed;
+  text-align: center;
+  opacity: 0.58;
+}
+
+.aks-admin-profile-portrait-preview {
+  width: min(20rem, 100%);
+  min-height: 0;
+  aspect-ratio: 1;
+}
+
+.aks-admin-profile-proof-placeholder {
+  min-height: 10rem;
+}
+
+.aks-admin-profile-inline-status {
+  min-height: 2.5rem;
+  place-items: start;
+  padding: 0.55rem 0.7rem;
+  text-align: start;
+}
+
+.aks-admin-profile-empty-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-4);
+}
+
+.aks-admin-profile-empty-card {
+  min-height: 11rem;
+  place-items: center;
+}
+
+.aks-admin-profile-large-placeholder {
+  min-height: 8rem;
+}
+
+.aks-admin-profile-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--aks-space-6);
+}
+
+.aks-admin-profile-readonly-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid rgb(157 187 196 / 14%);
+  border-radius: 999px;
+  background: rgb(157 187 196 / 5%);
+  color: rgb(221 238 243 / 62%);
+  font-size: var(--aks-font-size-sm);
+}
+
+.aks-admin-profile-structure-note {
+  max-width: 58rem;
+  padding-block-start: var(--aks-space-3);
 }
 
 .aks-admin-profile-management {
-  padding-block: 1.5rem 4rem;
+  padding-block: 2rem 4rem;
+}
+
+.aks-admin-profile-management-card {
+  display: grid;
+  gap: var(--aks-space-5);
+  padding: clamp(var(--aks-space-5), 4vw, var(--aks-space-6));
+  border: 1px solid var(--aks-admin-profile-line);
+  border-radius: 0.65rem;
+  background: rgb(3 11 14 / 54%);
+}
+
+.aks-admin-profile-management-card > div:first-child {
+  display: grid;
+  gap: var(--aks-space-2);
+  max-width: 50rem;
 }
 
 .aks-admin-profile-management-details {
   overflow: hidden;
   border: 1px solid var(--aks-admin-profile-line);
-  border-radius: 0.65rem;
-  background: rgb(3 11 14 / 54%);
+  border-radius: 0.55rem;
+  background: rgb(1 7 9 / 52%);
 }
 
 .aks-admin-profile-management-summary {
@@ -237,9 +349,10 @@ textarea.aks-admin-profile-inline {
   gap: 1rem;
   align-items: center;
   justify-content: space-between;
-  padding: 1.15rem 1.25rem;
+  padding: 1rem 1.1rem;
   cursor: pointer;
-  color: rgb(255 255 255 / 82%);
+  color: rgb(255 255 255 / 78%);
+  font-size: var(--aks-font-size-sm);
   font-weight: 700;
   list-style: none;
 }
@@ -260,7 +373,7 @@ textarea.aks-admin-profile-inline {
 }
 
 .aks-admin-profile-management-intro {
-  padding: 0 1.25rem 1.1rem;
+  padding: 0 1.1rem 1rem;
   border-bottom: 1px solid var(--aks-admin-profile-line);
   color: rgb(221 238 243 / 46%);
 }
@@ -269,6 +382,12 @@ textarea.aks-admin-profile-inline {
   min-height: 0;
   padding-block: 1.25rem 2rem;
   background: transparent;
+}
+
+.aks-admin-profile-advanced-shell > .aks-container {
+  width: 100%;
+  max-width: none;
+  padding-inline: 1.1rem;
 }
 
 .aks-admin-profile-footer-inner {
@@ -287,6 +406,10 @@ textarea.aks-admin-profile-inline {
 }
 
 @media (max-width: 72rem) {
+  .aks-admin-profile-page {
+    --aks-wide-width: 72rem;
+  }
+
   .aks-admin-profile-toolbar-inner {
     align-items: flex-start;
     flex-direction: column;
@@ -332,6 +455,11 @@ textarea.aks-admin-profile-inline {
 
   .aks-admin-profile-toolbar-actions .aks-button {
     flex: 1 1 9rem;
+  }
+
+  .aks-admin-profile-empty-grid,
+  .aks-admin-profile-facts-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .aks-admin-profile-footer-inner {

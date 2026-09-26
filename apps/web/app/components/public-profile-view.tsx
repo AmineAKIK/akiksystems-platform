@@ -1,40 +1,13 @@
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
-import type { ReactNode } from 'react';
 
 import type { PublicProfile, PublicSystemReference } from '@akiksystems/db';
 
 import { destinationById } from '../i18n/global-destinations';
 import { SystemReference } from './system-reference';
 
-export interface PublicProfileEditorField {
-  name: string;
-  value: string | null;
-  placeholder: string;
-  variant:
-    | 'display-name'
-    | 'professional-title'
-    | 'introduction'
-    | 'foundational-copy'
-    | 'principle-title'
-    | 'principle-detail'
-    | 'journey-title'
-    | 'journey-summary'
-    | 'capability-group-title'
-    | 'capability-title'
-    | 'capability-summary';
-  multiline?: boolean;
-  required?: boolean;
-  maxLength?: number;
-}
-
-export interface PublicProfileViewEditor {
-  renderField(field: PublicProfileEditorField): ReactNode;
-}
-
 interface PublicProfileViewProps {
   profile: PublicProfile;
   systemReferences: PublicSystemReference[];
-  editor?: PublicProfileViewEditor;
 }
 
 const languageLabels = {
@@ -58,7 +31,6 @@ const mobilityLabels = {
 export function PublicProfileView({
   profile,
   systemReferences,
-  editor,
 }: PublicProfileViewProps) {
   const fallback = destinationById('profile').description[profile.locale];
   const referenceById = new Map(
@@ -75,7 +47,6 @@ export function PublicProfileView({
       return reference === undefined ? [] : [reference];
     });
   const identity = profile.displayName ?? (profile.locale === 'fr' ? 'Profil' : 'Profile');
-  const editable = editor?.renderField;
 
   return (
     <main className="aks-proof-page">
@@ -111,60 +82,18 @@ export function PublicProfileView({
 
               <div className="aks-profile-first-view-copy">
                 <Heading id="profile-title" level={1} size="md">
-                  {editable === undefined
-                    ? identity
-                    : editable({
-                        name: 'displayName',
-                        value: profile.displayName,
-                        placeholder: identity,
-                        variant: 'display-name',
-                        maxLength: 80,
-                      })}
+                  {identity}
                 </Heading>
-                {profile.professionalTitle !== null || editable !== undefined ? (
+                {profile.professionalTitle !== null ? (
                   <Text size="lg" tone="strong">
-                    {editable === undefined
-                      ? profile.professionalTitle
-                      : editable({
-                          name: 'professionalTitle',
-                          value: profile.professionalTitle,
-                          placeholder:
-                            profile.locale === 'fr'
-                              ? 'Titre professionnel'
-                              : 'Professional title',
-                          variant: 'professional-title',
-                          maxLength: 100,
-                        })}
+                    {profile.professionalTitle}
                   </Text>
                 ) : null}
                 <Text size="lg" tone="muted">
-                  {editable === undefined
-                    ? profile.introduction ?? fallback
-                    : editable({
-                        name: 'introduction',
-                        value: profile.introduction,
-                        placeholder: fallback,
-                        variant: 'introduction',
-                        multiline: true,
-                        maxLength: 320,
-                      })}
+                  {profile.introduction ?? fallback}
                 </Text>
-                {profile.foundationalCopy !== null || editable !== undefined ? (
-                  <Text>
-                    {editable === undefined
-                      ? profile.foundationalCopy
-                      : editable({
-                          name: 'foundationalCopy',
-                          value: profile.foundationalCopy,
-                          placeholder:
-                            profile.locale === 'fr'
-                              ? 'Texte fondateur du profil'
-                              : 'Foundational profile copy',
-                          variant: 'foundational-copy',
-                          multiline: true,
-                          maxLength: 600,
-                        })}
-                  </Text>
+                {profile.foundationalCopy !== null ? (
+                  <Text>{profile.foundationalCopy}</Text>
                 ) : null}
                 {profile.sourceCvAssetId !== null ? (
                   <div className="aks-proof-actions">
@@ -231,36 +160,10 @@ export function PublicProfileView({
                   >
                     <div className="aks-proof-stack">
                       <Heading level={3} size="sm">
-                        {editable === undefined
-                          ? principle.title
-                          : editable({
-                              name: `principle-${principle.id}-title`,
-                              value: principle.title,
-                              placeholder:
-                                profile.locale === 'fr'
-                                  ? 'Principe de travail'
-                                  : 'Working principle',
-                              variant: 'principle-title',
-                              maxLength: 80,
-                              required: true,
-                            })}
+                        {principle.title}
                       </Heading>
-                      {principle.detail !== null || editable !== undefined ? (
-                        <Text tone="muted">
-                          {editable === undefined
-                            ? principle.detail
-                            : editable({
-                                name: `principle-${principle.id}-detail`,
-                                value: principle.detail,
-                                placeholder:
-                                  profile.locale === 'fr'
-                                    ? 'Détail du principe'
-                                    : 'Principle detail',
-                                variant: 'principle-detail',
-                                multiline: true,
-                                maxLength: 240,
-                              })}
-                        </Text>
+                      {principle.detail !== null ? (
+                        <Text tone="muted">{principle.detail}</Text>
                       ) : null}
                       {principle.evidenceSystem !== null &&
                       referenceById.has(principle.evidenceSystem.id) ? (
@@ -323,36 +226,10 @@ export function PublicProfileView({
                           </div>
                           <div className="aks-proof-stack">
                             <Heading level={3} size="sm">
-                              {editable === undefined
-                                ? stage.title
-                                : editable({
-                                    name: `journey-${stage.key}-title`,
-                                    value: stage.title,
-                                    placeholder:
-                                      profile.locale === 'fr'
-                                        ? 'Étape technologique'
-                                        : 'Technology journey stage',
-                                    variant: 'journey-title',
-                                    maxLength: 80,
-                                    required: true,
-                                  })}
+                              {stage.title}
                             </Heading>
-                            {stage.summary !== null || editable !== undefined ? (
-                              <Text tone="muted">
-                                {editable === undefined
-                                  ? stage.summary
-                                  : editable({
-                                      name: `journey-${stage.key}-summary`,
-                                      value: stage.summary,
-                                      placeholder:
-                                        profile.locale === 'fr'
-                                          ? 'Résumé de l’étape'
-                                          : 'Stage summary',
-                                      variant: 'journey-summary',
-                                      multiline: true,
-                                      maxLength: 280,
-                                    })}
-                              </Text>
+                            {stage.summary !== null ? (
+                              <Text tone="muted">{stage.summary}</Text>
                             ) : null}
                             {stage.evidence !== null ? (
                               stage.evidence.kind === 'system' &&
@@ -403,19 +280,7 @@ export function PublicProfileView({
                             level={3}
                             size="sm"
                           >
-                            {editable === undefined
-                              ? group.title
-                              : editable({
-                                  name: `capability-group-${group.id}-title`,
-                                  value: group.title,
-                                  placeholder:
-                                    profile.locale === 'fr'
-                                      ? 'Domaine de capacité'
-                                      : 'Capability domain',
-                                  variant: 'capability-group-title',
-                                  maxLength: 80,
-                                  required: true,
-                                })}
+                            {group.title}
                           </Heading>
                           <ul className="aks-profile-capability-list">
                             {group.capabilities.map((capability) => (
@@ -423,36 +288,10 @@ export function PublicProfileView({
                                 className="aks-profile-capability"
                                 key={capability.id}
                               >
-                                <Text tone="strong">
-                                  {editable === undefined
-                                    ? capability.title
-                                    : editable({
-                                        name: `capability-${capability.id}-title`,
-                                        value: capability.title,
-                                        placeholder:
-                                          profile.locale === 'fr'
-                                            ? 'Capacité'
-                                            : 'Capability',
-                                        variant: 'capability-title',
-                                        maxLength: 100,
-                                        required: true,
-                                      })}
-                                </Text>
-                                {capability.summary !== null || editable !== undefined ? (
+                                <Text tone="strong">{capability.title}</Text>
+                                {capability.summary !== null ? (
                                   <Text size="sm" tone="muted">
-                                    {editable === undefined
-                                      ? capability.summary
-                                      : editable({
-                                          name: `capability-${capability.id}-summary`,
-                                          value: capability.summary,
-                                          placeholder:
-                                            profile.locale === 'fr'
-                                              ? 'Résumé de la capacité'
-                                              : 'Capability summary',
-                                          variant: 'capability-summary',
-                                          multiline: true,
-                                          maxLength: 280,
-                                        })}
+                                    {capability.summary}
                                   </Text>
                                 ) : null}
                               </li>
