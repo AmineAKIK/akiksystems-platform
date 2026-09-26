@@ -16,8 +16,26 @@ export function WorkWithUsBrandVisual() {
 function UnderstandGlyph() {
   return (
     <>
-      <path d="M3.5 12s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" />
-      <circle cx="12" cy="12" r="2.75" />
+      <circle cx="10.5" cy="10.5" r="5.75" />
+      <path d="m14.8 14.8 4.7 4.7" />
+      <circle
+        className="aks-work-with-us-approach-glyph-dot"
+        cx="8"
+        cy="9"
+        r="0.7"
+      />
+      <circle
+        className="aks-work-with-us-approach-glyph-dot"
+        cx="11.5"
+        cy="8"
+        r="0.7"
+      />
+      <circle
+        className="aks-work-with-us-approach-glyph-dot"
+        cx="10"
+        cy="12"
+        r="0.7"
+      />
     </>
   );
 }
@@ -25,9 +43,9 @@ function UnderstandGlyph() {
 function StructureGlyph() {
   return (
     <>
-      <rect x="3" y="4" width="6" height="5" rx="1.4" />
-      <rect x="15" y="4" width="6" height="5" rx="1.4" />
-      <rect x="9" y="15" width="6" height="5" rx="1.4" />
+      <rect x="3.5" y="4.5" width="5" height="4.5" rx="1.25" />
+      <rect x="15.5" y="4.5" width="5" height="4.5" rx="1.25" />
+      <rect x="9.5" y="15" width="5" height="4.5" rx="1.25" />
       <path d="M6 9v2.5h12V9M12 11.5V15" />
     </>
   );
@@ -36,9 +54,11 @@ function StructureGlyph() {
 function BuildGlyph() {
   return (
     <>
-      <path d="M12 3 20 7.5 12 12 4 7.5 12 3Z" />
-      <path d="m4 12 8 4.5 8-4.5" />
-      <path d="m4 16.5 8 4.5 8-4.5" />
+      <rect x="9" y="9" width="6" height="6" rx="1.4" />
+      <path d="M5.2 9A7.6 7.6 0 0 1 18 5.8" />
+      <path d="m17.7 3 .3 2.8-2.8.3" />
+      <path d="M18.8 15A7.6 7.6 0 0 1 6 18.2" />
+      <path d="m6.3 21-.3-2.8 2.8-.3" />
     </>
   );
 }
