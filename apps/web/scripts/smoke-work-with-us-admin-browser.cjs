@@ -631,11 +631,16 @@ async function assertBackgroundContinuity(page, pathName) {
         shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
         shellBackgroundImage: shellStyle?.backgroundImage ?? null,
         shellBackgroundColor: shellStyle?.backgroundColor ?? null,
+        shellBackgroundAttachment: shellStyle?.backgroundAttachment ?? null,
+        shellPosition: shellStyle?.position ?? null,
+        shellZIndex: shellStyle?.zIndex ?? null,
         shellBackdropFilter: shellStyle?.backdropFilter ?? null,
         footerUsesCanonicalSeparator:
           footer instanceof HTMLElement &&
           footer.classList.contains('aks-section-separator-before'),
+        footerBackgroundImage: footerStyle?.backgroundImage ?? null,
         footerBackgroundColor: footerStyle?.backgroundColor ?? null,
+        footerBackgroundAttachment: footerStyle?.backgroundAttachment ?? null,
         footerInnerDisplay: footerInnerStyle?.display ?? null,
         footerLinkDecoration: footerLinkStyle?.textDecorationLine ?? null,
       },
@@ -679,13 +684,22 @@ async function assertBackgroundContinuity(page, pathName) {
   );
   assert.equal(
     canvas.chrome.shellBackgroundImage,
-    'none',
-    'Shared navigation must not paint a second copy of the background gradient.',
+    homeBackground,
+    'Sticky navigation must repaint the exact fixed page canvas so scrolled content passes underneath it without a visible color break.',
   );
   assert.equal(
-    canvas.chrome.shellBackgroundColor,
-    'rgba(0, 0, 0, 0)',
-    'Shared navigation must remain transparent over the single document canvas.',
+    canvas.chrome.shellBackgroundAttachment,
+    'fixed',
+    'Sticky navigation background must stay locked to the document canvas.',
+  );
+  assert.equal(
+    canvas.chrome.shellPosition,
+    'sticky',
+    'Shared navigation must remain sticky while page content scrolls underneath it.',
+  );
+  assert.ok(
+    Number.parseInt(canvas.chrome.shellZIndex ?? '0', 10) > 0,
+    'Shared navigation must stay above scrolling page content.',
   );
   assert.equal(
     canvas.chrome.shellBackdropFilter,
@@ -698,9 +712,14 @@ async function assertBackgroundContinuity(page, pathName) {
     'Shared footer must use the canonical soft separator.',
   );
   assert.equal(
-    canvas.chrome.footerBackgroundColor,
-    'rgba(0, 0, 0, 0)',
-    'Shared footer must stay transparent over the continuous Work with us background.',
+    canvas.chrome.footerBackgroundImage,
+    homeBackground,
+    'Shared footer must repaint the same fixed page canvas instead of exposing content through a transparent surface.',
+  );
+  assert.equal(
+    canvas.chrome.footerBackgroundAttachment,
+    'fixed',
+    'Shared footer background must stay locked to the same continuous page canvas.',
   );
   assert.equal(
     canvas.chrome.footerInnerDisplay,
@@ -712,6 +731,33 @@ async function assertBackgroundContinuity(page, pathName) {
     'none',
     'Shared footer legal links must keep the Home footer treatment.',
   );
+
+  await page.evaluate(() => {
+    window.scrollTo({
+      top: Math.min(
+        720,
+        Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
+      ),
+      behavior: 'instant',
+    });
+  });
+  await page.waitForTimeout(50);
+  const stickyChromeOccludesContent = await page.evaluate(() => {
+    const shell = document.querySelector('.aks-experience-shell');
+    if (!(shell instanceof HTMLElement)) return false;
+    const shellRect = shell.getBoundingClientRect();
+    const target = document.elementFromPoint(
+      window.innerWidth / 2,
+      Math.max(1, shellRect.height / 2),
+    );
+    return target instanceof Element && shell.contains(target);
+  });
+  assert.equal(
+    stickyChromeOccludesContent,
+    true,
+    'Scrolled Work with us content must pass underneath the sticky navigation, never render through it.',
+  );
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 
   for (const section of canvas.sections) {
     assert.ok(section, 'Every Work with us release section must exist.');

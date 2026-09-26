@@ -739,7 +739,7 @@
 }
 
 
-/* One physical background canvas for navbar, page and footer. */
+/* Keep one visually continuous fixed canvas while letting sticky chrome occlude scrolled content. */
 body:has(.aks-experience-shell[data-destination='work-with-us']) {
   min-height: 100dvh;
   background: var(--aks-experience-space-background);
@@ -749,14 +749,20 @@ body:has(.aks-experience-shell[data-destination='work-with-us']) {
 }
 
 body:has(.aks-experience-shell[data-destination='work-with-us'])
-  .aks-experience-shell[data-destination='work-with-us'],
-body:has(.aks-experience-shell[data-destination='work-with-us'])
   .aks-experience-frame,
 body:has(.aks-experience-shell[data-destination='work-with-us'])
-  .aks-work-with-us,
+  .aks-work-with-us {
+  background: transparent;
+}
+
+body:has(.aks-experience-shell[data-destination='work-with-us'])
+  .aks-experience-shell[data-destination='work-with-us'],
 body:has(.aks-experience-shell[data-destination='work-with-us'])
   .aks-experience-footer {
-  background: transparent;
+  background: var(--aks-experience-space-background);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .aks-experience-shell[data-destination='work-with-us'] {
