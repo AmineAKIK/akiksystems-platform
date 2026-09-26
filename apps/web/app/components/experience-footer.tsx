@@ -25,7 +25,10 @@ export function ExperienceFooter({ home = false, locale }: { home?: boolean; loc
   };
 
   return (
-    <footer className="aks-experience-footer" data-home={home || undefined}>
+    <footer
+      className="aks-experience-footer aks-section-separator-before"
+      data-home={home || undefined}
+    >
       <Container width="wide">
         <div className="aks-experience-footer-inner">
           <p>© {new Date().getUTCFullYear()} AkikSystems</p>
