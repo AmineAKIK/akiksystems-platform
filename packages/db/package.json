@@ -67,6 +67,7 @@
     "db:verify-writing-full-text-search": "tsx src/cli/verify-writing-full-text-search.ts",
     "db:verify-work-with-us-selected-proof": "tsx src/cli/verify-work-with-us-selected-proof.ts",
     "db:verify-work-with-us-inquiries": "tsx src/cli/verify-work-with-us-inquiries.ts",
+    "db:verify-work-with-us-inquiry-handling": "tsx src/cli/verify-work-with-us-inquiry-handling.ts",
     "db:verify-sentinel-bootstrap": "tsx src/cli/verify-sentinel-bootstrap.ts"
   },
   "dependencies": {

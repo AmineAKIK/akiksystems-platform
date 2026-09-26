@@ -83,6 +83,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      graphile-worker:
+        specifier: 0.18.0
+        version: 0.18.0(typescript@5.9.3)
       isbot:
         specifier: ^5.1.36
         version: 5.2.2
@@ -132,6 +135,9 @@ importers:
       '@akiksystems/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@akiksystems/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       graphile-worker:
         specifier: 0.18.0
         version: 0.18.0(typescript@5.9.3)

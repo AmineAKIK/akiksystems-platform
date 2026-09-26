@@ -51,9 +51,30 @@ const storage = parseAssetStorageEnv({
 assert.equal(storage.BUCKET, 'akiksystems-staging');
 assert.equal(storage.REGION, 'auto');
 
+const workerEmail = parseWorkerEnv({
+  NODE_ENV: 'production',
+  DATABASE_URL: 'postgresql://user:secret@example.internal:5432/akiksystems',
+  WORK_WITH_US_EMAIL_PROVIDER: 'resend',
+  RESEND_API_KEY: 're_test_key',
+  WORK_WITH_US_EMAIL_FROM: 'AkikSystems <notifications@example.com>',
+});
+
+assert.equal(workerEmail.WORK_WITH_US_EMAIL_PROVIDER, 'resend');
+assert.equal(workerEmail.RESEND_API_KEY, 're_test_key');
+
 assert.throws(
   () => parseWorkerEnv({ NODE_ENV: 'production' }),
   /Invalid worker configuration: DATABASE_URL:/,
+);
+
+assert.throws(
+  () =>
+    parseWorkerEnv({
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgresql://user:secret@example.internal:5432/akiksystems',
+      WORK_WITH_US_EMAIL_PROVIDER: 'resend',
+    }),
+  /RESEND_API_KEY:.*required.*WORK_WITH_US_EMAIL_FROM:.*required|WORK_WITH_US_EMAIL_FROM:.*required.*RESEND_API_KEY:.*required/,
 );
 
 assert.throws(

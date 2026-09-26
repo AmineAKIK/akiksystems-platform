@@ -663,6 +663,40 @@
   font-size: var(--aks-font-size-sm);
 }
 
+.aks-work-with-us-inquiry-admin-card {
+  background: var(--aks-surface-subtle);
+}
+
+.aks-work-with-us-inquiry-admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.aks-work-with-us-inquiry-admin-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--aks-space-3) var(--aks-space-5);
+  align-items: baseline;
+}
+
+.aks-work-with-us-inquiry-admin-message {
+  padding: var(--aks-space-4);
+  border-inline-start: 3px solid var(--aks-border-subtle);
+  background: var(--aks-surface-canvas);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.aks-work-with-us-inquiry-admin-notification {
+  display: grid;
+  gap: var(--aks-space-2);
+  padding-block-start: var(--aks-space-3);
+  border-block-start: 1px solid var(--aks-border-subtle);
+}
+
 @media (max-width: 40rem) {
   .aks-system-context-inner {
     align-items: flex-start;

@@ -2,15 +2,18 @@ import { parseWorkerEnv } from '@akiksystems/config/env';
 import { createLogger } from '@akiksystems/config/observability';
 
 import { startWorker } from './runtime.js';
+import { createWorkWithUsEmailTransport } from './work-with-us-email.js';
 
 const env = parseWorkerEnv(process.env);
+const workWithUsEmailTransport = createWorkWithUsEmailTransport(env);
 const logger = createLogger({
   service: 'worker',
-  redactValues: [env.DATABASE_URL],
+  redactValues: [env.DATABASE_URL, env.RESEND_API_KEY],
 });
 const runner = await startWorker({
   connectionString: env.DATABASE_URL,
   logger,
+  workWithUsEmailTransport,
 });
 
 let shuttingDown = false;

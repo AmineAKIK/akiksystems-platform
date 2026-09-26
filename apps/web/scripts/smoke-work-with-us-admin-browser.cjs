@@ -87,6 +87,39 @@ async function submitCommand(page, button, command, expectedMessage) {
     .waitFor();
 }
 
+function requestCarriesInquiryCommand(response, command) {
+  const request = response.request();
+  const pathname = new URL(response.url()).pathname;
+  const body =
+    request.postData() ??
+    request.postDataBuffer()?.toString('utf8') ??
+    '';
+
+  return (
+    request.method() === 'POST' &&
+    (pathname === '/admin/work-with-us/inquiries' ||
+      pathname === '/admin/work-with-us/inquiries.data') &&
+    new URLSearchParams(body).get('_intent') === command
+  );
+}
+
+async function submitInquiryCommand(page, button, command, expectedMessage) {
+  const responsePromise = page.waitForResponse((response) =>
+    requestCarriesInquiryCommand(response, command),
+  );
+
+  await button.click();
+  const response = await responsePromise;
+
+  assert.equal(
+    response.status(),
+    200,
+    `Inquiry command ${command} must succeed without an error boundary.`,
+  );
+
+  await page.getByText(expectedMessage, { exact: true }).waitFor();
+}
+
 function localeCard(page, locale) {
   return page.locator('#admin-work-with-us .aks-admin-card').filter({
     has: page.getByRole('heading', {
@@ -745,6 +778,57 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
 
     await assertNoJavaScriptInquiry(browser, english, '/en/work-with-us');
 
+    await page.goto(`${origin}/admin/work-with-us/inquiries`);
+    await page
+      .getByRole('heading', { level: 1, name: 'Inquiry inbox', exact: true })
+      .waitFor();
+
+    const recipientInput = page.locator('input[name="recipientEmail"]');
+    assert.equal(
+      await recipientInput.inputValue(),
+      adminEmail.toLowerCase(),
+      'The first inbox visit should initialize the notification recipient from the authenticated administrator.',
+    );
+
+    const qualificationRecipient =
+      `work-with-us-notifications-${inquiryMarker}@example.invalid`;
+    await recipientInput.fill(qualificationRecipient);
+    await submitInquiryCommand(
+      page,
+      page.getByRole('button', { name: 'Save recipient', exact: true }),
+      'save-notification-recipient',
+      'Inquiry notification recipient updated.',
+    );
+
+    const englishInquiryCard = page
+      .locator('[data-inquiry-id]')
+      .filter({ hasText: englishInquiryEmail });
+    await englishInquiryCard.waitFor();
+    await englishInquiryCard.getByText(english.inquiryMessage, { exact: true }).waitFor();
+    await englishInquiryCard.getByText('Notification · queued', { exact: true }).waitFor();
+
+    await submitInquiryCommand(
+      page,
+      englishInquiryCard.getByRole('button', {
+        name: 'Mark handled',
+        exact: true,
+      }),
+      'mark-inquiry-handled',
+      'Inquiry marked as handled.',
+    );
+    await englishInquiryCard.getByText(/Handled ·/).waitFor();
+
+    const frenchInquiryCard = page
+      .locator('[data-inquiry-id]')
+      .filter({ hasText: frenchInquiryEmail });
+    await frenchInquiryCard.waitFor();
+    await frenchInquiryCard.getByText(french.inquiryMessage, { exact: true }).waitFor();
+
+    const noJavaScriptInquiryCard = page
+      .locator('[data-inquiry-id]')
+      .filter({ hasText: noJavaScriptInquiryEmail });
+    await noJavaScriptInquiryCard.waitFor();
+
     await page.goto(`${origin}/admin/work-with-us`);
     englishCard = localeCard(page, 'en');
     await englishCard
@@ -763,7 +847,7 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: EN/FR publication stays isolated, the inquiry path persists before success, speech playback is progressive and scoped to the message field, playback stops on submit/navigation, and the form remains functional without JavaScript.\n',
+      'Work with us smoke passed: EN/FR publication stays isolated, inquiries persist before success, speech playback remains progressive, JavaScript is optional, and the authenticated inquiry inbox exposes handling plus notification state.\n',
     );
   } finally {
     await browser.close();
@@ -777,6 +861,9 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
     await db.query(
       'delete from work_with_us_inquiries where email = any($1::text[])',
       [[englishInquiryEmail, frenchInquiryEmail, noJavaScriptInquiryEmail]],
+    );
+    await db.query(
+      "delete from work_with_us_inquiry_settings where singleton_key = 'public'",
     );
     await db.end();
     server.kill('SIGTERM');

@@ -4,11 +4,13 @@ import {
 } from '@akiksystems/config/observability';
 import { run, type Runner } from 'graphile-worker';
 
-import { taskList } from './tasks/index.js';
+import type { WorkWithUsEmailTransport } from './work-with-us-email.js';
+import { createTaskList } from './tasks/index.js';
 
 export interface StartWorkerOptions {
   connectionString: string;
   logger?: StructuredLogger;
+  workWithUsEmailTransport?: WorkWithUsEmailTransport | null;
 }
 
 export async function startWorker({
@@ -17,6 +19,7 @@ export async function startWorker({
     service: 'worker',
     redactValues: [connectionString],
   }),
+  workWithUsEmailTransport = null,
 }: StartWorkerOptions): Promise<Runner> {
   if (connectionString.trim() === '') {
     throw new Error('A non-empty PostgreSQL connection string is required to start the worker.');
@@ -26,7 +29,10 @@ export async function startWorker({
     connectionString,
     concurrency: 1,
     noHandleSignals: true,
-    taskList,
+    taskList: createTaskList({
+      connectionString,
+      workWithUsEmailTransport,
+    }),
   });
 
   runner.events.on('job:success', ({ job, worker }) => {
@@ -46,6 +52,7 @@ export async function startWorker({
 
   logger.info('worker.started', {
     concurrency: 1,
+    workWithUsEmailProvider: workWithUsEmailTransport?.provider ?? 'unconfigured',
   });
 
   return runner;

@@ -11,6 +11,7 @@ import {
   workWithUsInquiryMessage,
   type WorkWithUsInquiryActionData,
 } from './work-with-us-inquiry';
+import { queueWorkWithUsInquiryNotification } from './work-with-us-notification.server';
 
 const logger = createLogger({ service: 'web' });
 
@@ -111,6 +112,8 @@ export async function handleWorkWithUsInquirySubmission(
         },
       );
     }
+
+    await queueWorkWithUsInquiryNotification(result.inquiryId);
 
     return actionData(
       {

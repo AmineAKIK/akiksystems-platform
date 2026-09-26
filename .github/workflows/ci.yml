@@ -101,6 +101,9 @@ jobs:
       - name: Verify Work with us inquiry persistence
         run: pnpm db:verify-work-with-us-inquiries
 
+      - name: Verify Work with us inquiry handling
+        run: pnpm db:verify-work-with-us-inquiry-handling
+
       - name: Smoke SSR
         run: pnpm smoke:web
 
