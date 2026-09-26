@@ -296,9 +296,9 @@ async function assertPublicCopy(
     'Work with us must keep exactly three structural approach steps.',
   );
   assert.equal(
-    await renderer.locator('.aks-work-with-us-orbital-focus').count(),
+    await renderer.locator('.aks-work-with-us-spiral-focus').count(),
     1,
-    'The renderer must keep one decorative focal point in the hero composition.',
+    'The renderer must keep one restrained focal point inside the hero spiral.',
   );
   assert.equal(
     await renderer.locator('.aks-admin-card').count(),
