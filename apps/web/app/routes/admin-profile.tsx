@@ -1,5 +1,9 @@
-import { getDraftProfile, writeAdminAuditEvent } from '@akiksystems/db';
-import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
+import {
+  getDraftProfile,
+  listPublishedSystemReferences,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
+import { BrandSignature, Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
@@ -9,6 +13,7 @@ import {
   putAssetObject,
   validateAssetUpload,
 } from '../lib/asset-storage.server';
+import { AdminProfileInlineEditor } from '../components/admin-profile-inline-editor';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
@@ -213,8 +218,10 @@ async function publicProfileId(): Promise<string> {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const profileId = await publicProfileId();
+  const activeLocale =
+    new URL(request.url).searchParams.get('locale') === 'fr' ? 'fr' : 'en';
 
   const [
     profile,
@@ -532,6 +539,27 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('profile_technology_journey_stages.position')
     .execute();
 
+  const draftProfile = await getDraftProfile(appDb, activeLocale);
+  if (draftProfile === null) {
+    throw new Response('Profile draft not found.', { status: 404 });
+  }
+
+  const referenceIds = [
+    ...new Set([
+      ...draftProfile.representativeSystems.map(({ id }) => id),
+      ...draftProfile.workPrinciples.flatMap(({ evidenceSystem }) =>
+        evidenceSystem === null ? [] : [evidenceSystem.id],
+      ),
+      ...draftProfile.technologyJourney.flatMap(({ evidence }) =>
+        evidence?.kind === 'system' ? [evidence.id] : [],
+      ),
+    ]),
+  ];
+  const draftSystemReferences = await listPublishedSystemReferences(appDb, {
+    locale: activeLocale,
+    ids: referenceIds,
+  });
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
@@ -556,6 +584,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       ...event,
       created_at: event.created_at.toISOString(),
     })),
+    activeLocale,
+    draftProfile,
+    draftSystemReferences,
+    operatorEmail: session.user.email,
   };
 }
 
