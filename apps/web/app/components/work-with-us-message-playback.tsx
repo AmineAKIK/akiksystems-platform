@@ -33,7 +33,7 @@ export function WorkWithUsMessagePlayback({
   const [speaking, setSpeaking] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  const stopPlayback = useCallback(() => {
+  const stopPlayback = useCallback((updateState = true) => {
     if (
       typeof window !== 'undefined' &&
       utteranceRef.current !== null &&
@@ -43,7 +43,9 @@ export function WorkWithUsMessagePlayback({
     }
 
     utteranceRef.current = null;
-    setSpeaking(false);
+    if (updateState) {
+      setSpeaking(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -60,14 +62,14 @@ export function WorkWithUsMessagePlayback({
     if (typeof window === 'undefined') return undefined;
 
     const handlePageHide = () => {
-      stopPlayback();
+      stopPlayback(false);
     };
 
     window.addEventListener('pagehide', handlePageHide);
 
     return () => {
       window.removeEventListener('pagehide', handlePageHide);
-      stopPlayback();
+      stopPlayback(false);
     };
   }, [stopPlayback]);
 
