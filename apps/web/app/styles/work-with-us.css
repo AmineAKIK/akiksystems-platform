@@ -77,7 +77,7 @@
 }
 
 .aks-work-with-us-brand-mark {
-  width: clamp(11rem, 24vw, 19rem);
+  width: clamp(12rem, 27vw, 21.5rem);
   height: auto;
   opacity: 0.92;
   filter: invert(1);
