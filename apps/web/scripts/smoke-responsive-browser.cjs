@@ -541,7 +541,7 @@ async function assertRouteTransitionContract(browser) {
 
   try {
     const page = await context.newPage();
-    const response = await page.goto(`${origin}/en/profile`);
+    const response = await page.goto(`${origin}/en/work-with-us`);
     assert.equal(response?.status(), 200, 'transition contract route must return HTTP 200.');
 
     const contract = await page.evaluate(() => {
