@@ -60,7 +60,10 @@ try {
     assert.match(html, /class="aks-home-portal"/);
     assert.match(html, /<h1[^>]*>AkikSystems<\/h1>/);
     assert.match(html, /class="aks-home-orbit"/);
-    assert.match(html, /class="aks-experience-footer"/);
+    assert.match(
+      html,
+      /class="aks-experience-footer aks-section-separator-before"/,
+    );
   }
 
   const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {

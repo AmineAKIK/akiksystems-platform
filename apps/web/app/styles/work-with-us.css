@@ -38,34 +38,6 @@
   background: transparent;
 }
 
-.aks-work-with-us-hero::after,
-.aks-work-with-us-approach::after,
-.aks-work-with-us-contact::after,
-.aks-work-with-us-about::after {
-  position: absolute;
-  right: auto;
-  bottom: 0;
-  left: 50%;
-  width: min(
-    72rem,
-    calc(100% - clamp(2rem, 10vw, 10rem))
-  );
-  height: 1px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(181 233 247 / 5%) 14%,
-    rgb(220 242 248 / 11%) 38%,
-    rgb(255 255 255 / 13%) 50%,
-    rgb(220 242 248 / 11%) 62%,
-    rgb(181 233 247 / 5%) 86%,
-    transparent 100%
-  );
-  content: '';
-  pointer-events: none;
-}
-
 .aks-work-with-us-hero-layout {
   min-height: clamp(24rem, 54vh, 36rem);
   display: grid;
@@ -672,14 +644,6 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-work-with-us-hero::after,
-  .aks-work-with-us-approach::after,
-  .aks-work-with-us-contact::after,
-  .aks-work-with-us-about::after {
-    width: calc(100% - 2rem);
-    opacity: 0.72;
-  }
-
   .aks-work-with-us-hero-layout {
     min-height: auto;
     grid-template-columns: minmax(0, 1fr);
