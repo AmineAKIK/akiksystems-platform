@@ -905,7 +905,7 @@ export default function AdminSystem() {
                 bilingual content, stack, context, links, presentation and media.
               </Text>
               <div className="aks-proof-actions">
-                <Link href="/admin">Back to administration</Link>
+                <Link href="/admin/systems">Back to Systems</Link>
                 <Link href={`/admin/systems/${data.system.id}/presentation/en`}>
                   EN presentation ({presentationEnBlocks})
                 </Link>
