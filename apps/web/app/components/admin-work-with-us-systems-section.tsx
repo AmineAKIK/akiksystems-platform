@@ -105,12 +105,12 @@ export function WorkWithUsSystemsSection({
 
                 {system.lifecycle !== 'active' ? (
                   <Text size="sm">
-                    This System is not active and will not appear publicly.
+                    This System is not active and will not appear on either public Work with us page.
                   </Text>
                 ) : null}
                 {!system.publishedEn ? (
                   <Text size="sm">
-                    Hidden from /en/work-with-us until an EN snapshot exists.
+                    Not published in EN — hidden from /en/work-with-us.
                   </Text>
                 ) : null}
                 {!system.publishedFr ? (
