@@ -296,9 +296,14 @@ async function assertPublicCopy(
     'Work with us must keep exactly three structural approach steps.',
   );
   assert.equal(
-    await renderer.locator('.aks-work-with-us-spiral-focus').count(),
+    await renderer.locator('.aks-work-with-us-brand-mark').count(),
     1,
-    'The renderer must keep one restrained focal point inside the hero spiral.',
+    'The renderer must show exactly one AkikSystems brand mark in the hero.',
+  );
+  assert.equal(
+    await renderer.locator('.aks-work-with-us-spiral-field').count(),
+    0,
+    'The retired hero spiral must not return.',
   );
   assert.equal(
     await renderer.locator('.aks-admin-card').count(),
