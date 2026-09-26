@@ -732,7 +732,7 @@ async function assertBackgroundContinuity(page, pathName) {
     'Shared footer legal links must keep the Home footer treatment.',
   );
 
-  await renderer.evaluate(() => {
+  await page.evaluate(() => {
     window.scrollTo({
       top: Math.min(
         720,
@@ -741,8 +741,8 @@ async function assertBackgroundContinuity(page, pathName) {
       behavior: 'instant',
     });
   });
-  await renderer.waitForTimeout(50);
-  const stickyChromeOccludesContent = await renderer.evaluate(() => {
+  await page.waitForTimeout(50);
+  const stickyChromeOccludesContent = await page.evaluate(() => {
     const shell = document.querySelector('.aks-experience-shell');
     if (!(shell instanceof HTMLElement)) return false;
     const shellRect = shell.getBoundingClientRect();
@@ -757,7 +757,7 @@ async function assertBackgroundContinuity(page, pathName) {
     true,
     'Scrolled Work with us content must pass underneath the sticky navigation, never render through it.',
   );
-  await renderer.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 
   for (const section of canvas.sections) {
     assert.ok(section, 'Every Work with us release section must exist.');
