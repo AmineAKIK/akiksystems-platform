@@ -166,6 +166,7 @@ export default function Admin() {
           >
             {adminDestinations.map((destination) => (
               <Link
+                aria-label={destination.label}
                 className="aks-admin-dashboard-module"
                 href={destination.href}
                 key={destination.href}
