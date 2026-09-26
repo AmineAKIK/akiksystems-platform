@@ -158,14 +158,6 @@
 }
 
 @media (max-width: 40rem) {
-  .aks-experience-footer-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    padding-block: var(--aks-space-5);
-  }
-  .aks-experience-footer-inner nav {
-    display: grid;
-  }
   .aks-legal-page {
     padding-block: var(--aks-space-7);
   }
