@@ -2976,7 +2976,7 @@ export default function AdminProfile() {
           </div>
           <details
             className="aks-admin-profile-management-details"
-            name="profile-structured-controls-v2"
+            data-control-version="v2"
           >
             <summary className="aks-admin-profile-management-summary">
               Open structured controls
