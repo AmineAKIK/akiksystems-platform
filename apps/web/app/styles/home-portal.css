@@ -488,7 +488,7 @@ html[data-motion='reduced'] .aks-home-scale::after {
 
 .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
   position: relative;
-  border-top: 1px solid rgb(255 255 255 / 8%);
+  border-top: 0;
   color: rgb(255 255 255 / 64%);
   min-height: 4.75rem;
   padding-block: 1rem;
@@ -545,7 +545,7 @@ html[data-motion='reduced'] .aks-home-scale::after {
     justify-items: center;
     gap: 0.8rem;
     padding-block: 1rem 1.25rem;
-    border-top: 1px solid rgb(255 255 255 / 8%);
+    border-top: 0;
     text-align: center;
   }
 
