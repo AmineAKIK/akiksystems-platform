@@ -306,6 +306,31 @@ async function assertPublicCopy(
     'The retired hero spiral must not return.',
   );
   assert.equal(
+    await renderer.locator('.aks-work-with-us-approach-glyph-frame').count(),
+    0,
+    'Approach icons must not use the retired decorative circle frames.',
+  );
+  const brandTreatment = await renderer
+    .locator('.aks-work-with-us-brand-field')
+    .evaluate((field) => {
+      const mark = field.querySelector('.aks-work-with-us-brand-mark');
+      return {
+        beforeContent: getComputedStyle(field, '::before').content,
+        markFilter:
+          mark instanceof HTMLElement ? getComputedStyle(mark).filter : null,
+      };
+    });
+  assert.equal(
+    brandTreatment.beforeContent,
+    'none',
+    'The hero brand must not render a synthetic halo behind the logo.',
+  );
+  assert.doesNotMatch(
+    brandTreatment.markFilter ?? '',
+    /drop-shadow/i,
+    'The hero brand must not add a drop-shadow halo to the logo.',
+  );
+  assert.equal(
     await renderer.locator('.aks-admin-card').count(),
     0,
     'The public Work with us renderer must not reuse administration-card layout.',
@@ -563,12 +588,19 @@ async function assertBackgroundContinuity(page, pathName) {
         : null;
 
     const shell = document.querySelector('.aks-experience-shell');
+    const frame = document.querySelector('.aks-experience-frame');
+    const page = document.querySelector('.aks-work-with-us');
     const footer = document.querySelector('.aks-experience-footer');
     const footerInner = footer?.querySelector('.aks-experience-footer-inner');
     const footerLink = footer?.querySelector('nav a');
 
+    const bodyStyle = getComputedStyle(document.body);
     const shellStyle =
       shell instanceof HTMLElement ? getComputedStyle(shell) : null;
+    const frameStyle =
+      frame instanceof HTMLElement ? getComputedStyle(frame) : null;
+    const pageStyle =
+      page instanceof HTMLElement ? getComputedStyle(page) : null;
     const footerStyle =
       footer instanceof HTMLElement ? getComputedStyle(footer) : null;
     const footerInnerStyle =
@@ -577,9 +609,13 @@ async function assertBackgroundContinuity(page, pathName) {
       footerLink instanceof HTMLElement ? getComputedStyle(footerLink) : null;
 
     return {
-      page: getComputedStyle(
-        document.querySelector('.aks-work-with-us'),
-      ).backgroundImage,
+      canvas: {
+        bodyBackgroundImage: bodyStyle.backgroundImage,
+        frameBackgroundImage: frameStyle?.backgroundImage ?? null,
+        frameBackgroundColor: frameStyle?.backgroundColor ?? null,
+        pageBackgroundImage: pageStyle?.backgroundImage ?? null,
+        pageBackgroundColor: pageStyle?.backgroundColor ?? null,
+      },
       sections,
       approachBefore:
         approachBefore === null
@@ -594,6 +630,7 @@ async function assertBackgroundContinuity(page, pathName) {
           shell.classList.contains('aks-section-separator-after'),
         shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
         shellBackgroundImage: shellStyle?.backgroundImage ?? null,
+        shellBackgroundColor: shellStyle?.backgroundColor ?? null,
         shellBackdropFilter: shellStyle?.backdropFilter ?? null,
         footerUsesCanonicalSeparator:
           footer instanceof HTMLElement &&
@@ -606,9 +643,29 @@ async function assertBackgroundContinuity(page, pathName) {
   });
 
   assert.equal(
-    canvas.page,
+    canvas.canvas.bodyBackgroundImage,
     homeBackground,
-    'Work with us must share the Home experience canvas.',
+    'Work with us must paint the Home-derived gradient once on the document canvas.',
+  );
+  assert.equal(
+    canvas.canvas.frameBackgroundImage,
+    'none',
+    'The Work with us frame must not restart the gradient.',
+  );
+  assert.equal(
+    canvas.canvas.frameBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'The Work with us frame must stay transparent over the document canvas.',
+  );
+  assert.equal(
+    canvas.canvas.pageBackgroundImage,
+    'none',
+    'The Work with us page must not restart the gradient.',
+  );
+  assert.equal(
+    canvas.canvas.pageBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'The Work with us page must stay transparent over the document canvas.',
   );
   assert.equal(
     canvas.chrome.shellUsesCanonicalSeparator,
@@ -622,8 +679,13 @@ async function assertBackgroundContinuity(page, pathName) {
   );
   assert.equal(
     canvas.chrome.shellBackgroundImage,
-    homeBackground,
-    'Shared navigation must use the same continuous background as the Work with us page.',
+    'none',
+    'Shared navigation must not paint a second copy of the background gradient.',
+  );
+  assert.equal(
+    canvas.chrome.shellBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'Shared navigation must remain transparent over the single document canvas.',
   );
   assert.equal(
     canvas.chrome.shellBackdropFilter,
