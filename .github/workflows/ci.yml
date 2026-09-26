@@ -86,6 +86,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Build worker production image
+        run: docker build -f apps/worker/Dockerfile -t akiksystems-worker-ci .
+
       - name: Verify client/server boundary
         run: pnpm --filter @akiksystems/web check:client-secrets
 
