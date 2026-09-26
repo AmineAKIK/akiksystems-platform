@@ -16,6 +16,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+export async function action({ request }: Route.ActionArgs) {
+  await requireAdminSession(request);
+  return null;
+}
+
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
   const [pending, setPending] = useState(false);
