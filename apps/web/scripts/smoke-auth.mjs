@@ -78,6 +78,16 @@ async function postJson(path, body, cookie) {
 try {
   await waitForServer();
 
+  const loginPage = await globalThis.fetch(`${origin}/admin/login`, {
+    redirect: 'manual',
+  });
+  const loginHtml = await loginPage.text();
+  assert.equal(loginPage.status, 200);
+  assert.match(loginHtml, /aks-admin-login-shell/);
+  assert.match(loginHtml, /aks-admin-login-card/);
+  assert.match(loginHtml, /Administrator sign in/);
+  assert.match(loginHtml, /Private administration/);
+
   const anonymous = await globalThis.fetch(`${origin}/admin`, {
     redirect: 'manual',
   });
