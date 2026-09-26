@@ -854,9 +854,9 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       stepIndexCount: document.querySelectorAll(
         '.aks-work-with-us-step-index',
       ).length,
-      playbackMarkCount: document.querySelectorAll(
-        '.aks-work-with-us-message-playback',
-      ).length,
+      playbackChildElementCount:
+        document.querySelector('.aks-work-with-us-message-playback')
+          ?.children.length ?? 0,
       glyphsAriaHidden: [...document.querySelectorAll('.aks-work-with-us-approach-glyph')].every(
         (element) => element.getAttribute('aria-hidden') === 'true',
       ),
@@ -915,9 +915,9 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
     `${label} approach must not reintroduce arbitrary numeric markers.`,
   );
   assert.equal(
-    measurement.playbackMarkCount,
+    measurement.playbackChildElementCount,
     0,
-    `${label} playback button must not render the old decorative marker.`,
+    `${label} playback button must render only its admin-authored text with no decorative child marker.`,
   );
   assert.equal(
     measurement.glyphsAriaHidden,
@@ -1222,7 +1222,7 @@ async function assertReducedMotion(browser, pathName, copy) {
       const selectors = [
         '.aks-work-with-us-inquiry-field input[name="name"]',
         '.aks-work-with-us-inquiry-field textarea[name="message"]',
-        '.aks-work-with-us-message-playback-mark',
+        '.aks-work-with-us-message-playback',
       ];
 
       return {
