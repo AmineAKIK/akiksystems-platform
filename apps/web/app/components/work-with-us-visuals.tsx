@@ -16,25 +16,14 @@ export function WorkWithUsBrandVisual() {
 function UnderstandGlyph() {
   return (
     <>
-      <circle cx="10.5" cy="10.5" r="5.75" />
-      <path d="m14.8 14.8 4.7 4.7" />
+      <path d="M3.5 8.1 8.5 5.7l7 2.4 5-2.4v12.6l-5 2.4-7-2.4-5 2.4Z" />
+      <path d="M8.5 5.7v12.6M15.5 8.1v12.6" />
+      <path d="M12 2.8a3.1 3.1 0 0 0-3.1 3.1c0 2.4 3.1 5.4 3.1 5.4s3.1-3 3.1-5.4A3.1 3.1 0 0 0 12 2.8Z" />
       <circle
         className="aks-work-with-us-approach-glyph-dot"
-        cx="8"
-        cy="9"
-        r="0.7"
-      />
-      <circle
-        className="aks-work-with-us-approach-glyph-dot"
-        cx="11.5"
-        cy="8"
-        r="0.7"
-      />
-      <circle
-        className="aks-work-with-us-approach-glyph-dot"
-        cx="10"
-        cy="12"
-        r="0.7"
+        cx="12"
+        cy="5.9"
+        r="0.78"
       />
     </>
   );
@@ -53,13 +42,7 @@ function StructureGlyph() {
 
 function BuildGlyph() {
   return (
-    <>
-      <rect x="9" y="9" width="6" height="6" rx="1.4" />
-      <path d="M5.2 9A7.6 7.6 0 0 1 18 5.8" />
-      <path d="m17.7 3 .3 2.8-2.8.3" />
-      <path d="M18.8 15A7.6 7.6 0 0 1 6 18.2" />
-      <path d="m6.3 21-.3-2.8 2.8-.3" />
-    </>
+    <path d="M19.4 12.1c0-4.35-3.42-7.73-7.67-7.73-3.87 0-7.05 3.07-7.05 6.9 0 3.55 2.84 6.37 6.37 6.37 3.17 0 5.72-2.5 5.72-5.65 0-2.76-2.2-4.94-4.93-4.94-2.34 0-4.22 1.86-4.22 4.19 0 1.96 1.57 3.5 3.51 3.5 1.55 0 2.79-1.22 2.79-2.76 0-1.13-.9-2.03-2.02-2.03-.8 0-1.44.63-1.44 1.42 0 .52.41.93.92.93" />
   );
 }
 

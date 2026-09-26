@@ -956,6 +956,11 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
             height: Number.parseFloat(line.height),
           };
         }),
+      approachArrowContent: [
+        ...document.querySelectorAll('.aks-work-with-us-approach-step'),
+      ]
+        .slice(0, 2)
+        .map((element) => getComputedStyle(element, '::before').content),
       approachTitleRects: rects(
         '.aks-work-with-us-step-copy .aks-heading',
       ),
@@ -1134,6 +1139,13 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
         `${label} process rail ${index + 1} must stay a restrained horizontal connector.`,
       );
     }
+    assert.equal(
+      measurement.approachArrowContent.every(
+        (content) => content === 'none' || content === 'normal',
+      ),
+      true,
+      `${label} process rail must stay arrow-free.`,
+    );
 
     const titleTops = measurement.approachTitleRects.map((box) => box.top);
     const bodyTops = measurement.approachBodyRects.map((box) => box.top);
