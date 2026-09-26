@@ -1,13 +1,40 @@
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
+import type { ReactNode } from 'react';
 
 import type { PublicProfile, PublicSystemReference } from '@akiksystems/db';
 
 import { destinationById } from '../i18n/global-destinations';
 import { SystemReference } from './system-reference';
 
+export interface PublicProfileEditorField {
+  name: string;
+  value: string | null;
+  placeholder: string;
+  variant:
+    | 'display-name'
+    | 'professional-title'
+    | 'introduction'
+    | 'foundational-copy'
+    | 'principle-title'
+    | 'principle-detail'
+    | 'journey-title'
+    | 'journey-summary'
+    | 'capability-group-title'
+    | 'capability-title'
+    | 'capability-summary';
+  multiline?: boolean;
+  required?: boolean;
+  maxLength?: number;
+}
+
+export interface PublicProfileViewEditor {
+  renderField(field: PublicProfileEditorField): ReactNode;
+}
+
 interface PublicProfileViewProps {
   profile: PublicProfile;
   systemReferences: PublicSystemReference[];
+  editor?: PublicProfileViewEditor;
 }
 
 const languageLabels = {
@@ -31,6 +58,7 @@ const mobilityLabels = {
 export function PublicProfileView({
   profile,
   systemReferences,
+  editor,
 }: PublicProfileViewProps) {
   const fallback = destinationById('profile').description[profile.locale];
   const referenceById = new Map(
@@ -47,6 +75,7 @@ export function PublicProfileView({
       return reference === undefined ? [] : [reference];
     });
   const identity = profile.displayName ?? (profile.locale === 'fr' ? 'Profil' : 'Profile');
+  const editable = editor?.renderField;
 
   return (
     <main className="aks-proof-page">
@@ -82,18 +111,60 @@ export function PublicProfileView({
 
               <div className="aks-profile-first-view-copy">
                 <Heading id="profile-title" level={1} size="md">
-                  {identity}
+                  {editable === undefined
+                    ? identity
+                    : editable({
+                        name: 'displayName',
+                        value: profile.displayName,
+                        placeholder: identity,
+                        variant: 'display-name',
+                        maxLength: 80,
+                      })}
                 </Heading>
-                {profile.professionalTitle !== null ? (
+                {profile.professionalTitle !== null || editable !== undefined ? (
                   <Text size="lg" tone="strong">
-                    {profile.professionalTitle}
+                    {editable === undefined
+                      ? profile.professionalTitle
+                      : editable({
+                          name: 'professionalTitle',
+                          value: profile.professionalTitle,
+                          placeholder:
+                            profile.locale === 'fr'
+                              ? 'Titre professionnel'
+                              : 'Professional title',
+                          variant: 'professional-title',
+                          maxLength: 100,
+                        })}
                   </Text>
                 ) : null}
                 <Text size="lg" tone="muted">
-                  {profile.introduction ?? fallback}
+                  {editable === undefined
+                    ? profile.introduction ?? fallback
+                    : editable({
+                        name: 'introduction',
+                        value: profile.introduction,
+                        placeholder: fallback,
+                        variant: 'introduction',
+                        multiline: true,
+                        maxLength: 320,
+                      })}
                 </Text>
-                {profile.foundationalCopy !== null ? (
-                  <Text>{profile.foundationalCopy}</Text>
+                {profile.foundationalCopy !== null || editable !== undefined ? (
+                  <Text>
+                    {editable === undefined
+                      ? profile.foundationalCopy
+                      : editable({
+                          name: 'foundationalCopy',
+                          value: profile.foundationalCopy,
+                          placeholder:
+                            profile.locale === 'fr'
+                              ? 'Texte fondateur du profil'
+                              : 'Foundational profile copy',
+                          variant: 'foundational-copy',
+                          multiline: true,
+                          maxLength: 600,
+                        })}
+                  </Text>
                 ) : null}
                 {profile.sourceCvAssetId !== null ? (
                   <div className="aks-proof-actions">
