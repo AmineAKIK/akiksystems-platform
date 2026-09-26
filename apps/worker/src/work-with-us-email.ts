@@ -1,7 +1,6 @@
 import type { WorkerEnv } from '@akiksystems/config/env';
 
 export interface WorkWithUsEmailMessage {
-  from: string;
   to: string;
   replyTo: string;
   subject: string;
