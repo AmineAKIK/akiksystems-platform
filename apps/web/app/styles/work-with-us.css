@@ -787,13 +787,17 @@
 
 /* Keep the work-with-us chrome visually continuous with the page surface. */
 .aks-experience-shell[data-destination='work-with-us'],
-.aks-experience-shell[data-destination='work-with-us'] + .aks-experience-frame,
-.aks-experience-shell[data-destination='work-with-us']
-  + .aks-experience-frame
-  .aks-experience-footer {
+.aks-experience-shell[data-destination='work-with-us'] + .aks-experience-frame {
   background: var(--aks-experience-space-background);
+  background-attachment: fixed;
 }
 
 .aks-experience-shell[data-destination='work-with-us'] {
   backdrop-filter: none;
+}
+
+.aks-experience-shell[data-destination='work-with-us']
+  + .aks-experience-frame
+  .aks-experience-footer {
+  background: transparent;
 }
