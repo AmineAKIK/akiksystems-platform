@@ -20,37 +20,37 @@ const adminDestinations = [
     index: '01',
     href: '/admin/profile',
     label: 'Professional identity',
-    description: 'Professional identity, portrait, CV and public positioning.',
+    description: 'Profile, portrait, CV and positioning.',
   },
   {
     index: '02',
     href: '/admin/work-with-us',
     label: 'Work with us',
-    description: 'Collaboration page, System selection and inquiry inbox.',
+    description: 'Collaboration page and inquiry inbox.',
   },
   {
     index: '03',
     href: '/admin/writings',
     label: 'Writings',
-    description: 'Articles, essays, notes, taxonomy and publication.',
+    description: 'Articles, essays, notes and taxonomy.',
   },
   {
     index: '04',
     href: '/admin/systems',
     label: 'Systems',
-    description: 'Products, projects, presentation blocks and contextual media.',
+    description: 'Products, projects and presentations.',
   },
   {
     index: '05',
     href: '/admin/learning',
     label: 'Learning',
-    description: 'Training, credentials, evidence and knowledge structure.',
+    description: 'Training, credentials and evidence.',
   },
   {
     index: '06',
     href: '/admin/security',
     label: 'Security',
-    description: 'Two-factor authentication, recovery and session controls.',
+    description: '2FA, recovery and session controls.',
   },
 ] as const;
 
@@ -113,12 +113,11 @@ export default function Admin() {
             Control plane
           </Text>
           <Heading id="admin-dashboard-title" level={1} size="lg">
-            AkikSystems administration
+            Administration
           </Heading>
           <Text className="aks-admin-dashboard-lead" tone="muted">
-            Private workspace for operating the AkikSystems content, product and
-            security surfaces without exposing administration to the public
-            experience.
+            Operate AkikSystems content, product and security surfaces from one
+            private workspace.
           </Text>
 
           <dl className="aks-admin-dashboard-session">
@@ -149,10 +148,10 @@ export default function Admin() {
           <div className="aks-admin-dashboard-workspaces-heading">
             <div>
               <Text className="aks-admin-dashboard-eyebrow" size="sm">
-                Workspaces
+                Administration domains
               </Text>
               <Heading id="admin-workspaces-title" level={2} size="sm">
-                Administration domains
+                Workspaces
               </Heading>
             </div>
             <span className="aks-admin-dashboard-count">
@@ -177,12 +176,6 @@ export default function Admin() {
                 <span className="aks-admin-dashboard-module-body">
                   <strong>{destination.label}</strong>
                   <span>{destination.description}</span>
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="aks-admin-dashboard-module-open"
-                >
-                  Open →
                 </span>
               </Link>
             ))}
