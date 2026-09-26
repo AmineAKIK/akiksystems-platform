@@ -1,0 +1,348 @@
+.aks-admin-profile-page {
+  --aks-wide-width: 92rem;
+  --aks-admin-profile-accent: #9dbbc4;
+  --aks-admin-profile-line: rgb(157 187 196 / 16%);
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background:
+    radial-gradient(
+      ellipse at 50% 42vh,
+      #071216 0%,
+      #050c10 28%,
+      #03080a 72%,
+      #010304 100%
+    );
+  background-attachment: fixed;
+  color: var(--aks-text-primary);
+}
+
+.aks-admin-profile-header {
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  background: rgb(1 3 4 / 92%);
+  backdrop-filter: blur(1rem) saturate(115%);
+}
+
+.aks-admin-profile-header-inner,
+.aks-admin-profile-footer-inner {
+  min-height: 4.25rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--aks-space-5);
+  align-items: center;
+  border-bottom: 1px solid var(--aks-admin-profile-line);
+}
+
+.aks-admin-profile-brand {
+  color: rgb(255 255 255 / 92%);
+  text-decoration: none;
+}
+
+.aks-admin-profile-brand .aks-brand-mark {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.aks-admin-profile-brand .aks-brand-wordmark {
+  font-size: 0.78rem;
+}
+
+.aks-admin-profile-breadcrumb {
+  display: inline-flex;
+  gap: 0.65rem;
+  align-items: center;
+  color: rgb(221 238 243 / 42%);
+  font-family: var(--aks-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.aks-admin-profile-breadcrumb .aks-link {
+  color: rgb(221 238 243 / 70%);
+  text-decoration: none;
+}
+
+.aks-admin-profile-operator {
+  max-width: 20rem;
+  overflow: hidden;
+  color: rgb(221 238 243 / 42%);
+  font-family: var(--aks-font-mono);
+  font-size: 0.58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aks-admin-profile-toolbar {
+  position: sticky;
+  z-index: 35;
+  top: 4.25rem;
+  border-bottom: 1px solid var(--aks-admin-profile-line);
+  background: rgb(2 8 10 / 92%);
+  box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 18%);
+  backdrop-filter: blur(1rem) saturate(115%);
+}
+
+.aks-admin-profile-toolbar-inner {
+  min-height: 4.25rem;
+  display: flex;
+  gap: var(--aks-space-5);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.aks-admin-profile-toolbar-context,
+.aks-admin-profile-toolbar-actions,
+.aks-admin-profile-locale-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.aks-admin-profile-toolbar-kicker {
+  color: var(--aks-admin-profile-accent);
+  font-family: var(--aks-font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.aks-admin-profile-locale-tabs {
+  padding: 0.2rem;
+  border: 1px solid rgb(157 187 196 / 16%);
+  border-radius: 0.45rem;
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.aks-admin-profile-locale-tab {
+  min-width: 2.4rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.3rem;
+  color: rgb(255 255 255 / 52%);
+  font-family: var(--aks-font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.aks-admin-profile-locale-tab[data-active='true'] {
+  background: rgb(157 187 196 / 12%);
+  color: #fff;
+}
+
+.aks-admin-profile-toolbar-status {
+  color: rgb(221 238 243 / 34%);
+  font-family: var(--aks-font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aks-admin-profile-toolbar-actions {
+  justify-content: flex-end;
+}
+
+.aks-admin-profile-toolbar-actions .aks-link {
+  color: rgb(221 238 243 / 58%);
+  font-size: 0.68rem;
+}
+
+.aks-admin-profile-toolbar-actions .aks-button {
+  min-height: 2.4rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.68rem;
+}
+
+.aks-admin-profile-feedback {
+  margin-block: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-inline-start: 2px solid rgb(157 187 196 / 58%);
+  background: rgb(157 187 196 / 5%);
+}
+
+.aks-admin-profile-editor-canvas .aks-proof-page {
+  background: transparent;
+}
+
+.aks-admin-profile-inline {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.08em 0.14em;
+  border: 1px solid transparent;
+  border-radius: 0.24rem;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  transition:
+    border-color var(--aks-motion-fast) var(--aks-ease-standard),
+    background-color var(--aks-motion-fast) var(--aks-ease-standard),
+    box-shadow var(--aks-motion-fast) var(--aks-ease-standard);
+}
+
+textarea.aks-admin-profile-inline {
+  field-sizing: content;
+  min-height: 1.25em;
+  overflow: hidden;
+  resize: none;
+}
+
+.aks-admin-profile-inline::placeholder {
+  color: rgb(181 233 247 / 32%);
+  opacity: 1;
+}
+
+.aks-admin-profile-inline:hover {
+  border-color: rgb(157 187 196 / 18%);
+  background: rgb(157 187 196 / 2.5%);
+}
+
+.aks-admin-profile-inline:focus-visible {
+  border-color: rgb(181 233 247 / 72%);
+  background: rgb(181 233 247 / 5%);
+  box-shadow: 0 0 0 2px rgb(181 233 247 / 9%);
+}
+
+.aks-admin-profile-editor-note {
+  padding-block: 1rem 2.5rem;
+  border-top: 1px solid var(--aks-admin-profile-line);
+  color: rgb(221 238 243 / 44%);
+}
+
+.aks-admin-profile-management {
+  padding-block: 1.5rem 4rem;
+}
+
+.aks-admin-profile-management-details {
+  overflow: hidden;
+  border: 1px solid var(--aks-admin-profile-line);
+  border-radius: 0.65rem;
+  background: rgb(3 11 14 / 54%);
+}
+
+.aks-admin-profile-management-summary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.25rem;
+  cursor: pointer;
+  color: rgb(255 255 255 / 82%);
+  font-weight: 700;
+  list-style: none;
+}
+
+.aks-admin-profile-management-summary::-webkit-details-marker {
+  display: none;
+}
+
+.aks-admin-profile-management-summary::after {
+  color: rgb(157 187 196 / 56%);
+  content: '+';
+  font-family: var(--aks-font-mono);
+}
+
+.aks-admin-profile-management-details[open]
+  > .aks-admin-profile-management-summary::after {
+  content: '−';
+}
+
+.aks-admin-profile-management-intro {
+  padding: 0 1.25rem 1.1rem;
+  border-bottom: 1px solid var(--aks-admin-profile-line);
+  color: rgb(221 238 243 / 46%);
+}
+
+.aks-admin-profile-advanced-shell {
+  min-height: 0;
+  padding-block: 1.25rem 2rem;
+  background: transparent;
+}
+
+.aks-admin-profile-footer-inner {
+  min-height: 4rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-top: 1px solid var(--aks-admin-profile-line);
+  border-bottom: 0;
+  color: rgb(221 238 243 / 34%);
+  font-size: 0.62rem;
+}
+
+.aks-admin-profile-footer-inner span:last-child {
+  font-family: var(--aks-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 72rem) {
+  .aks-admin-profile-toolbar-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-block: 0.75rem;
+  }
+
+  .aks-admin-profile-toolbar {
+    position: relative;
+    top: auto;
+  }
+
+  .aks-admin-profile-toolbar-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-admin-profile-header-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .aks-admin-profile-operator {
+    display: none;
+  }
+
+  .aks-admin-profile-breadcrumb {
+    justify-self: end;
+  }
+
+  .aks-admin-profile-breadcrumb span:last-child {
+    display: none;
+  }
+
+  .aks-admin-profile-toolbar-context,
+  .aks-admin-profile-toolbar-actions {
+    width: 100%;
+  }
+
+  .aks-admin-profile-toolbar-status {
+    width: 100%;
+  }
+
+  .aks-admin-profile-toolbar-actions .aks-button {
+    flex: 1 1 9rem;
+  }
+
+  .aks-admin-profile-footer-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+    padding-block: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-admin-profile-inline {
+    transition: none;
+  }
+}
