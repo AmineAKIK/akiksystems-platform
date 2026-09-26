@@ -593,6 +593,7 @@ async function assertBackgroundContinuity(page, pathName) {
           shell instanceof HTMLElement &&
           shell.classList.contains('aks-section-separator-after'),
         shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
+        shellBackgroundImage: shellStyle?.backgroundImage ?? null,
         shellBackdropFilter: shellStyle?.backdropFilter ?? null,
         footerUsesCanonicalSeparator:
           footer instanceof HTMLElement &&
@@ -619,10 +620,15 @@ async function assertBackgroundContinuity(page, pathName) {
     '0px',
     'Shared navigation must not fall back to a hard structural border.',
   );
-  assert.notEqual(
+  assert.equal(
+    canvas.chrome.shellBackgroundImage,
+    homeBackground,
+    'Shared navigation must use the same continuous background as the Work with us page.',
+  );
+  assert.equal(
     canvas.chrome.shellBackdropFilter,
     'none',
-    'Shared navigation must stay visually integrated through restrained backdrop treatment.',
+    'Shared navigation must not introduce a separate translucent backdrop on Work with us.',
   );
   assert.equal(
     canvas.chrome.footerUsesCanonicalSeparator,
@@ -631,8 +637,8 @@ async function assertBackgroundContinuity(page, pathName) {
   );
   assert.equal(
     canvas.chrome.footerBackgroundColor,
-    'rgb(1, 3, 4)',
-    'Shared footer must use the Home-derived deep chrome surface.',
+    'rgba(0, 0, 0, 0)',
+    'Shared footer must stay transparent over the continuous Work with us background.',
   );
   assert.equal(
     canvas.chrome.footerInnerDisplay,
