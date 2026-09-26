@@ -160,7 +160,7 @@ export function WorkWithUsView({
     <main className="aks-work-with-us">
       <section
         aria-labelledby="work-with-us-hero-title"
-        className="aks-work-with-us-hero"
+        className="aks-work-with-us-hero aks-section-separator-after"
       >
         <Container width="wide">
           <div className="aks-work-with-us-hero-layout">
@@ -200,7 +200,7 @@ export function WorkWithUsView({
           aria-labelledby={
             approach.title === null ? undefined : 'work-with-us-approach-title'
           }
-          className="aks-work-with-us-approach"
+          className="aks-work-with-us-approach aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-approach-heading">
@@ -270,7 +270,7 @@ export function WorkWithUsView({
           aria-labelledby={
             contact.title === null ? undefined : 'work-with-us-contact-title'
           }
-          className="aks-work-with-us-contact"
+          className="aks-work-with-us-contact aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-contact-layout">
@@ -513,7 +513,7 @@ export function WorkWithUsView({
           aria-labelledby={
             about.title === null ? undefined : 'work-with-us-about-title'
           }
-          className="aks-work-with-us-about"
+          className="aks-work-with-us-about aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-about-layout">
