@@ -1,5 +1,5 @@
 .aks-experience-footer {
-  border-top: 1px solid var(--aks-border-subtle);
+  border-top: 0;
   background: var(--aks-surface-subtle);
 }
 
