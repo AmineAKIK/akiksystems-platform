@@ -67,10 +67,46 @@ const webServerSchema = z.object({
   DATABASE_URL: databaseUrlSchema.optional(),
 });
 
-const workerSchema = z.object({
-  NODE_ENV: nodeEnvironmentSchema,
-  DATABASE_URL: databaseUrlSchema,
-});
+const workerSchema = z
+  .object({
+    NODE_ENV: nodeEnvironmentSchema,
+    DATABASE_URL: databaseUrlSchema,
+    WORK_WITH_US_EMAIL_PROVIDER: z.enum(['resend']).optional(),
+    RESEND_API_KEY: z.string().trim().min(1).optional(),
+    WORK_WITH_US_EMAIL_FROM: z.string().trim().min(3).max(320).optional(),
+  })
+  .superRefine((value, context) => {
+    const configured =
+      value.WORK_WITH_US_EMAIL_PROVIDER !== undefined ||
+      value.RESEND_API_KEY !== undefined ||
+      value.WORK_WITH_US_EMAIL_FROM !== undefined;
+
+    if (!configured) return;
+
+    if (value.WORK_WITH_US_EMAIL_PROVIDER === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['WORK_WITH_US_EMAIL_PROVIDER'],
+        message: 'WORK_WITH_US_EMAIL_PROVIDER is required when email transport is configured.',
+      });
+    }
+
+    if (value.RESEND_API_KEY === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['RESEND_API_KEY'],
+        message: 'RESEND_API_KEY is required when the Resend transport is configured.',
+      });
+    }
+
+    if (value.WORK_WITH_US_EMAIL_FROM === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['WORK_WITH_US_EMAIL_FROM'],
+        message: 'WORK_WITH_US_EMAIL_FROM is required when email transport is configured.',
+      });
+    }
+  });
 
 const databaseCommandSchema = z.object({
   DATABASE_URL: databaseUrlSchema,
