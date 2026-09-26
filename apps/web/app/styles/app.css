@@ -6,6 +6,8 @@
     #03080a 72%,
     #010304 100%
   );
+  --aks-experience-chrome-surface: #010304;
+  --aks-experience-chrome-overlay: rgb(1 3 4 / 88%);
 }
 
 .aks-proof-page {
@@ -732,17 +734,30 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  border-bottom: 1px solid var(--aks-border-subtle);
-  background: color-mix(in srgb, var(--aks-surface-canvas) 94%, transparent);
-  backdrop-filter: blur(0.75rem);
+  border-bottom: 0;
+  background: var(--aks-experience-chrome-overlay);
+  color: rgb(255 255 255 / 84%);
+  backdrop-filter: blur(1rem) saturate(120%);
 }
 
 .aks-experience-shell-inner {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: var(--aks-space-6);
+  gap: clamp(var(--aks-space-4), 3vw, var(--aks-space-6));
   align-items: center;
-  min-height: 4.5rem;
+  min-height: 4rem;
+}
+
+.aks-experience-shell .aks-brand-signature {
+  gap: 0.5rem;
+  color: rgb(255 255 255 / 92%);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.aks-experience-shell .aks-brand-mark {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .aks-experience-nav,
@@ -750,6 +765,8 @@
   display: flex;
   align-items: center;
   gap: var(--aks-space-4);
+  font-size: 0.76rem;
+  letter-spacing: 0.015em;
 }
 
 .aks-experience-nav {
@@ -760,16 +777,60 @@
 }
 
 .aks-experience-nav .aks-link {
-  padding-block: 0.4rem;
+  position: relative;
+  padding-block: 0.5rem;
+  color: rgb(255 255 255 / 58%);
+  text-decoration: none;
+  transition:
+    color var(--aks-motion-fast) var(--aks-ease-standard),
+    opacity var(--aks-motion-fast) var(--aks-ease-standard);
 }
 
+.aks-experience-nav .aks-link::after {
+  position: absolute;
+  right: 0;
+  bottom: 0.16rem;
+  left: 0;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(221 247 252 / 72%) 28%,
+    rgb(255 255 255 / 90%) 50%,
+    rgb(221 247 252 / 72%) 72%,
+    transparent
+  );
+  content: '';
+  transition: transform var(--aks-motion-fast) var(--aks-ease-standard);
+}
+
+.aks-experience-nav .aks-link:hover,
+.aks-experience-nav .aks-link:focus-visible,
 .aks-experience-nav [aria-current='page'] {
-  text-decoration-thickness: 0.14em;
-  text-underline-offset: 0.35em;
+  color: rgb(255 255 255 / 96%);
+}
+
+.aks-experience-nav .aks-link:hover::after,
+.aks-experience-nav .aks-link:focus-visible::after,
+.aks-experience-nav [aria-current='page']::after {
+  transform: scaleX(1);
 }
 
 .aks-experience-meta {
   justify-content: flex-end;
+  color: rgb(255 255 255 / 56%);
+}
+
+.aks-experience-meta .aks-link {
+  color: rgb(255 255 255 / 68%);
+  text-decoration: none;
+}
+
+.aks-experience-meta .aks-link:hover,
+.aks-experience-meta .aks-link:focus-visible {
+  color: #ffffff;
 }
 
 .aks-experience-mobile-menu {
@@ -842,8 +903,8 @@
   gap: 0.45rem;
   margin: 0;
   padding: 0;
-  color: var(--aks-text-muted);
-  font-size: var(--aks-font-size-sm);
+  color: rgb(255 255 255 / 52%);
+  font-size: 0.74rem;
   list-style: none;
   white-space: nowrap;
 }
@@ -862,7 +923,7 @@
 
 .aks-experience-context-separator {
   flex: 0 0 auto;
-  color: var(--aks-border-subtle);
+  color: rgb(255 255 255 / 18%);
 }
 
 .aks-experience-outlet {
@@ -918,9 +979,9 @@
     justify-content: space-between;
     gap: var(--aks-space-3);
     padding: 0.65rem var(--aks-space-3);
-    border: 1px solid var(--aks-border-subtle);
-    border-radius: var(--aks-radius-sm);
-    background: var(--aks-surface-raised);
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 0.22rem;
+    background: rgb(255 255 255 / 2.5%);
     color: var(--aks-text-primary);
     font: inherit;
     font-weight: 650;
