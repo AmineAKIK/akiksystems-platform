@@ -166,9 +166,16 @@ describe('WorkWithUsView', () => {
     expect(about).toBeGreaterThan(contact);
     expect(systems).toBeGreaterThan(about);
 
+    expect(html).toContain('aks-work-with-us-spiral-field');
+    expect(html).toContain('aks-work-with-us-spiral-path');
+    expect(html).not.toContain('aks-work-with-us-orbital-field');
     expect(html).toContain('data-approach-step="understand"');
     expect(html).toContain('data-approach-step="structure"');
     expect(html).toContain('data-approach-step="build"');
+    expect(html).toContain('data-kind="understand"');
+    expect(html).toContain('data-kind="structure"');
+    expect(html).toContain('data-kind="build"');
+    expect(html).not.toContain('aks-work-with-us-step-index');
     expect(html).not.toContain('Du contexte');
     expect(html).toContain('From context to durable solutions.');
     expect(html).not.toContain('aks-admin-card');

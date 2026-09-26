@@ -296,9 +296,9 @@ async function assertPublicCopy(
     'Work with us must keep exactly three structural approach steps.',
   );
   assert.equal(
-    await renderer.locator('.aks-work-with-us-orbital-focus').count(),
+    await renderer.locator('.aks-work-with-us-spiral-focus').count(),
     1,
-    'The renderer must keep one decorative focal point in the hero composition.',
+    'The renderer must keep one restrained focal point inside the hero spiral.',
   );
   assert.equal(
     await renderer.locator('.aks-admin-card').count(),
@@ -557,6 +557,20 @@ async function assertBackgroundContinuity(page, pathName) {
         ? getComputedStyle(approach, '::before')
         : null;
 
+    const shell = document.querySelector('.aks-experience-shell');
+    const footer = document.querySelector('.aks-experience-footer');
+    const footerInner = footer?.querySelector('.aks-experience-footer-inner');
+    const footerLink = footer?.querySelector('nav a');
+
+    const shellStyle =
+      shell instanceof HTMLElement ? getComputedStyle(shell) : null;
+    const footerStyle =
+      footer instanceof HTMLElement ? getComputedStyle(footer) : null;
+    const footerInnerStyle =
+      footerInner instanceof HTMLElement ? getComputedStyle(footerInner) : null;
+    const footerLinkStyle =
+      footerLink instanceof HTMLElement ? getComputedStyle(footerLink) : null;
+
     return {
       page: getComputedStyle(
         document.querySelector('.aks-work-with-us'),
@@ -569,6 +583,19 @@ async function assertBackgroundContinuity(page, pathName) {
               content: approachBefore.content,
               backgroundImage: approachBefore.backgroundImage,
             },
+      chrome: {
+        shellUsesCanonicalSeparator:
+          shell instanceof HTMLElement &&
+          shell.classList.contains('aks-section-separator-after'),
+        shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
+        shellBackdropFilter: shellStyle?.backdropFilter ?? null,
+        footerUsesCanonicalSeparator:
+          footer instanceof HTMLElement &&
+          footer.classList.contains('aks-section-separator-before'),
+        footerBackgroundColor: footerStyle?.backgroundColor ?? null,
+        footerInnerDisplay: footerInnerStyle?.display ?? null,
+        footerLinkDecoration: footerLinkStyle?.textDecorationLine ?? null,
+      },
     };
   });
 
@@ -576,6 +603,41 @@ async function assertBackgroundContinuity(page, pathName) {
     canvas.page,
     homeBackground,
     'Work with us must share the Home experience canvas.',
+  );
+  assert.equal(
+    canvas.chrome.shellUsesCanonicalSeparator,
+    true,
+    'Shared navigation must use the canonical soft separator.',
+  );
+  assert.equal(
+    canvas.chrome.shellBorderBottomWidth,
+    '0px',
+    'Shared navigation must not fall back to a hard structural border.',
+  );
+  assert.notEqual(
+    canvas.chrome.shellBackdropFilter,
+    'none',
+    'Shared navigation must stay visually integrated through restrained backdrop treatment.',
+  );
+  assert.equal(
+    canvas.chrome.footerUsesCanonicalSeparator,
+    true,
+    'Shared footer must use the canonical soft separator.',
+  );
+  assert.equal(
+    canvas.chrome.footerBackgroundColor,
+    'rgb(1, 3, 4)',
+    'Shared footer must use the Home-derived deep chrome surface.',
+  );
+  assert.equal(
+    canvas.chrome.footerInnerDisplay,
+    'grid',
+    'Shared footer must use the Home footer composition.',
+  );
+  assert.equal(
+    canvas.chrome.footerLinkDecoration,
+    'none',
+    'Shared footer legal links must keep the Home footer treatment.',
   );
 
   for (const section of canvas.sections) {
@@ -779,10 +841,22 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       scrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
       h1Count: document.querySelectorAll('.aks-work-with-us h1').length,
-      orbitalAriaHidden:
+      spiralAriaHidden:
         document
-          .querySelector('.aks-work-with-us-orbital-field')
+          .querySelector('.aks-work-with-us-spiral-field')
           ?.getAttribute('aria-hidden') === 'true',
+      spiralPathCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral path',
+      ).length,
+      spiralNodeCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral circle',
+      ).length,
+      stepIndexCount: document.querySelectorAll(
+        '.aks-work-with-us-step-index',
+      ).length,
+      playbackChildElementCount:
+        document.querySelector('.aks-work-with-us-message-playback')
+          ?.children.length ?? 0,
       glyphsAriaHidden: [...document.querySelectorAll('.aks-work-with-us-approach-glyph')].every(
         (element) => element.getAttribute('aria-hidden') === 'true',
       ),
@@ -793,7 +867,7 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       aboutColumns: columnCount('.aks-work-with-us-about-layout'),
       importantRects: {
         heroCopy: rect('.aks-work-with-us-hero-copy'),
-        orbitalField: rect('.aks-work-with-us-orbital-field'),
+        spiralField: rect('.aks-work-with-us-spiral-field'),
         approachHeading: rect('.aks-work-with-us-approach-heading'),
         contactCopy: rect('.aks-work-with-us-contact-copy'),
         inquiryForm: rect('.aks-work-with-us-inquiry-form'),
@@ -823,9 +897,27 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
   );
   assert.equal(measurement.h1Count, 1, `${label} must keep exactly one page heading.`);
   assert.equal(
-    measurement.orbitalAriaHidden,
+    measurement.spiralAriaHidden,
     true,
-    `${label} orbital decoration must stay outside the accessibility tree.`,
+    `${label} spiral decoration must stay outside the accessibility tree.`,
+  );
+  assert.ok(
+    measurement.spiralPathCount >= 2,
+    `${label} hero must keep a real continuous spiral treatment.`,
+  );
+  assert.ok(
+    measurement.spiralNodeCount >= 4,
+    `${label} spiral must retain restrained visual anchors.`,
+  );
+  assert.equal(
+    measurement.stepIndexCount,
+    0,
+    `${label} approach must not reintroduce arbitrary numeric markers.`,
+  );
+  assert.equal(
+    measurement.playbackChildElementCount,
+    0,
+    `${label} playback button must render only its admin-authored text with no decorative child marker.`,
   );
   assert.equal(
     measurement.glyphsAriaHidden,
@@ -1130,7 +1222,7 @@ async function assertReducedMotion(browser, pathName, copy) {
       const selectors = [
         '.aks-work-with-us-inquiry-field input[name="name"]',
         '.aks-work-with-us-inquiry-field textarea[name="message"]',
-        '.aks-work-with-us-message-playback-mark',
+        '.aks-work-with-us-message-playback',
       ];
 
       return {

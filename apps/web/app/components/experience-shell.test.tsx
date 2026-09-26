@@ -20,6 +20,12 @@ describe('ExperienceShell', () => {
     );
 
     expect(html).toContain('class="aks-skip-link" href="#experience-outlet"');
+    expect(html).toContain(
+      'class="aks-experience-shell aks-section-separator-after"',
+    );
+    expect(html).toContain(
+      'class="aks-experience-footer aks-section-separator-before"',
+    );
     expect(html).toContain('class="aks-brand-signature"');
     expect(html).toContain('class="aks-brand-mark"');
     expect(html).toContain('src="/brand/AKSYS.svg"');

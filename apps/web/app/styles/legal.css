@@ -1,27 +1,87 @@
 .aks-experience-footer {
   border-top: 0;
-  background: var(--aks-surface-subtle);
+  background: var(--aks-experience-chrome-surface);
+  color: rgb(255 255 255 / 64%);
+}
+
+.aks-experience-footer > .aks-container {
+  width: calc(100% - clamp(3rem, 6vw, 7rem));
+  max-width: none;
 }
 
 .aks-experience-footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--aks-space-4) var(--aks-space-7);
+  position: relative;
+  min-height: 4.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--aks-space-4);
   align-items: center;
-  justify-content: space-between;
-  min-height: 5.5rem;
-  padding-block: var(--aks-space-4);
-  color: var(--aks-text-muted);
-  font-size: var(--aks-font-size-sm);
+  padding-block: 1rem;
+  color: rgb(255 255 255 / 64%);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.015em;
 }
 
 .aks-experience-footer-inner p {
+  grid-column: 1;
+  justify-self: start;
   margin: 0;
 }
+
 .aks-experience-footer-inner nav {
+  grid-column: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--aks-space-3) var(--aks-space-5);
+  justify-self: center;
+  gap: 0.6rem 1.75rem;
+}
+
+.aks-experience-footer-inner nav .aks-link,
+.aks-experience-footer-inner nav .aks-link:hover,
+.aks-experience-footer-inner nav .aks-link:focus-visible,
+.aks-experience-footer-inner nav .aks-link.is-active {
+  text-decoration: none;
+  transition:
+    color 300ms ease,
+    opacity 300ms ease;
+}
+
+.aks-experience-footer-inner nav .aks-link {
+  color: rgb(255 255 255 / 64%);
+}
+
+.aks-experience-footer-inner nav .aks-link:hover,
+.aks-experience-footer-inner nav .aks-link:focus-visible,
+.aks-experience-footer-inner nav .aks-link.is-active {
+  color: #ffffff;
+}
+
+@media (max-width: 80rem) {
+  .aks-experience-footer > .aks-container {
+    width: calc(100% - clamp(2.5rem, 5vw, 4rem));
+  }
+
+  .aks-experience-footer-inner {
+    min-height: 5rem;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0.8rem;
+    padding-block: 1rem 1.25rem;
+    text-align: center;
+  }
+
+  .aks-experience-footer-inner p,
+  .aks-experience-footer-inner nav {
+    grid-column: 1;
+    justify-self: center;
+  }
+
+  .aks-experience-footer-inner nav {
+    max-width: 100%;
+    justify-content: center;
+    gap: 0.6rem clamp(1rem, 4vw, 1.5rem);
+  }
 }
 
 .aks-legal-page {
@@ -98,14 +158,6 @@
 }
 
 @media (max-width: 40rem) {
-  .aks-experience-footer-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    padding-block: var(--aks-space-5);
-  }
-  .aks-experience-footer-inner nav {
-    display: grid;
-  }
   .aks-legal-page {
     padding-block: var(--aks-space-7);
   }

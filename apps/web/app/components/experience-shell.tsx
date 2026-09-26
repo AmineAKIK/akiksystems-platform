@@ -50,7 +50,7 @@ export function ExperienceShell({
       </a>
 
       <header
-        className="aks-experience-shell"
+        className="aks-experience-shell aks-section-separator-after"
         data-destination={destinationId ?? 'home'}
         data-mode={mode}
       >
