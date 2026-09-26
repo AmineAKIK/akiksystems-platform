@@ -5,17 +5,21 @@ import {
   destinationFromPathname,
   destinationHref,
   globalDestinationIds,
+  globalDestinations,
 } from './global-destinations';
 
 describe('global destinations', () => {
   it('defines exactly the five first-level destinations', () => {
     expect(globalDestinationIds).toEqual([
       'profile',
-      'systems',
-      'writings',
-      'learning',
       'work-with-us',
+      'writings',
+      'systems',
+      'learning',
     ]);
+    expect(globalDestinations.map((destination) => destination.id)).toEqual(
+      globalDestinationIds,
+    );
   });
 
   it('builds localized hrefs from the code-defined registry', () => {
