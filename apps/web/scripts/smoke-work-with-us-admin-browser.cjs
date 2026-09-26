@@ -296,9 +296,39 @@ async function assertPublicCopy(
     'Work with us must keep exactly three structural approach steps.',
   );
   assert.equal(
-    await renderer.locator('.aks-work-with-us-spiral-focus').count(),
+    await renderer.locator('.aks-work-with-us-brand-mark').count(),
     1,
-    'The renderer must keep one restrained focal point inside the hero spiral.',
+    'The renderer must show exactly one AkikSystems brand mark in the hero.',
+  );
+  assert.equal(
+    await renderer.locator('.aks-work-with-us-spiral-field').count(),
+    0,
+    'The retired hero spiral must not return.',
+  );
+  assert.equal(
+    await renderer.locator('.aks-work-with-us-approach-glyph-frame').count(),
+    0,
+    'Approach icons must not use the retired decorative circle frames.',
+  );
+  const brandTreatment = await renderer
+    .locator('.aks-work-with-us-brand-field')
+    .evaluate((field) => {
+      const mark = field.querySelector('.aks-work-with-us-brand-mark');
+      return {
+        beforeContent: getComputedStyle(field, '::before').content,
+        markFilter:
+          mark instanceof HTMLElement ? getComputedStyle(mark).filter : null,
+      };
+    });
+  assert.equal(
+    brandTreatment.beforeContent,
+    'none',
+    'The hero brand must not render a synthetic halo behind the logo.',
+  );
+  assert.doesNotMatch(
+    brandTreatment.markFilter ?? '',
+    /drop-shadow/i,
+    'The hero brand must not add a drop-shadow halo to the logo.',
   );
   assert.equal(
     await renderer.locator('.aks-admin-card').count(),
@@ -558,12 +588,19 @@ async function assertBackgroundContinuity(page, pathName) {
         : null;
 
     const shell = document.querySelector('.aks-experience-shell');
+    const frame = document.querySelector('.aks-experience-frame');
+    const page = document.querySelector('.aks-work-with-us');
     const footer = document.querySelector('.aks-experience-footer');
     const footerInner = footer?.querySelector('.aks-experience-footer-inner');
     const footerLink = footer?.querySelector('nav a');
 
+    const bodyStyle = getComputedStyle(document.body);
     const shellStyle =
       shell instanceof HTMLElement ? getComputedStyle(shell) : null;
+    const frameStyle =
+      frame instanceof HTMLElement ? getComputedStyle(frame) : null;
+    const pageStyle =
+      page instanceof HTMLElement ? getComputedStyle(page) : null;
     const footerStyle =
       footer instanceof HTMLElement ? getComputedStyle(footer) : null;
     const footerInnerStyle =
@@ -572,9 +609,13 @@ async function assertBackgroundContinuity(page, pathName) {
       footerLink instanceof HTMLElement ? getComputedStyle(footerLink) : null;
 
     return {
-      page: getComputedStyle(
-        document.querySelector('.aks-work-with-us'),
-      ).backgroundImage,
+      canvas: {
+        bodyBackgroundImage: bodyStyle.backgroundImage,
+        frameBackgroundImage: frameStyle?.backgroundImage ?? null,
+        frameBackgroundColor: frameStyle?.backgroundColor ?? null,
+        pageBackgroundImage: pageStyle?.backgroundImage ?? null,
+        pageBackgroundColor: pageStyle?.backgroundColor ?? null,
+      },
       sections,
       approachBefore:
         approachBefore === null
@@ -588,6 +629,8 @@ async function assertBackgroundContinuity(page, pathName) {
           shell instanceof HTMLElement &&
           shell.classList.contains('aks-section-separator-after'),
         shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
+        shellBackgroundImage: shellStyle?.backgroundImage ?? null,
+        shellBackgroundColor: shellStyle?.backgroundColor ?? null,
         shellBackdropFilter: shellStyle?.backdropFilter ?? null,
         footerUsesCanonicalSeparator:
           footer instanceof HTMLElement &&
@@ -600,9 +643,29 @@ async function assertBackgroundContinuity(page, pathName) {
   });
 
   assert.equal(
-    canvas.page,
+    canvas.canvas.bodyBackgroundImage,
     homeBackground,
-    'Work with us must share the Home experience canvas.',
+    'Work with us must paint the Home-derived gradient once on the document canvas.',
+  );
+  assert.equal(
+    canvas.canvas.frameBackgroundImage,
+    'none',
+    'The Work with us frame must not restart the gradient.',
+  );
+  assert.equal(
+    canvas.canvas.frameBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'The Work with us frame must stay transparent over the document canvas.',
+  );
+  assert.equal(
+    canvas.canvas.pageBackgroundImage,
+    'none',
+    'The Work with us page must not restart the gradient.',
+  );
+  assert.equal(
+    canvas.canvas.pageBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'The Work with us page must stay transparent over the document canvas.',
   );
   assert.equal(
     canvas.chrome.shellUsesCanonicalSeparator,
@@ -614,10 +677,20 @@ async function assertBackgroundContinuity(page, pathName) {
     '0px',
     'Shared navigation must not fall back to a hard structural border.',
   );
-  assert.notEqual(
+  assert.equal(
+    canvas.chrome.shellBackgroundImage,
+    'none',
+    'Shared navigation must not paint a second copy of the background gradient.',
+  );
+  assert.equal(
+    canvas.chrome.shellBackgroundColor,
+    'rgba(0, 0, 0, 0)',
+    'Shared navigation must remain transparent over the single document canvas.',
+  );
+  assert.equal(
     canvas.chrome.shellBackdropFilter,
     'none',
-    'Shared navigation must stay visually integrated through restrained backdrop treatment.',
+    'Shared navigation must not introduce a separate translucent backdrop on Work with us.',
   );
   assert.equal(
     canvas.chrome.footerUsesCanonicalSeparator,
@@ -626,8 +699,8 @@ async function assertBackgroundContinuity(page, pathName) {
   );
   assert.equal(
     canvas.chrome.footerBackgroundColor,
-    'rgb(1, 3, 4)',
-    'Shared footer must use the Home-derived deep chrome surface.',
+    'rgba(0, 0, 0, 0)',
+    'Shared footer must stay transparent over the continuous Work with us background.',
   );
   assert.equal(
     canvas.chrome.footerInnerDisplay,
@@ -841,15 +914,15 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       scrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
       h1Count: document.querySelectorAll('.aks-work-with-us h1').length,
-      spiralAriaHidden:
+      brandAriaHidden:
         document
-          .querySelector('.aks-work-with-us-spiral-field')
+          .querySelector('.aks-work-with-us-brand-field')
           ?.getAttribute('aria-hidden') === 'true',
-      spiralPathCount: document.querySelectorAll(
-        '.aks-work-with-us-spiral path',
+      brandMarkCount: document.querySelectorAll(
+        '.aks-work-with-us-brand-mark',
       ).length,
-      spiralNodeCount: document.querySelectorAll(
-        '.aks-work-with-us-spiral circle',
+      retiredSpiralCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral-field',
       ).length,
       stepIndexCount: document.querySelectorAll(
         '.aks-work-with-us-step-index',
@@ -867,7 +940,7 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       aboutColumns: columnCount('.aks-work-with-us-about-layout'),
       importantRects: {
         heroCopy: rect('.aks-work-with-us-hero-copy'),
-        spiralField: rect('.aks-work-with-us-spiral-field'),
+        brandField: rect('.aks-work-with-us-brand-field'),
         approachHeading: rect('.aks-work-with-us-approach-heading'),
         contactCopy: rect('.aks-work-with-us-contact-copy'),
         inquiryForm: rect('.aks-work-with-us-inquiry-form'),
@@ -897,17 +970,19 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
   );
   assert.equal(measurement.h1Count, 1, `${label} must keep exactly one page heading.`);
   assert.equal(
-    measurement.spiralAriaHidden,
+    measurement.brandAriaHidden,
     true,
-    `${label} spiral decoration must stay outside the accessibility tree.`,
+    `${label} hero brand decoration must stay outside the accessibility tree.`,
   );
-  assert.ok(
-    measurement.spiralPathCount >= 2,
-    `${label} hero must keep a real continuous spiral treatment.`,
+  assert.equal(
+    measurement.brandMarkCount,
+    1,
+    `${label} hero must keep exactly one AkikSystems brand mark.`,
   );
-  assert.ok(
-    measurement.spiralNodeCount >= 4,
-    `${label} spiral must retain restrained visual anchors.`,
+  assert.equal(
+    measurement.retiredSpiralCount,
+    0,
+    `${label} must not reintroduce the retired hero spiral.`,
   );
   assert.equal(
     measurement.stepIndexCount,

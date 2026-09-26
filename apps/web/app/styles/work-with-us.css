@@ -1,7 +1,7 @@
 .aks-work-with-us {
   min-height: 100dvh;
   overflow: hidden;
-  background: var(--aks-experience-space-background);
+  background: transparent;
 }
 
 .aks-work-with-us,
@@ -68,7 +68,6 @@
 }
 
 .aks-work-with-us-brand-field {
-  position: relative;
   min-width: 0;
   min-height: clamp(18rem, 34vw, 30rem);
   display: grid;
@@ -77,30 +76,11 @@
   pointer-events: none;
 }
 
-.aks-work-with-us-brand-field::before {
-  position: absolute;
-  width: min(76%, 28rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgb(151 222 239 / 10%) 0%,
-    rgb(94 174 196 / 4%) 42%,
-    transparent 72%
-  );
-  content: '';
-  filter: blur(1rem);
-}
-
 .aks-work-with-us-brand-mark {
-  position: relative;
-  z-index: 1;
   width: clamp(11rem, 24vw, 19rem);
   height: auto;
-  opacity: 0.9;
-  filter:
-    invert(1)
-    drop-shadow(0 0 1.7rem rgb(132 215 236 / 15%));
+  opacity: 0.92;
+  filter: invert(1);
 }
 
 .aks-work-with-us-approach {
@@ -138,7 +118,7 @@
 
 .aks-work-with-us-approach-steps::before {
   position: absolute;
-  top: 3.125rem;
+  top: 2.75rem;
   right: 15%;
   left: 15%;
   height: 1px;
@@ -164,79 +144,29 @@
 }
 
 .aks-work-with-us-approach-glyph {
-  position: relative;
-  width: 6.25rem;
-  height: 6.25rem;
-  display: block;
+  width: 5.5rem;
+  height: 5.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(181 233 247 / 20%);
+  border-radius: 1.1rem;
+  background: rgb(255 255 255 / 1.5%);
+  color: rgb(224 248 255 / 88%);
 }
 
 .aks-work-with-us-approach-glyph svg {
-  width: 100%;
-  height: 100%;
+  width: 3.35rem;
+  height: 3.35rem;
   display: block;
   overflow: visible;
 }
 
-.aks-work-with-us-approach-glyph-frame {
-  fill: rgb(3 8 10 / 94%);
-  stroke: rgb(181 233 247 / 38%);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.aks-work-with-us-approach-glyph-line,
-.aks-work-with-us-approach-glyph-line-soft {
-  fill: none;
+.aks-work-with-us-approach-glyph svg > * {
+  stroke: currentColor;
+  stroke-width: 1.35;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-}
-
-.aks-work-with-us-approach-glyph-line {
-  stroke: rgb(211 244 252 / 78%);
-  stroke-width: 1.35;
-}
-
-.aks-work-with-us-approach-glyph-line-soft {
-  stroke: rgb(181 233 247 / 34%);
-  stroke-width: 1;
-}
-
-.aks-work-with-us-approach-glyph-point {
-  fill: #dff8ff;
-  opacity: 0.88;
-}
-
-.aks-work-with-us-approach-glyph-focus,
-.aks-work-with-us-approach-glyph-focus-shape,
-.aks-work-with-us-approach-glyph-node-shape {
-  fill: rgb(220 249 255 / 12%);
-  stroke: rgb(222 249 255 / 76%);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.aks-work-with-us-approach-glyph-node-shape {
-  fill: rgb(220 249 255 / 5%);
-  stroke: rgb(181 233 247 / 44%);
-}
-
-.aks-work-with-us-approach-glyph-point-muted {
-  opacity: 0.42;
-}
-
-.aks-work-with-us-approach-glyph-accent {
-  stroke: #e7fbff;
-}
-
-.aks-work-with-us-approach-glyph[data-kind='understand']
-  .aks-work-with-us-approach-glyph-point {
-  filter: drop-shadow(0 0 0.3rem rgb(136 218 242 / 45%));
-}
-
-.aks-work-with-us-approach-glyph[data-kind='build']
-  .aks-work-with-us-approach-glyph-focus {
-  filter: drop-shadow(0 0 0.45rem rgb(136 218 242 / 55%));
 }
 
 .aks-work-with-us-step-copy {
@@ -244,13 +174,14 @@
   display: grid;
   justify-items: center;
   gap: var(--aks-space-2);
-  max-width: 23rem;
+  max-width: 24rem;
   margin-inline: auto;
   text-align: center;
 }
 
 .aks-work-with-us-step-copy .aks-heading {
-  font-size: clamp(1.25rem, 1.05rem + 0.65vw, 1.65rem);
+  font-size: clamp(1.3rem, 1.08rem + 0.6vw, 1.65rem);
+  line-height: 1.15;
 }
 
 .aks-work-with-us-step-copy .aks-heading,
@@ -261,7 +192,8 @@
 }
 
 .aks-work-with-us-step-copy .aks-text {
-  max-width: 31ch;
+  max-width: 32ch;
+  line-height: 1.55;
 }
 
 .aks-work-with-us-contact {
@@ -651,8 +583,8 @@
   }
 
   .aks-work-with-us-approach-heading {
-    justify-items: start;
-    text-align: left;
+    justify-items: center;
+    text-align: center;
   }
 
   .aks-work-with-us .aks-work-with-us-approach-title {
@@ -670,35 +602,38 @@
   }
 
   .aks-work-with-us-approach-step {
-    grid-template-columns: auto minmax(0, 1fr);
-    justify-items: start;
-    column-gap: var(--aks-space-4);
-    text-align: left;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    row-gap: var(--aks-space-3);
+    text-align: center;
   }
 
   .aks-work-with-us-approach-glyph {
-    width: 5rem;
-    height: 5rem;
-    transform: scale(0.78);
-    transform-origin: top left;
+    width: 4.75rem;
+    height: 4.75rem;
+  }
+
+  .aks-work-with-us-approach-glyph svg {
+    width: 2.9rem;
+    height: 2.9rem;
   }
 
   .aks-work-with-us-step-copy {
-    justify-items: start;
+    justify-items: center;
     gap: var(--aks-space-1);
-    max-width: none;
-    margin-inline: 0;
-    text-align: left;
+    max-width: 24rem;
+    margin-inline: auto;
+    text-align: center;
   }
 
   .aks-work-with-us-step-copy .aks-heading,
   .aks-work-with-us-step-copy .aks-text {
-    margin-inline: 0;
-    text-align: left;
+    margin-inline: auto;
+    text-align: center;
   }
 
   .aks-work-with-us-step-copy .aks-text {
-    max-width: none;
+    max-width: 32ch;
   }
 
   .aks-work-with-us-contact {
@@ -785,19 +720,26 @@
 }
 
 
-/* Keep the work-with-us chrome visually continuous with the page surface. */
-.aks-experience-shell[data-destination='work-with-us'],
-.aks-experience-shell[data-destination='work-with-us'] + .aks-experience-frame {
+/* One physical background canvas for navbar, page and footer. */
+body:has(.aks-experience-shell[data-destination='work-with-us']) {
+  min-height: 100dvh;
   background: var(--aks-experience-space-background);
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+body:has(.aks-experience-shell[data-destination='work-with-us'])
+  .aks-experience-shell[data-destination='work-with-us'],
+body:has(.aks-experience-shell[data-destination='work-with-us'])
+  .aks-experience-frame,
+body:has(.aks-experience-shell[data-destination='work-with-us'])
+  .aks-work-with-us,
+body:has(.aks-experience-shell[data-destination='work-with-us'])
+  .aks-experience-footer {
+  background: transparent;
 }
 
 .aks-experience-shell[data-destination='work-with-us'] {
   backdrop-filter: none;
-}
-
-.aks-experience-shell[data-destination='work-with-us']
-  + .aks-experience-frame
-  .aks-experience-footer {
-  background: transparent;
 }
