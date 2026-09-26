@@ -633,34 +633,45 @@ export async function action({ request }: Route.ActionArgs) {
       };
     }
 
-    const [principleRows, capabilityGroupRows, capabilityRows, technologies] =
-      await Promise.all([
-        appDb
-          .selectFrom('profile_work_principles')
-          .select(['id'])
-          .where('profile_id', '=', profileId)
-          .orderBy('position')
-          .execute(),
-        appDb
-          .selectFrom('profile_capability_groups')
-          .select(['id'])
-          .where('profile_id', '=', profileId)
-          .orderBy('position')
-          .execute(),
-        appDb
-          .selectFrom('profile_capabilities')
-          .innerJoin(
-            'profile_capability_groups',
-            'profile_capability_groups.id',
-            'profile_capabilities.group_id',
-          )
-          .select(['profile_capabilities.id'])
-          .where('profile_capability_groups.profile_id', '=', profileId)
-          .orderBy('profile_capability_groups.position')
-          .orderBy('profile_capabilities.position')
-          .execute(),
-        appDb.selectFrom('technologies').select(['name', 'slug']).execute(),
-      ]);
+    const [
+      principleRows,
+      journeyRows,
+      capabilityGroupRows,
+      capabilityRows,
+      technologies,
+    ] = await Promise.all([
+      appDb
+        .selectFrom('profile_work_principles')
+        .select(['id'])
+        .where('profile_id', '=', profileId)
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('profile_technology_journey_stage_localizations')
+        .select(['stage_key'])
+        .where('profile_id', '=', profileId)
+        .where('locale', '=', locale)
+        .execute(),
+      appDb
+        .selectFrom('profile_capability_groups')
+        .select(['id'])
+        .where('profile_id', '=', profileId)
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('profile_capabilities')
+        .innerJoin(
+          'profile_capability_groups',
+          'profile_capability_groups.id',
+          'profile_capabilities.group_id',
+        )
+        .select(['profile_capabilities.id'])
+        .where('profile_capability_groups.profile_id', '=', profileId)
+        .orderBy('profile_capability_groups.position')
+        .orderBy('profile_capabilities.position')
+        .execute(),
+      appDb.selectFrom('technologies').select(['name', 'slug']).execute(),
+    ]);
 
     const principleUpdates = principleRows.map(({ id }) => {
       const title = textField(form, `principle-${id}-title`);
@@ -687,9 +698,9 @@ export async function action({ request }: Route.ActionArgs) {
       return { id, title, detail };
     });
 
-    const journeyUpdates = technologyJourneyStages.map((stage) => {
-      const title = textField(form, `journey-${stage.key}-title`);
-      const summary = optionalText(form, `journey-${stage.key}-summary`);
+    const journeyUpdates = journeyRows.map(({ stage_key }) => {
+      const title = textField(form, `journey-${stage_key}-title`);
+      const summary = optionalText(form, `journey-${stage_key}-summary`);
 
       if (title === '') {
         throw new Response('Technological journey titles cannot be empty.', {
@@ -703,7 +714,7 @@ export async function action({ request }: Route.ActionArgs) {
         );
       }
 
-      return { key: stage.key, title, summary };
+      return { key: stage_key, title, summary };
     });
 
     const technologyTerms = new Set(
