@@ -48,9 +48,10 @@ async function measureHome(page) {
     const brand = center?.querySelector('.aks-home-brand-mark');
     const activeDescription = center?.querySelector('.aks-home-active-description');
     const orbit = document.querySelector('.aks-home-orbit');
-    const footer = document.querySelector(
-      ".aks-experience-footer[data-home='true'] .aks-experience-footer-inner",
+    const footerShell = document.querySelector(
+      ".aks-experience-footer[data-home='true']",
     );
+    const footer = footerShell?.querySelector('.aks-experience-footer-inner');
     const copyright = footer?.querySelector('p');
     const legalNav = footer?.querySelector('nav');
     const doors = [...document.querySelectorAll('.aks-home-door')];
@@ -63,6 +64,7 @@ async function measureHome(page) {
       !(brand instanceof HTMLElement) ||
       !(activeDescription instanceof HTMLElement) ||
       !(orbit instanceof HTMLElement) ||
+      !(footerShell instanceof HTMLElement) ||
       !(footer instanceof HTMLElement) ||
       !(copyright instanceof HTMLElement) ||
       !(legalNav instanceof HTMLElement)
@@ -97,6 +99,8 @@ async function measureHome(page) {
     const orbitRect = rect(orbit);
     const copyrightRect = rect(copyright);
     const legalNavRect = rect(legalNav);
+    const footerShellRect = rect(footerShell);
+    const footerSeparator = getComputedStyle(footerShell, '::before');
     const doorRects = doors.map(rect);
     const doorRectsByDestination = Object.fromEntries(
       doors.map((door) => [door.dataset.destination ?? '', rect(door)]),
@@ -117,6 +121,16 @@ async function measureHome(page) {
       activeDescriptionState: activeDescription.dataset.state ?? null,
       orbitRect,
       footerRect: rect(footer),
+      footerShellRect,
+      footerUsesCanonicalSeparator: footerShell.classList.contains(
+        'aks-section-separator-before',
+      ),
+      footerSeparator: {
+        content: footerSeparator.content,
+        backgroundImage: footerSeparator.backgroundImage,
+        width: Number.parseFloat(footerSeparator.width),
+        height: Number.parseFloat(footerSeparator.height),
+      },
       copyrightRect,
       legalNavRect,
       centerOrbitOverlap: overlaps(centerRect, orbitRect),
@@ -126,6 +140,32 @@ async function measureHome(page) {
       doorCount: doors.length,
     };
   });
+}
+
+function assertHomeFooterSeparator(measurement, name) {
+  assert.equal(
+    measurement.footerUsesCanonicalSeparator,
+    true,
+    `${name} footer must use the canonical application section separator primitive.`,
+  );
+  assert.notEqual(
+    measurement.footerSeparator.content,
+    'none',
+    `${name} footer separator must render.`,
+  );
+  assert.match(
+    measurement.footerSeparator.backgroundImage,
+    /^linear-gradient\(/,
+    `${name} footer separator must use the shared fading gradient.`,
+  );
+  assert.ok(
+    measurement.footerSeparator.width < measurement.footerShellRect.width,
+    `${name} footer separator must remain inset instead of slicing the viewport edge-to-edge.`,
+  );
+  assert.ok(
+    measurement.footerSeparator.height <= 1,
+    `${name} footer separator must remain hairline-thin.`,
+  );
 }
 
 function assertInsideViewport(rect, width, label) {
@@ -175,6 +215,7 @@ async function assertCompactHome(browser, locale, viewport, name) {
 
     assert.ok(measurement, `${name} Home must be measurable.`);
     assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
+    assertHomeFooterSeparator(measurement, name);
     assert.equal(measurement.doorCount, 5, `${name} must expose the five primary destinations.`);
     assert.equal(
       measurement.centerPosition,
@@ -253,6 +294,7 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
     assert.ok(measurement, `${name} must be measurable.`);
 
     assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
+    assertHomeFooterSeparator(measurement, name);
     assert.equal(
       measurement.centerPosition,
       'absolute',
