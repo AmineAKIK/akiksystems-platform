@@ -357,6 +357,7 @@
 
   .aks-home-door + .aks-home-door {
     position: relative;
+    inset: auto;
     border-top: 0;
   }
 
