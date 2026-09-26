@@ -15,6 +15,10 @@ import {
   type WorkWithUsInquiryActionData,
 } from '../lib/work-with-us-inquiry';
 import { WorkWithUsMessagePlayback } from './work-with-us-message-playback';
+import {
+  WorkWithUsApproachGlyph,
+  WorkWithUsSpiralVisual,
+} from './work-with-us-visuals';
 
 export interface WorkWithUsViewProps {
   locale: Locale;
@@ -27,39 +31,6 @@ export interface WorkWithUsViewProps {
 
 function hasCopy(...values: Array<string | null>): boolean {
   return values.some((value) => value !== null);
-}
-
-function WorkWithUsOrbitalField() {
-  return (
-    <div aria-hidden="true" className="aks-work-with-us-orbital-field">
-      <span className="aks-work-with-us-orbit aks-work-with-us-orbit-a" />
-      <span className="aks-work-with-us-orbit aks-work-with-us-orbit-b" />
-      <span className="aks-work-with-us-orbit aks-work-with-us-orbit-c" />
-      <span className="aks-work-with-us-axis aks-work-with-us-axis-a" />
-      <span className="aks-work-with-us-axis aks-work-with-us-axis-b" />
-      <span className="aks-work-with-us-orbital-node aks-work-with-us-orbital-node-a" />
-      <span className="aks-work-with-us-orbital-node aks-work-with-us-orbital-node-b" />
-      <span className="aks-work-with-us-orbital-focus" />
-    </div>
-  );
-}
-
-function ApproachGlyph({
-  kind,
-}: {
-  kind: 'understand' | 'structure' | 'build';
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className="aks-work-with-us-approach-glyph"
-      data-kind={kind}
-    >
-      <span className="aks-work-with-us-glyph-ring aks-work-with-us-glyph-ring-primary" />
-      <span className="aks-work-with-us-glyph-ring aks-work-with-us-glyph-ring-secondary" />
-      <span className="aks-work-with-us-glyph-node" />
-    </span>
-  );
 }
 
 function WorkWithUsSystemCard({
@@ -190,7 +161,7 @@ export function WorkWithUsView({
                 {heroIntroduction}
               </Text>
             </div>
-            <WorkWithUsOrbitalField />
+            <WorkWithUsSpiralVisual />
           </div>
         </Container>
       </section>
@@ -234,17 +205,14 @@ export function WorkWithUsView({
             </div>
 
             <ol className="aks-work-with-us-approach-steps">
-              {approach.steps.map((step, index) =>
+              {approach.steps.map((step) =>
                 hasCopy(step.title, step.body) ? (
                   <li
                     className="aks-work-with-us-approach-step"
                     data-approach-step={step.key}
                     key={step.key}
                   >
-                    <span className="aks-work-with-us-step-index">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <ApproachGlyph kind={step.key} />
+                    <WorkWithUsApproachGlyph kind={step.key} />
                     <div className="aks-work-with-us-step-copy">
                       {step.title === null ? null : (
                         <Heading level={3} size="sm">
