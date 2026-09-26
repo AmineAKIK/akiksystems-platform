@@ -779,10 +779,22 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       scrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
       h1Count: document.querySelectorAll('.aks-work-with-us h1').length,
-      orbitalAriaHidden:
+      spiralAriaHidden:
         document
-          .querySelector('.aks-work-with-us-orbital-field')
+          .querySelector('.aks-work-with-us-spiral-field')
           ?.getAttribute('aria-hidden') === 'true',
+      spiralPathCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral path',
+      ).length,
+      spiralNodeCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral circle',
+      ).length,
+      stepIndexCount: document.querySelectorAll(
+        '.aks-work-with-us-step-index',
+      ).length,
+      playbackMarkCount: document.querySelectorAll(
+        '.aks-work-with-us-message-playback',
+      ).length,
       glyphsAriaHidden: [...document.querySelectorAll('.aks-work-with-us-approach-glyph')].every(
         (element) => element.getAttribute('aria-hidden') === 'true',
       ),
@@ -793,7 +805,7 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       aboutColumns: columnCount('.aks-work-with-us-about-layout'),
       importantRects: {
         heroCopy: rect('.aks-work-with-us-hero-copy'),
-        orbitalField: rect('.aks-work-with-us-orbital-field'),
+        spiralField: rect('.aks-work-with-us-spiral-field'),
         approachHeading: rect('.aks-work-with-us-approach-heading'),
         contactCopy: rect('.aks-work-with-us-contact-copy'),
         inquiryForm: rect('.aks-work-with-us-inquiry-form'),
@@ -823,9 +835,27 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
   );
   assert.equal(measurement.h1Count, 1, `${label} must keep exactly one page heading.`);
   assert.equal(
-    measurement.orbitalAriaHidden,
+    measurement.spiralAriaHidden,
     true,
-    `${label} orbital decoration must stay outside the accessibility tree.`,
+    `${label} spiral decoration must stay outside the accessibility tree.`,
+  );
+  assert.ok(
+    measurement.spiralPathCount >= 2,
+    `${label} hero must keep a real continuous spiral treatment.`,
+  );
+  assert.ok(
+    measurement.spiralNodeCount >= 4,
+    `${label} spiral must retain restrained visual anchors.`,
+  );
+  assert.equal(
+    measurement.stepIndexCount,
+    0,
+    `${label} approach must not reintroduce arbitrary numeric markers.`,
+  );
+  assert.equal(
+    measurement.playbackMarkCount,
+    0,
+    `${label} playback button must not render the old decorative marker.`,
   );
   assert.equal(
     measurement.glyphsAriaHidden,
