@@ -113,6 +113,17 @@ export async function createWorkWithUsInquiry(
       })
       .execute();
 
+    // The notification record is created in the same transaction as the
+    // inquiry so the asynchronous delivery path can never exist without the
+    // durable source-of-truth inquiry.
+    await transaction
+      .insertInto('work_with_us_inquiry_notifications')
+      .values({
+        inquiry_id: inquiryId,
+        state: 'pending',
+      })
+      .execute();
+
     return {
       status: 'created' as const,
       inquiryId,
