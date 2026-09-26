@@ -914,15 +914,15 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       scrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
       h1Count: document.querySelectorAll('.aks-work-with-us h1').length,
-      spiralAriaHidden:
+      brandAriaHidden:
         document
-          .querySelector('.aks-work-with-us-spiral-field')
+          .querySelector('.aks-work-with-us-brand-field')
           ?.getAttribute('aria-hidden') === 'true',
-      spiralPathCount: document.querySelectorAll(
-        '.aks-work-with-us-spiral path',
+      brandMarkCount: document.querySelectorAll(
+        '.aks-work-with-us-brand-mark',
       ).length,
-      spiralNodeCount: document.querySelectorAll(
-        '.aks-work-with-us-spiral circle',
+      retiredSpiralCount: document.querySelectorAll(
+        '.aks-work-with-us-spiral-field',
       ).length,
       stepIndexCount: document.querySelectorAll(
         '.aks-work-with-us-step-index',
@@ -940,7 +940,7 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       aboutColumns: columnCount('.aks-work-with-us-about-layout'),
       importantRects: {
         heroCopy: rect('.aks-work-with-us-hero-copy'),
-        spiralField: rect('.aks-work-with-us-spiral-field'),
+        brandField: rect('.aks-work-with-us-brand-field'),
         approachHeading: rect('.aks-work-with-us-approach-heading'),
         contactCopy: rect('.aks-work-with-us-contact-copy'),
         inquiryForm: rect('.aks-work-with-us-inquiry-form'),
@@ -970,17 +970,19 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
   );
   assert.equal(measurement.h1Count, 1, `${label} must keep exactly one page heading.`);
   assert.equal(
-    measurement.spiralAriaHidden,
+    measurement.brandAriaHidden,
     true,
-    `${label} spiral decoration must stay outside the accessibility tree.`,
+    `${label} hero brand decoration must stay outside the accessibility tree.`,
   );
-  assert.ok(
-    measurement.spiralPathCount >= 2,
-    `${label} hero must keep a real continuous spiral treatment.`,
+  assert.equal(
+    measurement.brandMarkCount,
+    1,
+    `${label} hero must keep exactly one AkikSystems brand mark.`,
   );
-  assert.ok(
-    measurement.spiralNodeCount >= 4,
-    `${label} spiral must retain restrained visual anchors.`,
+  assert.equal(
+    measurement.retiredSpiralCount,
+    0,
+    `${label} must not reintroduce the retired hero spiral.`,
   );
   assert.equal(
     measurement.stepIndexCount,
