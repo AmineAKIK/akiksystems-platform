@@ -514,24 +514,93 @@ async function assertBackgroundContinuity(page, pathName) {
   assert.equal(workResponse?.status(), 200);
   await page.locator('.aks-work-with-us').waitFor();
 
-  const backgrounds = await page.evaluate(() => ({
-    page: getComputedStyle(
-      document.querySelector('.aks-work-with-us'),
-    ).backgroundImage,
-    hero: getComputedStyle(
-      document.querySelector('.aks-work-with-us-hero'),
-    ).backgroundImage,
-  }));
+  const canvas = await page.evaluate(() => {
+    const selectors = [
+      '.aks-work-with-us-hero',
+      '.aks-work-with-us-approach',
+      '.aks-work-with-us-contact',
+      '.aks-work-with-us-about',
+      '.aks-work-with-us-systems',
+    ];
+
+    const sections = selectors.map((selector) => {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) return null;
+
+      const style = getComputedStyle(element);
+      return {
+        selector,
+        backgroundImage: style.backgroundImage,
+        backgroundColor: style.backgroundColor,
+        borderTopWidth: style.borderTopWidth,
+        borderBottomWidth: style.borderBottomWidth,
+      };
+    });
+
+    const approach = document.querySelector('.aks-work-with-us-approach');
+    const approachBefore =
+      approach instanceof HTMLElement
+        ? getComputedStyle(approach, '::before')
+        : null;
+
+    return {
+      page: getComputedStyle(
+        document.querySelector('.aks-work-with-us'),
+      ).backgroundImage,
+      sections,
+      approachBefore:
+        approachBefore === null
+          ? null
+          : {
+              content: approachBefore.content,
+              backgroundImage: approachBefore.backgroundImage,
+            },
+    };
+  });
 
   assert.equal(
-    backgrounds.page,
+    canvas.page,
     homeBackground,
-    'Work with us must share the exact experience background with Home.',
+    'Work with us must share the Home experience canvas.',
+  );
+
+  for (const section of canvas.sections) {
+    assert.ok(section, 'Every Work with us release section must exist.');
+    assert.equal(
+      section.backgroundImage,
+      'none',
+      `${section.selector} must not paint a local background over the shared canvas.`,
+    );
+    assert.equal(
+      section.backgroundColor,
+      'rgba(0, 0, 0, 0)',
+      `${section.selector} must stay transparent over the shared canvas.`,
+    );
+    assert.equal(
+      section.borderTopWidth,
+      '0px',
+      `${section.selector} must not introduce a full-width top separator.`,
+    );
+    assert.equal(
+      section.borderBottomWidth,
+      '0px',
+      `${section.selector} must not introduce a full-width bottom separator.`,
+    );
+  }
+
+  assert.ok(
+    canvas.approachBefore,
+    'The Approach pseudo-element must remain inspectable.',
   );
   assert.equal(
-    backgrounds.hero,
+    canvas.approachBefore.backgroundImage,
     'none',
-    'The Work with us hero must not paint a second competing background over the shared experience canvas.',
+    'Approach must not reintroduce a section-local radial glow.',
+  );
+  assert.equal(
+    canvas.approachBefore.content,
+    'none',
+    'Approach must not create a full-section overlay pseudo-element.',
   );
 }
 
@@ -1350,7 +1419,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; Work with us shares the Home experience background; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
+      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; Work with us uses one uninterrupted Home-derived canvas with no section glow or full-width separators; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
     );
   } finally {
     await browser.close();
