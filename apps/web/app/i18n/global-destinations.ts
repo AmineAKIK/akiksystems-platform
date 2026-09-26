@@ -2,10 +2,10 @@ import type { Locale } from './locales';
 
 export const globalDestinationIds = [
   'profile',
-  'systems',
-  'writings',
-  'learning',
   'work-with-us',
+  'writings',
+  'systems',
+  'learning',
 ] as const;
 
 export type GlobalDestinationId = (typeof globalDestinationIds)[number];
@@ -28,12 +28,12 @@ export const globalDestinations: readonly GlobalDestination[] = [
     },
   },
   {
-    id: 'systems',
-    slug: { en: 'systems', fr: 'systems' },
-    label: { en: 'Systems', fr: 'Systèmes' },
+    id: 'work-with-us',
+    slug: { en: 'work-with-us', fr: 'travailler-ensemble' },
+    label: { en: 'Work with us', fr: 'Travailler ensemble' },
     description: {
-      en: 'Software systems, products, and operating tools built through AkikSystems.',
-      fr: 'Systèmes logiciels, produits et outils opérationnels construits via AkikSystems.',
+      en: 'Ways to collaborate with AkikSystems on products, systems, and technical work.',
+      fr: 'Façons de collaborer avec AkikSystems sur des produits, systèmes et travaux techniques.',
     },
   },
   {
@@ -46,21 +46,21 @@ export const globalDestinations: readonly GlobalDestination[] = [
     },
   },
   {
+    id: 'systems',
+    slug: { en: 'systems', fr: 'systems' },
+    label: { en: 'Systems', fr: 'Systèmes' },
+    description: {
+      en: 'Software systems, products, and operating tools built through AkikSystems.',
+      fr: 'Systèmes logiciels, produits et outils opérationnels construits via AkikSystems.',
+    },
+  },
+  {
     id: 'learning',
     slug: { en: 'learning', fr: 'apprentissage' },
     label: { en: 'Learning', fr: 'Apprentissage' },
     description: {
       en: 'Courses, experiments, and material created while learning in public.',
       fr: 'Cours, expérimentations et contenus créés dans une logique d’apprentissage public.',
-    },
-  },
-  {
-    id: 'work-with-us',
-    slug: { en: 'work-with-us', fr: 'travailler-ensemble' },
-    label: { en: 'Work with us', fr: 'Travailler ensemble' },
-    description: {
-      en: 'Ways to collaborate with AkikSystems on products, systems, and technical work.',
-      fr: 'Façons de collaborer avec AkikSystems sur des produits, systèmes et travaux techniques.',
     },
   },
 ];

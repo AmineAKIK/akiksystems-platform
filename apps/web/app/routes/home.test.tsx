@@ -23,16 +23,25 @@ describe('HomePortal', () => {
     expect(html).toContain('Products · Projects · Live');
     expect(html).toContain('aria-label="Explore AkikSystems"');
 
-    for (const [href, label] of [
+    const englishDoors = [
       ['/en/profile', 'Profile'],
-      ['/en/systems', 'Systems'],
-      ['/en/writings', 'Writings'],
-      ['/en/learning', 'Learning'],
       ['/en/work-with-us', 'Work with us'],
-    ]) {
+      ['/en/writings', 'Writings'],
+      ['/en/systems', 'Systems'],
+      ['/en/learning', 'Learning'],
+    ] as const;
+
+    for (const [href, label] of englishDoors) {
       expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
     }
+
+    const englishDoorOffsets = englishDoors.map(([href]) =>
+      html.indexOf(`href="${href}"`),
+    );
+    expect(englishDoorOffsets).toEqual(
+      [...englishDoorOffsets].sort((first, second) => first - second),
+    );
   });
 
   it('keeps the same five-door model fully localized in French', () => {
@@ -46,15 +55,24 @@ describe('HomePortal', () => {
     expect(html).toContain('aria-label="Afficher en anglais"');
     expect(html).toContain('href="/en"');
 
-    for (const [href, label] of [
+    const frenchDoors = [
       ['/fr/profil', 'Profil'],
-      ['/fr/systems', 'Systèmes'],
-      ['/fr/ecrits', 'Écrits'],
-      ['/fr/apprentissage', 'Apprentissage'],
       ['/fr/travailler-ensemble', 'Travailler ensemble'],
-    ]) {
+      ['/fr/ecrits', 'Écrits'],
+      ['/fr/systems', 'Systèmes'],
+      ['/fr/apprentissage', 'Apprentissage'],
+    ] as const;
+
+    for (const [href, label] of frenchDoors) {
       expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
     }
+
+    const frenchDoorOffsets = frenchDoors.map(([href]) =>
+      html.indexOf(`href="${href}"`),
+    );
+    expect(frenchDoorOffsets).toEqual(
+      [...frenchDoorOffsets].sort((first, second) => first - second),
+    );
   });
 });
