@@ -149,7 +149,11 @@ try {
   const privateSystemsHtml = await privateSystems.text();
   assert.equal(privateSystems.status, 200);
   assert.match(privateSystemsHtml, /Systems administration/);
-  assert.match(privateSystemsHtml, /Open System workspace/);
+  assert.match(
+    privateSystemsHtml,
+    /Create Sentinel|Open System workspace/,
+    'The dedicated Systems page must expose either its empty-state bootstrap or existing System workspaces.',
+  );
 
   const twoFactor = await postJson(
     '/api/auth/two-factor/enable',
