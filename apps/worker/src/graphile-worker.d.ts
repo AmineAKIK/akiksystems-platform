@@ -5,6 +5,9 @@ declare global {
         probeId: string;
         queuedAt: string;
       };
+      'work-with-us:notify-inquiry': {
+        inquiryId: string;
+      };
     }
   }
 }
