@@ -44,7 +44,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Data protection',
         title: 'Privacy policy',
         description:
-          'How AkikSystems handles personal data when you browse this website, send a Work with us inquiry, or use its private administration.',
+          'How AkikSystems handles personal data across public browsing, Work with us inquiries, and private administration.',
         updatedLabel: 'Last updated',
         updatedAt: privacyEnUpdated,
         updatedAtIso: privacyUpdatedAtIso,
@@ -130,7 +130,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Protection des données',
         title: 'Politique de confidentialité',
         description:
-          'La manière dont AkikSystems traite les données personnelles lors de la consultation du site, de l’envoi d’une demande depuis Travailler ensemble ou de l’utilisation de son administration privée.',
+          'Comment AkikSystems traite les données personnelles lors de la navigation, des demandes Travailler ensemble et de l’administration privée.',
         updatedLabel: 'Dernière mise à jour',
         updatedAt: privacyFrUpdated,
         updatedAtIso: privacyUpdatedAtIso,

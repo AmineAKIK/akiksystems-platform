@@ -132,13 +132,16 @@
 
 .aks-home-active-description {
   width: min(22rem, 34vw);
-  min-height: 5rem;
+  height: 5rem;
+  min-height: 0;
   justify-self: center;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   align-content: start;
   justify-items: center;
   gap: 0.55rem;
   margin-block-start: 1.45rem;
+  overflow: hidden;
   opacity: 0;
   transition: opacity 160ms ease;
 }
@@ -159,9 +162,13 @@
 .aks-home-active-description p {
   max-width: 100%;
   margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
   color: rgb(255 255 255 / 76%);
   font-size: 0.82rem;
   line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .aks-home-orbit {

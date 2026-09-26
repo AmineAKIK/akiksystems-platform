@@ -46,6 +46,7 @@ async function measureHome(page) {
     const center = document.querySelector('.aks-home-center');
     const heading = center?.querySelector('.aks-heading');
     const brand = center?.querySelector('.aks-home-brand-mark');
+    const scale = center?.querySelector('.aks-home-scale');
     const activeDescription = center?.querySelector('.aks-home-active-description');
     const orbit = document.querySelector('.aks-home-orbit');
     const footerShell = document.querySelector(
@@ -62,6 +63,7 @@ async function measureHome(page) {
       !(center instanceof HTMLElement) ||
       !(heading instanceof HTMLElement) ||
       !(brand instanceof HTMLElement) ||
+      !(scale instanceof HTMLElement) ||
       !(activeDescription instanceof HTMLElement) ||
       !(orbit instanceof HTMLElement) ||
       !(footerShell instanceof HTMLElement) ||
@@ -95,6 +97,7 @@ async function measureHome(page) {
     const centerRect = rect(center);
     const headingRect = rect(heading);
     const brandRect = rect(brand);
+    const scaleRect = rect(scale);
     const activeDescriptionRect = rect(activeDescription);
     const orbitRect = rect(orbit);
     const copyrightRect = rect(copyright);
@@ -148,6 +151,7 @@ async function measureHome(page) {
       centerRect,
       headingRect,
       brandRect,
+      scaleRect,
       activeDescriptionRect,
       activeDescriptionState: activeDescription.dataset.state ?? null,
       orbitRect,
@@ -258,6 +262,35 @@ function rectsOverlap(first, second, tolerance = 1) {
 
 function assertNoOverlap(first, second, label) {
   assert.equal(rectsOverlap(first, second), false, `${label} must not overlap.`);
+}
+
+function assertRectStableWithinContainer(
+  first,
+  firstContainer,
+  second,
+  secondContainer,
+  label,
+  tolerance = 0.75,
+) {
+  const firstGeometry = {
+    top: first.top - firstContainer.top,
+    left: first.left - firstContainer.left,
+    width: first.width,
+    height: first.height,
+  };
+  const secondGeometry = {
+    top: second.top - secondContainer.top,
+    left: second.left - secondContainer.left,
+    width: second.width,
+    height: second.height,
+  };
+
+  for (const key of ['top', 'left', 'width', 'height']) {
+    assert.ok(
+      Math.abs(firstGeometry[key] - secondGeometry[key]) <= tolerance,
+      `${label} ${key} must stay stable while preview copy changes.`,
+    );
+  }
 }
 
 function centerX(rect) {
@@ -420,33 +453,77 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
     assertNoOverlap(workWithUs, measurement.brandRect, `${name} Work with us and brand mark`);
 
     if (preview) {
-      await page.locator(".aks-experience-footer[data-home='true'] nav a").first().hover();
-      await page.waitForTimeout(80);
-      measurement = await measureHome(page);
-      assert.ok(measurement, `${name} preview state must be measurable.`);
-      assert.equal(
-        measurement.activeDescriptionState,
-        'active',
-        `${name} legal preview must become active on pointer intent.`,
-      );
+      const baseline = measurement;
+      const legalLinks = page.locator(".aks-experience-footer[data-home='true'] nav a");
+      const legalLinkCount = await legalLinks.count();
 
-      const writings = measurement.doorRectsByDestination.writings;
-      const learning = measurement.doorRectsByDestination.learning;
-      assert.ok(writings && learning, `${name} lower orbital destinations must exist.`);
-      assertNoOverlap(
-        measurement.activeDescriptionRect,
-        writings,
-        `${name} preview and Writings`,
-      );
-      assertNoOverlap(
-        measurement.activeDescriptionRect,
-        learning,
-        `${name} preview and Learning`,
-      );
-      assert.ok(
-        measurement.activeDescriptionRect.width <= 353,
-        `${name} preview corridor must remain intentionally bounded.`,
-      );
+      assert.ok(legalLinkCount > 0, `${name} must expose legal preview links.`);
+
+      for (let index = 0; index < legalLinkCount; index += 1) {
+        await legalLinks.nth(index).hover();
+        await page.waitForTimeout(80);
+        measurement = await measureHome(page);
+        assert.ok(measurement, `${name} preview state must be measurable.`);
+        assert.equal(
+          measurement.activeDescriptionState,
+          'active',
+          `${name} legal preview must become active on pointer intent.`,
+        );
+
+        assertRectStableWithinContainer(
+          baseline.centerRect,
+          baseline.homeRect,
+          measurement.centerRect,
+          measurement.homeRect,
+          `${name} identity container`,
+        );
+        assertRectStableWithinContainer(
+          baseline.brandRect,
+          baseline.homeRect,
+          measurement.brandRect,
+          measurement.homeRect,
+          `${name} brand mark`,
+        );
+        assertRectStableWithinContainer(
+          baseline.headingRect,
+          baseline.homeRect,
+          measurement.headingRect,
+          measurement.homeRect,
+          `${name} wordmark`,
+        );
+        assertRectStableWithinContainer(
+          baseline.scaleRect,
+          baseline.homeRect,
+          measurement.scaleRect,
+          measurement.homeRect,
+          `${name} Systemic scale signature`,
+        );
+        assert.ok(
+          Math.abs(
+            baseline.activeDescriptionRect.height -
+              measurement.activeDescriptionRect.height,
+          ) <= 0.75,
+          `${name} legal preview corridor height must remain fixed regardless of copy length.`,
+        );
+
+        const writings = measurement.doorRectsByDestination.writings;
+        const learning = measurement.doorRectsByDestination.learning;
+        assert.ok(writings && learning, `${name} lower orbital destinations must exist.`);
+        assertNoOverlap(
+          measurement.activeDescriptionRect,
+          writings,
+          `${name} preview and Writings`,
+        );
+        assertNoOverlap(
+          measurement.activeDescriptionRect,
+          learning,
+          `${name} preview and Learning`,
+        );
+        assert.ok(
+          measurement.activeDescriptionRect.width <= 353,
+          `${name} preview corridor must remain intentionally bounded.`,
+        );
+      }
     }
 
     return measurement;
