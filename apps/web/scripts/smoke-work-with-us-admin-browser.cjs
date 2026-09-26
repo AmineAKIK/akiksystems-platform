@@ -528,12 +528,23 @@ async function assertBackgroundContinuity(page, pathName) {
       if (!(element instanceof HTMLElement)) return null;
 
       const style = getComputedStyle(element);
+      const after = getComputedStyle(element, '::after');
+      const rect = element.getBoundingClientRect();
+
       return {
         selector,
+        sectionWidth: rect.width,
         backgroundImage: style.backgroundImage,
         backgroundColor: style.backgroundColor,
         borderTopWidth: style.borderTopWidth,
         borderBottomWidth: style.borderBottomWidth,
+        separator: {
+          content: after.content,
+          backgroundImage: after.backgroundImage,
+          width: Number.parseFloat(after.width),
+          height: Number.parseFloat(after.height),
+          opacity: Number.parseFloat(after.opacity),
+        },
       };
     });
 
@@ -584,7 +595,39 @@ async function assertBackgroundContinuity(page, pathName) {
     assert.equal(
       section.borderBottomWidth,
       '0px',
-      `${section.selector} must not introduce a full-width bottom separator.`,
+      `${section.selector} must not introduce a structural full-width bottom border.`,
+    );
+
+    if (section.selector === '.aks-work-with-us-systems') {
+      assert.equal(
+        section.separator.content,
+        'none',
+        'The final Systems section must not render a trailing separator.',
+      );
+      continue;
+    }
+
+    assert.notEqual(
+      section.separator.content,
+      'none',
+      `${section.selector} must retain a soft visual separator.`,
+    );
+    assert.match(
+      section.separator.backgroundImage,
+      /^linear-gradient\(/,
+      `${section.selector} separator must fade through a gradient instead of using a hard border.`,
+    );
+    assert.ok(
+      section.separator.width < section.sectionWidth,
+      `${section.selector} separator must remain narrower than the section so the canvas is not visually sliced edge-to-edge.`,
+    );
+    assert.ok(
+      section.separator.height <= 1,
+      `${section.selector} separator must remain hairline-thin.`,
+    );
+    assert.ok(
+      section.separator.opacity <= 1,
+      `${section.selector} separator opacity must stay controlled.`,
     );
   }
 
@@ -1419,7 +1462,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; Work with us uses one uninterrupted Home-derived canvas with no section glow or full-width separators; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
+      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; Work with us uses one uninterrupted Home-derived canvas with no section glow and only soft, partial-width separators; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
     );
   } finally {
     await browser.close();
