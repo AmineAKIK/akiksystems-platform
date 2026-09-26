@@ -1,15 +1,12 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
-import type { Database } from './schema.js';
+import type {
+  Database,
+  WorkWithUsInquiryNotificationState,
+} from './schema.js';
 
-export type WorkWithUsInquiryNotificationState =
-  | 'pending'
-  | 'queued'
-  | 'sending'
-  | 'sent'
-  | 'failed'
-  | 'blocked';
+export type { WorkWithUsInquiryNotificationState } from './schema.js';
 
 export interface WorkWithUsInquirySettings {
   recipientEmail: string | null;
@@ -201,10 +198,8 @@ export async function getWorkWithUsInquiryNotificationDelivery(
       'notification.inquiry_id',
       'inquiry.id',
     )
-    .leftJoin(
-      'work_with_us_inquiry_settings as settings',
-      'settings.singleton_key',
-      'public',
+    .leftJoin('work_with_us_inquiry_settings as settings', (join) =>
+      join.on('settings.singleton_key', '=', 'public'),
     )
     .select([
       'inquiry.id',
