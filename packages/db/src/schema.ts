@@ -152,6 +152,14 @@ export interface WorkWithUsSystemsTable {
   created_at: TimestampColumn;
 }
 
+export type WorkWithUsInquiryNotificationState =
+  | 'pending'
+  | 'queued'
+  | 'sending'
+  | 'sent'
+  | 'failed'
+  | 'blocked';
+
 export interface WorkWithUsInquiriesTable {
   id: string;
   submission_token: string;
@@ -160,7 +168,28 @@ export interface WorkWithUsInquiriesTable {
   email: string;
   organization: string | null;
   message: string;
+  handled_at: NullableTimestampColumn;
   created_at: TimestampColumn;
+}
+
+export interface WorkWithUsInquirySettingsTable {
+  singleton_key: DefaultedColumn<'public'>;
+  recipient_email: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsInquiryNotificationsTable {
+  inquiry_id: string;
+  state: DefaultedColumn<WorkWithUsInquiryNotificationState>;
+  recipient_email: string | null;
+  attempt_count: DefaultedColumn<number>;
+  provider: string | null;
+  provider_message_id: string | null;
+  last_error: string | null;
+  queued_at: NullableTimestampColumn;
+  sent_at: NullableTimestampColumn;
+  updated_at: TimestampColumn;
 }
 
 export interface ProfileWorkPrinciplesTable {
@@ -614,6 +643,16 @@ export type WorkWithUsSystemUpdate = Updateable<WorkWithUsSystemsTable>;
 export type WorkWithUsInquiryRow = Selectable<WorkWithUsInquiriesTable>;
 export type NewWorkWithUsInquiryRow = Insertable<WorkWithUsInquiriesTable>;
 
+export type WorkWithUsInquirySettingsRow =
+  Selectable<WorkWithUsInquirySettingsTable>;
+export type NewWorkWithUsInquirySettingsRow =
+  Insertable<WorkWithUsInquirySettingsTable>;
+
+export type WorkWithUsInquiryNotificationRow =
+  Selectable<WorkWithUsInquiryNotificationsTable>;
+export type NewWorkWithUsInquiryNotificationRow =
+  Insertable<WorkWithUsInquiryNotificationsTable>;
+
 export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
 export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
 export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
@@ -826,6 +865,8 @@ export interface Database {
   work_with_us_publications: WorkWithUsPublicationsTable;
   work_with_us_systems: WorkWithUsSystemsTable;
   work_with_us_inquiries: WorkWithUsInquiriesTable;
+  work_with_us_inquiry_settings: WorkWithUsInquirySettingsTable;
+  work_with_us_inquiry_notifications: WorkWithUsInquiryNotificationsTable;
   profile_work_principles: ProfileWorkPrinciplesTable;
   profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
   profile_capability_groups: ProfileCapabilityGroupsTable;
