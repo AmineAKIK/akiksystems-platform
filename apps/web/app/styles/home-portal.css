@@ -15,7 +15,7 @@
 
 .aks-home {
   --aks-home-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --aks-home-brand-size: clamp(11rem, min(20vw, 37vh), 22rem);
+  --aks-home-brand-size: clamp(10rem, min(18vw, 34vh), 20rem);
   --aks-home-word-size: clamp(3rem, min(5vw, 8vh), 6rem);
   position: relative;
   min-height: max(calc(100dvh - 4.75rem), 42rem);
