@@ -123,12 +123,7 @@ export function WorkWithUsMessagePlayback({
       onClick={togglePlayback}
       type="button"
     >
-      <span
-        aria-hidden="true"
-        className="aks-work-with-us-message-playback-mark"
-        data-speaking={speaking || undefined}
-      />
-      <span>{label}</span>
+      {label}
     </Button>
   );
 }
