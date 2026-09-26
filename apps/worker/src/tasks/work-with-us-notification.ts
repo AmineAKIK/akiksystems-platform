@@ -112,7 +112,6 @@ export function createWorkWithUsInquiryNotificationTask({
 
       try {
         const sent = await transport.send({
-          from: '',
           to: delivery.recipientEmail,
           replyTo: delivery.email,
           subject: `[AkikSystems] Work with us · ${delivery.name}`,
