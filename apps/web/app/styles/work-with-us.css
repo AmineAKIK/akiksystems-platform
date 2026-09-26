@@ -34,11 +34,7 @@
 .aks-work-with-us-about,
 .aks-work-with-us-systems {
   position: relative;
-}
-
-.aks-work-with-us-hero {
-  isolation: isolate;
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  border: 0;
   background: transparent;
 }
 
@@ -179,22 +175,7 @@
 }
 
 .aks-work-with-us-approach {
-  isolation: isolate;
   padding-block: clamp(var(--aks-space-8), 8vw, 7rem);
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
-}
-
-.aks-work-with-us-approach::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: radial-gradient(
-    circle at 50% 18%,
-    rgb(77 164 191 / 12%),
-    transparent 24rem
-  );
-  content: '';
-  pointer-events: none;
 }
 
 .aks-work-with-us-approach-heading {
@@ -344,7 +325,6 @@
 
 .aks-work-with-us-contact {
   padding-block: clamp(var(--aks-space-8), 8vw, 6rem);
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
 .aks-work-with-us-contact-layout {
@@ -523,7 +503,6 @@
 
 .aks-work-with-us-about {
   padding-block: clamp(var(--aks-space-7), 6vw, var(--aks-space-9));
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
 .aks-work-with-us-about-layout {
