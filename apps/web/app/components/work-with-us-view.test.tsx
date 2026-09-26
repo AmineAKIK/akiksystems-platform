@@ -166,9 +166,9 @@ describe('WorkWithUsView', () => {
     expect(about).toBeGreaterThan(contact);
     expect(systems).toBeGreaterThan(about);
 
-    expect(html).toContain('aks-work-with-us-spiral-field');
-    expect(html).toContain('aks-work-with-us-spiral-path');
-    expect(html).not.toContain('aks-work-with-us-orbital-field');
+    expect(html).toContain('aks-work-with-us-brand-field');
+    expect(html).toContain('aks-work-with-us-brand-mark');
+    expect(html).not.toContain('aks-work-with-us-spiral-field');
     expect(html).toContain('data-approach-step="understand"');
     expect(html).toContain('data-approach-step="structure"');
     expect(html).toContain('data-approach-step="build"');
@@ -251,6 +251,7 @@ describe('WorkWithUsView', () => {
     });
 
     expect(html).toContain('role="alert"');
+    expect(html).toContain('aks-work-with-us-inquiry-feedback-error');
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain('aria-describedby="work-with-us-email-error"');
     expect(html).toContain('value="invalid"');
