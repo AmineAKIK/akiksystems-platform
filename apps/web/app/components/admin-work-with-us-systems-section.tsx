@@ -115,8 +115,8 @@ export function WorkWithUsSystemsSection({
                 ) : null}
                 {!system.publishedFr ? (
                   <Text size="sm">
-                    Hidden from /fr/travailler-ensemble until a FR snapshot
-                    exists.
+                    Not published in FR — hidden from
+                    /fr/travailler-ensemble.
                   </Text>
                 ) : null}
 
