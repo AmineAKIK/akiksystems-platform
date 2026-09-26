@@ -105,6 +105,16 @@ async function measureHome(page) {
     const doorRectsByDestination = Object.fromEntries(
       doors.map((door) => [door.dataset.destination ?? '', rect(door)]),
     );
+    const doorSeparators = doors.slice(1).map((door) => {
+      const separator = getComputedStyle(door, '::before');
+      return {
+        content: separator.content,
+        backgroundImage: separator.backgroundImage,
+        width: Number.parseFloat(separator.width),
+        height: Number.parseFloat(separator.height),
+        doorWidth: door.getBoundingClientRect().width,
+      };
+    });
 
     return {
       viewportWidth,
@@ -137,6 +147,9 @@ async function measureHome(page) {
       footerContentOverlap: overlaps(copyrightRect, legalNavRect),
       doorRects,
       doorRectsByDestination,
+      doorOrder: doors.map((door) => door.dataset.destination ?? ''),
+      doorSeparators,
+      identityScaleRatio: brandRect.width / headingRect.width,
       doorCount: doors.length,
     };
   });
@@ -166,6 +179,46 @@ function assertHomeFooterSeparator(measurement, name) {
     measurement.footerSeparator.height <= 1,
     `${name} footer separator must remain hairline-thin.`,
   );
+}
+
+function assertIdentityScale(measurement, name) {
+  assert.ok(
+    measurement.identityScaleRatio >= 0.33,
+    `${name} brand mark must keep enough visual mass relative to the AkikSystems wordmark.`,
+  );
+  assert.ok(
+    measurement.identityScaleRatio <= 0.8,
+    `${name} brand mark must not overpower the AkikSystems wordmark.`,
+  );
+}
+
+function assertHomeDoorSeparators(measurement, name) {
+  assert.equal(
+    measurement.doorSeparators.length,
+    4,
+    `${name} compact navigation must render four separators between five destinations.`,
+  );
+
+  for (const [index, separator] of measurement.doorSeparators.entries()) {
+    assert.notEqual(
+      separator.content,
+      'none',
+      `${name} destination separator ${index + 1} must render.`,
+    );
+    assert.equal(
+      separator.backgroundImage,
+      measurement.footerSeparator.backgroundImage,
+      `${name} destination separator ${index + 1} must use the same fading gradient as the footer.`,
+    );
+    assert.ok(
+      separator.width < separator.doorWidth,
+      `${name} destination separator ${index + 1} must stay inset like the footer separator.`,
+    );
+    assert.ok(
+      separator.height <= 1,
+      `${name} destination separator ${index + 1} must remain hairline-thin.`,
+    );
+  }
 }
 
 function assertInsideViewport(rect, width, label) {
@@ -216,7 +269,14 @@ async function assertCompactHome(browser, locale, viewport, name) {
     assert.ok(measurement, `${name} Home must be measurable.`);
     assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
     assertHomeFooterSeparator(measurement, name);
+    assertHomeDoorSeparators(measurement, name);
+    assertIdentityScale(measurement, name);
     assert.equal(measurement.doorCount, 5, `${name} must expose the five primary destinations.`);
+    assert.deepEqual(
+      measurement.doorOrder,
+      ['profile', 'work-with-us', 'writings', 'systems', 'learning'],
+      `${name} must keep the approved destination order.`,
+    );
     assert.equal(
       measurement.centerPosition,
       'static',
@@ -295,6 +355,12 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
 
     assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
     assertHomeFooterSeparator(measurement, name);
+    assertIdentityScale(measurement, name);
+    assert.deepEqual(
+      measurement.doorOrder,
+      ['profile', 'work-with-us', 'writings', 'systems', 'learning'],
+      `${name} must keep the approved destination order.`,
+    );
     assert.equal(
       measurement.centerPosition,
       'absolute',
