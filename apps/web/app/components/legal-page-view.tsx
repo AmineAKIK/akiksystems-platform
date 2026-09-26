@@ -27,7 +27,8 @@ export function LegalPageView({ content, id, locale }: LegalPageViewProps) {
               {content.description}
             </Text>
             <Text className="aks-legal-updated" size="sm" tone="muted">
-              {content.updatedLabel}: <time dateTime="2026-09-25">{content.updatedAt}</time>
+              {content.updatedLabel}:{' '}
+              <time dateTime={content.updatedAtIso}>{content.updatedAt}</time>
             </Text>
           </header>
           <nav
