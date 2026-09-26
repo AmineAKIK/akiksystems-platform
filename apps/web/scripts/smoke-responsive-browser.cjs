@@ -433,6 +433,10 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
     assertInsideViewport(measurement.metaRect, measurement.viewportWidth, `${name} metadata rail`);
     assertInsideViewport(measurement.headingRect, measurement.viewportWidth, `${name} wordmark`);
     assertInsideViewport(measurement.brandRect, measurement.viewportWidth, `${name} brand mark`);
+    assert.ok(
+      Math.abs(centerX(measurement.centerRect) - measurement.viewportWidth / 2) <= 2,
+      `${name} Home identity must remain horizontally centered in the viewport.`,
+    );
 
     const destinations = ['work-with-us', 'profile', 'systems', 'writings', 'learning'];
     for (let firstIndex = 0; firstIndex < destinations.length; firstIndex += 1) {
@@ -532,6 +536,78 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
   }
 }
 
+async function assertRouteTransitionContract(browser) {
+  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+
+  try {
+    const page = await context.newPage();
+    const response = await page.goto(`${origin}/en/work-with-us`);
+    assert.equal(response?.status(), 200, 'transition contract route must return HTTP 200.');
+
+    const contract = await page.evaluate(() => {
+      const outlet = document.querySelector('.aks-experience-outlet');
+      const shell = document.querySelector('.aks-experience-shell');
+
+      if (!(outlet instanceof HTMLElement) || !(shell instanceof HTMLElement)) {
+        return null;
+      }
+
+      const keyframes = {};
+      for (const sheet of [...document.styleSheets]) {
+        let rules;
+        try {
+          rules = [...sheet.cssRules];
+        } catch {
+          continue;
+        }
+
+        for (const rule of rules) {
+          if (
+            rule.type === CSSRule.KEYFRAMES_RULE &&
+            (rule.name === 'aks-route-fade-out' || rule.name === 'aks-route-fade-in')
+          ) {
+            keyframes[rule.name] = [...rule.cssRules].map((frame) => ({
+              opacity: frame.style.opacity,
+              transform: frame.style.transform,
+            }));
+          }
+        }
+      }
+
+      return {
+        outletViewTransitionName: getComputedStyle(outlet).viewTransitionName,
+        shellViewTransitionName: getComputedStyle(shell).viewTransitionName,
+        keyframes,
+      };
+    });
+
+    assert.ok(contract, 'route transition contract must be measurable.');
+    assert.equal(
+      contract.outletViewTransitionName,
+      'none',
+      'route outlet must stay in the root snapshot so Home and internal route geometry cannot morph.',
+    );
+    assert.equal(
+      contract.shellViewTransitionName,
+      'aks-experience-shell',
+      'application chrome must remain independently stable across internal route changes.',
+    );
+
+    for (const name of ['aks-route-fade-out', 'aks-route-fade-in']) {
+      assert.ok(contract.keyframes[name], `${name} keyframes must exist.`);
+      for (const frame of contract.keyframes[name]) {
+        assert.equal(
+          frame.transform,
+          '',
+          `${name} must remain spatially neutral and never translate route content.`,
+        );
+      }
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertHeightContinuity(browser) {
   const at899 = await assertDesktopHome(
     browser,
@@ -603,6 +679,7 @@ async function assertHeightContinuity(browser) {
       { preview: true },
     );
     await assertDesktopHome(browser, { width: 1917, height: 564 }, 'wide short orbital desktop');
+    await assertRouteTransitionContract(browser);
     await assertHeightContinuity(browser);
 
     process.stdout.write(

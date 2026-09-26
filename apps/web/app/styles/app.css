@@ -988,10 +988,9 @@
   }
 }
 
-/* L2 route transition system: short, composited and progressively enhanced. */
+/* L2 route transition system: calm viewport cross-fade with persistent application chrome. */
 :root {
-  --aks-transition-route-duration: 160ms;
-  --aks-transition-route-distance: 0.35rem;
+  --aks-transition-route-duration: 180ms;
   --aks-transition-route-easing: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -999,8 +998,30 @@
   view-transition-name: aks-experience-shell;
 }
 
-.aks-experience-outlet {
-  view-transition-name: aks-experience-content;
+/*
+ * Route content intentionally stays in the root snapshot. Giving the outlet its own
+ * transition name makes the browser interpolate between different outlet rectangles
+ * (the Home has no shell, internal pages do), which reads as a diagonal/upward slide.
+ * The root snapshot is viewport-stable, so the transition remains spatially neutral.
+ */
+::view-transition-group(root) {
+  animation-duration: var(--aks-transition-route-duration);
+  animation-timing-function: var(--aks-transition-route-easing);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
+    aks-route-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
+    aks-route-fade-in;
 }
 
 ::view-transition-group(aks-experience-shell) {
@@ -1012,27 +1033,22 @@
   animation: none;
 }
 
-::view-transition-old(aks-experience-content) {
-  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
-    aks-route-out;
+/* Returning Home removes the shell; fade its captured state instead of dropping it abruptly. */
+:root:has(.aks-experience-frame[data-home='true'])::view-transition-old(
+    aks-experience-shell
+  ) {
+  animation: 120ms var(--aks-transition-route-easing) both aks-route-fade-out;
 }
 
-::view-transition-new(aks-experience-content) {
-  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
-    aks-route-in;
-}
-
-@keyframes aks-route-out {
+@keyframes aks-route-fade-out {
   to {
     opacity: 0;
-    transform: translateY(calc(var(--aks-transition-route-distance) * -1));
   }
 }
 
-@keyframes aks-route-in {
+@keyframes aks-route-fade-in {
   from {
     opacity: 0;
-    transform: translateY(var(--aks-transition-route-distance));
   }
 }
 
@@ -1040,27 +1056,21 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --aks-transition-route-duration: 1ms;
-    --aks-transition-route-distance: 0rem;
   }
 
   .aks-experience-mobile-menu-icon {
     transition: none;
   }
 
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root),
   ::view-transition-group(aks-experience-shell),
-  ::view-transition-group(aks-experience-content),
   ::view-transition-old(aks-experience-shell),
-  ::view-transition-new(aks-experience-shell),
-  ::view-transition-old(aks-experience-content),
-  ::view-transition-new(aks-experience-content) {
+  ::view-transition-new(aks-experience-shell) {
     animation-duration: 1ms;
     animation-delay: 0ms;
     animation-iteration-count: 1;
-  }
-
-  ::view-transition-old(aks-experience-content),
-  ::view-transition-new(aks-experience-content) {
-    transform: none;
   }
 }
 
