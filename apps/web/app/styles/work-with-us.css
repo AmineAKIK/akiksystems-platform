@@ -107,56 +107,75 @@
 }
 
 .aks-work-with-us-approach-steps {
+  --aks-work-with-us-approach-gap: clamp(
+    var(--aks-space-5),
+    5vw,
+    var(--aks-space-8)
+  );
+
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(var(--aks-space-5), 5vw, var(--aks-space-8));
+  gap: var(--aks-work-with-us-approach-gap);
   margin: clamp(var(--aks-space-8), 7vw, 6rem) 0 0;
   padding: 0;
   list-style: none;
 }
 
-.aks-work-with-us-approach-steps::before {
-  position: absolute;
-  top: 2.75rem;
-  right: 15%;
-  left: 15%;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(171 226 242 / 28%) 12%,
-    rgb(171 226 242 / 36%) 50%,
-    rgb(171 226 242 / 28%) 88%,
-    transparent
-  );
-  content: '';
-}
-
 .aks-work-with-us-approach-step {
   position: relative;
-  z-index: 1;
   display: grid;
   justify-items: center;
+  align-content: start;
   gap: var(--aks-space-3);
   min-width: 0;
   text-align: center;
 }
 
+.aks-work-with-us-approach-step:not(:last-child)::after {
+  position: absolute;
+  z-index: 0;
+  top: 2.25rem;
+  left: calc(50% + 2.25rem);
+  width: calc(
+    100% + var(--aks-work-with-us-approach-gap) - 4.5rem
+  );
+  height: 1px;
+  background: rgb(181 233 247 / 26%);
+  content: '';
+}
+
+.aks-work-with-us-approach-step:not(:last-child)::before {
+  position: absolute;
+  z-index: 0;
+  top: 2.05rem;
+  left: calc(
+    100% + (var(--aks-work-with-us-approach-gap) / 2) - 0.2rem
+  );
+  width: 0.4rem;
+  height: 0.4rem;
+  border-top: 1px solid rgb(211 244 252 / 52%);
+  border-right: 1px solid rgb(211 244 252 / 52%);
+  content: '';
+  transform: rotate(45deg);
+}
+
 .aks-work-with-us-approach-glyph {
-  width: 5.5rem;
-  height: 5.5rem;
+  position: relative;
+  z-index: 1;
+  width: 4.5rem;
+  height: 4.5rem;
   display: grid;
   place-items: center;
-  border: 1px solid rgb(181 233 247 / 20%);
-  border-radius: 1.1rem;
-  background: rgb(255 255 255 / 1.5%);
+  border: 1px solid rgb(181 233 247 / 24%);
+  border-radius: 50%;
+  background: transparent;
   color: rgb(224 248 255 / 88%);
 }
 
 .aks-work-with-us-approach-glyph svg {
-  width: 3.35rem;
-  height: 3.35rem;
+  width: 2.75rem;
+  height: 2.75rem;
   display: block;
   overflow: visible;
 }
@@ -169,9 +188,16 @@
   vector-effect: non-scaling-stroke;
 }
 
+.aks-work-with-us-approach-glyph
+  .aks-work-with-us-approach-glyph-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
 .aks-work-with-us-step-copy {
   width: 100%;
   display: grid;
+  grid-template-rows: minmax(3.8rem, auto) auto;
   justify-items: center;
   gap: var(--aks-space-2);
   max-width: 24rem;
@@ -180,20 +206,23 @@
 }
 
 .aks-work-with-us-step-copy .aks-heading {
+  width: 100%;
+  min-height: 3.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-inline: auto;
   font-size: clamp(1.3rem, 1.08rem + 0.6vw, 1.65rem);
   line-height: 1.15;
-}
-
-.aks-work-with-us-step-copy .aks-heading,
-.aks-work-with-us-step-copy .aks-text {
-  width: 100%;
-  margin-inline: auto;
   text-align: center;
 }
 
 .aks-work-with-us-step-copy .aks-text {
+  width: 100%;
   max-width: 32ch;
+  margin-inline: auto;
   line-height: 1.55;
+  text-align: center;
 }
 
 .aks-work-with-us-contact {
@@ -597,10 +626,6 @@
     margin-block-start: var(--aks-space-7);
   }
 
-  .aks-work-with-us-approach-steps::before {
-    display: none;
-  }
-
   .aks-work-with-us-approach-step {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
@@ -608,22 +633,32 @@
     text-align: center;
   }
 
+  .aks-work-with-us-approach-step::before,
+  .aks-work-with-us-approach-step::after {
+    display: none;
+  }
+
   .aks-work-with-us-approach-glyph {
-    width: 4.75rem;
-    height: 4.75rem;
+    width: 4.25rem;
+    height: 4.25rem;
   }
 
   .aks-work-with-us-approach-glyph svg {
-    width: 2.9rem;
-    height: 2.9rem;
+    width: 2.55rem;
+    height: 2.55rem;
   }
 
   .aks-work-with-us-step-copy {
+    grid-template-rows: auto auto;
     justify-items: center;
     gap: var(--aks-space-1);
     max-width: 24rem;
     margin-inline: auto;
     text-align: center;
+  }
+
+  .aks-work-with-us-step-copy .aks-heading {
+    min-height: 0;
   }
 
   .aks-work-with-us-step-copy .aks-heading,

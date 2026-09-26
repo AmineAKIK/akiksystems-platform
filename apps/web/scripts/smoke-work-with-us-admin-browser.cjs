@@ -933,6 +933,35 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       glyphsAriaHidden: [...document.querySelectorAll('.aks-work-with-us-approach-glyph')].every(
         (element) => element.getAttribute('aria-hidden') === 'true',
       ),
+      approachGlyphStyles: [
+        ...document.querySelectorAll('.aks-work-with-us-approach-glyph'),
+      ].map((element) => {
+        const style = getComputedStyle(element);
+        const box = element.getBoundingClientRect();
+        return {
+          width: box.width,
+          height: box.height,
+          borderRadius: style.borderRadius,
+        };
+      }),
+      approachConnectors: [
+        ...document.querySelectorAll('.aks-work-with-us-approach-step'),
+      ]
+        .slice(0, 2)
+        .map((element) => {
+          const line = getComputedStyle(element, '::after');
+          return {
+            content: line.content,
+            width: Number.parseFloat(line.width),
+            height: Number.parseFloat(line.height),
+          };
+        }),
+      approachTitleRects: rects(
+        '.aks-work-with-us-step-copy .aks-heading',
+      ),
+      approachBodyRects: rects(
+        '.aks-work-with-us-step-copy .aks-text',
+      ),
       heroColumns: columnCount('.aks-work-with-us-hero-layout'),
       approachColumns: columnCount('.aks-work-with-us-approach-steps'),
       contactColumns: columnCount('.aks-work-with-us-contact-layout'),
@@ -1005,6 +1034,22 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
     `${label} must render the three code-owned approach steps.`,
   );
   assert.equal(
+    measurement.approachGlyphStyles.length,
+    3,
+    `${label} must render exactly three approach glyph nodes.`,
+  );
+  for (const [index, glyph] of measurement.approachGlyphStyles.entries()) {
+    assert.ok(
+      Math.abs(glyph.width - glyph.height) <= 1,
+      `${label} approach glyph ${index + 1} must keep a square node footprint.`,
+    );
+    assert.equal(
+      glyph.borderRadius,
+      '50%',
+      `${label} approach glyph ${index + 1} must use the circular process-node treatment instead of a card.`,
+    );
+  }
+  assert.equal(
     measurement.honeypotTabIndex,
     '-1',
     `${label} anti-abuse honeypot must remain outside keyboard navigation.`,
@@ -1073,6 +1118,34 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
       );
     }
   } else if (viewport.width >= 1200) {
+    assert.equal(
+      measurement.approachConnectors.length,
+      2,
+      `${label} desktop approach must connect the three process nodes with exactly two rail segments.`,
+    );
+    for (const [index, connector] of measurement.approachConnectors.entries()) {
+      assert.notEqual(
+        connector.content,
+        'none',
+        `${label} process rail ${index + 1} must render.`,
+      );
+      assert.ok(
+        connector.width > 20 && connector.height <= 1.5,
+        `${label} process rail ${index + 1} must stay a restrained horizontal connector.`,
+      );
+    }
+
+    const titleTops = measurement.approachTitleRects.map((box) => box.top);
+    const bodyTops = measurement.approachBodyRects.map((box) => box.top);
+    assert.ok(
+      Math.max(...titleTops) - Math.min(...titleTops) <= 1,
+      `${label} approach titles must share the same top baseline.`,
+    );
+    assert.ok(
+      Math.max(...bodyTops) - Math.min(...bodyTops) <= 2,
+      `${label} approach bodies must start on the same baseline.`,
+    );
+
     assert.equal(measurement.heroColumns, 2, `${label} hero must preserve its two-column composition.`);
     assert.equal(
       measurement.approachColumns,
