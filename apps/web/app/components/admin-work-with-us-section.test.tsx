@@ -25,9 +25,18 @@ describe('WorkWithUsAdminSection', () => {
   it('edits the public Work with us composition in place', () => {
     const reference: PublicSystemReference = {
       id: '00000000-0000-4000-8000-000000000001',
+      locale: 'en',
+      slug: 'example',
       href: '/en/systems/example',
       title: 'Example System',
       summary: 'A published System reference.',
+      proofTransparency: {
+        role: 'Reference System',
+        maturity: 'Published',
+        demoNature: 'Static',
+        dataNature: 'Representative',
+        limits: 'Qualification fixture.',
+      },
     };
 
     const html = renderEditor({
