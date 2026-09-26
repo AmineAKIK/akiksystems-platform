@@ -35,7 +35,10 @@ function UnderstandGlyph() {
         </mask>
       </defs>
 
-      <g className="aks-work-with-us-approach-artwork">
+      <g
+        className="aks-work-with-us-approach-artwork"
+        transform="translate(12 12) scale(0.92) translate(-12 -12)"
+      >
         <g
           className="aks-work-with-us-terrain-map"
           mask="url(#aks-work-with-us-terrain-marker-cutout)"
