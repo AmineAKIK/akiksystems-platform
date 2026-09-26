@@ -1,10 +1,11 @@
 import {
+  listWorkWithUsProofReferences,
   publishWorkWithUsLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
-import { BrandSignature, Container, Heading, Link, Text } from '@akiksystems/ui';
+import { BrandSignature, Container, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
-import { useActionData, useLoaderData } from 'react-router';
+import { useActionData, useLoaderData, useSearchParams } from 'react-router';
 
 import { WorkWithUsAdminSection } from '../components/admin-work-with-us-section';
 import { WorkWithUsSystemsSection } from '../components/admin-work-with-us-systems-section';
@@ -143,8 +144,14 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await requireAdminSession(request);
   const page = await ensureWorkWithUsPage();
 
-  const [localizations, publications, systemRows, selectedSystemRows] =
-    await Promise.all([
+  const [
+    localizations,
+    publications,
+    systemRows,
+    selectedSystemRows,
+    englishSystemReferences,
+    frenchSystemReferences,
+  ] = await Promise.all([
       appDb
         .selectFrom('work_with_us_localizations')
         .selectAll()
@@ -204,6 +211,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         .where('page_id', '=', page.id)
         .orderBy('position')
         .execute(),
+      listWorkWithUsProofReferences(appDb, 'en'),
+      listWorkWithUsProofReferences(appDb, 'fr'),
     ]);
 
   return {
@@ -223,6 +232,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       systemId: selection.system_id,
       position: selection.position,
     })),
+    systemReferences: {
+      en: englishSystemReferences,
+      fr: frenchSystemReferences,
+    },
   };
 }
 
@@ -471,54 +484,54 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const { locale, operation } = command;
+  const content = workWithUsContentFromForm(form);
+  const publicCopy = JSON.stringify(content);
 
-  if (operation === 'save') {
-    const content = workWithUsContentFromForm(form);
-    const publicCopy = JSON.stringify(content);
+  if (/\bcssov\b/i.test(publicCopy)) {
+    return {
+      scope: 'content' as const,
+      ok: false,
+      message:
+        'Public collaboration copy must describe the practice directly without naming CSSOV.',
+    };
+  }
 
-    if (/\bcssov\b/i.test(publicCopy)) {
-      return {
-        scope: 'content' as const,
-        ok: false,
-        message:
-          'Public collaboration copy must describe the practice directly without naming CSSOV.',
-      };
-    }
-
-    await appDb.transaction().execute(async (transaction) => {
-      await transaction
-        .insertInto('work_with_us_localizations')
-        .values({
-          page_id: page.id,
-          locale,
+  await appDb.transaction().execute(async (transaction) => {
+    await transaction
+      .insertInto('work_with_us_localizations')
+      .values({
+        page_id: page.id,
+        locale,
+        content: content as unknown as Record<string, unknown>,
+        editorial_state: 'draft',
+        published_at: null,
+      })
+      .onConflict((conflict) =>
+        conflict.columns(['page_id', 'locale']).doUpdateSet({
           content: content as unknown as Record<string, unknown>,
           editorial_state: 'draft',
           published_at: null,
-        })
-        .onConflict((conflict) =>
-          conflict.columns(['page_id', 'locale']).doUpdateSet({
-            content: content as unknown as Record<string, unknown>,
-            editorial_state: 'draft',
-            published_at: null,
-            updated_at: new Date(),
-          }),
-        )
-        .execute();
+          updated_at: new Date(),
+        }),
+      )
+      .execute();
 
-      await writeAdminAuditEvent(transaction, {
-        actorUserId: session.user.id,
-        actorEmail: session.user.email,
-        action: 'work_with_us.localization_saved',
-        entityType: 'work_with_us',
-        entityId: page.id,
-        locale,
-        metadata: {
-          publicSnapshotPreserved: true,
-          structureOwnedByCode: true,
-        },
-      });
+    await writeAdminAuditEvent(transaction, {
+      actorUserId: session.user.id,
+      actorEmail: session.user.email,
+      action: 'work_with_us.localization_saved',
+      entityType: 'work_with_us',
+      entityId: page.id,
+      locale,
+      metadata: {
+        publicSnapshotPreserved: operation === 'save',
+        structureOwnedByCode: true,
+        directPublish: operation === 'publish',
+      },
     });
+  });
 
+  if (operation === 'save') {
     return {
       scope: 'content' as const,
       ok: true,
@@ -561,6 +574,8 @@ export async function action({ request }: Route.ActionArgs) {
 export default function AdminWorkWithUs() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [searchParams] = useSearchParams();
+  const locale = searchParams.get('locale') === 'fr' ? 'fr' : 'en';
 
   return (
     <main className="aks-admin-work-with-us-page">
@@ -581,72 +596,34 @@ export default function AdminWorkWithUs() {
               <span aria-hidden="true">/</span>
               <span>Work with us</span>
             </nav>
+            <Text className="aks-admin-work-with-us-operator" size="sm">
+              {data.email}
+            </Text>
           </div>
         </Container>
       </header>
 
-      <Container className="aks-admin-work-with-us-body" width="wide">
-        <section
-          aria-labelledby="admin-work-with-us-title"
-          className="aks-admin-work-with-us-hero"
-        >
-          <div className="aks-admin-work-with-us-hero-copy">
-            <Text className="aks-admin-work-with-us-eyebrow" size="sm">
-              Editorial workspace
-            </Text>
-            <Heading id="admin-work-with-us-title" level={1} size="lg">
-              Work with us
-            </Heading>
-            <Text className="aks-admin-work-with-us-lead" tone="muted">
-              Maintain the collaboration surface, selected Systems and localized
-              public copy without exposing structural page controls.
-            </Text>
-          </div>
+      <WorkWithUsAdminSection
+        actionData={actionData?.scope === 'content' ? actionData : null}
+        locale={locale}
+        localizations={data.localizations}
+        publications={data.publications}
+        systemReferences={data.systemReferences[locale]}
+      />
 
-          <div className="aks-admin-work-with-us-hero-meta">
-            <div className="aks-admin-work-with-us-operator">
-              <span>Operator</span>
-              <strong>{data.email}</strong>
-            </div>
-            <nav
-              aria-label="Work with us administration actions"
-              className="aks-admin-work-with-us-hero-actions"
-            >
-              <Link href="/admin/work-with-us/inquiries">Inquiry inbox</Link>
-              <Link href="/en/work-with-us">Open EN page</Link>
-              <Link href="/fr/travailler-ensemble">Open FR page</Link>
-            </nav>
-          </div>
-        </section>
-
-        <div className="aks-admin-work-with-us-layout">
-          <aside className="aks-admin-work-with-us-sidebar">
-            <WorkWithUsSystemsSection
-              actionData={
-                actionData?.scope === 'systems' ? actionData : null
-              }
-              selectedSystems={data.selectedSystems}
-              systems={data.systems}
-            />
-          </aside>
-
-          <div className="aks-admin-work-with-us-editor">
-            <WorkWithUsAdminSection
-              actionData={
-                actionData?.scope === 'content' ? actionData : null
-              }
-              localizations={data.localizations}
-              publications={data.publications}
-            />
-          </div>
-        </div>
+      <Container className="aks-admin-work-with-us-management" width="wide">
+        <WorkWithUsSystemsSection
+          actionData={actionData?.scope === 'systems' ? actionData : null}
+          selectedSystems={data.selectedSystems}
+          systems={data.systems}
+        />
       </Container>
 
       <footer className="aks-admin-work-with-us-footer">
         <Container width="wide">
           <div className="aks-admin-work-with-us-footer-inner">
             <span>© {new Date().getUTCFullYear()} AkikSystems</span>
-            <span>Private system · Editorial access</span>
+            <span>Private system · Inline editorial access</span>
           </div>
         </Container>
       </footer>

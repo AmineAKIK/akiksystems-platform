@@ -33,7 +33,7 @@ function hasCopy(...values: Array<string | null>): boolean {
   return values.some((value) => value !== null);
 }
 
-function WorkWithUsSystemCard({
+export function WorkWithUsSystemCard({
   reference,
 }: {
   reference: PublicSystemReference;
