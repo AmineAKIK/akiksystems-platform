@@ -1,6 +1,14 @@
 import { parseWorkWithUsContent } from '@akiksystems/core/work-with-us-content';
-import { Button, Heading, Text } from '@akiksystems/ui';
+import type { PublicSystemReference } from '@akiksystems/db';
+import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { Form } from 'react-router';
+
+import { destinationById } from '../i18n/global-destinations';
+import {
+  WorkWithUsApproachGlyph,
+  WorkWithUsBrandVisual,
+} from './work-with-us-visuals';
+import { WorkWithUsSystemCard } from './work-with-us-view';
 
 interface WorkWithUsAdminLocalization {
   locale: 'en' | 'fr';
@@ -18,360 +26,571 @@ interface WorkWithUsAdminActionData {
 }
 
 export interface WorkWithUsAdminSectionProps {
+  locale: 'en' | 'fr';
   localizations: WorkWithUsAdminLocalization[];
   publications: WorkWithUsAdminPublication[];
+  systemReferences: PublicSystemReference[];
   actionData?: WorkWithUsAdminActionData | null;
 }
 
-function TextField({
+function InlineInput({
+  className = '',
   defaultValue,
   label,
   name,
-  required = false,
+  placeholder,
 }: {
+  className?: string;
   defaultValue: string | null;
   label: string;
   name: string;
-  required?: boolean;
+  placeholder?: string;
 }) {
   return (
-    <label className="aks-admin-work-with-us-field">
-      <span>{label}</span>
-      <input
-        defaultValue={defaultValue ?? ''}
-        name={name}
-        required={required}
-        type="text"
-      />
-    </label>
+    <input
+      aria-label={label}
+      className={'aks-admin-work-with-us-inline ' + className}
+      defaultValue={defaultValue ?? ''}
+      name={name}
+      placeholder={placeholder}
+      type="text"
+    />
   );
 }
 
-function TextAreaField({
+function InlineTextarea({
+  className = '',
   defaultValue,
   label,
   name,
+  placeholder,
   required = false,
-  rows = 4,
+  rows = 1,
 }: {
+  className?: string;
   defaultValue: string | null;
   label: string;
   name: string;
+  placeholder?: string;
   required?: boolean;
   rows?: number;
 }) {
   return (
-    <label className="aks-admin-work-with-us-field aks-admin-work-with-us-field-wide">
-      <span>{label}</span>
-      <textarea
-        defaultValue={defaultValue ?? ''}
-        name={name}
-        required={required}
-        rows={rows}
-      />
-    </label>
-  );
-}
-
-function EditorGroup({
-  children,
-  title,
-}: {
-  children: React.ReactNode;
-  title: string;
-}) {
-  return (
-    <section className="aks-admin-work-with-us-editor-group">
-      <Text className="aks-admin-work-with-us-editor-group-title" tone="strong">
-        {title}
-      </Text>
-      <div className="aks-admin-work-with-us-fields">{children}</div>
-    </section>
+    <textarea
+      aria-label={label}
+      className={'aks-admin-work-with-us-inline ' + className}
+      defaultValue={defaultValue ?? ''}
+      name={name}
+      placeholder={placeholder}
+      required={required}
+      rows={rows}
+    />
   );
 }
 
 export function WorkWithUsAdminSection({
+  locale,
   localizations,
   publications,
+  systemReferences,
   actionData,
 }: WorkWithUsAdminSectionProps) {
+  const localized = localizations.find((candidate) => candidate.locale === locale);
+  const publication = publications.find((candidate) => candidate.locale === locale);
+  const content = parseWorkWithUsContent(localized?.content);
+  const destination = destinationById('work-with-us');
+  const localeLabel = locale === 'en' ? 'English' : 'Français';
+  const publicHref =
+    locale === 'en' ? '/en/work-with-us' : '/fr/travailler-ensemble';
+
   return (
-    <section
-      className="aks-admin-card aks-admin-work-with-us-content-card"
+    <Form
+      className="aks-admin-work-with-us-inline-editor"
       id="admin-work-with-us"
+      method="post"
     >
-      <div className="aks-admin-work-with-us-content-heading">
-        <div>
-          <Text className="aks-admin-work-with-us-section-eyebrow" size="sm">
-            Localized content
-          </Text>
-          <Heading level={2} size="sm">
-            Editorial copy
-          </Heading>
-        </div>
-        <Text tone="muted">
-          Structure stays code-owned. Edit only the copy injected into that
-          structure.
-        </Text>
+      <div className="aks-admin-work-with-us-toolbar">
+        <Container width="wide">
+          <div className="aks-admin-work-with-us-toolbar-inner">
+            <div className="aks-admin-work-with-us-toolbar-context">
+              <span className="aks-admin-work-with-us-toolbar-kicker">
+                Live page editor
+              </span>
+              <nav
+                aria-label="Work with us locale"
+                className="aks-admin-work-with-us-locale-tabs"
+              >
+                <Link
+                  className="aks-admin-work-with-us-locale-tab"
+                  data-active={locale === 'en' || undefined}
+                  href="/admin/work-with-us?locale=en"
+                >
+                  EN
+                </Link>
+                <Link
+                  className="aks-admin-work-with-us-locale-tab"
+                  data-active={locale === 'fr' || undefined}
+                  href="/admin/work-with-us?locale=fr"
+                >
+                  FR
+                </Link>
+              </nav>
+              <span className="aks-admin-work-with-us-toolbar-status">
+                {localeLabel} · {localized?.editorial_state ?? 'not started'} ·{' '}
+                {publication === undefined ? 'no public snapshot' : 'published'}
+              </span>
+            </div>
+
+            <div className="aks-admin-work-with-us-toolbar-actions">
+              <Link href="/admin/work-with-us/inquiries">Inquiry inbox</Link>
+              <Link href={publicHref}>Open public page</Link>
+              <Button
+                emphasis="quiet"
+                name="_intent"
+                type="submit"
+                value={'save-work-with-us-localization:' + locale}
+              >
+                Save {locale.toUpperCase()} draft
+              </Button>
+              <Button
+                name="_intent"
+                type="submit"
+                value={'publish-work-with-us-localization:' + locale}
+              >
+                Publish {locale.toUpperCase()}
+              </Button>
+            </div>
+          </div>
+        </Container>
       </div>
 
       {actionData?.message ? (
-        <Text
-          className="aks-admin-work-with-us-feedback"
-          role={actionData.ok === false ? 'alert' : 'status'}
-          size="sm"
-          tone={actionData.ok === false ? 'muted' : 'strong'}
-        >
-          {actionData.message}
-        </Text>
+        <Container width="wide">
+          <Text
+            className="aks-admin-work-with-us-feedback"
+            role={actionData.ok === false ? 'alert' : 'status'}
+            size="sm"
+            tone={actionData.ok === false ? 'muted' : 'strong'}
+          >
+            {actionData.message}
+          </Text>
+        </Container>
       ) : null}
 
-      <div className="aks-admin-work-with-us-locales">
-        {(['en', 'fr'] as const).map((locale) => {
-          const localized = localizations.find(
-            (candidate) => candidate.locale === locale,
-          );
-          const content = parseWorkWithUsContent(localized?.content);
-          const publication = publications.find(
-            (candidate) => candidate.locale === locale,
-          );
-
-          return (
-            <article
-              className="aks-admin-card aks-admin-work-with-us-locale-card"
-              key={locale}
-            >
-              <header className="aks-admin-work-with-us-locale-header">
-                <div>
-                  <Text className="aks-admin-work-with-us-locale-code" size="sm">
-                    {locale.toUpperCase()}
-                  </Text>
-                  <Heading level={3} size="sm">
-                    {locale === 'en' ? 'English' : 'Français'}
-                  </Heading>
-                </div>
-                <span className="aks-admin-work-with-us-locale-status">
-                  {localized?.editorial_state ?? 'not started'} ·{' '}
-                  {publication === undefined ? 'no snapshot' : 'published'}
-                </span>
-              </header>
-
-              <Form
-                className="aks-admin-form aks-admin-work-with-us-locale-form"
-                method="post"
-              >
-                <input
-                  name="_intent"
-                  type="hidden"
-                  value={'save-work-with-us-localization:' + locale}
-                />
-
-                <EditorGroup title="Hero">
-                  <TextField
+      <div
+        className="aks-work-with-us aks-admin-work-with-us-canvas"
+        data-admin-locale={locale}
+      >
+        <section className="aks-work-with-us-hero aks-section-separator-after">
+          <Container width="wide">
+            <div className="aks-work-with-us-hero-layout">
+              <div className="aks-work-with-us-hero-copy">
+                <Text
+                  className="aks-work-with-us-eyebrow"
+                  size="sm"
+                  tone="muted"
+                >
+                  <InlineInput
+                    className="aks-admin-work-with-us-eyebrow-editor"
                     defaultValue={content.hero.eyebrow}
-                    label="Eyebrow"
+                    label="Hero eyebrow"
                     name="heroEyebrow"
+                    placeholder="Eyebrow"
                   />
-                  <TextField
+                </Text>
+                <Heading
+                  className="aks-work-with-us-hero-title"
+                  level={1}
+                  size="lg"
+                >
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-heading-editor"
                     defaultValue={content.hero.title}
-                    label="Title"
+                    label="Hero title"
                     name="heroTitle"
+                    placeholder={destination.label[locale]}
                     required
                   />
-                  <TextAreaField
+                </Heading>
+                <Text
+                  className="aks-work-with-us-hero-introduction"
+                  size="lg"
+                  tone="muted"
+                >
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
                     defaultValue={content.hero.introduction}
-                    label="Introduction"
+                    label="Hero introduction"
                     name="heroIntroduction"
+                    placeholder={destination.description[locale]}
                     required
+                    rows={3}
                   />
-                </EditorGroup>
+                </Text>
+              </div>
+              <WorkWithUsBrandVisual />
+            </div>
+          </Container>
+        </section>
 
-                <EditorGroup title="Approach">
-                  <TextField
-                    defaultValue={content.approach.eyebrow}
-                    label="Eyebrow"
-                    name="approachEyebrow"
-                  />
-                  <TextField
-                    defaultValue={content.approach.title}
-                    label="Title"
-                    name="approachTitle"
-                  />
-                  <TextAreaField
-                    defaultValue={content.approach.introduction}
-                    label="Introduction"
-                    name="approachIntroduction"
-                  />
+        <section className="aks-work-with-us-approach aks-section-separator-after">
+          <Container width="wide">
+            <div className="aks-work-with-us-approach-heading">
+              <Text
+                className="aks-work-with-us-eyebrow"
+                size="sm"
+                tone="muted"
+              >
+                <InlineInput
+                  className="aks-admin-work-with-us-eyebrow-editor aks-admin-work-with-us-centered-editor"
+                  defaultValue={content.approach.eyebrow}
+                  label="Approach eyebrow"
+                  name="approachEyebrow"
+                  placeholder="Eyebrow"
+                />
+              </Text>
+              <Heading
+                className="aks-work-with-us-approach-title"
+                level={2}
+                size="lg"
+              >
+                <InlineTextarea
+                  className="aks-admin-work-with-us-heading-editor aks-admin-work-with-us-centered-editor"
+                  defaultValue={content.approach.title}
+                  label="Approach title"
+                  name="approachTitle"
+                  placeholder="Approach title"
+                />
+              </Heading>
+              <Text
+                className="aks-work-with-us-approach-introduction"
+                tone="muted"
+              >
+                <InlineTextarea
+                  className="aks-admin-work-with-us-copy-editor aks-admin-work-with-us-centered-editor"
+                  defaultValue={content.approach.introduction}
+                  label="Approach introduction"
+                  name="approachIntroduction"
+                  placeholder="Approach introduction"
+                  rows={2}
+                />
+              </Text>
+            </div>
 
-                  <div className="aks-admin-work-with-us-steps">
-                    {content.approach.steps.map((step) => (
-                      <div
-                        className="aks-admin-work-with-us-step"
-                        key={step.key}
-                      >
-                        <Text
-                          className="aks-admin-work-with-us-step-key"
-                          size="sm"
-                        >
-                          {step.key}
-                        </Text>
-                        <TextField
-                          defaultValue={step.title}
-                          label="Step title"
-                          name={'approach_' + step.key + '_title'}
-                        />
-                        <TextAreaField
-                          defaultValue={step.body}
-                          label="Step copy"
-                          name={'approach_' + step.key + '_body'}
-                        />
-                      </div>
-                    ))}
+            <ol className="aks-work-with-us-approach-steps">
+              {content.approach.steps.map((step) => (
+                <li
+                  className="aks-work-with-us-approach-step"
+                  data-approach-step={step.key}
+                  key={step.key}
+                >
+                  <WorkWithUsApproachGlyph kind={step.key} />
+                  <div className="aks-work-with-us-step-copy">
+                    <Heading level={3} size="sm">
+                      <InlineTextarea
+                        className="aks-admin-work-with-us-step-title-editor aks-admin-work-with-us-centered-editor"
+                        defaultValue={step.title}
+                        label={step.key + ' step title'}
+                        name={'approach_' + step.key + '_title'}
+                        placeholder="Step title"
+                      />
+                    </Heading>
+                    <Text size="sm" tone="muted">
+                      <InlineTextarea
+                        className="aks-admin-work-with-us-step-copy-editor aks-admin-work-with-us-centered-editor"
+                        defaultValue={step.body}
+                        label={step.key + ' step copy'}
+                        name={'approach_' + step.key + '_body'}
+                        placeholder="Step copy"
+                        rows={3}
+                      />
+                    </Text>
                   </div>
-                </EditorGroup>
+                </li>
+              ))}
+            </ol>
+          </Container>
+        </section>
 
-                <EditorGroup title="Contact">
-                  <TextField
+        <section className="aks-work-with-us-contact aks-section-separator-after">
+          <Container width="wide">
+            <div className="aks-work-with-us-contact-layout">
+              <div className="aks-work-with-us-contact-copy">
+                <Text
+                  className="aks-work-with-us-eyebrow"
+                  size="sm"
+                  tone="muted"
+                >
+                  <InlineInput
+                    className="aks-admin-work-with-us-eyebrow-editor"
                     defaultValue={content.contact.eyebrow}
-                    label="Eyebrow"
+                    label="Contact eyebrow"
                     name="contactEyebrow"
+                    placeholder="Eyebrow"
                   />
-                  <TextField
+                </Text>
+                <Heading level={2} size="lg">
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-heading-editor"
                     defaultValue={content.contact.title}
-                    label="Title"
+                    label="Contact title"
                     name="contactTitle"
+                    placeholder="Contact title"
                   />
-                  <TextAreaField
+                </Heading>
+                <Text
+                  className="aks-work-with-us-contact-introduction"
+                  tone="muted"
+                >
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
                     defaultValue={content.contact.introduction}
-                    label="Introduction"
+                    label="Contact introduction"
                     name="contactIntroduction"
+                    placeholder="Contact introduction"
+                    rows={3}
                   />
-                  <TextField
-                    defaultValue={content.contact.nameLabel}
-                    label="Name field label"
-                    name="contactNameLabel"
+                </Text>
+                <Text
+                  className="aks-work-with-us-contact-privacy"
+                  size="sm"
+                  tone="muted"
+                >
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
+                    defaultValue={content.contact.privacyNote}
+                    label="Contact privacy note"
+                    name="contactPrivacyNote"
+                    placeholder="Privacy note"
+                    rows={2}
                   />
-                  <TextField
-                    defaultValue={content.contact.emailLabel}
-                    label="Email field label"
-                    name="contactEmailLabel"
-                  />
-                  <TextField
-                    defaultValue={content.contact.organizationLabel}
-                    label="Organization field label"
-                    name="contactOrganizationLabel"
-                  />
-                  <TextField
-                    defaultValue={content.contact.messageLabel}
-                    label="Message field label"
-                    name="contactMessageLabel"
-                  />
-                  <TextAreaField
-                    defaultValue={content.contact.messagePlaceholder}
-                    label="Message placeholder"
-                    name="contactMessagePlaceholder"
-                  />
-                  <TextField
+                </Text>
+              </div>
+
+              <div className="aks-work-with-us-inquiry-form aks-admin-work-with-us-inquiry-preview">
+                <div className="aks-work-with-us-inquiry-fields">
+                  <label className="aks-work-with-us-inquiry-field">
+                    <InlineInput
+                      className="aks-admin-work-with-us-label-editor"
+                      defaultValue={content.contact.nameLabel}
+                      label="Name field label"
+                      name="contactNameLabel"
+                      placeholder="Name"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="aks-admin-work-with-us-preview-control"
+                    />
+                  </label>
+
+                  <label className="aks-work-with-us-inquiry-field">
+                    <InlineInput
+                      className="aks-admin-work-with-us-label-editor"
+                      defaultValue={content.contact.emailLabel}
+                      label="Email field label"
+                      name="contactEmailLabel"
+                      placeholder="Email"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="aks-admin-work-with-us-preview-control"
+                    />
+                  </label>
+
+                  <label className="aks-work-with-us-inquiry-field">
+                    <InlineInput
+                      className="aks-admin-work-with-us-label-editor"
+                      defaultValue={content.contact.organizationLabel}
+                      label="Organization field label"
+                      name="contactOrganizationLabel"
+                      placeholder="Organization"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="aks-admin-work-with-us-preview-control"
+                    />
+                  </label>
+
+                  <label className="aks-work-with-us-inquiry-field aks-work-with-us-inquiry-message">
+                    <InlineInput
+                      className="aks-admin-work-with-us-label-editor"
+                      defaultValue={content.contact.messageLabel}
+                      label="Message field label"
+                      name="contactMessageLabel"
+                      placeholder="Message"
+                    />
+                    <InlineTextarea
+                      className="aks-admin-work-with-us-placeholder-editor"
+                      defaultValue={content.contact.messagePlaceholder}
+                      label="Message placeholder"
+                      name="contactMessagePlaceholder"
+                      placeholder="Message placeholder"
+                      rows={5}
+                    />
+                  </label>
+                </div>
+
+                <div className="aks-work-with-us-inquiry-actions">
+                  <InlineInput
+                    className="aks-admin-work-with-us-button-label-editor aks-admin-work-with-us-listen-editor"
                     defaultValue={content.contact.listenLabel}
                     label="Listen button label"
                     name="contactListenLabel"
+                    placeholder="Listen button"
                   />
-                  <TextField
+                  <InlineInput
+                    className="aks-admin-work-with-us-button-label-editor aks-admin-work-with-us-submit-editor"
                     defaultValue={content.contact.submitLabel}
                     label="Submit button label"
                     name="contactSubmitLabel"
+                    placeholder="Submit"
                   />
-                  <TextAreaField
+                </div>
+
+                <div className="aks-work-with-us-inquiry-feedback aks-admin-work-with-us-success-preview">
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
                     defaultValue={content.contact.successMessage}
                     label="Success message"
                     name="contactSuccessMessage"
+                    placeholder="Success message"
+                    rows={2}
                   />
-                  <TextAreaField
-                    defaultValue={content.contact.privacyNote}
-                    label="Privacy note"
-                    name="contactPrivacyNote"
-                  />
-                </EditorGroup>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
 
-                <EditorGroup title="About">
-                  <TextField
+        <section className="aks-work-with-us-about aks-section-separator-after">
+          <Container width="wide">
+            <div className="aks-work-with-us-about-layout">
+              <div className="aks-work-with-us-about-heading">
+                <Text
+                  className="aks-work-with-us-eyebrow"
+                  size="sm"
+                  tone="muted"
+                >
+                  <InlineInput
+                    className="aks-admin-work-with-us-eyebrow-editor"
                     defaultValue={content.about.eyebrow}
-                    label="Eyebrow"
+                    label="About eyebrow"
                     name="aboutEyebrow"
+                    placeholder="Eyebrow"
                   />
-                  <TextField
+                </Text>
+                <Heading level={2} size="md">
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-section-title-editor"
                     defaultValue={content.about.title}
-                    label="Title"
+                    label="About title"
                     name="aboutTitle"
+                    placeholder="About title"
                   />
-                  <TextAreaField
+                </Heading>
+              </div>
+
+              <div className="aks-work-with-us-about-body">
+                <Text tone="muted">
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
                     defaultValue={content.about.body}
-                    label="Body"
+                    label="About body"
                     name="aboutBody"
-                    rows={6}
+                    placeholder="About copy"
+                    rows={5}
                   />
-                  <TextField
-                    defaultValue={content.about.profileLinkLabel}
-                    label="Profile link label"
-                    name="aboutProfileLinkLabel"
-                  />
-                </EditorGroup>
+                </Text>
+              </div>
 
-                <EditorGroup title="Systems">
-                  <TextField
-                    defaultValue={content.systems.eyebrow}
-                    label="Eyebrow"
-                    name="systemsEyebrow"
-                  />
-                  <TextField
-                    defaultValue={content.systems.title}
-                    label="Title"
-                    name="systemsTitle"
-                  />
-                  <TextAreaField
-                    defaultValue={content.systems.introduction}
-                    label="Introduction"
-                    name="systemsIntroduction"
-                  />
-                  <TextField
-                    defaultValue={content.systems.allSystemsLinkLabel}
-                    label="All Systems link label"
-                    name="systemsAllSystemsLinkLabel"
-                  />
-                </EditorGroup>
-
-                <Button
-                  className="aks-admin-work-with-us-save"
-                  type="submit"
-                >
-                  Save {locale.toUpperCase()} draft
-                </Button>
-              </Form>
-
-              <Form
-                className="aks-admin-work-with-us-publish"
-                method="post"
-              >
-                <input
-                  name="_intent"
-                  type="hidden"
-                  value={'publish-work-with-us-localization:' + locale}
+              <div className="aks-work-with-us-section-link aks-admin-work-with-us-link-editor">
+                <InlineInput
+                  className="aks-admin-work-with-us-link-label-editor"
+                  defaultValue={content.about.profileLinkLabel}
+                  label="Profile link label"
+                  name="aboutProfileLinkLabel"
+                  placeholder="Profile link"
                 />
-                <Button
-                  disabled={
-                    content.hero.title === null ||
-                    content.hero.introduction === null
-                  }
-                  emphasis="quiet"
-                  type="submit"
+                <span aria-hidden="true">→</span>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="aks-work-with-us-systems">
+          <Container width="wide">
+            <div className="aks-work-with-us-systems-heading">
+              <div>
+                <Text
+                  className="aks-work-with-us-eyebrow"
+                  size="sm"
+                  tone="muted"
                 >
-                  Publish {locale.toUpperCase()}
-                </Button>
-              </Form>
-            </article>
-          );
-        })}
+                  <InlineInput
+                    className="aks-admin-work-with-us-eyebrow-editor"
+                    defaultValue={content.systems.eyebrow}
+                    label="Systems eyebrow"
+                    name="systemsEyebrow"
+                    placeholder="Eyebrow"
+                  />
+                </Text>
+                <Heading level={2} size="md">
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-section-title-editor"
+                    defaultValue={content.systems.title}
+                    label="Systems title"
+                    name="systemsTitle"
+                    placeholder="Systems title"
+                  />
+                </Heading>
+                <Text
+                  className="aks-work-with-us-systems-introduction"
+                  tone="muted"
+                >
+                  <InlineTextarea
+                    className="aks-admin-work-with-us-copy-editor"
+                    defaultValue={content.systems.introduction}
+                    label="Systems introduction"
+                    name="systemsIntroduction"
+                    placeholder="Systems introduction"
+                    rows={2}
+                  />
+                </Text>
+              </div>
+              <div className="aks-work-with-us-section-link aks-admin-work-with-us-link-editor">
+                <InlineInput
+                  className="aks-admin-work-with-us-link-label-editor"
+                  defaultValue={content.systems.allSystemsLinkLabel}
+                  label="All Systems link label"
+                  name="systemsAllSystemsLinkLabel"
+                  placeholder="All Systems"
+                />
+                <span aria-hidden="true">→</span>
+              </div>
+            </div>
+
+            {systemReferences.length === 0 ? (
+              <Text
+                className="aks-admin-work-with-us-empty-systems"
+                size="sm"
+                tone="muted"
+              >
+                No selected System currently has a public snapshot in{' '}
+                {locale.toUpperCase()}.
+              </Text>
+            ) : (
+              <div className="aks-work-with-us-system-grid aks-admin-work-with-us-system-preview-grid">
+                {systemReferences.map((reference) => (
+                  <WorkWithUsSystemCard
+                    key={reference.id}
+                    reference={reference}
+                  />
+                ))}
+              </div>
+            )}
+          </Container>
+        </section>
       </div>
-    </section>
+    </Form>
   );
 }

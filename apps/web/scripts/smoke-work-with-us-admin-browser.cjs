@@ -120,41 +120,42 @@ async function submitInquiryCommand(page, button, command, expectedMessage) {
   await page.getByText(expectedMessage, { exact: true }).waitFor();
 }
 
-function localeCard(page, locale) {
-  return page.locator('#admin-work-with-us .aks-admin-card').filter({
-    has: page.getByRole('heading', {
-      level: 3,
-      name: locale === 'en' ? 'English' : 'Français',
-      exact: true,
-    }),
-  });
+async function localeCard(page, locale) {
+  const target = origin + '/admin/work-with-us?locale=' + locale;
+  if (page.url() !== target) {
+    await page.goto(target);
+  }
+
+  const editor = page.locator('#admin-work-with-us');
+  await editor.waitFor();
+  return editor;
 }
 
 async function fillCommercialDraft(card, copy) {
-  await card.locator('input[name="heroTitle"]').fill(copy.heroTitle);
+  await card.locator('textarea[name="heroTitle"]').fill(copy.heroTitle);
   await card
     .locator('textarea[name="heroIntroduction"]')
     .fill(copy.heroIntroduction);
-  await card.locator('input[name="approachTitle"]').fill(copy.approachTitle);
+  await card.locator('textarea[name="approachTitle"]').fill(copy.approachTitle);
   await card
-    .locator('input[name="approach_understand_title"]')
+    .locator('textarea[name="approach_understand_title"]')
     .fill(copy.understandTitle);
   await card
     .locator('textarea[name="approach_understand_body"]')
     .fill(copy.understandBody);
   await card
-    .locator('input[name="approach_structure_title"]')
+    .locator('textarea[name="approach_structure_title"]')
     .fill(copy.structureTitle);
   await card
     .locator('textarea[name="approach_structure_body"]')
     .fill(copy.structureBody);
   await card
-    .locator('input[name="approach_build_title"]')
+    .locator('textarea[name="approach_build_title"]')
     .fill(copy.buildTitle);
   await card
     .locator('textarea[name="approach_build_body"]')
     .fill(copy.buildBody);
-  await card.locator('input[name="contactTitle"]').fill(copy.contactTitle);
+  await card.locator('textarea[name="contactTitle"]').fill(copy.contactTitle);
   await card.locator('input[name="contactNameLabel"]').fill(copy.contactNameLabel);
   await card.locator('input[name="contactEmailLabel"]').fill(copy.contactEmailLabel);
   await card
@@ -178,16 +179,16 @@ async function fillCommercialDraft(card, copy) {
   await card
     .locator('textarea[name="contactPrivacyNote"]')
     .fill(copy.contactPrivacyNote);
-  await card.locator('input[name="aboutTitle"]').fill(copy.aboutTitle);
+  await card.locator('textarea[name="aboutTitle"]').fill(copy.aboutTitle);
   await card
     .locator('input[name="aboutProfileLinkLabel"]')
     .fill(copy.aboutProfileLinkLabel);
-  await card.locator('input[name="systemsTitle"]').fill(copy.systemsTitle);
+  await card.locator('textarea[name="systemsTitle"]').fill(copy.systemsTitle);
 }
 
 async function assertPersisted(card, copy) {
   assert.equal(
-    await card.locator('input[name="heroTitle"]').inputValue(),
+    await card.locator('textarea[name="heroTitle"]').inputValue(),
     copy.heroTitle,
   );
   assert.equal(
@@ -195,19 +196,19 @@ async function assertPersisted(card, copy) {
     copy.heroIntroduction,
   );
   assert.equal(
-    await card.locator('input[name="approachTitle"]').inputValue(),
+    await card.locator('textarea[name="approachTitle"]').inputValue(),
     copy.approachTitle,
   );
   assert.equal(
-    await card.locator('input[name="approach_understand_title"]').inputValue(),
+    await card.locator('textarea[name="approach_understand_title"]').inputValue(),
     copy.understandTitle,
   );
   assert.equal(
-    await card.locator('input[name="approach_build_title"]').inputValue(),
+    await card.locator('textarea[name="approach_build_title"]').inputValue(),
     copy.buildTitle,
   );
   assert.equal(
-    await card.locator('input[name="contactTitle"]').inputValue(),
+    await card.locator('textarea[name="contactTitle"]').inputValue(),
     copy.contactTitle,
   );
   assert.equal(
@@ -223,7 +224,7 @@ async function assertPersisted(card, copy) {
     copy.contactSubmitLabel,
   );
   assert.equal(
-    await card.locator('input[name="aboutTitle"]').inputValue(),
+    await card.locator('textarea[name="aboutTitle"]').inputValue(),
     copy.aboutTitle,
   );
   assert.equal(
@@ -231,7 +232,7 @@ async function assertPersisted(card, copy) {
     copy.aboutProfileLinkLabel,
   );
   assert.equal(
-    await card.locator('input[name="systemsTitle"]').inputValue(),
+    await card.locator('textarea[name="systemsTitle"]').inputValue(),
     copy.systemsTitle,
   );
 }
@@ -1666,14 +1667,24 @@ async function assertReducedMotion(browser, pathName, copy) {
       'Work with us administration must render its dedicated workspace shell.',
     );
     assert.equal(
-      await page.locator('.aks-admin-work-with-us-layout').count(),
+      await page.locator('.aks-admin-work-with-us-inline-editor').count(),
       1,
-      'Work with us administration must separate Systems controls from editorial copy.',
+      'Work with us administration must expose the real page layout as the editor canvas.',
     );
     assert.equal(
-      await page.locator('.aks-admin-work-with-us-locale-card').count(),
+      await page.locator('#admin-work-with-us .aks-work-with-us-hero').count(),
+      1,
+      'The inline editor must retain the public Work with us hero structure.',
+    );
+    assert.equal(
+      await page.locator('#admin-work-with-us .aks-work-with-us-contact').count(),
+      1,
+      'The inline editor must retain the public Work with us contact structure.',
+    );
+    assert.equal(
+      await page.locator('.aks-admin-work-with-us-locale-tab').count(),
       2,
-      'Work with us administration must expose one structured editor per locale.',
+      'The inline editor must switch explicitly between EN and FR.',
     );
 
     const adminSection = page.locator('#admin-work-with-us');
@@ -1685,7 +1696,7 @@ async function assertReducedMotion(browser, pathName, copy) {
       'Work with us commands must encode locale atomically instead of duplicating it in a second form field.',
     );
 
-    let englishCard = localeCard(page, 'en');
+    let englishCard = await localeCard(page, 'en');
     await fillCommercialDraft(englishCard, english);
     await submitCommand(
       page,
@@ -1695,7 +1706,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     );
 
     await page.goto(`${origin}/admin/work-with-us`);
-    englishCard = localeCard(page, 'en');
+    englishCard = await localeCard(page, 'en');
     await assertPersisted(englishCard, english);
 
     let publicResponse = await page.context().request.get(`${origin}/en/work-with-us`);
@@ -1720,7 +1731,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     });
 
     await page.goto(`${origin}/admin/work-with-us`);
-    let frenchCard = localeCard(page, 'fr');
+    let frenchCard = await localeCard(page, 'fr');
     await fillCommercialDraft(frenchCard, french);
     await submitCommand(
       page,
@@ -1730,7 +1741,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     );
 
     await page.goto(`${origin}/admin/work-with-us`);
-    frenchCard = localeCard(page, 'fr');
+    frenchCard = await localeCard(page, 'fr');
     await assertPersisted(frenchCard, french);
     await submitCommand(
       page,
@@ -1815,9 +1826,9 @@ async function assertReducedMotion(browser, pathName, copy) {
     await noJavaScriptInquiryCard.waitFor();
 
     await page.goto(`${origin}/admin/work-with-us`);
-    englishCard = localeCard(page, 'en');
+    englishCard = await localeCard(page, 'en');
     await englishCard
-      .locator('input[name="heroTitle"]')
+      .locator('textarea[name="heroTitle"]')
       .fill('Private draft must remain private');
     await submitCommand(
       page,
