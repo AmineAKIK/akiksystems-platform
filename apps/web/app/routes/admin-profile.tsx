@@ -587,6 +587,25 @@ export async function loader({ request }: Route.LoaderArgs) {
     activeLocale,
     draftProfile,
     draftSystemReferences,
+    journeyEditorStages: technologyJourneyStages.map((stage) => {
+      const row = technologyJourneyRows.find(
+        (candidate) => candidate.stage_key === stage.key,
+      );
+
+      return {
+        key: stage.key,
+        position: stage.position,
+        fallbackLabel: stage.label,
+        title:
+          activeLocale === 'fr'
+            ? row?.title_fr ?? null
+            : row?.title_en ?? null,
+        summary:
+          activeLocale === 'fr'
+            ? row?.summary_fr ?? null
+            : row?.summary_en ?? null,
+      };
+    }),
     operatorEmail: session.user.email,
   };
 }
@@ -635,28 +654,43 @@ export async function action({ request }: Route.ActionArgs) {
 
     const [
       principleRows,
-      journeyRows,
       capabilityGroupRows,
       capabilityRows,
       technologies,
     ] = await Promise.all([
       appDb
         .selectFrom('profile_work_principles')
-        .select(['id'])
-        .where('profile_id', '=', profileId)
-        .orderBy('position')
-        .execute(),
-      appDb
-        .selectFrom('profile_technology_journey_stage_localizations')
-        .select(['stage_key'])
-        .where('profile_id', '=', profileId)
-        .where('locale', '=', locale)
+        .innerJoin(
+          'profile_work_principle_localizations',
+          (join) =>
+            join
+              .onRef(
+                'profile_work_principle_localizations.principle_id',
+                '=',
+                'profile_work_principles.id',
+              )
+              .on('profile_work_principle_localizations.locale', '=', locale),
+        )
+        .select(['profile_work_principles.id'])
+        .where('profile_work_principles.profile_id', '=', profileId)
+        .orderBy('profile_work_principles.position')
         .execute(),
       appDb
         .selectFrom('profile_capability_groups')
-        .select(['id'])
-        .where('profile_id', '=', profileId)
-        .orderBy('position')
+        .innerJoin(
+          'profile_capability_group_localizations',
+          (join) =>
+            join
+              .onRef(
+                'profile_capability_group_localizations.group_id',
+                '=',
+                'profile_capability_groups.id',
+              )
+              .on('profile_capability_group_localizations.locale', '=', locale),
+        )
+        .select(['profile_capability_groups.id'])
+        .where('profile_capability_groups.profile_id', '=', profileId)
+        .orderBy('profile_capability_groups.position')
         .execute(),
       appDb
         .selectFrom('profile_capabilities')
@@ -664,6 +698,17 @@ export async function action({ request }: Route.ActionArgs) {
           'profile_capability_groups',
           'profile_capability_groups.id',
           'profile_capabilities.group_id',
+        )
+        .innerJoin(
+          'profile_capability_localizations',
+          (join) =>
+            join
+              .onRef(
+                'profile_capability_localizations.capability_id',
+                '=',
+                'profile_capabilities.id',
+              )
+              .on('profile_capability_localizations.locale', '=', locale),
         )
         .select(['profile_capabilities.id'])
         .where('profile_capability_groups.profile_id', '=', profileId)
@@ -698,23 +743,24 @@ export async function action({ request }: Route.ActionArgs) {
       return { id, title, detail };
     });
 
-    const journeyUpdates = journeyRows.map(({ stage_key }) => {
-      const title = textField(form, `journey-${stage_key}-title`);
-      const summary = optionalText(form, `journey-${stage_key}-summary`);
+    const journeyUpdates = technologyJourneyStages.map((stage) => {
+      const title = optionalText(form, `journey-${stage.key}-title`);
+      const summary = optionalText(form, `journey-${stage.key}-summary`);
 
-      if (title === '') {
-        throw new Response('Technological journey titles cannot be empty.', {
-          status: 400,
-        });
+      if (title === null && summary !== null) {
+        throw new Response(
+          'A technological journey summary requires a title.',
+          { status: 400 },
+        );
       }
-      if (title.length > 80 || (summary?.length ?? 0) > 280) {
+      if ((title?.length ?? 0) > 80 || (summary?.length ?? 0) > 280) {
         throw new Response(
           'Technological journey titles must stay within 80 characters and summaries within 280 characters.',
           { status: 400 },
         );
       }
 
-      return { key: stage_key, title, summary };
+      return { key: stage.key, title, summary };
     });
 
     const technologyTerms = new Set(
@@ -805,17 +851,36 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       for (const stage of journeyUpdates) {
+        if (stage.title === null && stage.summary === null) {
+          await transaction
+            .deleteFrom('profile_technology_journey_stage_localizations')
+            .where('profile_id', '=', profileId)
+            .where('stage_key', '=', stage.key)
+            .where('locale', '=', locale)
+            .execute();
+          continue;
+        }
+
         await transaction
-          .updateTable('profile_technology_journey_stage_localizations')
-          .set({
-            title: stage.title,
+          .insertInto('profile_technology_journey_stage_localizations')
+          .values({
+            profile_id: profileId,
+            stage_key: stage.key,
+            locale,
+            title: stage.title!,
             summary: stage.summary,
             updated_at: new Date(),
           })
-          .where('profile_id', '=', profileId)
-          .where('stage_key', '=', stage.key)
-          .where('locale', '=', locale)
-          .executeTakeFirstOrThrow();
+          .onConflict((conflict) =>
+            conflict
+              .columns(['profile_id', 'stage_key', 'locale'])
+              .doUpdateSet({
+                title: stage.title!,
+                summary: stage.summary,
+                updated_at: new Date(),
+              }),
+          )
+          .execute();
       }
 
       for (const group of groupUpdates) {
@@ -2884,6 +2949,7 @@ export default function AdminProfile() {
       ) : null}
 
       <AdminProfileInlineEditor
+        journeyStages={data.journeyEditorStages}
         locale={activeLocale}
         profile={data.draftProfile}
         publication={
@@ -2895,21 +2961,36 @@ export default function AdminProfile() {
       />
 
       <Container className="aks-admin-profile-management" width="wide">
-        <details className="aks-admin-profile-management-details">
-          <summary className="aks-admin-profile-management-summary">
-            Structure, evidence & assets
-          </summary>
-          <Text
-            className="aks-admin-profile-management-intro"
-            size="sm"
-            tone="muted"
+        <section className="aks-admin-profile-management-card">
+          <div>
+            <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+              Structured data
+            </Text>
+            <Heading level={2} size="sm">
+              Structure, evidence & assets
+            </Heading>
+            <Text size="sm" tone="muted">
+              Relationships, ordering, languages, mobility, portrait and source
+              CV stay separate from page copy.
+            </Text>
+          </div>
+          <details
+            className="aks-admin-profile-management-details"
+            name="profile-structured-controls-v2"
           >
-            Use these controls for structure and relationships that do not belong
-            to the page copy itself: evidence assignments, ordering, languages,
-            mobility, portrait, source CV and audit history.
-          </Text>
-          <ProfileAdvancedControls />
-        </details>
+            <summary className="aks-admin-profile-management-summary">
+              Open structured controls
+            </summary>
+            <Text
+              className="aks-admin-profile-management-intro"
+              size="sm"
+              tone="muted"
+            >
+              These are advanced domain controls, not a second page editor.
+            </Text>
+            <ProfileAdvancedControls />
+          </details>
+        </section>
       </Container>
 
       <footer className="aks-admin-profile-footer">
