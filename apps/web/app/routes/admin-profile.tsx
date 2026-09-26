@@ -2838,9 +2838,10 @@ function ProfileAdvancedControls() {
 export default function AdminProfile() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const activeLocale = data.activeLocale === 'fr' ? 'fr' : 'en';
   const publication =
     data.publications.find(
-      (candidate) => candidate.locale === data.activeLocale,
+      (candidate) => candidate.locale === activeLocale,
     ) ?? null;
 
   return (
@@ -2883,7 +2884,7 @@ export default function AdminProfile() {
       ) : null}
 
       <AdminProfileInlineEditor
-        locale={data.activeLocale}
+        locale={activeLocale}
         profile={data.draftProfile}
         publication={
           publication === null
