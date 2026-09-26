@@ -651,3 +651,75 @@ describe('PublicProfileView progressive depth', () => {
     expect(html).toContain('Ma manière de travailler');
   });
 });
+
+
+describe('PublicProfileView inline editor contract', () => {
+  it('routes Profile-owned copy through the supplied field renderer without changing the public composition', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/en/profile']}>
+        <PublicProfileView
+          editor={{
+            renderField: (field) => (
+              <span data-editor-field={field.name}>{field.value}</span>
+            ),
+          }}
+          profile={profile({
+            foundationalCopy: 'Profile foundation.',
+            workPrinciples: [
+              {
+                id: '00000000-0000-4000-8000-000000000063',
+                position: 0,
+                title: 'Make evidence inspectable',
+                detail: 'Expose the reasoning path.',
+                evidenceSystem: null,
+              },
+            ],
+            technologyJourney: [
+              {
+                key: 'programming',
+                position: 0,
+                title: 'Programming',
+                summary: 'Build foundations.',
+                evidence: null,
+              },
+            ],
+            capabilityGroups: [
+              {
+                id: '00000000-0000-4000-8000-000000000071',
+                position: 0,
+                title: 'Systems thinking',
+                capabilities: [
+                  {
+                    id: '00000000-0000-4000-8000-000000000072',
+                    position: 0,
+                    title: 'Boundary design',
+                    summary: 'Keep contracts explicit.',
+                  },
+                ],
+              },
+            ],
+          })}
+          systemReferences={[]}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('data-editor-field="displayName"');
+    expect(html).toContain('data-editor-field="professionalTitle"');
+    expect(html).toContain('data-editor-field="introduction"');
+    expect(html).toContain('data-editor-field="foundationalCopy"');
+    expect(html).toContain(
+      'data-editor-field="principle-00000000-0000-4000-8000-000000000063-title"',
+    );
+    expect(html).toContain('data-editor-field="journey-programming-title"');
+    expect(html).toContain(
+      'data-editor-field="capability-group-00000000-0000-4000-8000-000000000071-title"',
+    );
+    expect(html).toContain(
+      'data-editor-field="capability-00000000-0000-4000-8000-000000000072-title"',
+    );
+    expect(html).toContain('class="aks-profile-first-view"');
+    expect(html).toContain('id="profile-how-i-work"');
+    expect(html).toContain('id="profile-technical-depth"');
+  });
+});

@@ -6,6 +6,7 @@ import '@akiksystems/ui/styles.css';
 import './styles/app.css';
 import './styles/admin-login.css';
 import './styles/admin-dashboard.css';
+import './styles/admin-profile.css';
 import './styles/home-portal.css';
 import './styles/work-with-us.css';
 import './styles/admin-work-with-us.css';

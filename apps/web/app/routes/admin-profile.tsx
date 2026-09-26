@@ -1,5 +1,9 @@
-import { getDraftProfile, writeAdminAuditEvent } from '@akiksystems/db';
-import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
+import {
+  getDraftProfile,
+  listPublishedSystemReferences,
+  writeAdminAuditEvent,
+} from '@akiksystems/db';
+import { BrandSignature, Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { Form, useActionData, useLoaderData } from 'react-router';
 
@@ -9,6 +13,7 @@ import {
   putAssetObject,
   validateAssetUpload,
 } from '../lib/asset-storage.server';
+import { AdminProfileInlineEditor } from '../components/admin-profile-inline-editor';
 import { requireAdminSession } from '../lib/admin.server';
 import { appDb } from '../lib/db.server';
 
@@ -213,8 +218,10 @@ async function publicProfileId(): Promise<string> {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireAdminSession(request);
+  const session = await requireAdminSession(request);
   const profileId = await publicProfileId();
+  const activeLocale =
+    new URL(request.url).searchParams.get('locale') === 'fr' ? 'fr' : 'en';
 
   const [
     profile,
@@ -532,6 +539,27 @@ export async function loader({ request }: Route.LoaderArgs) {
     .orderBy('profile_technology_journey_stages.position')
     .execute();
 
+  const draftProfile = await getDraftProfile(appDb, activeLocale);
+  if (draftProfile === null) {
+    throw new Response('Profile draft not found.', { status: 404 });
+  }
+
+  const referenceIds = [
+    ...new Set([
+      ...draftProfile.representativeSystems.map(({ id }) => id),
+      ...draftProfile.workPrinciples.flatMap(({ evidenceSystem }) =>
+        evidenceSystem === null ? [] : [evidenceSystem.id],
+      ),
+      ...draftProfile.technologyJourney.flatMap(({ evidence }) =>
+        evidence?.kind === 'system' ? [evidence.id] : [],
+      ),
+    ]),
+  ];
+  const draftSystemReferences = await listPublishedSystemReferences(appDb, {
+    locale: activeLocale,
+    ids: referenceIds,
+  });
+
   return {
     profile,
     en: byLocale.get('en') ?? null,
@@ -556,6 +584,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       ...event,
       created_at: event.created_at.toISOString(),
     })),
+    activeLocale,
+    draftProfile,
+    draftSystemReferences,
+    operatorEmail: session.user.email,
   };
 }
 
@@ -564,6 +596,327 @@ export async function action({ request }: Route.ActionArgs) {
   const profileId = await publicProfileId();
   const form = await request.formData();
   const intent = textField(form, '_intent');
+
+  if (intent === 'profile-inline-save' || intent === 'profile-inline-publish') {
+    const localeValue = textField(form, 'locale');
+    if (localeValue !== 'en' && localeValue !== 'fr') {
+      return { ok: false, message: 'Profile locale must be EN or FR.' };
+    }
+    const locale = localeValue;
+    const displayName = optionalText(form, 'displayName');
+    const professionalTitle = optionalText(form, 'professionalTitle');
+    const introduction = optionalText(form, 'introduction');
+    const foundationalCopy = optionalText(form, 'foundationalCopy');
+
+    if ((displayName?.length ?? 0) > 80) {
+      return {
+        ok: false,
+        message: 'Display name must stay within 80 characters.',
+      };
+    }
+    if ((professionalTitle?.length ?? 0) > 100) {
+      return {
+        ok: false,
+        message: 'Professional title must stay within 100 characters.',
+      };
+    }
+    if ((introduction?.length ?? 0) > 320) {
+      return {
+        ok: false,
+        message: 'Introduction must stay within 320 characters.',
+      };
+    }
+    if ((foundationalCopy?.length ?? 0) > 600) {
+      return {
+        ok: false,
+        message: 'Foundational profile copy must stay within 600 characters.',
+      };
+    }
+
+    const [
+      principleRows,
+      journeyRows,
+      capabilityGroupRows,
+      capabilityRows,
+      technologies,
+    ] = await Promise.all([
+      appDb
+        .selectFrom('profile_work_principles')
+        .select(['id'])
+        .where('profile_id', '=', profileId)
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('profile_technology_journey_stage_localizations')
+        .select(['stage_key'])
+        .where('profile_id', '=', profileId)
+        .where('locale', '=', locale)
+        .execute(),
+      appDb
+        .selectFrom('profile_capability_groups')
+        .select(['id'])
+        .where('profile_id', '=', profileId)
+        .orderBy('position')
+        .execute(),
+      appDb
+        .selectFrom('profile_capabilities')
+        .innerJoin(
+          'profile_capability_groups',
+          'profile_capability_groups.id',
+          'profile_capabilities.group_id',
+        )
+        .select(['profile_capabilities.id'])
+        .where('profile_capability_groups.profile_id', '=', profileId)
+        .orderBy('profile_capability_groups.position')
+        .orderBy('profile_capabilities.position')
+        .execute(),
+      appDb.selectFrom('technologies').select(['name', 'slug']).execute(),
+    ]);
+
+    const principleUpdates = principleRows.map(({ id }) => {
+      const title = textField(form, `principle-${id}-title`);
+      const detail = optionalText(form, `principle-${id}-detail`);
+
+      if (title === '') {
+        throw new Response('Working principle titles cannot be empty.', {
+          status: 400,
+        });
+      }
+      if (title.length > 80 || (detail?.length ?? 0) > 240) {
+        throw new Response(
+          'Working principle titles must stay within 80 characters and details within 240 characters.',
+          { status: 400 },
+        );
+      }
+      if (/\bcssov\b/i.test([title, detail].filter(Boolean).join(' '))) {
+        throw new Response(
+          'Public working principles must describe the practice directly without naming CSSOV.',
+          { status: 400 },
+        );
+      }
+
+      return { id, title, detail };
+    });
+
+    const journeyUpdates = journeyRows.map(({ stage_key }) => {
+      const title = textField(form, `journey-${stage_key}-title`);
+      const summary = optionalText(form, `journey-${stage_key}-summary`);
+
+      if (title === '') {
+        throw new Response('Technological journey titles cannot be empty.', {
+          status: 400,
+        });
+      }
+      if (title.length > 80 || (summary?.length ?? 0) > 280) {
+        throw new Response(
+          'Technological journey titles must stay within 80 characters and summaries within 280 characters.',
+          { status: 400 },
+        );
+      }
+
+      return { key: stage_key, title, summary };
+    });
+
+    const technologyTerms = new Set(
+      technologies.flatMap(({ name, slug }) => [
+        name.trim().toLocaleLowerCase(),
+        slug.trim().toLocaleLowerCase(),
+      ]),
+    );
+
+    const groupUpdates = capabilityGroupRows.map(({ id }) => {
+      const title = textField(form, `capability-group-${id}-title`);
+      if (title === '') {
+        throw new Response('Capability group titles cannot be empty.', {
+          status: 400,
+        });
+      }
+      if (title.length > 80) {
+        throw new Response(
+          'Capability group titles must stay within 80 characters.',
+          { status: 400 },
+        );
+      }
+      if (technologyTerms.has(title.toLocaleLowerCase())) {
+        throw new Response(
+          'Capability groups must describe abilities, not Technology names.',
+          { status: 400 },
+        );
+      }
+      return { id, title };
+    });
+
+    const capabilityUpdates = capabilityRows.map(({ id }) => {
+      const title = textField(form, `capability-${id}-title`);
+      const summary = optionalText(form, `capability-${id}-summary`);
+      if (title === '') {
+        throw new Response('Capability titles cannot be empty.', {
+          status: 400,
+        });
+      }
+      if (title.length > 100 || (summary?.length ?? 0) > 280) {
+        throw new Response(
+          'Capability titles must stay within 100 characters and summaries within 280 characters.',
+          { status: 400 },
+        );
+      }
+      if (technologyTerms.has(title.toLocaleLowerCase())) {
+        throw new Response(
+          'Capabilities must describe conceptual or engineering abilities, not Technology names.',
+          { status: 400 },
+        );
+      }
+      return { id, title, summary };
+    });
+
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .updateTable('profiles')
+        .set({
+          display_name: displayName,
+          updated_at: new Date(),
+        })
+        .where('id', '=', profileId)
+        .executeTakeFirstOrThrow();
+
+      await transaction
+        .updateTable('profile_localizations')
+        .set({
+          professional_title: professionalTitle,
+          introduction,
+          foundational_copy: foundationalCopy,
+          updated_at: new Date(),
+        })
+        .where('profile_id', '=', profileId)
+        .where('locale', '=', locale)
+        .executeTakeFirstOrThrow();
+
+      for (const principle of principleUpdates) {
+        await transaction
+          .updateTable('profile_work_principle_localizations')
+          .set({
+            title: principle.title,
+            detail: principle.detail,
+            updated_at: new Date(),
+          })
+          .where('principle_id', '=', principle.id)
+          .where('locale', '=', locale)
+          .executeTakeFirstOrThrow();
+      }
+
+      for (const stage of journeyUpdates) {
+        await transaction
+          .updateTable('profile_technology_journey_stage_localizations')
+          .set({
+            title: stage.title,
+            summary: stage.summary,
+            updated_at: new Date(),
+          })
+          .where('profile_id', '=', profileId)
+          .where('stage_key', '=', stage.key)
+          .where('locale', '=', locale)
+          .executeTakeFirstOrThrow();
+      }
+
+      for (const group of groupUpdates) {
+        await transaction
+          .updateTable('profile_capability_group_localizations')
+          .set({ title: group.title })
+          .where('group_id', '=', group.id)
+          .where('locale', '=', locale)
+          .executeTakeFirstOrThrow();
+      }
+
+      for (const capability of capabilityUpdates) {
+        await transaction
+          .updateTable('profile_capability_localizations')
+          .set({
+            title: capability.title,
+            summary: capability.summary,
+          })
+          .where('capability_id', '=', capability.id)
+          .where('locale', '=', locale)
+          .executeTakeFirstOrThrow();
+      }
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.inline_copy_updated',
+        entityType: 'profile',
+        entityId: profileId,
+        locale,
+        metadata: {
+          principleCount: principleUpdates.length,
+          journeyStageCount: journeyUpdates.length,
+          capabilityGroupCount: groupUpdates.length,
+          capabilityCount: capabilityUpdates.length,
+          editor: 'public-layout',
+        },
+      });
+    });
+
+    if (intent === 'profile-inline-save') {
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} Profile draft saved.`,
+      };
+    }
+
+    const draft = await getDraftProfile(appDb, locale);
+    if (
+      draft === null ||
+      draft.displayName === null ||
+      draft.professionalTitle === null ||
+      draft.introduction === null
+    ) {
+      return {
+        ok: false,
+        message: `${locale.toUpperCase()} Profile cannot publish until display name, professional title, and introduction are complete.`,
+      };
+    }
+
+    const now = new Date();
+    await appDb.transaction().execute(async (transaction) => {
+      await transaction
+        .insertInto('profile_publications')
+        .values({
+          profile_id: profileId,
+          locale,
+          snapshot: draft as unknown as Record<string, unknown>,
+          published_at: now,
+          updated_at: now,
+        })
+        .onConflict((conflict) =>
+          conflict.columns(['profile_id', 'locale']).doUpdateSet({
+            snapshot: draft as unknown as Record<string, unknown>,
+            published_at: now,
+            updated_at: now,
+          }),
+        )
+        .execute();
+
+      await writeAdminAuditEvent(transaction, {
+        actorUserId: session.user.id,
+        actorEmail: session.user.email,
+        action: 'profile.localization_published',
+        entityType: 'profile',
+        entityId: profileId,
+        locale,
+        metadata: {
+          snapshotVersion: 1,
+          representativeSystemCount: draft.representativeSystems.length,
+          workPrincipleCount: draft.workPrinciples.length,
+          source: 'inline-editor',
+        },
+      });
+    });
+
+    return {
+      ok: true,
+      message: `${locale.toUpperCase()} Profile saved and published.`,
+    };
+  }
 
   if (intent === 'profile-publish' || intent === 'profile-unpublish') {
     const localeValue = textField(form, 'locale');
@@ -1741,12 +2094,12 @@ export async function action({ request }: Route.ActionArgs) {
   return { ok: false, message: 'Unsupported Profile operation.' };
 }
 
-export default function AdminProfile() {
+function ProfileAdvancedControls() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
-    <main className="aks-admin-shell">
+    <section className="aks-admin-shell aks-admin-profile-advanced-shell">
       <Container>
         <div className="aks-proof-stack">
           <section className="aks-admin-card">
@@ -2477,6 +2830,96 @@ export default function AdminProfile() {
           </section>
         </div>
       </Container>
+    </section>
+  );
+}
+
+
+export default function AdminProfile() {
+  const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const activeLocale = data.activeLocale === 'fr' ? 'fr' : 'en';
+  const publication =
+    data.publications.find(
+      (candidate) => candidate.locale === activeLocale,
+    ) ?? null;
+
+  return (
+    <main className="aks-admin-profile-page">
+      <header className="aks-admin-profile-header">
+        <Container width="wide">
+          <div className="aks-admin-profile-header-inner">
+            <BrandSignature
+              aria-label="AkikSystems home"
+              className="aks-admin-profile-brand"
+              href="/en"
+              size="sm"
+            />
+            <nav
+              aria-label="Administration breadcrumb"
+              className="aks-admin-profile-breadcrumb"
+            >
+              <Link href="/admin">Administration</Link>
+              <span aria-hidden="true">/</span>
+              <span>Profile</span>
+            </nav>
+            <Text className="aks-admin-profile-operator" size="sm">
+              {data.operatorEmail}
+            </Text>
+          </div>
+        </Container>
+      </header>
+
+      {actionData ? (
+        <Container width="wide">
+          <Text
+            className="aks-admin-profile-feedback"
+            role={actionData.ok ? 'status' : 'alert'}
+            size="sm"
+            tone={actionData.ok ? 'strong' : 'muted'}
+          >
+            {actionData.message}
+          </Text>
+        </Container>
+      ) : null}
+
+      <AdminProfileInlineEditor
+        locale={activeLocale}
+        profile={data.draftProfile}
+        publication={
+          publication === null
+            ? null
+            : { published_at: publication.published_at }
+        }
+        systemReferences={data.draftSystemReferences}
+      />
+
+      <Container className="aks-admin-profile-management" width="wide">
+        <details className="aks-admin-profile-management-details">
+          <summary className="aks-admin-profile-management-summary">
+            Structure, evidence & assets
+          </summary>
+          <Text
+            className="aks-admin-profile-management-intro"
+            size="sm"
+            tone="muted"
+          >
+            Use these controls for structure and relationships that do not belong
+            to the page copy itself: evidence assignments, ordering, languages,
+            mobility, portrait, source CV and audit history.
+          </Text>
+          <ProfileAdvancedControls />
+        </details>
+      </Container>
+
+      <footer className="aks-admin-profile-footer">
+        <Container width="wide">
+          <div className="aks-admin-profile-footer-inner">
+            <span>© {new Date().getUTCFullYear()} AkikSystems</span>
+            <span>Private system · Inline Profile editing</span>
+          </div>
+        </Container>
+      </footer>
     </main>
   );
 }

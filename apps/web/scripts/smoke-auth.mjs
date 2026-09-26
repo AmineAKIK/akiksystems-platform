@@ -166,6 +166,28 @@ try {
     'System controls must live on the dedicated /admin/systems page.',
   );
 
+  const privateProfile = await globalThis.fetch(
+    `${origin}/admin/profile?locale=fr`,
+    {
+      headers: { cookie },
+      redirect: 'manual',
+    },
+  );
+  const privateProfileHtml = await privateProfile.text();
+  assert.equal(privateProfile.status, 200);
+  assert.match(privateProfileHtml, /aks-admin-profile-page/);
+  assert.match(privateProfileHtml, /aks-admin-profile-editor-form/);
+  assert.match(privateProfileHtml, /Live profile editor/);
+  assert.match(privateProfileHtml, /name="displayName"/);
+  assert.match(privateProfileHtml, /name="professionalTitle"/);
+  assert.match(privateProfileHtml, /name="introduction"/);
+  assert.match(privateProfileHtml, /Structure, evidence &amp; assets/);
+  assert.match(
+    privateProfileHtml,
+    /href="\/admin\/profile\?locale=fr"/,
+    'Profile admin must expose an explicit FR editing surface.',
+  );
+
   const privateSystems = await globalThis.fetch(`${origin}/admin/systems`, {
     headers: { cookie },
     redirect: 'manual',
