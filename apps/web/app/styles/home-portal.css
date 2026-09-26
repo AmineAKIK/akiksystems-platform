@@ -15,7 +15,7 @@
 
 .aks-home {
   --aks-home-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --aks-home-brand-size: clamp(10rem, min(18vw, 34vh), 20rem);
+  --aks-home-brand-size: clamp(11rem, min(20vw, 37vh), 22rem);
   --aks-home-word-size: clamp(3rem, min(5vw, 8vh), 6rem);
   position: relative;
   min-height: max(calc(100dvh - 4.75rem), 42rem);
@@ -303,8 +303,8 @@
   }
 
   .aks-home-brand-mark {
-    width: clamp(8rem, 28vw, 13rem);
-    height: clamp(8rem, 28vw, 13rem);
+    width: clamp(9rem, 36vw, 15rem);
+    height: clamp(9rem, 36vw, 15rem);
   }
 
   .aks-home-center .aks-heading {
@@ -356,7 +356,23 @@
   }
 
   .aks-home-door + .aks-home-door {
-    border-top: 1px solid rgb(255 255 255 / 8%);
+    position: relative;
+    border-top: 0;
+  }
+
+  .aks-home-door + .aks-home-door::before {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(
+      var(--aks-section-separator-max-width),
+      calc(100% - var(--aks-section-separator-inline-inset))
+    );
+    height: 1px;
+    transform: translateX(-50%);
+    background: var(--aks-section-separator-gradient);
+    content: '';
+    pointer-events: none;
   }
 
   .aks-home-door:hover,
@@ -408,8 +424,8 @@
   }
 
   .aks-home-brand-mark {
-    width: clamp(5rem, 22vh, 8.5rem);
-    height: clamp(5rem, 22vh, 8.5rem);
+    width: clamp(5.75rem, 25vh, 9.25rem);
+    height: clamp(5.75rem, 25vh, 9.25rem);
   }
 
   .aks-home-center .aks-heading {
@@ -441,6 +457,13 @@
   .aks-home-door-summary {
     max-width: 28ch;
     font-size: clamp(0.57rem, 1.25vw, 0.65rem);
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-home-door + .aks-home-door::before {
+    width: calc(100% - var(--aks-section-separator-mobile-inset));
+    opacity: 0.72;
   }
 }
 
