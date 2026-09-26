@@ -52,6 +52,20 @@
 
     --aks-content-width: 44rem;
     --aks-wide-width: 72rem;
+
+    --aks-section-separator-max-width: var(--aks-wide-width);
+    --aks-section-separator-inline-inset: clamp(2rem, 10vw, 10rem);
+    --aks-section-separator-mobile-inset: 2rem;
+    --aks-section-separator-gradient: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(181 233 247 / 5%) 14%,
+      rgb(220 242 248 / 11%) 38%,
+      rgb(255 255 255 / 13%) 50%,
+      rgb(220 242 248 / 11%) 62%,
+      rgb(181 233 247 / 5%) 86%,
+      transparent 100%
+    );
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -143,6 +157,43 @@
 
   .aks-container[data-width='wide'] {
     width: min(calc(100% - 2 * var(--aks-space-5)), var(--aks-wide-width));
+  }
+
+  /* Canonical separator for major experience sections. */
+  .aks-section-separator-before,
+  .aks-section-separator-after {
+    position: relative;
+  }
+
+  .aks-section-separator-before::before,
+  .aks-section-separator-after::after {
+    position: absolute;
+    left: 50%;
+    width: min(
+      var(--aks-section-separator-max-width),
+      calc(100% - var(--aks-section-separator-inline-inset))
+    );
+    height: 1px;
+    transform: translateX(-50%);
+    background: var(--aks-section-separator-gradient);
+    content: '';
+    pointer-events: none;
+  }
+
+  .aks-section-separator-before::before {
+    top: 0;
+  }
+
+  .aks-section-separator-after::after {
+    bottom: 0;
+  }
+
+  @media (max-width: 48rem) {
+    .aks-section-separator-before::before,
+    .aks-section-separator-after::after {
+      width: calc(100% - var(--aks-section-separator-mobile-inset));
+      opacity: 0.72;
+    }
   }
 
   .aks-text {
