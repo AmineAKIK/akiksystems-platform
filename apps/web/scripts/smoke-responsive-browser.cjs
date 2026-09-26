@@ -118,7 +118,28 @@ async function measureHome(page) {
 
     return {
       viewportWidth,
+      pageScrollWidth: document.documentElement.scrollWidth,
       pageFits: document.documentElement.scrollWidth <= viewportWidth,
+      overflowingElements: [...document.querySelectorAll('body *')]
+        .map((element) => {
+          const box = element.getBoundingClientRect();
+          return {
+            tag: element.tagName,
+            className:
+              element instanceof HTMLElement
+                ? element.className
+                : element.getAttribute('class') ?? '',
+            left: box.left,
+            right: box.right,
+            width: box.width,
+          };
+        })
+        .filter(
+          (item) =>
+            item.width > 0 &&
+            (item.left < -1 || item.right > viewportWidth + 1),
+        )
+        .slice(0, 12),
       centerPosition: getComputedStyle(center).position,
       firstDoorPosition: doors[0] instanceof HTMLElement ? getComputedStyle(doors[0]).position : null,
       orbitDisplay: getComputedStyle(orbit).display,
@@ -267,7 +288,11 @@ async function assertCompactHome(browser, locale, viewport, name) {
     const measurement = await measureHome(page);
 
     assert.ok(measurement, `${name} Home must be measurable.`);
-    assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
+    assert.equal(
+      measurement.pageFits,
+      true,
+      `${name} must not overflow horizontally. scrollWidth=${measurement.pageScrollWidth}, viewport=${measurement.viewportWidth}, offenders=${JSON.stringify(measurement.overflowingElements)}`,
+    );
     assertHomeFooterSeparator(measurement, name);
     assertHomeDoorSeparators(measurement, name);
     assertIdentityScale(measurement, name);
