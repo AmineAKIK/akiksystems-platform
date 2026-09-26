@@ -6,13 +6,7 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(
-    ellipse at 50% 50vh,
-    #071216 0%,
-    #050c10 28%,
-    #03080a 72%,
-    #010304 100%
-  );
+  background: var(--aks-experience-space-background);
 }
 
 .aks-experience-frame[data-home='true'] > .aks-experience-outlet {

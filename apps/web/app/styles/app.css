@@ -1,3 +1,13 @@
+:root {
+  --aks-experience-space-background: radial-gradient(
+    ellipse at 50% 50vh,
+    #071216 0%,
+    #050c10 28%,
+    #03080a 72%,
+    #010304 100%
+  );
+}
+
 .aks-proof-page {
   min-height: 100dvh;
   display: grid;
