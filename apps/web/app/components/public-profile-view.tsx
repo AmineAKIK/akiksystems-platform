@@ -231,10 +231,36 @@ export function PublicProfileView({
                   >
                     <div className="aks-proof-stack">
                       <Heading level={3} size="sm">
-                        {principle.title}
+                        {editable === undefined
+                          ? principle.title
+                          : editable({
+                              name: `principle-${principle.id}-title`,
+                              value: principle.title,
+                              placeholder:
+                                profile.locale === 'fr'
+                                  ? 'Principe de travail'
+                                  : 'Working principle',
+                              variant: 'principle-title',
+                              maxLength: 80,
+                              required: true,
+                            })}
                       </Heading>
-                      {principle.detail !== null ? (
-                        <Text tone="muted">{principle.detail}</Text>
+                      {principle.detail !== null || editable !== undefined ? (
+                        <Text tone="muted">
+                          {editable === undefined
+                            ? principle.detail
+                            : editable({
+                                name: `principle-${principle.id}-detail`,
+                                value: principle.detail,
+                                placeholder:
+                                  profile.locale === 'fr'
+                                    ? 'Détail du principe'
+                                    : 'Principle detail',
+                                variant: 'principle-detail',
+                                multiline: true,
+                                maxLength: 240,
+                              })}
+                        </Text>
                       ) : null}
                       {principle.evidenceSystem !== null &&
                       referenceById.has(principle.evidenceSystem.id) ? (
@@ -297,10 +323,36 @@ export function PublicProfileView({
                           </div>
                           <div className="aks-proof-stack">
                             <Heading level={3} size="sm">
-                              {stage.title}
+                              {editable === undefined
+                                ? stage.title
+                                : editable({
+                                    name: `journey-${stage.key}-title`,
+                                    value: stage.title,
+                                    placeholder:
+                                      profile.locale === 'fr'
+                                        ? 'Étape technologique'
+                                        : 'Technology journey stage',
+                                    variant: 'journey-title',
+                                    maxLength: 80,
+                                    required: true,
+                                  })}
                             </Heading>
-                            {stage.summary !== null ? (
-                              <Text tone="muted">{stage.summary}</Text>
+                            {stage.summary !== null || editable !== undefined ? (
+                              <Text tone="muted">
+                                {editable === undefined
+                                  ? stage.summary
+                                  : editable({
+                                      name: `journey-${stage.key}-summary`,
+                                      value: stage.summary,
+                                      placeholder:
+                                        profile.locale === 'fr'
+                                          ? 'Résumé de l’étape'
+                                          : 'Stage summary',
+                                      variant: 'journey-summary',
+                                      multiline: true,
+                                      maxLength: 280,
+                                    })}
+                              </Text>
                             ) : null}
                             {stage.evidence !== null ? (
                               stage.evidence.kind === 'system' &&
@@ -351,7 +403,19 @@ export function PublicProfileView({
                             level={3}
                             size="sm"
                           >
-                            {group.title}
+                            {editable === undefined
+                              ? group.title
+                              : editable({
+                                  name: `capability-group-${group.id}-title`,
+                                  value: group.title,
+                                  placeholder:
+                                    profile.locale === 'fr'
+                                      ? 'Domaine de capacité'
+                                      : 'Capability domain',
+                                  variant: 'capability-group-title',
+                                  maxLength: 80,
+                                  required: true,
+                                })}
                           </Heading>
                           <ul className="aks-profile-capability-list">
                             {group.capabilities.map((capability) => (
@@ -359,10 +423,36 @@ export function PublicProfileView({
                                 className="aks-profile-capability"
                                 key={capability.id}
                               >
-                                <Text tone="strong">{capability.title}</Text>
-                                {capability.summary !== null ? (
+                                <Text tone="strong">
+                                  {editable === undefined
+                                    ? capability.title
+                                    : editable({
+                                        name: `capability-${capability.id}-title`,
+                                        value: capability.title,
+                                        placeholder:
+                                          profile.locale === 'fr'
+                                            ? 'Capacité'
+                                            : 'Capability',
+                                        variant: 'capability-title',
+                                        maxLength: 100,
+                                        required: true,
+                                      })}
+                                </Text>
+                                {capability.summary !== null || editable !== undefined ? (
                                   <Text size="sm" tone="muted">
-                                    {capability.summary}
+                                    {editable === undefined
+                                      ? capability.summary
+                                      : editable({
+                                          name: `capability-${capability.id}-summary`,
+                                          value: capability.summary,
+                                          placeholder:
+                                            profile.locale === 'fr'
+                                              ? 'Résumé de la capacité'
+                                              : 'Capability summary',
+                                          variant: 'capability-summary',
+                                          multiline: true,
+                                          maxLength: 280,
+                                        })}
                                   </Text>
                                 ) : null}
                               </li>
