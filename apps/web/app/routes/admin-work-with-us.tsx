@@ -3,7 +3,7 @@ import {
   publishWorkWithUsLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
-import { BrandSignature, Container, Heading, Link, Text } from '@akiksystems/ui';
+import { BrandSignature, Container, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useActionData, useLoaderData, useSearchParams } from 'react-router';
 
