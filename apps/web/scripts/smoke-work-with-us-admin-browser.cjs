@@ -593,8 +593,12 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
   try {
     const context = await browser.newContext();
     await context.addInitScript(() => {
+      const cancelStorageKey = '__aksSpeechCancelCount';
       const testState = {
-        cancelCount: 0,
+        cancelCount: Number.parseInt(
+          window.sessionStorage.getItem(cancelStorageKey) ?? '0',
+          10,
+        ),
         spoken: [],
       };
       let activeUtterance = null;
@@ -623,6 +627,10 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
         },
         cancel() {
           testState.cancelCount += 1;
+          window.sessionStorage.setItem(
+            cancelStorageKey,
+            String(testState.cancelCount),
+          );
           activeUtterance = null;
         },
         pause() {},
