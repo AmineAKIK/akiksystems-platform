@@ -135,6 +135,25 @@ try {
   const privateHtml = await privateAdmin.text();
   assert.equal(privateAdmin.status, 200);
   assert.match(privateHtml, /AkikSystems administration/);
+  assert.match(privateHtml, /href="\/admin\/systems"/);
+  assert.doesNotMatch(
+    privateHtml,
+    /Mark featured|Remove featured|Open System workspace/,
+    'System controls must live on the dedicated /admin/systems page.',
+  );
+
+  const privateSystems = await globalThis.fetch(`${origin}/admin/systems`, {
+    headers: { cookie },
+    redirect: 'manual',
+  });
+  const privateSystemsHtml = await privateSystems.text();
+  assert.equal(privateSystems.status, 200);
+  assert.match(privateSystemsHtml, /Systems administration/);
+  assert.match(
+    privateSystemsHtml,
+    /Create Sentinel|Open System workspace/,
+    'The dedicated Systems page must expose either its empty-state bootstrap or existing System workspaces.',
+  );
 
   const twoFactor = await postJson(
     '/api/auth/two-factor/enable',
