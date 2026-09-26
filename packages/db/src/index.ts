@@ -108,6 +108,27 @@ export type {
   CreateWorkWithUsInquiryInput,
   CreateWorkWithUsInquiryResult,
 } from './work-with-us-inquiry.js';
+export {
+  ensureWorkWithUsInquirySettings,
+  getWorkWithUsInquiryNotificationDelivery,
+  getWorkWithUsInquirySettings,
+  listWorkWithUsInquiries,
+  markWorkWithUsInquiryNotificationBlocked,
+  markWorkWithUsInquiryNotificationFailed,
+  markWorkWithUsInquiryNotificationQueued,
+  markWorkWithUsInquiryNotificationQueueFailed,
+  markWorkWithUsInquiryNotificationSending,
+  markWorkWithUsInquiryNotificationSent,
+  resetWorkWithUsInquiryNotification,
+  setWorkWithUsInquiryHandled,
+  updateWorkWithUsInquiryRecipient,
+} from './work-with-us-inquiry-handling.js';
+export type {
+  WorkWithUsInquiryAdminItem,
+  WorkWithUsInquiryNotificationDelivery,
+  WorkWithUsInquiryNotificationState,
+  WorkWithUsInquirySettings,
+} from './work-with-us-inquiry-handling.js';
 
 export { getDraftProfile, getPublicProfile } from './public-profile.js';
 export type {
@@ -292,13 +313,20 @@ export type {
   WorkWithUsPublicationRow,
   WorkWithUsPublicationsTable,
   WorkWithUsPublicationUpdate,
+  WorkWithUsInquiryNotificationRow,
+  WorkWithUsInquiryNotificationsTable,
+  WorkWithUsInquiryNotificationState,
   WorkWithUsInquiryRow,
   WorkWithUsInquiriesTable,
+  WorkWithUsInquirySettingsRow,
+  WorkWithUsInquirySettingsTable,
   WorkWithUsSystemRow,
   WorkWithUsSystemsTable,
   WorkWithUsSystemUpdate,
   NewProfilePublicationRow,
+  NewWorkWithUsInquiryNotificationRow,
   NewWorkWithUsInquiryRow,
+  NewWorkWithUsInquirySettingsRow,
   NewWorkWithUsLocalizationRow,
   NewWorkWithUsPageRow,
   NewWorkWithUsPublicationRow,
