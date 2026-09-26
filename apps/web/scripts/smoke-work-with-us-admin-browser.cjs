@@ -557,6 +557,20 @@ async function assertBackgroundContinuity(page, pathName) {
         ? getComputedStyle(approach, '::before')
         : null;
 
+    const shell = document.querySelector('.aks-experience-shell');
+    const footer = document.querySelector('.aks-experience-footer');
+    const footerInner = footer?.querySelector('.aks-experience-footer-inner');
+    const footerLink = footer?.querySelector('nav a');
+
+    const shellStyle =
+      shell instanceof HTMLElement ? getComputedStyle(shell) : null;
+    const footerStyle =
+      footer instanceof HTMLElement ? getComputedStyle(footer) : null;
+    const footerInnerStyle =
+      footerInner instanceof HTMLElement ? getComputedStyle(footerInner) : null;
+    const footerLinkStyle =
+      footerLink instanceof HTMLElement ? getComputedStyle(footerLink) : null;
+
     return {
       page: getComputedStyle(
         document.querySelector('.aks-work-with-us'),
@@ -569,6 +583,19 @@ async function assertBackgroundContinuity(page, pathName) {
               content: approachBefore.content,
               backgroundImage: approachBefore.backgroundImage,
             },
+      chrome: {
+        shellUsesCanonicalSeparator:
+          shell instanceof HTMLElement &&
+          shell.classList.contains('aks-section-separator-after'),
+        shellBorderBottomWidth: shellStyle?.borderBottomWidth ?? null,
+        shellBackdropFilter: shellStyle?.backdropFilter ?? null,
+        footerUsesCanonicalSeparator:
+          footer instanceof HTMLElement &&
+          footer.classList.contains('aks-section-separator-before'),
+        footerBackgroundColor: footerStyle?.backgroundColor ?? null,
+        footerInnerDisplay: footerInnerStyle?.display ?? null,
+        footerLinkDecoration: footerLinkStyle?.textDecorationLine ?? null,
+      },
     };
   });
 
@@ -576,6 +603,41 @@ async function assertBackgroundContinuity(page, pathName) {
     canvas.page,
     homeBackground,
     'Work with us must share the Home experience canvas.',
+  );
+  assert.equal(
+    canvas.chrome.shellUsesCanonicalSeparator,
+    true,
+    'Shared navigation must use the canonical soft separator.',
+  );
+  assert.equal(
+    canvas.chrome.shellBorderBottomWidth,
+    '0px',
+    'Shared navigation must not fall back to a hard structural border.',
+  );
+  assert.notEqual(
+    canvas.chrome.shellBackdropFilter,
+    'none',
+    'Shared navigation must stay visually integrated through restrained backdrop treatment.',
+  );
+  assert.equal(
+    canvas.chrome.footerUsesCanonicalSeparator,
+    true,
+    'Shared footer must use the canonical soft separator.',
+  );
+  assert.equal(
+    canvas.chrome.footerBackgroundColor,
+    'rgb(1, 3, 4)',
+    'Shared footer must use the Home-derived deep chrome surface.',
+  );
+  assert.equal(
+    canvas.chrome.footerInnerDisplay,
+    'grid',
+    'Shared footer must use the Home footer composition.',
+  );
+  assert.equal(
+    canvas.chrome.footerLinkDecoration,
+    'none',
+    'Shared footer legal links must keep the Home footer treatment.',
   );
 
   for (const section of canvas.sections) {
