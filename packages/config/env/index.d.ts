@@ -9,6 +9,9 @@ export interface WebServerEnv {
 export interface WorkerEnv {
   NODE_ENV: NodeEnvironment;
   DATABASE_URL: string;
+  WORK_WITH_US_EMAIL_PROVIDER?: 'resend';
+  RESEND_API_KEY?: string;
+  WORK_WITH_US_EMAIL_FROM?: string;
 }
 
 export interface DatabaseCommandEnv {
