@@ -19,6 +19,7 @@ const origin = `http://127.0.0.1:${port}`;
 const inquiryMarker = randomUUID();
 const englishInquiryEmail = `work-with-us-browser-${inquiryMarker}-en@example.invalid`;
 const frenchInquiryEmail = `work-with-us-browser-${inquiryMarker}-fr@example.invalid`;
+const noJavaScriptInquiryEmail = `work-with-us-browser-${inquiryMarker}-no-js@example.invalid`;
 let stderr = '';
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -133,6 +134,9 @@ async function fillCommercialDraft(card, copy) {
     .locator('textarea[name="contactMessagePlaceholder"]')
     .fill(copy.contactMessagePlaceholder);
   await card
+    .locator('input[name="contactListenLabel"]')
+    .fill(copy.contactListenLabel);
+  await card
     .locator('input[name="contactSubmitLabel"]')
     .fill(copy.contactSubmitLabel);
   await card
@@ -142,6 +146,9 @@ async function fillCommercialDraft(card, copy) {
     .locator('textarea[name="contactPrivacyNote"]')
     .fill(copy.contactPrivacyNote);
   await card.locator('input[name="aboutTitle"]').fill(copy.aboutTitle);
+  await card
+    .locator('input[name="aboutProfileLinkLabel"]')
+    .fill(copy.aboutProfileLinkLabel);
   await card.locator('input[name="systemsTitle"]').fill(copy.systemsTitle);
 }
 
@@ -175,12 +182,20 @@ async function assertPersisted(card, copy) {
     copy.contactNameLabel,
   );
   assert.equal(
+    await card.locator('input[name="contactListenLabel"]').inputValue(),
+    copy.contactListenLabel,
+  );
+  assert.equal(
     await card.locator('input[name="contactSubmitLabel"]').inputValue(),
     copy.contactSubmitLabel,
   );
   assert.equal(
     await card.locator('input[name="aboutTitle"]').inputValue(),
     copy.aboutTitle,
+  );
+  assert.equal(
+    await card.locator('input[name="aboutProfileLinkLabel"]').inputValue(),
+    copy.aboutProfileLinkLabel,
   );
   assert.equal(
     await card.locator('input[name="systemsTitle"]').inputValue(),
@@ -212,9 +227,11 @@ async function assertPublishedSnapshotVersion(locale, copy) {
   assert.equal(snapshot.contact.emailLabel, copy.contactEmailLabel);
   assert.equal(snapshot.contact.organizationLabel, copy.contactOrganizationLabel);
   assert.equal(snapshot.contact.messageLabel, copy.contactMessageLabel);
+  assert.equal(snapshot.contact.listenLabel, copy.contactListenLabel);
   assert.equal(snapshot.contact.submitLabel, copy.contactSubmitLabel);
   assert.equal(snapshot.contact.successMessage, copy.contactSuccessMessage);
   assert.equal(snapshot.about.title, copy.aboutTitle);
+  assert.equal(snapshot.about.profileLinkLabel, copy.aboutProfileLinkLabel);
   assert.equal(snapshot.systems.title, copy.systemsTitle);
 }
 
@@ -260,10 +277,15 @@ async function assertPublicCopy(
     1,
     'Step 5 must expose exactly one inquiry form backed by a public route action.',
   );
+  const playbackButton = renderer.getByRole('button', {
+    name: copy.contactListenLabel,
+    exact: true,
+  });
+  await playbackButton.waitFor();
   assert.equal(
-    await renderer.locator('button').filter({ hasText: /Listen|Écouter/ }).count(),
-    0,
-    'Speech playback belongs to step 6 and must not leak into the step 5 boundary.',
+    await playbackButton.count(),
+    1,
+    'Speech playback must progressively enhance the message field when the browser supports it.',
   );
   assert.equal(
     await renderer.locator('input[name="name"]').getAttribute('maxlength'),
@@ -355,6 +377,27 @@ async function assertPublicCopy(
     .fill(copy.inquiryOrganization);
   await activeForm.locator('textarea[name="message"]').fill(copy.inquiryMessage);
 
+  const speechBeforeSubmit = await page.evaluate(() => window.__aksSpeechTest);
+  await playbackButton.click();
+  await page.waitForFunction(() => window.__aksSpeechTest.spoken.length === 1);
+
+  const speechAfterPlayback = await page.evaluate(() => window.__aksSpeechTest);
+  assert.equal(
+    speechAfterPlayback.spoken.at(-1)?.text,
+    copy.inquiryMessage,
+    'Speech playback must read only the free-form message field.',
+  );
+  assert.equal(
+    speechAfterPlayback.spoken.at(-1)?.lang,
+    copy.playbackLanguage,
+    'Speech playback must use the active Work with us locale.',
+  );
+  assert.equal(
+    await playbackButton.getAttribute('aria-pressed'),
+    'true',
+    'The playback control must expose its active state accessibly.',
+  );
+
   const acceptedResponsePromise = page.waitForResponse((candidate) => {
     const request = candidate.request();
     const pathname = new URL(candidate.url()).pathname;
@@ -370,6 +413,12 @@ async function assertPublicCopy(
     'A valid inquiry must cross the public action boundary successfully.',
   );
   await page.getByText(copy.contactSuccessMessage, { exact: true }).waitFor();
+
+  const speechAfterSubmit = await page.evaluate(() => window.__aksSpeechTest);
+  assert.ok(
+    speechAfterSubmit.cancelCount > speechBeforeSubmit.cancelCount,
+    'Submitting the inquiry must stop active speech playback.',
+  );
 
   const persisted = await db.query(
     `select locale, name, email, organization, message
@@ -389,6 +438,84 @@ async function assertPublicCopy(
     '',
     'A successful inquiry must rotate its token and reset entered values.',
   );
+
+  const navigationMessage = `Navigation playback ${copy.locale}`;
+  await renderer.locator('textarea[name="message"]').fill(navigationMessage);
+  const refreshedPlaybackButton = renderer.getByRole('button', {
+    name: copy.contactListenLabel,
+    exact: true,
+  });
+  await refreshedPlaybackButton.click();
+  await page.waitForFunction(
+    (expected) => window.__aksSpeechTest.spoken.at(-1)?.text === expected,
+    navigationMessage,
+  );
+  const cancelCountBeforeNavigation = await page.evaluate(
+    () => window.__aksSpeechTest.cancelCount,
+  );
+
+  await renderer
+    .getByRole('link', { name: copy.aboutProfileLinkLabel, exact: true })
+    .click();
+  await page.waitForURL(origin + copy.profilePath);
+
+  const cancelCountAfterNavigation = await page.evaluate(
+    () => window.__aksSpeechTest.cancelCount,
+  );
+  assert.ok(
+    cancelCountAfterNavigation > cancelCountBeforeNavigation,
+    'Navigating away from Work with us must stop active speech playback.',
+  );
+}
+
+async function assertNoJavaScriptInquiry(browser, copy, pathName) {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+
+  try {
+    const response = await page.goto(origin + pathName);
+    assert.equal(response?.status(), 200);
+
+    const form = page.locator('form.aks-work-with-us-inquiry-form');
+    await form.waitFor();
+
+    assert.equal(
+      await form.getByRole('button', { name: copy.contactListenLabel }).count(),
+      0,
+      'Speech playback must disappear completely when JavaScript is unavailable.',
+    );
+
+    await form.locator('input[name="name"]').fill('No JavaScript inquiry');
+    await form.locator('input[name="email"]').fill(noJavaScriptInquiryEmail);
+    await form.locator('textarea[name="message"]').fill(
+      'The message field and submission path remain functional without JavaScript.',
+    );
+
+    const navigationPromise = page.waitForNavigation();
+    await form
+      .getByRole('button', { name: copy.contactSubmitLabel, exact: true })
+      .click();
+    const navigation = await navigationPromise;
+    assert.equal(
+      navigation?.status(),
+      200,
+      'The inquiry form must remain a working HTML form without JavaScript.',
+    );
+
+    await page.getByText(copy.contactSuccessMessage, { exact: true }).waitFor();
+
+    const persisted = await db.query(
+      'select count(*)::int as count from work_with_us_inquiries where email = $1',
+      [noJavaScriptInquiryEmail],
+    );
+    assert.equal(
+      persisted.rows[0].count,
+      1,
+      'A no-JavaScript inquiry must still reach durable storage.',
+    );
+  } finally {
+    await context.close();
+  }
 }
 
 (async () => {
@@ -412,6 +539,7 @@ async function assertPublicCopy(
     contactOrganizationLabel: 'Organization (optional)',
     contactMessageLabel: 'Message',
     contactMessagePlaceholder: 'Your message…',
+    contactListenLabel: 'Listen to my message',
     contactSubmitLabel: 'Send',
     contactSuccessMessage: 'Message received.',
     contactPrivacyNote: 'Contact data remains limited to this exchange.',
@@ -421,7 +549,10 @@ async function assertPublicCopy(
     inquiryOrganization: 'AkikSystems qualification',
     inquiryMessage: 'A durable English inquiry submitted through the real public form.',
     locale: 'en',
+    playbackLanguage: 'en-US',
     aboutTitle: 'About me.',
+    aboutProfileLinkLabel: 'View profile',
+    profilePath: '/en/profile',
     systemsTitle: 'Selected systems.',
   };
 
@@ -442,6 +573,7 @@ async function assertPublicCopy(
     contactOrganizationLabel: 'Organisation (optionnel)',
     contactMessageLabel: 'Message',
     contactMessagePlaceholder: 'Votre message…',
+    contactListenLabel: 'Écouter mon message',
     contactSubmitLabel: 'Envoyer',
     contactSuccessMessage: 'Message reçu.',
     contactPrivacyNote: 'Les données de contact restent limitées à cet échange.',
@@ -451,12 +583,76 @@ async function assertPublicCopy(
     inquiryOrganization: 'Qualification AkikSystems',
     inquiryMessage: 'Une demande française persistée par le véritable formulaire public.',
     locale: 'fr',
+    playbackLanguage: 'fr-FR',
     aboutTitle: 'Qui je suis.',
+    aboutProfileLinkLabel: 'Voir le profil',
+    profilePath: '/fr/profil',
     systemsTitle: 'Quelques systèmes.',
   };
 
   try {
     const context = await browser.newContext();
+    await context.addInitScript(() => {
+      const cancelStorageKey = '__aksSpeechCancelCount';
+      const testState = {
+        cancelCount: Number.parseInt(
+          window.sessionStorage.getItem(cancelStorageKey) ?? '0',
+          10,
+        ),
+        spoken: [],
+      };
+      let activeUtterance = null;
+
+      class TestSpeechSynthesisUtterance {
+        constructor(text) {
+          this.text = String(text);
+          this.lang = '';
+          this.onend = null;
+          this.onerror = null;
+        }
+      }
+
+      const speechSynthesis = {
+        get speaking() {
+          return activeUtterance !== null;
+        },
+        pending: false,
+        paused: false,
+        speak(utterance) {
+          activeUtterance = utterance;
+          testState.spoken.push({
+            lang: utterance.lang,
+            text: utterance.text,
+          });
+        },
+        cancel() {
+          testState.cancelCount += 1;
+          window.sessionStorage.setItem(
+            cancelStorageKey,
+            String(testState.cancelCount),
+          );
+          activeUtterance = null;
+        },
+        pause() {},
+        resume() {},
+        getVoices() {
+          return [];
+        },
+      };
+
+      Object.defineProperty(window, '__aksSpeechTest', {
+        configurable: true,
+        value: testState,
+      });
+      Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+        configurable: true,
+        value: TestSpeechSynthesisUtterance,
+      });
+      Object.defineProperty(window, 'speechSynthesis', {
+        configurable: true,
+        value: speechSynthesis,
+      });
+    });
     const page = await context.newPage();
 
     await page.goto(`${origin}/admin/login`);
@@ -547,6 +743,8 @@ async function assertPublicCopy(
     });
     await page.setViewportSize({ width: 1280, height: 800 });
 
+    await assertNoJavaScriptInquiry(browser, english, '/en/work-with-us');
+
     await page.goto(`${origin}/admin/work-with-us`);
     englishCard = localeCard(page, 'en');
     await englishCard
@@ -565,7 +763,7 @@ async function assertPublicCopy(
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: EN/FR publication stays isolated, the dedicated renderer remains responsive, invalid inquiries are rejected, and valid public inquiries persist before success is shown.\n',
+      'Work with us smoke passed: EN/FR publication stays isolated, the inquiry path persists before success, speech playback is progressive and scoped to the message field, playback stops on submit/navigation, and the form remains functional without JavaScript.\n',
     );
   } finally {
     await browser.close();
@@ -578,7 +776,7 @@ async function assertPublicCopy(
   .finally(async () => {
     await db.query(
       'delete from work_with_us_inquiries where email = any($1::text[])',
-      [[englishInquiryEmail, frenchInquiryEmail]],
+      [[englishInquiryEmail, frenchInquiryEmail, noJavaScriptInquiryEmail]],
     );
     await db.end();
     server.kill('SIGTERM');
