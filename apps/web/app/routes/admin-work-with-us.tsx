@@ -2,7 +2,7 @@ import {
   publishWorkWithUsLocalization,
   writeAdminAuditEvent,
 } from '@akiksystems/db';
-import { Container, Heading, Link, Text } from '@akiksystems/ui';
+import { BrandSignature, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { randomUUID } from 'node:crypto';
 import { useActionData, useLoaderData } from 'react-router';
 
@@ -563,50 +563,93 @@ export default function AdminWorkWithUs() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <main className="aks-admin-shell">
-      <Container>
-        <div className="aks-proof-stack">
-          <section className="aks-admin-card">
-            <div className="aks-proof-stack">
-              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                L7 · Work with us
-              </Text>
-              <Heading level={1} size="md">
-                Work with us
-              </Heading>
-              <Text tone="muted">
-                Maintain the localized editorial content for this destination.
-                Structure, layout and behavior stay code-owned.
-              </Text>
-              <Text size="sm" tone="muted">
-                Authenticated as {data.email}.
-              </Text>
-              <div className="aks-proof-actions">
-                <Link href="/admin">Back to administration</Link>
-                <Link href="/admin/work-with-us/inquiries">Inquiry inbox</Link>
-                <Link href="/en/work-with-us">Open EN page</Link>
-                <Link href="/fr/travailler-ensemble">Open FR page</Link>
-              </div>
+    <main className="aks-admin-work-with-us-page">
+      <header className="aks-admin-work-with-us-header">
+        <Container width="wide">
+          <div className="aks-admin-work-with-us-header-inner">
+            <BrandSignature
+              aria-label="AkikSystems home"
+              className="aks-admin-work-with-us-brand"
+              href="/en"
+              size="sm"
+            />
+            <nav
+              aria-label="Administration breadcrumb"
+              className="aks-admin-work-with-us-breadcrumb"
+            >
+              <Link href="/admin">Administration</Link>
+              <span aria-hidden="true">/</span>
+              <span>Work with us</span>
+            </nav>
+          </div>
+        </Container>
+      </header>
+
+      <Container className="aks-admin-work-with-us-body" width="wide">
+        <section
+          aria-labelledby="admin-work-with-us-title"
+          className="aks-admin-work-with-us-hero"
+        >
+          <div className="aks-admin-work-with-us-hero-copy">
+            <Text className="aks-admin-work-with-us-eyebrow" size="sm">
+              Editorial workspace
+            </Text>
+            <Heading id="admin-work-with-us-title" level={1} size="lg">
+              Work with us
+            </Heading>
+            <Text className="aks-admin-work-with-us-lead" tone="muted">
+              Maintain the collaboration surface, selected Systems and localized
+              public copy without exposing structural page controls.
+            </Text>
+          </div>
+
+          <div className="aks-admin-work-with-us-hero-meta">
+            <div className="aks-admin-work-with-us-operator">
+              <span>Operator</span>
+              <strong>{data.email}</strong>
             </div>
-          </section>
+            <nav
+              aria-label="Work with us administration actions"
+              className="aks-admin-work-with-us-hero-actions"
+            >
+              <Link href="/admin/work-with-us/inquiries">Inquiry inbox</Link>
+              <Link href="/en/work-with-us">Open EN page</Link>
+              <Link href="/fr/travailler-ensemble">Open FR page</Link>
+            </nav>
+          </div>
+        </section>
 
-          <WorkWithUsSystemsSection
-            actionData={
-              actionData?.scope === 'systems' ? actionData : null
-            }
-            selectedSystems={data.selectedSystems}
-            systems={data.systems}
-          />
+        <div className="aks-admin-work-with-us-layout">
+          <aside className="aks-admin-work-with-us-sidebar">
+            <WorkWithUsSystemsSection
+              actionData={
+                actionData?.scope === 'systems' ? actionData : null
+              }
+              selectedSystems={data.selectedSystems}
+              systems={data.systems}
+            />
+          </aside>
 
-          <WorkWithUsAdminSection
-            actionData={
-              actionData?.scope === 'content' ? actionData : null
-            }
-            localizations={data.localizations}
-            publications={data.publications}
-          />
+          <div className="aks-admin-work-with-us-editor">
+            <WorkWithUsAdminSection
+              actionData={
+                actionData?.scope === 'content' ? actionData : null
+              }
+              localizations={data.localizations}
+              publications={data.publications}
+            />
+          </div>
         </div>
       </Container>
+
+      <footer className="aks-admin-work-with-us-footer">
+        <Container width="wide">
+          <div className="aks-admin-work-with-us-footer-inner">
+            <span>© {new Date().getUTCFullYear()} AkikSystems</span>
+            <span>Private system · Editorial access</span>
+          </div>
+        </Container>
+      </footer>
     </main>
   );
 }
