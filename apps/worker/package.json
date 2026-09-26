@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
+    "@akiksystems/db": "workspace:*",
     "graphile-worker": "0.18.0"
   },
   "devDependencies": {
