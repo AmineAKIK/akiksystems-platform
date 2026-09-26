@@ -2083,12 +2083,12 @@ export async function action({ request }: Route.ActionArgs) {
   return { ok: false, message: 'Unsupported Profile operation.' };
 }
 
-export default function AdminProfile() {
+function ProfileAdvancedControls() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
-    <main className="aks-admin-shell">
+    <section className="aks-admin-shell aks-admin-profile-advanced-shell">
       <Container>
         <div className="aks-proof-stack">
           <section className="aks-admin-card">
@@ -2819,6 +2819,95 @@ export default function AdminProfile() {
           </section>
         </div>
       </Container>
+    </section>
+  );
+}
+
+
+export default function AdminProfile() {
+  const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const publication =
+    data.publications.find(
+      (candidate) => candidate.locale === data.activeLocale,
+    ) ?? null;
+
+  return (
+    <main className="aks-admin-profile-page">
+      <header className="aks-admin-profile-header">
+        <Container width="wide">
+          <div className="aks-admin-profile-header-inner">
+            <BrandSignature
+              aria-label="AkikSystems home"
+              className="aks-admin-profile-brand"
+              href="/en"
+              size="sm"
+            />
+            <nav
+              aria-label="Administration breadcrumb"
+              className="aks-admin-profile-breadcrumb"
+            >
+              <Link href="/admin">Administration</Link>
+              <span aria-hidden="true">/</span>
+              <span>Profile</span>
+            </nav>
+            <Text className="aks-admin-profile-operator" size="sm">
+              {data.operatorEmail}
+            </Text>
+          </div>
+        </Container>
+      </header>
+
+      {actionData ? (
+        <Container width="wide">
+          <Text
+            className="aks-admin-profile-feedback"
+            role={actionData.ok ? 'status' : 'alert'}
+            size="sm"
+            tone={actionData.ok ? 'strong' : 'muted'}
+          >
+            {actionData.message}
+          </Text>
+        </Container>
+      ) : null}
+
+      <AdminProfileInlineEditor
+        locale={data.activeLocale}
+        profile={data.draftProfile}
+        publication={
+          publication === null
+            ? null
+            : { published_at: publication.published_at }
+        }
+        systemReferences={data.draftSystemReferences}
+      />
+
+      <Container className="aks-admin-profile-management" width="wide">
+        <details className="aks-admin-profile-management-details">
+          <summary className="aks-admin-profile-management-summary">
+            Structure, evidence & assets
+          </summary>
+          <Text
+            className="aks-admin-profile-management-intro"
+            size="sm"
+            tone="muted"
+          >
+            Use these controls for structure and relationships that do not belong
+            to the page copy itself: evidence assignments, ordering, languages,
+            mobility, portrait, source CV and audit history.
+          </Text>
+          <ProfileAdvancedControls />
+        </details>
+      </Container>
+
+      <footer className="aks-admin-profile-footer">
+        <Container width="wide">
+          <div className="aks-admin-profile-footer-inner">
+            <span>© {new Date().getUTCFullYear()} AkikSystems</span>
+            <span>Private system · Inline Profile editing</span>
+          </div>
+        </Container>
+      </footer>
     </main>
   );
 }
