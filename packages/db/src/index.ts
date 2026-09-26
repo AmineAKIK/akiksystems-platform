@@ -315,7 +315,6 @@ export type {
   WorkWithUsPublicationUpdate,
   WorkWithUsInquiryNotificationRow,
   WorkWithUsInquiryNotificationsTable,
-  WorkWithUsInquiryNotificationState,
   WorkWithUsInquiryRow,
   WorkWithUsInquiriesTable,
   WorkWithUsInquirySettingsRow,
