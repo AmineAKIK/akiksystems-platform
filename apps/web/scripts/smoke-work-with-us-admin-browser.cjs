@@ -551,6 +551,459 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
   }
 }
 
+
+function assertHorizontalRectInsideViewport(rect, viewportWidth, label) {
+  assert.ok(rect, `${label} must be measurable.`);
+  assert.ok(
+    rect.width > 0,
+    `${label} must keep a positive rendered width.`,
+  );
+  assert.ok(
+    rect.left >= -1 && rect.right <= viewportWidth + 1,
+    `${label} must stay inside the horizontal viewport (left=${rect.left}, right=${rect.right}, viewport=${viewportWidth}).`,
+  );
+}
+
+async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
+  await page.setViewportSize(viewport);
+  const response = await page.goto(origin + pathName);
+  assert.equal(response?.status(), 200, `${label} must return HTTP 200.`);
+  await page.locator('.aks-work-with-us').waitFor();
+  await page
+    .getByRole('button', { name: copy.contactListenLabel, exact: true })
+    .waitFor();
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+
+  const measurement = await page.evaluate(() => {
+    function rect(selector) {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) return null;
+      const box = element.getBoundingClientRect();
+      return {
+        left: box.left,
+        right: box.right,
+        top: box.top,
+        bottom: box.bottom,
+        width: box.width,
+        height: box.height,
+      };
+    }
+
+    function rects(selector) {
+      return [...document.querySelectorAll(selector)]
+        .filter((element) => element instanceof HTMLElement)
+        .map((element) => {
+          const box = element.getBoundingClientRect();
+          return {
+            left: box.left,
+            right: box.right,
+            top: box.top,
+            bottom: box.bottom,
+            width: box.width,
+            height: box.height,
+          };
+        });
+    }
+
+    function columnCount(selector) {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) return null;
+      return getComputedStyle(element).gridTemplateColumns
+        .split(/\s+/)
+        .filter(Boolean).length;
+    }
+
+    return {
+      viewportWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      h1Count: document.querySelectorAll('.aks-work-with-us h1').length,
+      orbitalAriaHidden:
+        document
+          .querySelector('.aks-work-with-us-orbital-field')
+          ?.getAttribute('aria-hidden') === 'true',
+      glyphsAriaHidden: [...document.querySelectorAll('.aks-work-with-us-approach-glyph')].every(
+        (element) => element.getAttribute('aria-hidden') === 'true',
+      ),
+      heroColumns: columnCount('.aks-work-with-us-hero-layout'),
+      approachColumns: columnCount('.aks-work-with-us-approach-steps'),
+      contactColumns: columnCount('.aks-work-with-us-contact-layout'),
+      inquiryColumns: columnCount('.aks-work-with-us-inquiry-fields'),
+      aboutColumns: columnCount('.aks-work-with-us-about-layout'),
+      importantRects: {
+        heroCopy: rect('.aks-work-with-us-hero-copy'),
+        orbitalField: rect('.aks-work-with-us-orbital-field'),
+        approachHeading: rect('.aks-work-with-us-approach-heading'),
+        contactCopy: rect('.aks-work-with-us-contact-copy'),
+        inquiryForm: rect('.aks-work-with-us-inquiry-form'),
+        about: rect('.aks-work-with-us-about-layout'),
+        systemsHeading: rect('.aks-work-with-us-systems-heading'),
+      },
+      approachStepRects: rects('.aks-work-with-us-approach-step'),
+      fieldRects: rects(
+        '.aks-work-with-us-inquiry-field input:not([name="faxNumber"]), .aks-work-with-us-inquiry-field textarea',
+      ),
+      actionRects: rects(
+        '.aks-work-with-us-message-playback, .aks-work-with-us-inquiry-submit',
+      ),
+      honeypotTabIndex: document
+        .querySelector('input[name="faxNumber"]')
+        ?.getAttribute('tabindex'),
+    };
+  });
+
+  assert.ok(
+    measurement.scrollWidth <= measurement.viewportWidth + 1,
+    `${label} must not create document-level horizontal overflow.`,
+  );
+  assert.ok(
+    measurement.bodyScrollWidth <= measurement.viewportWidth + 1,
+    `${label} body must not overflow horizontally.`,
+  );
+  assert.equal(measurement.h1Count, 1, `${label} must keep exactly one page heading.`);
+  assert.equal(
+    measurement.orbitalAriaHidden,
+    true,
+    `${label} orbital decoration must stay outside the accessibility tree.`,
+  );
+  assert.equal(
+    measurement.glyphsAriaHidden,
+    true,
+    `${label} approach glyphs must stay decorative.`,
+  );
+  assert.equal(
+    measurement.approachStepRects.length,
+    3,
+    `${label} must render the three code-owned approach steps.`,
+  );
+  assert.equal(
+    measurement.honeypotTabIndex,
+    '-1',
+    `${label} anti-abuse honeypot must remain outside keyboard navigation.`,
+  );
+
+  for (const [name, box] of Object.entries(measurement.importantRects)) {
+    assertHorizontalRectInsideViewport(
+      box,
+      measurement.viewportWidth,
+      `${label} ${name}`,
+    );
+  }
+  for (const [index, box] of measurement.approachStepRects.entries()) {
+    assertHorizontalRectInsideViewport(
+      box,
+      measurement.viewportWidth,
+      `${label} approach step ${index + 1}`,
+    );
+  }
+  for (const [index, box] of measurement.fieldRects.entries()) {
+    assertHorizontalRectInsideViewport(
+      box,
+      measurement.viewportWidth,
+      `${label} form field ${index + 1}`,
+    );
+  }
+
+  if (viewport.width <= 430) {
+    assert.equal(measurement.heroColumns, 1, `${label} hero must reflow to one column.`);
+    assert.equal(
+      measurement.approachColumns,
+      1,
+      `${label} approach steps must reflow to one column.`,
+    );
+    assert.equal(
+      measurement.contactColumns,
+      1,
+      `${label} contact section must reflow to one column.`,
+    );
+    assert.equal(
+      measurement.inquiryColumns,
+      1,
+      `${label} inquiry fields must reflow to one column.`,
+    );
+    assert.equal(
+      measurement.aboutColumns,
+      1,
+      `${label} About section must reflow to one column.`,
+    );
+
+    for (const [index, box] of measurement.fieldRects.entries()) {
+      assert.ok(
+        box.height >= 44,
+        `${label} form field ${index + 1} must keep at least a 44px touch target.`,
+      );
+    }
+    for (const [index, box] of measurement.actionRects.entries()) {
+      assert.ok(
+        box.height >= 44,
+        `${label} form action ${index + 1} must keep at least a 44px touch target.`,
+      );
+      assertHorizontalRectInsideViewport(
+        box,
+        measurement.viewportWidth,
+        `${label} form action ${index + 1}`,
+      );
+    }
+  } else if (viewport.width >= 1200) {
+    assert.equal(measurement.heroColumns, 2, `${label} hero must preserve its two-column composition.`);
+    assert.equal(
+      measurement.approachColumns,
+      3,
+      `${label} approach must preserve its three-column focal sequence.`,
+    );
+    assert.equal(
+      measurement.contactColumns,
+      2,
+      `${label} contact section must preserve its two-column composition.`,
+    );
+    assert.equal(
+      measurement.inquiryColumns,
+      2,
+      `${label} inquiry fields must preserve their desktop two-column grid.`,
+    );
+  }
+
+  await page
+    .getByRole('heading', { level: 1, name: copy.heroTitle, exact: true })
+    .waitFor();
+}
+
+async function activeElementIdentity(page) {
+  return page.evaluate(() => {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return null;
+    return {
+      tag: active.tagName.toLowerCase(),
+      name: active.getAttribute('name'),
+      className: active.className,
+      ariaLabel: active.getAttribute('aria-label'),
+      text: active.textContent?.trim() ?? '',
+    };
+  });
+}
+
+async function assertKeyboardAccessibility(page, pathName, copy) {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const response = await page.goto(origin + pathName);
+  assert.equal(response?.status(), 200);
+  const form = page.locator('form.aks-work-with-us-inquiry-form');
+  await form.waitFor();
+  await page
+    .getByRole('button', { name: copy.contactListenLabel, exact: true })
+    .waitFor();
+
+  for (const label of [
+    copy.contactNameLabel,
+    copy.contactEmailLabel,
+    copy.contactOrganizationLabel,
+    copy.contactMessageLabel,
+  ]) {
+    assert.equal(
+      await page.getByLabel(label, { exact: true }).count(),
+      1,
+      `Work with us field “${label}” must expose one accessible label.`,
+    );
+  }
+
+  const semantic = await page.evaluate(() => {
+    const labelledSections = [...document.querySelectorAll('.aks-work-with-us section[aria-labelledby]')];
+    const missingSectionLabels = labelledSections
+      .map((section) => section.getAttribute('aria-labelledby'))
+      .filter(
+        (id) =>
+          id === null ||
+          document.getElementById(id) === null ||
+          document.getElementById(id)?.textContent?.trim() === '',
+      );
+
+    const positiveTabIndexes = [...document.querySelectorAll('.aks-work-with-us [tabindex]')]
+      .filter((element) => Number(element.getAttribute('tabindex')) > 0)
+      .length;
+
+    const controls = [
+      'input[name="name"]',
+      'input[name="email"]',
+      'input[name="organization"]',
+      'textarea[name="message"]',
+    ];
+
+    return {
+      missingSectionLabels,
+      positiveTabIndexes,
+      allControlsLabelled: controls.every((selector) => {
+        const control = document.querySelector(selector);
+        return (
+          control instanceof HTMLInputElement ||
+          control instanceof HTMLTextAreaElement
+        )
+          ? control.labels !== null && control.labels.length === 1
+          : false;
+      }),
+    };
+  });
+
+  assert.deepEqual(
+    semantic.missingSectionLabels,
+    [],
+    'Every aria-labelledby Work with us section must reference a real visible heading.',
+  );
+  assert.equal(
+    semantic.positiveTabIndexes,
+    0,
+    'Work with us must not manufacture a positive tabindex order.',
+  );
+  assert.equal(
+    semantic.allControlsLabelled,
+    true,
+    'Every inquiry control must retain a native label association.',
+  );
+
+  const name = form.locator('input[name="name"]');
+
+  let active = await activeElementIdentity(page);
+  let reachedName = active?.name === 'name';
+
+  for (let attempt = 0; attempt < 40 && !reachedName; attempt += 1) {
+    await page.keyboard.press('Tab');
+    active = await activeElementIdentity(page);
+    reachedName = active?.name === 'name';
+  }
+
+  assert.equal(
+    reachedName,
+    true,
+    'A real keyboard Tab sequence must be able to reach the inquiry name field.',
+  );
+
+  const keyboardFocus = await name.evaluate((element) => ({
+    focusVisible: element.matches(':focus-visible'),
+    boxShadow: getComputedStyle(element).boxShadow,
+  }));
+  assert.equal(
+    keyboardFocus.focusVisible,
+    true,
+    'The inquiry field reached by keyboard must match :focus-visible.',
+  );
+  assert.notEqual(
+    keyboardFocus.boxShadow,
+    'none',
+    'Keyboard focus must produce a visible focus treatment on inquiry fields.',
+  );
+
+  await page.keyboard.press('Tab');
+  active = await activeElementIdentity(page);
+  assert.equal(active?.name, 'email', 'Tab from name must move to email.');
+
+  await page.keyboard.press('Tab');
+  active = await activeElementIdentity(page);
+  assert.equal(active?.name, 'organization', 'Tab from email must move to organization.');
+
+  await page.keyboard.press('Tab');
+  active = await activeElementIdentity(page);
+  assert.equal(active?.name, 'message', 'Tab from organization must move to the message.');
+
+  await page.keyboard.press('Tab');
+  active = await activeElementIdentity(page);
+  assert.match(
+    active?.className ?? '',
+    /aks-work-with-us-message-playback/,
+    'Tab from the message must reach the progressive playback control.',
+  );
+
+  await page.keyboard.press('Tab');
+  active = await activeElementIdentity(page);
+  assert.match(
+    active?.className ?? '',
+    /aks-work-with-us-inquiry-submit/,
+    'Tab from playback must reach the submit control.',
+  );
+}
+
+async function assertReducedMotion(browser, pathName, copy) {
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    reducedMotion: 'reduce',
+  });
+
+  await context.addInitScript(() => {
+    class ReducedMotionUtterance {
+      constructor(text) {
+        this.text = String(text);
+        this.lang = '';
+        this.onend = null;
+        this.onerror = null;
+      }
+    }
+
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: ReducedMotionUtterance,
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        speaking: false,
+        pending: false,
+        paused: false,
+        speak() {},
+        cancel() {},
+        pause() {},
+        resume() {},
+        getVoices() {
+          return [];
+        },
+      },
+    });
+  });
+
+  const page = await context.newPage();
+
+  try {
+    const response = await page.goto(origin + pathName);
+    assert.equal(response?.status(), 200);
+    await page
+      .getByRole('button', { name: copy.contactListenLabel, exact: true })
+      .waitFor();
+
+    const motion = await page.evaluate(() => {
+      const selectors = [
+        '.aks-work-with-us-inquiry-field input[name="name"]',
+        '.aks-work-with-us-inquiry-field textarea[name="message"]',
+        '.aks-work-with-us-message-playback-mark',
+      ];
+
+      return {
+        preference: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        transitions: selectors.map((selector) => {
+          const element = document.querySelector(selector);
+          if (!(element instanceof HTMLElement)) return null;
+          return getComputedStyle(element).transitionDuration;
+        }),
+      };
+    });
+
+    assert.equal(
+      motion.preference,
+      true,
+      'The release qualification context must expose prefers-reduced-motion: reduce.',
+    );
+    assert.equal(
+      motion.transitions.every(
+        (duration) =>
+          duration !== null &&
+          duration
+            .split(',')
+            .every((value) => Number.parseFloat(value) === 0),
+      ),
+      true,
+      'Work with us-owned field/playback transitions must be disabled under reduced motion.',
+    );
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
@@ -776,6 +1229,20 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
     });
     await page.setViewportSize({ width: 1280, height: 800 });
 
+    const releaseViewports = [
+      ['320px French portrait', '/fr/travailler-ensemble', french, { width: 320, height: 720 }],
+      ['390px English portrait', '/en/work-with-us', english, { width: 390, height: 844 }],
+      ['430px French portrait', '/fr/travailler-ensemble', french, { width: 430, height: 932 }],
+      ['1440px English desktop', '/en/work-with-us', english, { width: 1440, height: 900 }],
+    ];
+
+    for (const [label, pathName, copy, viewport] of releaseViewports) {
+      await assertWorkWithUsViewport(page, pathName, copy, viewport, label);
+    }
+
+    await assertKeyboardAccessibility(page, '/en/work-with-us', english);
+    await assertReducedMotion(browser, '/fr/travailler-ensemble', french);
+
     await assertNoJavaScriptInquiry(browser, english, '/en/work-with-us');
 
     await page.goto(`${origin}/admin/work-with-us/inquiries`);
@@ -847,7 +1314,7 @@ async function assertNoJavaScriptInquiry(browser, copy, pathName) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: EN/FR publication stays isolated, inquiries persist before success, speech playback remains progressive, JavaScript is optional, and the authenticated inquiry inbox exposes handling plus notification state.\n',
+      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
     );
   } finally {
     await browser.close();
