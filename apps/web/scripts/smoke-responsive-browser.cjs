@@ -264,10 +264,30 @@ function assertNoOverlap(first, second, label) {
   assert.equal(rectsOverlap(first, second), false, `${label} must not overlap.`);
 }
 
-function assertRectStable(first, second, label, tolerance = 0.75) {
+function assertRectStableWithinContainer(
+  first,
+  firstContainer,
+  second,
+  secondContainer,
+  label,
+  tolerance = 0.75,
+) {
+  const firstGeometry = {
+    top: first.top - firstContainer.top,
+    left: first.left - firstContainer.left,
+    width: first.width,
+    height: first.height,
+  };
+  const secondGeometry = {
+    top: second.top - secondContainer.top,
+    left: second.left - secondContainer.left,
+    width: second.width,
+    height: second.height,
+  };
+
   for (const key of ['top', 'left', 'width', 'height']) {
     assert.ok(
-      Math.abs(first[key] - second[key]) <= tolerance,
+      Math.abs(firstGeometry[key] - secondGeometry[key]) <= tolerance,
       `${label} ${key} must stay stable while preview copy changes.`,
     );
   }
@@ -450,24 +470,32 @@ async function assertDesktopHome(browser, viewport, name, { preview = false } = 
           `${name} legal preview must become active on pointer intent.`,
         );
 
-        assertRectStable(
+        assertRectStableWithinContainer(
           baseline.centerRect,
+          baseline.homeRect,
           measurement.centerRect,
+          measurement.homeRect,
           `${name} identity container`,
         );
-        assertRectStable(
+        assertRectStableWithinContainer(
           baseline.brandRect,
+          baseline.homeRect,
           measurement.brandRect,
+          measurement.homeRect,
           `${name} brand mark`,
         );
-        assertRectStable(
+        assertRectStableWithinContainer(
           baseline.headingRect,
+          baseline.homeRect,
           measurement.headingRect,
+          measurement.homeRect,
           `${name} wordmark`,
         );
-        assertRectStable(
+        assertRectStableWithinContainer(
           baseline.scaleRect,
+          baseline.homeRect,
           measurement.scaleRect,
+          measurement.homeRect,
           `${name} Systemic scale signature`,
         );
         assert.ok(
