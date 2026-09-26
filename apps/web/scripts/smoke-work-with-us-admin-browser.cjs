@@ -944,6 +944,31 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
           borderRadius: style.borderRadius,
         };
       }),
+      approachArtworkOffsets: [
+        ...document.querySelectorAll('.aks-work-with-us-approach-glyph'),
+      ].map((element) => {
+        const svg = element.querySelector('svg');
+        const artwork = element.querySelector(
+          '.aks-work-with-us-approach-artwork',
+        );
+        if (!(svg instanceof SVGElement) || !(artwork instanceof SVGGraphicsElement)) {
+          return null;
+        }
+        const svgBox = svg.getBoundingClientRect();
+        const artworkBox = artwork.getBoundingClientRect();
+        return {
+          kind: element.getAttribute('data-kind'),
+          x:
+            (artworkBox.left + artworkBox.right) / 2 -
+            (svgBox.left + svgBox.right) / 2,
+          y:
+            (artworkBox.top + artworkBox.bottom) / 2 -
+            (svgBox.top + svgBox.bottom) / 2,
+        };
+      }),
+      terrainMarkerCutoutCount: document.querySelectorAll(
+        '.aks-work-with-us-terrain-map[mask]',
+      ).length,
       approachConnectors: [
         ...document.querySelectorAll('.aks-work-with-us-approach-step'),
       ]
@@ -1043,6 +1068,23 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
     3,
     `${label} must render exactly three approach glyph nodes.`,
   );
+  assert.equal(
+    measurement.terrainMarkerCutoutCount,
+    1,
+    `${label} terrain marker must sit above a masked map instead of letting map strokes cross through it.`,
+  );
+  assert.equal(
+    measurement.approachArtworkOffsets.length,
+    3,
+    `${label} must expose centering geometry for all three approach artworks.`,
+  );
+  for (const offset of measurement.approachArtworkOffsets) {
+    assert.ok(offset !== null, `${label} approach artwork geometry must resolve.`);
+    assert.ok(
+      Math.abs(offset.x) <= 1.25 && Math.abs(offset.y) <= 1.25,
+      `${label} ${offset.kind} artwork must remain optically centered in its circular node.`,
+    );
+  }
   for (const [index, glyph] of measurement.approachGlyphStyles.entries()) {
     assert.ok(
       Math.abs(glyph.width - glyph.height) <= 1,
