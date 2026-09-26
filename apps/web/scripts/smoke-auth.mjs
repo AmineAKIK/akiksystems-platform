@@ -145,14 +145,19 @@ try {
   const privateHtml = await privateAdmin.text();
   assert.equal(privateAdmin.status, 200);
   assert.match(privateHtml, /aks-admin-dashboard/);
-  assert.match(privateHtml, /AkikSystems administration/);
-  assert.match(privateHtml, /Administration domains/);
+  assert.match(privateHtml, />Administration</);
+  assert.match(privateHtml, />Workspaces</);
   const adminModules =
     privateHtml.match(/aks-link aks-admin-dashboard-module/g) ?? [];
   assert.equal(
     adminModules.length,
     6,
     'Administration home must expose the six dedicated domain workspaces.',
+  );
+  assert.doesNotMatch(
+    privateHtml,
+    /Open →/,
+    'Administration modules must remain visually quiet without redundant action copy.',
   );
   assert.match(privateHtml, /href="\/admin\/systems"/);
   assert.doesNotMatch(
