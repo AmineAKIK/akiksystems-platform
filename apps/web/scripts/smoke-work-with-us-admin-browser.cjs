@@ -1687,6 +1687,28 @@ async function assertReducedMotion(browser, pathName, copy) {
       'The inline editor must switch explicitly between EN and FR.',
     );
 
+    const lockedPreviewField = page
+      .locator('.aks-admin-work-with-us-preview-control')
+      .first();
+    await lockedPreviewField.waitFor();
+    const lockedPreviewFieldStyle = await lockedPreviewField.evaluate((element) => {
+      const style = window.getComputedStyle(element);
+      return {
+        cursor: style.cursor,
+        opacity: Number(style.opacity),
+        backgroundColor: style.backgroundColor,
+      };
+    });
+    assert.equal(
+      lockedPreviewFieldStyle.cursor,
+      'not-allowed',
+      'Non-editable public form controls must advertise that they are locked in the admin preview.',
+    );
+    assert.ok(
+      lockedPreviewFieldStyle.opacity < 0.7,
+      'Non-editable public form controls must be visually subdued.',
+    );
+
     const adminSection = page.locator('#admin-work-with-us');
     await adminSection.waitFor();
 
