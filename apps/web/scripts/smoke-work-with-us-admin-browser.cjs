@@ -569,6 +569,9 @@ async function assertWorkWithUsViewport(page, pathName, copy, viewport, label) {
   const response = await page.goto(origin + pathName);
   assert.equal(response?.status(), 200, `${label} must return HTTP 200.`);
   await page.locator('.aks-work-with-us').waitFor();
+  await page
+    .getByRole('button', { name: copy.contactListenLabel, exact: true })
+    .waitFor();
   await page.evaluate(() => document.fonts.ready.then(() => true));
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 
@@ -786,6 +789,9 @@ async function assertKeyboardAccessibility(page, pathName, copy) {
   assert.equal(response?.status(), 200);
   const form = page.locator('form.aks-work-with-us-inquiry-form');
   await form.waitFor();
+  await page
+    .getByRole('button', { name: copy.contactListenLabel, exact: true })
+    .waitFor();
 
   for (const label of [
     copy.contactNameLabel,
