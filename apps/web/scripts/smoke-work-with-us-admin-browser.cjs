@@ -534,6 +534,9 @@ async function assertBackgroundContinuity(page, pathName) {
       return {
         selector,
         sectionWidth: rect.width,
+        usesCanonicalSeparator: element.classList.contains(
+          'aks-section-separator-after',
+        ),
         backgroundImage: style.backgroundImage,
         backgroundColor: style.backgroundColor,
         borderTopWidth: style.borderTopWidth,
@@ -600,12 +603,23 @@ async function assertBackgroundContinuity(page, pathName) {
 
     if (section.selector === '.aks-work-with-us-systems') {
       assert.equal(
+        section.usesCanonicalSeparator,
+        false,
+        'The final Systems section must not opt into a trailing section separator.',
+      );
+      assert.equal(
         section.separator.content,
         'none',
         'The final Systems section must not render a trailing separator.',
       );
       continue;
     }
+
+    assert.equal(
+      section.usesCanonicalSeparator,
+      true,
+      `${section.selector} must use the canonical application section separator primitive.`,
+    );
 
     assert.notEqual(
       section.separator.content,
