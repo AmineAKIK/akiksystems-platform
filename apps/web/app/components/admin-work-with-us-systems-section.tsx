@@ -43,166 +43,173 @@ export function WorkWithUsSystemsSection({
   );
 
   return (
-    <section className="aks-admin-card" id="admin-work-with-us-systems">
-      <div className="aks-proof-stack">
+    <section
+      className="aks-admin-card aks-admin-work-with-us-systems-card"
+      id="admin-work-with-us-systems"
+    >
+      <div className="aks-admin-work-with-us-section-heading">
+        <Text className="aks-admin-work-with-us-section-eyebrow" size="sm">
+          Public proof
+        </Text>
         <Heading level={2} size="sm">
           Selected Systems
         </Heading>
         <Text tone="muted">
-          Choose and order up to four Systems. The selection is shared across
-          languages; a System only appears publicly in a locale where that
-          System has a published snapshot.
+          Choose and order up to four Systems. A System appears only in locales
+          where it has a published snapshot.
         </Text>
+      </div>
 
-        {actionData?.message ? (
-          <Text
-            role={actionData.ok === false ? 'alert' : 'status'}
-            size="sm"
-            tone={actionData.ok === false ? 'muted' : 'strong'}
-          >
-            {actionData.message}
-          </Text>
-        ) : null}
+      {actionData?.message ? (
+        <Text
+          className="aks-admin-work-with-us-feedback"
+          role={actionData.ok === false ? 'alert' : 'status'}
+          size="sm"
+          tone={actionData.ok === false ? 'muted' : 'strong'}
+        >
+          {actionData.message}
+        </Text>
+      ) : null}
 
-        {selectedSystems.length === 0 ? (
+      {selectedSystems.length === 0 ? (
+        <div className="aks-admin-work-with-us-empty">
           <Text size="sm" tone="muted">
             No System selected yet.
           </Text>
-        ) : (
-          <div className="aks-admin-asset-list">
-            {selectedSystems.map((selection, index) => {
-              const system = systems.find(
-                (candidate) => candidate.id === selection.systemId,
-              );
+        </div>
+      ) : (
+        <div className="aks-admin-asset-list aks-admin-work-with-us-system-list">
+          {selectedSystems.map((selection, index) => {
+            const system = systems.find(
+              (candidate) => candidate.id === selection.systemId,
+            );
 
-              if (system === undefined) return null;
+            if (system === undefined) return null;
 
-              return (
-                <article className="aks-admin-asset" key={system.id}>
-                  <div className="aks-proof-stack">
-                    <Text tone="strong">
-                      {index + 1}. {systemLabel(system)}
-                    </Text>
-                    <Text size="sm" tone="muted">
-                      EN {system.publishedEn ? 'published' : 'not published'} · FR{' '}
-                      {system.publishedFr ? 'published' : 'not published'}
-                    </Text>
+            return (
+              <article
+                className="aks-admin-asset aks-admin-work-with-us-system-row"
+                key={system.id}
+              >
+                <div className="aks-admin-work-with-us-system-row-heading">
+                  <span className="aks-admin-work-with-us-system-index">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <Text tone="strong">{systemLabel(system)}</Text>
+                </div>
 
-                    {system.lifecycle !== 'active' ? (
-                      <Text size="sm">
-                        This System is not active and will not appear on either
-                        public Work with us page.
-                      </Text>
-                    ) : null}
-                    {!system.publishedEn ? (
-                      <Text size="sm">
-                        Not published in EN — hidden from /en/work-with-us.
-                      </Text>
-                    ) : null}
-                    {!system.publishedFr ? (
-                      <Text size="sm">
-                        Not published in FR — hidden from
-                        /fr/travailler-ensemble.
-                      </Text>
-                    ) : null}
+                <Text className="aks-admin-work-with-us-system-state" size="sm">
+                  EN {system.publishedEn ? 'published' : 'not published'} · FR{' '}
+                  {system.publishedFr ? 'published' : 'not published'}
+                </Text>
 
-                    <div className="aks-proof-actions">
-                      <Form method="post">
-                        <input
-                          name="_intent"
-                          type="hidden"
-                          value="move-work-with-us-system"
-                        />
-                        <input
-                          name="systemId"
-                          type="hidden"
-                          value={system.id}
-                        />
-                        <Button
-                          disabled={index === 0}
-                          emphasis="quiet"
-                          name="direction"
-                          type="submit"
-                          value="up"
-                        >
-                          Move up
-                        </Button>
-                        <Button
-                          disabled={index === selectedSystems.length - 1}
-                          emphasis="quiet"
-                          name="direction"
-                          type="submit"
-                          value="down"
-                        >
-                          Move down
-                        </Button>
-                      </Form>
+                {system.lifecycle !== 'active' ? (
+                  <Text size="sm">
+                    This System is not active and will not appear on either public Work with us page.
+                  </Text>
+                ) : null}
+                {!system.publishedEn ? (
+                  <Text size="sm">
+                    Not published in EN — hidden from /en/work-with-us.
+                  </Text>
+                ) : null}
+                {!system.publishedFr ? (
+                  <Text size="sm">
+                    Not published in FR — hidden from
+                    /fr/travailler-ensemble.
+                  </Text>
+                ) : null}
 
-                      <Form method="post">
-                        <input
-                          name="_intent"
-                          type="hidden"
-                          value="remove-work-with-us-system"
-                        />
-                        <input
-                          name="systemId"
-                          type="hidden"
-                          value={system.id}
-                        />
-                        <Button emphasis="quiet" type="submit">
-                          Remove
-                        </Button>
-                      </Form>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
+                <div className="aks-admin-work-with-us-system-actions">
+                  <Form method="post">
+                    <input
+                      name="_intent"
+                      type="hidden"
+                      value="move-work-with-us-system"
+                    />
+                    <input name="systemId" type="hidden" value={system.id} />
+                    <Button
+                      disabled={index === 0}
+                      emphasis="quiet"
+                      name="direction"
+                      type="submit"
+                      value="up"
+                    >
+                      Move up
+                    </Button>
+                    <Button
+                      disabled={index === selectedSystems.length - 1}
+                      emphasis="quiet"
+                      name="direction"
+                      type="submit"
+                      value="down"
+                    >
+                      Move down
+                    </Button>
+                  </Form>
 
-        <Form className="aks-admin-form" method="post">
-          <input
-            name="_intent"
-            type="hidden"
-            value="add-work-with-us-system"
-          />
-          <label>
-            <span>Add a System</span>
-            <select
-              defaultValue=""
-              disabled={
-                selectedSystems.length >= 4 || availableSystems.length === 0
-              }
-              name="systemId"
-              required
-            >
-              <option disabled value="">
-                Choose a System
-              </option>
-              {availableSystems.map((system) => (
-                <option key={system.id} value={system.id}>
-                  {systemLabel(system)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Button
+                  <Form method="post">
+                    <input
+                      name="_intent"
+                      type="hidden"
+                      value="remove-work-with-us-system"
+                    />
+                    <input name="systemId" type="hidden" value={system.id} />
+                    <Button emphasis="quiet" type="submit">
+                      Remove
+                    </Button>
+                  </Form>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <Form
+        className="aks-admin-form aks-admin-work-with-us-system-form"
+        method="post"
+      >
+        <input
+          name="_intent"
+          type="hidden"
+          value="add-work-with-us-system"
+        />
+        <label>
+          <span>Add a System</span>
+          <select
+            defaultValue=""
             disabled={
               selectedSystems.length >= 4 || availableSystems.length === 0
             }
-            type="submit"
+            name="systemId"
+            required
           >
-            Add System
-          </Button>
-        </Form>
+            <option disabled value="">
+              Choose a System
+            </option>
+            {availableSystems.map((system) => (
+              <option key={system.id} value={system.id}>
+                {systemLabel(system)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Button
+          disabled={
+            selectedSystems.length >= 4 || availableSystems.length === 0
+          }
+          type="submit"
+        >
+          Add System
+        </Button>
+      </Form>
 
-        {selectedSystems.length >= 4 ? (
-          <Text size="sm" tone="muted">
-            Maximum reached: four Systems.
-          </Text>
-        ) : null}
-      </div>
+      {selectedSystems.length >= 4 ? (
+        <Text size="sm" tone="muted">
+          Maximum reached: four Systems.
+        </Text>
+      ) : null}
     </section>
   );
 }

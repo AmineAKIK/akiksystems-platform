@@ -1660,6 +1660,22 @@ async function assertReducedMotion(browser, pathName, copy) {
     await workWithUsLink.click();
     await page.waitForURL(`${origin}/admin/work-with-us`);
 
+    assert.equal(
+      await page.locator('.aks-admin-work-with-us-page').count(),
+      1,
+      'Work with us administration must render its dedicated workspace shell.',
+    );
+    assert.equal(
+      await page.locator('.aks-admin-work-with-us-layout').count(),
+      1,
+      'Work with us administration must separate Systems controls from editorial copy.',
+    );
+    assert.equal(
+      await page.locator('.aks-admin-work-with-us-locale-card').count(),
+      2,
+      'Work with us administration must expose one structured editor per locale.',
+    );
+
     const adminSection = page.locator('#admin-work-with-us');
     await adminSection.waitFor();
 
