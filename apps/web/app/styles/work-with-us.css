@@ -1,8 +1,7 @@
 .aks-work-with-us {
   min-height: 100dvh;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #11110f 0, #071014 12rem, #03080a 68%, #11110f 100%);
+  background: var(--aks-experience-space-background);
 }
 
 .aks-work-with-us,
@@ -40,9 +39,7 @@
 .aks-work-with-us-hero {
   isolation: isolate;
   border-bottom: 1px solid rgb(255 255 255 / 10%);
-  background:
-    radial-gradient(circle at 77% 54%, rgb(151 219 239 / 14%), transparent 3rem),
-    radial-gradient(ellipse at 80% 48%, rgb(29 82 101 / 26%), transparent 34rem);
+  background: transparent;
 }
 
 .aks-work-with-us-hero-layout {
