@@ -17,7 +17,7 @@ import {
 import { WorkWithUsMessagePlayback } from './work-with-us-message-playback';
 import {
   WorkWithUsApproachGlyph,
-  WorkWithUsSpiralVisual,
+  WorkWithUsBrandVisual,
 } from './work-with-us-visuals';
 
 export interface WorkWithUsViewProps {
@@ -161,7 +161,7 @@ export function WorkWithUsView({
                 {heroIntroduction}
               </Text>
             </div>
-            <WorkWithUsSpiralVisual />
+            <WorkWithUsBrandVisual />
           </div>
         </Container>
       </section>
@@ -315,13 +315,13 @@ export function WorkWithUsView({
 
                   {inquiryActionData?.message === undefined ||
                   inquiryActionData.kind === 'success' ? null : (
-                    <Text
-                      className="aks-work-with-us-inquiry-feedback"
+                    <div
+                      className="aks-work-with-us-inquiry-feedback aks-work-with-us-inquiry-feedback-error"
                       role="alert"
-                      size="sm"
                     >
-                      {inquiryActionData.message}
-                    </Text>
+                      <span aria-hidden="true" className="aks-work-with-us-inquiry-feedback-icon">!</span>
+                      <Text size="sm">{inquiryActionData.message}</Text>
+                    </div>
                   )}
 
                   {inquiryActionData?.kind === 'success' ? (
