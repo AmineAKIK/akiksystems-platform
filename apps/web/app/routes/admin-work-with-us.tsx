@@ -583,6 +583,7 @@ export default function AdminWorkWithUs() {
               </Text>
               <div className="aks-proof-actions">
                 <Link href="/admin">Back to administration</Link>
+                <Link href="/admin/work-with-us/inquiries">Inquiry inbox</Link>
                 <Link href="/en/work-with-us">Open EN page</Link>
                 <Link href="/fr/travailler-ensemble">Open FR page</Link>
               </div>
