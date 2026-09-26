@@ -14,6 +14,7 @@ import {
   workWithUsInquiryLimits,
   type WorkWithUsInquiryActionData,
 } from '../lib/work-with-us-inquiry';
+import { WorkWithUsMessagePlayback } from './work-with-us-message-playback';
 
 export interface WorkWithUsViewProps {
   locale: Locale;
@@ -465,6 +466,7 @@ export function WorkWithUsView({
                           inquiryErrors?.message === undefined ? undefined : true
                         }
                         defaultValue={inquiryValues?.message ?? ''}
+                        id="work-with-us-message"
                         maxLength={workWithUsInquiryLimits.message}
                         name="message"
                         placeholder={contact.messagePlaceholder ?? undefined}
@@ -483,6 +485,14 @@ export function WorkWithUsView({
                   </div>
 
                   <div className="aks-work-with-us-inquiry-actions">
+                    {contact.listenLabel === null ? null : (
+                      <WorkWithUsMessagePlayback
+                        label={contact.listenLabel}
+                        locale={locale}
+                        messageElementId="work-with-us-message"
+                        submitting={inquirySubmitting}
+                      />
+                    )}
                     <Button
                       className="aks-work-with-us-inquiry-submit"
                       disabled={inquirySubmitting}
