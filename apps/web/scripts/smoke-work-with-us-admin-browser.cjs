@@ -860,24 +860,40 @@ async function assertKeyboardAccessibility(page, pathName, copy) {
   );
 
   const name = form.locator('input[name="name"]');
-  const email = form.locator('input[name="email"]');
-  await name.focus();
-  const emailBorderBefore = await email.evaluate(
-    (element) => getComputedStyle(element).borderColor,
+
+  let active = await activeElementIdentity(page);
+  let reachedName = active?.name === 'name';
+
+  for (let attempt = 0; attempt < 40 && !reachedName; attempt += 1) {
+    await page.keyboard.press('Tab');
+    active = await activeElementIdentity(page);
+    reachedName = active?.name === 'name';
+  }
+
+  assert.equal(
+    reachedName,
+    true,
+    'A real keyboard Tab sequence must be able to reach the inquiry name field.',
+  );
+
+  const keyboardFocus = await name.evaluate((element) => ({
+    focusVisible: element.matches(':focus-visible'),
+    boxShadow: getComputedStyle(element).boxShadow,
+  }));
+  assert.equal(
+    keyboardFocus.focusVisible,
+    true,
+    'The inquiry field reached by keyboard must match :focus-visible.',
+  );
+  assert.notEqual(
+    keyboardFocus.boxShadow,
+    'none',
+    'Keyboard focus must produce a visible focus treatment on inquiry fields.',
   );
 
   await page.keyboard.press('Tab');
-  let active = await activeElementIdentity(page);
+  active = await activeElementIdentity(page);
   assert.equal(active?.name, 'email', 'Tab from name must move to email.');
-
-  const emailBorderAfter = await email.evaluate(
-    (element) => getComputedStyle(element).borderColor,
-  );
-  assert.notEqual(
-    emailBorderAfter,
-    emailBorderBefore,
-    'Keyboard focus must produce a visible focus treatment on inquiry fields.',
-  );
 
   await page.keyboard.press('Tab');
   active = await activeElementIdentity(page);
