@@ -501,6 +501,40 @@ async function assertPublicCopy(
   );
 }
 
+async function assertBackgroundContinuity(page, pathName) {
+  const homeResponse = await page.goto(origin + '/en');
+  assert.equal(homeResponse?.status(), 200);
+  await page.locator(".aks-experience-frame[data-home='true']").waitFor();
+
+  const homeBackground = await page
+    .locator(".aks-experience-frame[data-home='true']")
+    .evaluate((element) => getComputedStyle(element).backgroundImage);
+
+  const workResponse = await page.goto(origin + pathName);
+  assert.equal(workResponse?.status(), 200);
+  await page.locator('.aks-work-with-us').waitFor();
+
+  const backgrounds = await page.evaluate(() => ({
+    page: getComputedStyle(
+      document.querySelector('.aks-work-with-us'),
+    ).backgroundImage,
+    hero: getComputedStyle(
+      document.querySelector('.aks-work-with-us-hero'),
+    ).backgroundImage,
+  }));
+
+  assert.equal(
+    backgrounds.page,
+    homeBackground,
+    'Work with us must share the exact experience background with Home.',
+  );
+  assert.equal(
+    backgrounds.hero,
+    'none',
+    'The Work with us hero must not paint a second competing background over the shared experience canvas.',
+  );
+}
+
 async function assertNoJavaScriptInquiry(browser, copy, pathName) {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
@@ -1229,6 +1263,8 @@ async function assertReducedMotion(browser, pathName, copy) {
     });
     await page.setViewportSize({ width: 1280, height: 800 });
 
+    await assertBackgroundContinuity(page, '/en/work-with-us');
+
     const releaseViewports = [
       ['320px French portrait', '/fr/travailler-ensemble', french, { width: 320, height: 720 }],
       ['390px English portrait', '/en/work-with-us', english, { width: 390, height: 844 }],
@@ -1314,7 +1350,7 @@ async function assertReducedMotion(browser, pathName, copy) {
     assert.doesNotMatch(publicHtml, /Private draft must remain private/);
 
     process.stdout.write(
-      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
+      'Work with us smoke passed: snapshot v2 and EN/FR publication stay isolated; Work with us shares the Home experience background; System selection is qualified separately at the database boundary; inquiries persist before success; speech playback remains progressive; JavaScript is optional; 320/390/430 mobile and desktop reflow, keyboard focus, reduced motion, and the authenticated inquiry inbox are release-qualified.\n',
     );
   } finally {
     await browser.close();
