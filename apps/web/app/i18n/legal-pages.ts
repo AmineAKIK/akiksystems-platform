@@ -16,6 +16,7 @@ export interface LegalPageContent {
   description: string;
   updatedLabel: string;
   updatedAt: string;
+  updatedAtIso: string;
   sections: readonly LegalSection[];
 }
 
@@ -28,6 +29,10 @@ export interface LegalPageDefinition {
 
 const enUpdated = '25 September 2026';
 const frUpdated = '25 septembre 2026';
+const privacyEnUpdated = '26 September 2026';
+const privacyFrUpdated = '26 septembre 2026';
+const baselineUpdatedAtIso = '2026-09-25';
+const privacyUpdatedAtIso = '2026-09-26';
 
 export const legalPages: readonly LegalPageDefinition[] = [
   {
@@ -39,9 +44,10 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Data protection',
         title: 'Privacy policy',
         description:
-          'How AkikSystems handles personal data when you browse this website or use its private administration.',
+          'How AkikSystems handles personal data when you browse this website, send a Work with us inquiry, or use its private administration.',
         updatedLabel: 'Last updated',
-        updatedAt: enUpdated,
+        updatedAt: privacyEnUpdated,
+        updatedAtIso: privacyUpdatedAtIso,
         sections: [
           {
             id: 'controller',
@@ -54,8 +60,17 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'public-browsing',
             title: 'Public browsing data',
             paragraphs: [
-              'Public pages do not contain a contact form, advertising tracker, audience-measurement script, or third-party social widget. AkikSystems does not use public browsing data to create marketing profiles.',
+              'Public pages do not use advertising trackers, audience-measurement scripts, or third-party social widgets. The Work with us page contains the contact form described below. AkikSystems does not use public browsing or inquiry data to create marketing profiles.',
               'The server creates request and correlation identifiers and records limited technical events such as the requested path, HTTP method, response status, and processing duration. Infrastructure providers may also process connection data, including IP addresses, to deliver and secure the service.',
+            ],
+          },
+          {
+            id: 'work-with-us-inquiries',
+            title: 'Work with us inquiries',
+            paragraphs: [
+              'When you submit the Work with us form, AkikSystems stores your name, email address, optional organisation, free-form message, selected locale, and the technical submission identifier used to make retries idempotent. The administration also stores operational handling and notification metadata such as status, timestamps, delivery attempts, notification recipient, provider identifier, and provider message identifier where applicable.',
+              'These data are used to receive and read the inquiry, reply or follow up, prevent abuse, and maintain operational traceability of the handling and notification path. Do not include personal data that is unnecessary for your request.',
+              'If “Listen to my message” is available, it uses browser speech synthesis as a progressive enhancement. AkikSystems does not send the message or audio to a separate speech service as part of that feature.',
             ],
           },
           {
@@ -71,6 +86,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Purposes and legal grounds',
             items: [
               'Deliver public pages and media requested by the visitor.',
+              'Receive, review, and reply to Work with us inquiries on the basis of legitimate interests in managing correspondence and, where the message concerns a possible engagement, taking steps requested before entering into a contract.',
               'Maintain service security, diagnose failures, and prevent abuse on the basis of legitimate interests.',
               'Authenticate and secure the private administration on the basis of legitimate interests and the operation of the service.',
               'Meet legal obligations when applicable.',
@@ -80,7 +96,8 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'recipients',
             title: 'Recipients and hosting',
             paragraphs: [
-              'Data is limited to the publisher and technical providers needed to operate the service. The application and its operational data are hosted using Railway services. Railway may rely on subprocessors and process data outside the European Economic Area under its contractual safeguards.',
+              'Data is limited to the publisher and technical providers needed to operate the service. The application and its operational data, including Work with us inquiries, are hosted using Railway services.',
+              'Work with us inquiries are accessible through the authenticated administration. If transactional email notifications are enabled, the name, email address, optional organisation, and message are sent to the configured email delivery provider solely to alert the administrator. The current integration supports Resend; when no provider is configured, the inquiry remains in the administration inbox and is not transmitted through that email channel.',
               'AkikSystems does not sell personal data and does not disclose it to advertisers.',
             ],
           },
@@ -89,6 +106,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Retention',
             paragraphs: [
               'Technical logs are kept only for the period reasonably necessary for security, incident investigation, and service operation, subject to the retention applied by the infrastructure provider. Administration records are retained while the account or audit evidence remains necessary, then deleted or anonymised unless a legal obligation requires longer retention.',
+              'Work with us inquiries are retained for the time needed to manage the exchange, follow-up, abuse or security issues, and any applicable legal obligations. The application does not currently enforce an automatic time-based deletion deadline for inquiries; deletion is therefore an administrative operation. Marking an inquiry as handled changes workflow state only and does not delete the inquiry or its notification metadata.',
             ],
           },
           {
@@ -112,9 +130,10 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Protection des données',
         title: 'Politique de confidentialité',
         description:
-          'La manière dont AkikSystems traite les données personnelles lors de la consultation du site ou de l’utilisation de son administration privée.',
+          'La manière dont AkikSystems traite les données personnelles lors de la consultation du site, de l’envoi d’une demande depuis Travailler ensemble ou de l’utilisation de son administration privée.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: frUpdated,
+        updatedAt: privacyFrUpdated,
+        updatedAtIso: privacyUpdatedAtIso,
         sections: [
           {
             id: 'responsable',
@@ -127,8 +146,17 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'navigation-publique',
             title: 'Données de navigation publique',
             paragraphs: [
-              'Les pages publiques ne comportent ni formulaire de contact, ni traceur publicitaire, ni outil de mesure d’audience, ni widget social tiers. AkikSystems n’utilise pas les données de navigation publique pour établir des profils marketing.',
+              'Les pages publiques n’utilisent ni traceur publicitaire, ni outil de mesure d’audience, ni widget social tiers. La page Travailler ensemble contient le formulaire de contact décrit ci-dessous. AkikSystems n’utilise ni les données de navigation publique ni les demandes reçues pour établir des profils marketing.',
               'Le serveur crée des identifiants de requête et de corrélation et journalise des événements techniques limités : chemin demandé, méthode HTTP, statut de réponse et durée de traitement. Les prestataires d’infrastructure peuvent également traiter des données de connexion, notamment l’adresse IP, afin d’acheminer et de sécuriser le service.',
+            ],
+          },
+          {
+            id: 'demandes-travailler-ensemble',
+            title: 'Demandes Travailler ensemble',
+            paragraphs: [
+              'Lorsque vous envoyez le formulaire Travailler ensemble, AkikSystems enregistre votre nom, votre adresse électronique, votre organisation facultative, votre message libre, la langue sélectionnée et l’identifiant technique de soumission utilisé pour rendre les nouvelles tentatives idempotentes. L’administration conserve aussi des métadonnées opérationnelles de traitement et de notification : état, horodatages, tentatives de livraison, destinataire de notification, identifiant du fournisseur et identifiant du message fournisseur lorsqu’ils existent.',
+              'Ces données servent à recevoir et lire la demande, y répondre ou assurer son suivi, prévenir les abus et conserver la traçabilité opérationnelle du traitement et de la notification. N’incluez pas de données personnelles inutiles à votre demande.',
+              'Lorsque « Écouter mon message » est disponible, cette fonction utilise la synthèse vocale du navigateur comme amélioration progressive. AkikSystems n’envoie pas le message ni de contenu audio à un service vocal distinct dans le cadre de cette fonction.',
             ],
           },
           {
@@ -144,6 +172,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Finalités et bases juridiques',
             items: [
               'Fournir les pages et médias publics demandés par le visiteur.',
+              'Recevoir, examiner et traiter les demandes Travailler ensemble sur le fondement de l’intérêt légitime lié à la gestion des échanges et, lorsqu’une demande concerne une collaboration éventuelle, prendre les mesures demandées avant la conclusion d’un contrat.',
               'Sécuriser le service, diagnostiquer les incidents et prévenir les abus sur le fondement de l’intérêt légitime.',
               'Authentifier et sécuriser l’administration privée sur le fondement de l’intérêt légitime et des besoins de fonctionnement du service.',
               'Respecter les obligations légales applicables.',
@@ -153,7 +182,8 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'destinataires',
             title: 'Destinataires et hébergement',
             paragraphs: [
-              'Les données sont limitées à l’éditeur et aux prestataires techniques nécessaires au fonctionnement du service. L’application et ses données opérationnelles sont hébergées au moyen des services Railway. Railway peut recourir à des sous-traitants et traiter des données hors de l’Espace économique européen dans le cadre de ses garanties contractuelles.',
+              'Les données sont limitées à l’éditeur et aux prestataires techniques nécessaires au fonctionnement du service. L’application et ses données opérationnelles, y compris les demandes Travailler ensemble, sont hébergées au moyen des services Railway.',
+              'Les demandes Travailler ensemble sont accessibles dans l’administration authentifiée. Si les notifications transactionnelles par e-mail sont activées, le nom, l’adresse électronique, l’organisation facultative et le message sont transmis au fournisseur de livraison d’e-mails configuré uniquement afin d’alerter l’administrateur. L’intégration actuelle prend en charge Resend ; lorsqu’aucun fournisseur n’est configuré, la demande reste dans l’inbox d’administration et n’est pas transmise par ce canal e-mail.',
               'AkikSystems ne vend aucune donnée personnelle et ne la communique pas à des annonceurs.',
             ],
           },
@@ -162,6 +192,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Durées de conservation',
             paragraphs: [
               'Les journaux techniques sont conservés uniquement pendant la durée raisonnablement nécessaire à la sécurité, à l’analyse des incidents et à l’exploitation du service, sous réserve des durées appliquées par le prestataire d’infrastructure. Les données d’administration sont conservées tant que le compte ou la preuve d’audit reste nécessaire, puis supprimées ou anonymisées sauf obligation légale contraire.',
+              'Les demandes Travailler ensemble sont conservées pendant la durée nécessaire à la gestion de l’échange, à son suivi, au traitement des abus ou incidents de sécurité et aux obligations légales applicables. L’application n’applique actuellement aucune échéance automatique de suppression fondée sur le temps ; la suppression reste donc une opération d’administration. Marquer une demande comme traitée ne la supprime pas et ne supprime pas ses métadonnées de notification.',
             ],
           },
           {
@@ -195,6 +226,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
           'Publisher, hosting, responsibility, and intellectual-property information for akiksystems.com.',
         updatedLabel: 'Last updated',
         updatedAt: enUpdated,
+        updatedAtIso: baselineUpdatedAtIso,
         sections: [
           {
             id: 'publisher',
@@ -248,6 +280,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
           'Informations relatives à l’éditeur, à l’hébergement, à la responsabilité et à la propriété intellectuelle de akiksystems.com.',
         updatedLabel: 'Dernière mise à jour',
         updatedAt: frUpdated,
+        updatedAtIso: baselineUpdatedAtIso,
         sections: [
           {
             id: 'editeur',
@@ -308,6 +341,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
           'A precise account of cookies and similar browser storage used by AkikSystems.',
         updatedLabel: 'Last updated',
         updatedAt: enUpdated,
+        updatedAtIso: baselineUpdatedAtIso,
         sections: [
           {
             id: 'public-pages',
@@ -354,6 +388,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
           'Présentation précise des cookies et stockages similaires utilisés par AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
         updatedAt: frUpdated,
+        updatedAtIso: baselineUpdatedAtIso,
         sections: [
           {
             id: 'pages-publiques',
