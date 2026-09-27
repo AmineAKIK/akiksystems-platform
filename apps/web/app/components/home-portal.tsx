@@ -1,13 +1,16 @@
-import { BrandMark, Heading } from '@akiksystems/ui';
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import {
+  destinationById,
   destinationHref,
-  globalDestinations,
   type GlobalDestinationId,
 } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
+import {
+  homeDestinationOrder,
+  homeDestinationPresentation,
+} from './home-portal-content';
 import {
   homeDescriptionEvent,
   type HomeDescriptionDetail,
@@ -18,30 +21,54 @@ interface HomePortalProps {
   locale: Locale;
 }
 
-const destinationSummaries: Record<GlobalDestinationId, Record<Locale, string>> = {
-  profile: {
-    en: 'Founder · Journey · Perspective',
-    fr: 'Fondateur · Parcours · Perspective',
-  },
-  systems: {
-    en: 'Products · Projects · Live',
-    fr: 'Produits · Projets · En ligne',
-  },
-  writings: {
-    en: 'Articles · Essays · Notes',
-    fr: 'Articles · Essais · Notes',
-  },
-  learning: {
-    en: 'Methods · Decisions · Dossiers',
-    fr: 'Méthodes · Décisions · Dossiers',
-  },
-  'work-with-us': {
-    en: 'Projects · Partnerships · Contact',
-    fr: 'Projets · Partenariats · Contact',
-  },
-};
+const emblemGroups = [
+  'frame-and-serpent',
+  'eagle',
+  'leaf-left-upper',
+  'leaf-right-upper',
+  'leaf-left-middle',
+  'leaf-right-middle',
+  'leaf-right-lower',
+  'leaf-left-lower',
+  'star-center',
+  'star-left',
+  'star-right',
+] as const;
 
-function ParisClock({ locale }: { locale: Locale }) {
+function formatParisContext(now: Date, locale: Locale): string {
+  const languageTag = locale === 'fr' ? 'fr-FR' : 'en-GB';
+  const time = new Intl.DateTimeFormat(languageTag, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'Europe/Paris',
+  }).format(now);
+
+  const date = new Intl.DateTimeFormat(languageTag, {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Europe/Paris',
+  })
+    .format(now)
+    .replace(',', '')
+    .toUpperCase();
+
+  const offset =
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Paris',
+      timeZoneName: 'shortOffset',
+    })
+      .formatToParts(now)
+      .find((part) => part.type === 'timeZoneName')
+      ?.value.replace('GMT', 'UTC') ?? 'UTC';
+
+  return time + ' · PARIS ' + offset + ' · ' + date;
+}
+
+function ParisContext({ locale }: { locale: Locale }) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -51,45 +78,56 @@ function ParisClock({ locale }: { locale: Locale }) {
     return () => window.clearInterval(timer);
   }, []);
 
-  const time = now?.toLocaleTimeString(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-    timeZone: 'Europe/Paris',
-  });
-  const date = now?.toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'Europe/Paris',
-  });
-
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
+  const localeName = locale === 'fr' ? 'Français' : 'English';
+  const alternateName = alternateLocale === 'fr' ? 'français' : 'English';
 
   return (
     <div className="aks-home-meta">
       <p
-        aria-label={locale === 'fr' ? 'Heure à Paris' : 'Time in Paris'}
+        aria-label={locale === 'fr' ? 'Heure locale à Paris' : 'Local time in Paris'}
         className="aks-home-clock"
       >
-        <time dateTime={now?.toISOString()}>{time ?? '--:--:--'}</time>
-        <span>Paris</span>
-        <span aria-hidden="true" className="aks-home-clock-separator" />
-        <span>{date ?? '—'}</span>
+        <time dateTime={now?.toISOString()}>
+          {now === null
+            ? '--:--:-- · PARIS UTC · —'
+            : formatParisContext(now, locale)}
+        </time>
       </p>
       <Link
-        aria-label={locale === 'fr' ? 'Afficher en anglais' : 'View in French'}
+        aria-label={
+          locale === 'fr'
+            ? localeName + ' actif. Afficher en ' + alternateName + '.'
+            : localeName + ' active. View in ' + alternateName + '.'
+        }
         className="aks-home-language"
         hrefLang={alternateLocale}
         lang={alternateLocale}
         prefetch="intent"
-        to={`/${alternateLocale}`}
+        to={'/' + alternateLocale}
       >
-        {alternateLocale.toUpperCase()}
+        {locale.toUpperCase()}
       </Link>
     </div>
+  );
+}
+
+function HomeEmblem() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="aks-home-brand-mark"
+      focusable="false"
+      viewBox="0 0 2048 2048"
+    >
+      {emblemGroups.map((group) => (
+        <use
+          fill="currentColor"
+          href={'/brand/AKSYS.svg#' + group}
+          key={group}
+        />
+      ))}
+    </svg>
   );
 }
 
@@ -98,13 +136,19 @@ export function HomePortal({ locale }: HomePortalProps) {
   const navigate = useNavigate();
   const [preview, setPreview] = useState<HomeDescriptionDetail | null>(null);
   const [previewActive, setPreviewActive] = useState(false);
-  const [activeDestination, setActiveDestination] = useState<GlobalDestinationId | null>(null);
+  const [activeDestination, setActiveDestination] =
+    useState<GlobalDestinationId | null>(null);
   const focusedPreview = useRef<HomeDescriptionDetail | null>(null);
   const pointedPreview = useRef<HomeDescriptionDetail | null>(null);
+  const selectedPreview = useRef<HomeDescriptionDetail | null>(null);
+  const lastPointerType = useRef<string | null>(null);
 
   const restorePreview = () => {
-    const next = pointedPreview.current ?? focusedPreview.current;
-    if (next !== null) setPreview(next);
+    const next =
+      pointedPreview.current ??
+      focusedPreview.current ??
+      selectedPreview.current;
+    setPreview(next);
     setPreviewActive(next !== null);
   };
 
@@ -117,47 +161,155 @@ export function HomePortal({ locale }: HomePortalProps) {
     restorePreview();
   };
 
+  const destinationPreview = (id: GlobalDestinationId) => ({
+    description: homeDestinationPresentation[id].description[locale],
+    label: homeDestinationPresentation[id].label[locale],
+  });
+
+  const clearTouchSelection = () => {
+    selectedPreview.current = null;
+    setActiveDestination(null);
+    restorePreview();
+  };
+
   useEffect(() => {
     const receiveDescription = (event: Event) => {
-      const { channel, content } = (event as CustomEvent<HomeDescriptionEventDetail>).detail;
+      const { channel, content } = (
+        event as CustomEvent<HomeDescriptionEventDetail>
+      ).detail;
       updatePreview(channel, content);
     };
 
-    window.addEventListener(homeDescriptionEvent, receiveDescription);
-    return () => window.removeEventListener(homeDescriptionEvent, receiveDescription);
-  }, []);
-
-  const destinationPreview = (id: GlobalDestinationId) => {
-    const destination = globalDestinations.find((candidate) => candidate.id === id);
-    if (destination === undefined) return null;
-    return {
-      description: destination.description[locale],
-      label: destination.label[locale],
+    const clearSelectionOutsidePrimary = (event: globalThis.PointerEvent) => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest('[data-home-preview-target="primary"]') !== null
+      ) {
+        return;
+      }
+      clearTouchSelection();
     };
-  };
 
-  const followDestination = (event: MouseEvent<HTMLAnchorElement>, id: GlobalDestinationId) => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+    window.addEventListener(homeDescriptionEvent, receiveDescription);
+    document.addEventListener('pointerdown', clearSelectionOutsidePrimary);
+
+    return () => {
+      window.removeEventListener(homeDescriptionEvent, receiveDescription);
+      document.removeEventListener('pointerdown', clearSelectionOutsidePrimary);
+    };
+  });
+
+  const followDestination = (
+    event: MouseEvent<HTMLAnchorElement>,
+    id: GlobalDestinationId,
+  ) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
       return;
+    }
+
+    const tactile =
+      lastPointerType.current === 'touch' ||
+      lastPointerType.current === 'pen';
+
+    if (tactile && activeDestination !== id) {
+      event.preventDefault();
+      const content = destinationPreview(id);
+      selectedPreview.current = content;
+      setActiveDestination(id);
+      setPreview(content);
+      setPreviewActive(true);
+      return;
+    }
+
     event.preventDefault();
     setActiveDestination(id);
-    window.setTimeout(() => navigate(destinationHref(id, locale)), 220);
+    window.setTimeout(
+      () => navigate(destinationHref(id, locale)),
+      160,
+    );
   };
 
   return (
     <main className="aks-home">
-      <ParisClock locale={locale} />
+      <ParisContext locale={locale} />
 
       <section aria-labelledby="aks-home-title" className="aks-home-portal">
+        <nav
+          aria-label={dictionary.home.destinationsLabel}
+          className="aks-home-orbit"
+        >
+          {homeDestinationOrder.map((id, index) => {
+            const destination = destinationById(id);
+            const presentation = homeDestinationPresentation[id];
+
+            return (
+              <Link
+                className={
+                  'aks-home-door' +
+                  (activeDestination === id ? ' is-active' : '')
+                }
+                data-destination={id}
+                data-home-preview-target="primary"
+                data-preview-copy={presentation.description[locale]}
+                key={id}
+                onBlur={() => updatePreview('focus', null)}
+                onFocus={() =>
+                  updatePreview('focus', destinationPreview(id))
+                }
+                onClick={(event) => followDestination(event, id)}
+                onKeyDown={() => {
+                  lastPointerType.current = null;
+                }}
+                onPointerDown={(event: PointerEvent<HTMLAnchorElement>) => {
+                  lastPointerType.current = event.pointerType;
+                }}
+                onPointerEnter={(event) => {
+                  if (
+                    event.pointerType !== 'touch' &&
+                    event.pointerType !== 'pen'
+                  ) {
+                    updatePreview('pointer', destinationPreview(id));
+                  }
+                }}
+                onPointerLeave={(event) => {
+                  if (
+                    event.pointerType !== 'touch' &&
+                    event.pointerType !== 'pen'
+                  ) {
+                    updatePreview('pointer', null);
+                  }
+                }}
+                prefetch="intent"
+                style={{ '--aks-home-order': index } as React.CSSProperties}
+                to={destinationHref(destination.id, locale)}
+              >
+                <span className="aks-home-door-label">
+                  {presentation.label[locale]}
+                </span>
+                <span className="aks-home-door-summary">
+                  {presentation.summary[locale]}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
         <div className="aks-home-center">
-          <BrandMark className="aks-home-brand-mark" />
-          <Heading id="aks-home-title" level={1} size="lg">
+          <HomeEmblem />
+          <h1 className="aks-home-wordmark" id="aks-home-title">
             AkikSystems
-          </Heading>
-          <p className="aks-home-scale" data-text="SYSTEMIC SCALE">
-            Systemic scale
-          </p>
+          </h1>
+          <p className="aks-home-scale">Systemic Scale</p>
           <div
+            aria-atomic="true"
             aria-live="polite"
             className="aks-home-active-description"
             data-state={previewActive ? 'active' : 'idle'}
@@ -166,29 +318,6 @@ export function HomePortal({ locale }: HomePortalProps) {
             <p>{preview?.description ?? '\u00a0'}</p>
           </div>
         </div>
-
-        <nav aria-label={dictionary.home.destinationsLabel} className="aks-home-orbit">
-          {globalDestinations.map((destination) => (
-            <Link
-              className={`aks-home-door${activeDestination === destination.id ? ' is-active' : ''}`}
-              data-destination={destination.id}
-              data-preview-copy={destination.description[locale]}
-              key={destination.id}
-              onBlur={() => updatePreview('focus', null)}
-              onFocus={() => updatePreview('focus', destinationPreview(destination.id))}
-              onClick={(event) => followDestination(event, destination.id)}
-              onPointerEnter={() => updatePreview('pointer', destinationPreview(destination.id))}
-              onPointerLeave={() => updatePreview('pointer', null)}
-              prefetch="intent"
-              to={destinationHref(destination.id, locale)}
-            >
-              <span className="aks-home-door-label">{destination.label[locale]}</span>
-              <span className="aks-home-door-summary">
-                {destinationSummaries[destination.id][locale]}
-              </span>
-            </Link>
-          ))}
-        </nav>
       </section>
     </main>
   );
