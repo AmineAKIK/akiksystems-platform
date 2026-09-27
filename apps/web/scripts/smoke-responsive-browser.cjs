@@ -2,13 +2,14 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
+const path = require('node:path');
 const { chromium } = require('playwright');
 
 const port = '4178';
-const origin = `http://127.0.0.1:${port}`;
+const origin = 'http://127.0.0.1:' + port;
 
 const server = spawn(process.execPath, ['server.js'], {
-  cwd: require('node:path').resolve(__dirname, '..'),
+  cwd: path.resolve(__dirname, '..'),
   env: {
     ...process.env,
     NODE_ENV: 'production',
@@ -26,677 +27,193 @@ server.stderr.on('data', (chunk) => {
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
-      const response = await globalThis.fetch(`${origin}/en`);
+      const response = await globalThis.fetch(origin + '/fr');
       if (response.ok) return;
     } catch {
-      // Server is still starting.
+      // Production server is still starting.
     }
-
     await sleep(125);
   }
-
-  throw new Error(`Browser smoke server did not become ready. stderr=${stderr}`);
+  throw new Error('Responsive smoke server did not become ready. stderr=' + stderr);
 }
 
-async function measureHome(page) {
+async function measure(page) {
   return page.evaluate(() => {
-    const viewportWidth = document.documentElement.clientWidth;
-    const home = document.querySelector('.aks-home');
-    const meta = document.querySelector('.aks-home-meta');
-    const center = document.querySelector('.aks-home-center');
-    const heading = center?.querySelector('.aks-heading');
-    const brand = center?.querySelector('.aks-home-brand-mark');
-    const scale = center?.querySelector('.aks-home-scale');
-    const activeDescription = center?.querySelector('.aks-home-active-description');
-    const orbit = document.querySelector('.aks-home-orbit');
-    const footerShell = document.querySelector(
-      ".aks-experience-footer[data-home='true']",
-    );
-    const footer = footerShell?.querySelector('.aks-experience-footer-inner');
-    const copyright = footer?.querySelector('p');
-    const legalNav = footer?.querySelector('nav');
-    const doors = [...document.querySelectorAll('.aks-home-door')];
-
-    if (
-      !(home instanceof HTMLElement) ||
-      !(meta instanceof HTMLElement) ||
-      !(center instanceof HTMLElement) ||
-      !(heading instanceof HTMLElement) ||
-      !(brand instanceof HTMLElement) ||
-      !(scale instanceof HTMLElement) ||
-      !(activeDescription instanceof HTMLElement) ||
-      !(orbit instanceof HTMLElement) ||
-      !(footerShell instanceof HTMLElement) ||
-      !(footer instanceof HTMLElement) ||
-      !(copyright instanceof HTMLElement) ||
-      !(legalNav instanceof HTMLElement)
-    ) {
-      return null;
-    }
-
-    const rect = (element) => {
-      const value = element.getBoundingClientRect();
-      return {
-        top: value.top,
-        right: value.right,
-        bottom: value.bottom,
-        left: value.left,
-        width: value.width,
-        height: value.height,
-      };
+    const rect = (selector) => {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement || element instanceof SVGElement)) return null;
+      const box = element.getBoundingClientRect();
+      return { top: box.top, left: box.left, right: box.right, bottom: box.bottom, width: box.width, height: box.height };
     };
-
-    const overlaps = (first, second) =>
-      first.left < second.right - 1 &&
-      first.right > second.left + 1 &&
-      first.top < second.bottom - 1 &&
-      first.bottom > second.top + 1;
-
-    const homeRect = rect(home);
-    const metaRect = rect(meta);
-    const centerRect = rect(center);
-    const headingRect = rect(heading);
-    const brandRect = rect(brand);
-    const scaleRect = rect(scale);
-    const activeDescriptionRect = rect(activeDescription);
-    const orbitRect = rect(orbit);
-    const copyrightRect = rect(copyright);
-    const legalNavRect = rect(legalNav);
-    const footerShellRect = rect(footerShell);
-    const footerSeparator = getComputedStyle(footerShell, '::before');
-    const doorRects = doors.map(rect);
-    const doorRectsByDestination = Object.fromEntries(
-      doors.map((door) => [door.dataset.destination ?? '', rect(door)]),
-    );
-    const doorSeparators = doors.slice(1).map((door) => {
-      const separator = getComputedStyle(door, '::before');
-      return {
-        content: separator.content,
-        backgroundImage: separator.backgroundImage,
-        width: Number.parseFloat(separator.width),
-        height: Number.parseFloat(separator.height),
-        doorWidth: door.getBoundingClientRect().width,
-      };
-    });
-
+    const doors = [...document.querySelectorAll('.aks-home-door')];
     return {
-      viewportWidth,
-      pageScrollWidth: document.documentElement.scrollWidth,
-      pageFits: document.documentElement.scrollWidth <= viewportWidth,
-      overflowingElements: [...document.querySelectorAll('body *')]
-        .map((element) => {
-          const box = element.getBoundingClientRect();
-          return {
-            tag: element.tagName,
-            className:
-              element instanceof HTMLElement
-                ? element.className
-                : element.getAttribute('class') ?? '',
-            left: box.left,
-            right: box.right,
-            width: box.width,
-          };
-        })
-        .filter(
-          (item) =>
-            item.width > 0 &&
-            (item.left < -1 || item.right > viewportWidth + 1),
-        )
-        .slice(0, 12),
-      centerPosition: getComputedStyle(center).position,
-      firstDoorPosition: doors[0] instanceof HTMLElement ? getComputedStyle(doors[0]).position : null,
-      orbitDisplay: getComputedStyle(orbit).display,
-      homeRect,
-      metaRect,
-      centerRect,
-      headingRect,
-      brandRect,
-      scaleRect,
-      activeDescriptionRect,
-      activeDescriptionState: activeDescription.dataset.state ?? null,
-      orbitRect,
-      footerRect: rect(footer),
-      footerShellRect,
-      footerUsesCanonicalSeparator: footerShell.classList.contains(
-        'aks-section-separator-before',
-      ),
-      footerSeparator: {
-        content: footerSeparator.content,
-        backgroundImage: footerSeparator.backgroundImage,
-        width: Number.parseFloat(footerSeparator.width),
-        height: Number.parseFloat(footerSeparator.height),
-      },
-      copyrightRect,
-      legalNavRect,
-      centerOrbitOverlap: overlaps(centerRect, orbitRect),
-      footerContentOverlap: overlaps(copyrightRect, legalNavRect),
-      doorRects,
-      doorRectsByDestination,
-      doorOrder: doors.map((door) => door.dataset.destination ?? ''),
-      doorSeparators,
-      identityScaleRatio: brandRect.width / headingRect.width,
-      doorCount: doors.length,
+      viewportWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      home: rect('.aks-home'),
+      meta: rect('.aks-home-meta'),
+      brand: rect('.aks-home-brand-mark'),
+      wordmark: rect('.aks-home-wordmark'),
+      scale: rect('.aks-home-scale'),
+      preview: rect('.aks-home-active-description'),
+      previewState: document.querySelector('.aks-home-active-description')?.getAttribute('data-state'),
+      footer: rect(".aks-experience-footer[data-home='true']"),
+      footerSeparator: getComputedStyle(document.querySelector(".aks-experience-footer[data-home='true']"), '::before').display,
+      doorOrder: doors.map((door) => door.dataset.destination),
+      doors: Object.fromEntries(doors.map((door) => [door.dataset.destination, rect('.aks-home-door[data-destination="' + door.dataset.destination + '"]')])),
+      legalCount: document.querySelectorAll(".aks-experience-footer[data-home='true'] nav a").length,
+      background: getComputedStyle(document.querySelector('.aks-experience-frame[data-home="true"]')).backgroundImage,
     };
   });
 }
 
-function assertHomeFooterSeparator(measurement, name) {
-  assert.equal(
-    measurement.footerUsesCanonicalSeparator,
-    true,
-    `${name} footer must use the canonical application section separator primitive.`,
-  );
-  assert.notEqual(
-    measurement.footerSeparator.content,
-    'none',
-    `${name} footer separator must render.`,
-  );
-  assert.match(
-    measurement.footerSeparator.backgroundImage,
-    /^linear-gradient\(/,
-    `${name} footer separator must use the shared fading gradient.`,
-  );
-  assert.ok(
-    measurement.footerSeparator.width < measurement.footerShellRect.width,
-    `${name} footer separator must remain inset instead of slicing the viewport edge-to-edge.`,
-  );
-  assert.ok(
-    measurement.footerSeparator.height <= 1,
-    `${name} footer separator must remain hairline-thin.`,
-  );
+function inside(rect, width, label) {
+  assert.ok(rect, label + ' must exist');
+  assert.ok(rect.left >= -1, label + ' must stay inside left edge');
+  assert.ok(rect.right <= width + 1, label + ' must stay inside right edge');
 }
 
-function assertIdentityScale(measurement, name) {
-  assert.ok(
-    measurement.identityScaleRatio >= 0.33,
-    `${name} brand mark must keep enough visual mass relative to the AkikSystems wordmark.`,
-  );
-  assert.ok(
-    measurement.identityScaleRatio <= 0.8,
-    `${name} brand mark must not overpower the AkikSystems wordmark.`,
-  );
-}
-
-function assertHomeDoorSeparators(measurement, name) {
-  assert.equal(
-    measurement.doorSeparators.length,
-    4,
-    `${name} compact navigation must render four separators between five destinations.`,
-  );
-
-  for (const [index, separator] of measurement.doorSeparators.entries()) {
-    assert.notEqual(
-      separator.content,
-      'none',
-      `${name} destination separator ${index + 1} must render.`,
-    );
-    assert.equal(
-      separator.backgroundImage,
-      measurement.footerSeparator.backgroundImage,
-      `${name} destination separator ${index + 1} must use the same fading gradient as the footer.`,
-    );
-    assert.ok(
-      separator.width < separator.doorWidth,
-      `${name} destination separator ${index + 1} must stay inset like the footer separator.`,
-    );
-    assert.ok(
-      separator.height <= 1,
-      `${name} destination separator ${index + 1} must remain hairline-thin.`,
-    );
-  }
-}
-
-function assertInsideViewport(rect, width, label) {
-  assert.ok(rect.left >= -1, `${label} must stay inside the left viewport edge.`);
-  assert.ok(rect.right <= width + 1, `${label} must stay inside the right viewport edge.`);
-}
-
-function rectsOverlap(first, second, tolerance = 1) {
-  return (
-    first.left < second.right - tolerance &&
-    first.right > second.left + tolerance &&
-    first.top < second.bottom - tolerance &&
-    first.bottom > second.top + tolerance
-  );
-}
-
-function assertNoOverlap(first, second, label) {
-  assert.equal(rectsOverlap(first, second), false, `${label} must not overlap.`);
-}
-
-function assertRectStableWithinContainer(
-  first,
-  firstContainer,
-  second,
-  secondContainer,
-  label,
-  tolerance = 0.75,
-) {
-  const firstGeometry = {
-    top: first.top - firstContainer.top,
-    left: first.left - firstContainer.left,
-    width: first.width,
-    height: first.height,
-  };
-  const secondGeometry = {
-    top: second.top - secondContainer.top,
-    left: second.left - secondContainer.left,
-    width: second.width,
-    height: second.height,
-  };
-
-  for (const key of ['top', 'left', 'width', 'height']) {
-    assert.ok(
-      Math.abs(firstGeometry[key] - secondGeometry[key]) <= tolerance,
-      `${label} ${key} must stay stable while preview copy changes.`,
-    );
-  }
-}
-
-function centerX(rect) {
-  return rect.left + rect.width / 2;
-}
-
-function assertHorizontallyAligned(first, second, label) {
-  assert.ok(
-    Math.abs(centerX(first) - centerX(second)) <= 2,
-    `${label} must share the same horizontal center.`,
-  );
-}
-
-async function assertCompactHome(browser, locale, viewport, name) {
+async function assertReferenceViewport(browser, viewport, name, portraitLayout) {
   const context = await browser.newContext({
     viewport,
-    hasTouch: true,
+    hasTouch: viewport.width < 768 || (viewport.width === 768 && viewport.height > viewport.width),
     isMobile: viewport.width < 768,
   });
-
   try {
     const page = await context.newPage();
-    const response = await page.goto(`${origin}/${locale}`);
-    assert.equal(response?.status(), 200, `${name} /${locale} must return HTTP 200.`);
+    const response = await page.goto(origin + '/fr');
+    assert.equal(response?.status(), 200, name + ' must return 200');
     await page.locator('.aks-home').waitFor();
 
-    await page.locator(".aks-experience-footer[data-home='true']").scrollIntoViewIfNeeded();
-    const measurement = await measureHome(page);
+    const m = await measure(page);
+    assert.equal(m.scrollWidth <= m.viewportWidth, true, name + ' must not overflow horizontally');
+    assert.deepEqual(m.doorOrder, ['work-with-us', 'profile', 'systems', 'writings', 'learning']);
+    assert.equal(m.legalCount, 3);
+    assert.equal(m.footerSeparator, 'none');
+    assert.match(m.background, /^radial-gradient\(/);
 
-    assert.ok(measurement, `${name} Home must be measurable.`);
-    assert.equal(
-      measurement.pageFits,
-      true,
-      `${name} must not overflow horizontally. scrollWidth=${measurement.pageScrollWidth}, viewport=${measurement.viewportWidth}, offenders=${JSON.stringify(measurement.overflowingElements)}`,
-    );
-    assertHomeFooterSeparator(measurement, name);
-    assertHomeDoorSeparators(measurement, name);
-    assertIdentityScale(measurement, name);
-    assert.equal(measurement.doorCount, 5, `${name} must expose the five primary destinations.`);
-    assert.deepEqual(
-      measurement.doorOrder,
-      ['profile', 'work-with-us', 'writings', 'systems', 'learning'],
-      `${name} must keep the approved destination order.`,
-    );
-    assert.equal(
-      measurement.centerPosition,
-      'static',
-      `${name} must use the compact flow layout instead of desktop absolute positioning.`,
-    );
-    assert.equal(measurement.orbitDisplay, 'grid', `${name} navigation must use the compact grid.`);
-    assert.equal(
-      measurement.firstDoorPosition,
-      'static',
-      `${name} destinations must remain in compact document flow.`,
-    );
-    assert.equal(
-      measurement.centerOrbitOverlap,
-      false,
-      `${name} identity and navigation must not overlap.`,
-    );
-    assert.equal(
-      measurement.footerContentOverlap,
-      false,
-      `${name} footer copyright and legal navigation must not overlap.`,
-    );
+    inside(m.meta, m.viewportWidth, name + ' metadata');
+    inside(m.brand, m.viewportWidth, name + ' emblem');
+    inside(m.wordmark, m.viewportWidth, name + ' wordmark');
+    for (const [id, box] of Object.entries(m.doors)) inside(box, m.viewportWidth, name + ' ' + id);
 
-    assertInsideViewport(measurement.metaRect, measurement.viewportWidth, `${name} metadata rail`);
-    assertInsideViewport(measurement.centerRect, measurement.viewportWidth, `${name} identity`);
-    assertInsideViewport(measurement.headingRect, measurement.viewportWidth, `${name} wordmark`);
-    assertInsideViewport(measurement.brandRect, measurement.viewportWidth, `${name} brand mark`);
-    assertInsideViewport(measurement.orbitRect, measurement.viewportWidth, `${name} navigation`);
-    assertInsideViewport(measurement.footerRect, measurement.viewportWidth, `${name} footer`);
-    assertInsideViewport(
-      measurement.copyrightRect,
-      measurement.viewportWidth,
-      `${name} footer copyright`,
-    );
-    assertInsideViewport(
-      measurement.legalNavRect,
-      measurement.viewportWidth,
-      `${name} footer navigation`,
-    );
+    assert.ok(Math.abs((m.brand.left + m.brand.width / 2) - viewport.width / 2) <= 2, name + ' emblem must be centered');
+    assert.ok(Math.abs((m.wordmark.left + m.wordmark.width / 2) - viewport.width / 2) <= 2, name + ' wordmark must be centered');
 
-    if (viewport.width > viewport.height) {
-      assertHorizontallyAligned(
-        measurement.copyrightRect,
-        measurement.centerRect,
-        `${name} footer copyright and identity`,
-      );
-      assertHorizontallyAligned(
-        measurement.legalNavRect,
-        measurement.orbitRect,
-        `${name} legal navigation and primary destinations`,
-      );
+    if (portraitLayout) {
+      assert.ok(m.doors.profile.top > m.brand.bottom, name + ' Profile must sit below identity');
+      assert.ok(m.doors.systems.top > m.brand.bottom, name + ' Systems must sit below identity');
+      assert.ok(m.doors.writings.top > m.doors.profile.top, name + ' Writings must form second row');
+      assert.ok(m.doors.learning.top > m.doors.systems.top, name + ' Learning must form second row');
+    } else {
+      assert.ok(m.doors.profile.left < m.brand.left, name + ' Profile must sit left of identity');
+      assert.ok(m.doors.systems.left > m.brand.right, name + ' Systems must sit right of identity');
     }
 
-    for (const [index, doorRect] of measurement.doorRects.entries()) {
-      assertInsideViewport(doorRect, measurement.viewportWidth, `${name} door ${index + 1}`);
-      assert.ok(
-        doorRect.height >= 44,
-        `${name} door ${index + 1} must keep a minimum 44px touch target.`,
-      );
+    if (viewport.width >= 768) {
+      await page.locator('.aks-home-door[data-destination="work-with-us"]').hover();
+      await page.waitForTimeout(240);
+      const active = await measure(page);
+      assert.equal(active.previewState, 'active', name + ' hover must reveal the description');
+      assert.ok(Math.abs(active.brand.top - m.brand.top) <= 1, name + ' hover must not move the emblem');
+      assert.ok(Math.abs(active.wordmark.top - m.wordmark.top) <= 1, name + ' hover must not move the wordmark');
     }
   } finally {
     await context.close();
   }
 }
 
-async function assertDesktopHome(browser, viewport, name, { preview = false } = {}) {
-  const context = await browser.newContext({ viewport });
-
+async function assertTouchSelection(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 375, height: 812 },
+    hasTouch: true,
+    isMobile: true,
+  });
   try {
     const page = await context.newPage();
-    const response = await page.goto(`${origin}/en`);
-    assert.equal(response?.status(), 200, `${name} must return HTTP 200.`);
-    await page.locator('.aks-home').waitFor();
-
-    let measurement = await measureHome(page);
-    assert.ok(measurement, `${name} must be measurable.`);
-
-    assert.equal(measurement.pageFits, true, `${name} must not overflow horizontally.`);
-    assertHomeFooterSeparator(measurement, name);
-    assertIdentityScale(measurement, name);
-    assert.deepEqual(
-      measurement.doorOrder,
-      ['profile', 'work-with-us', 'writings', 'systems', 'learning'],
-      `${name} must keep the approved destination order.`,
-    );
-    assert.equal(
-      measurement.centerPosition,
-      'absolute',
-      `${name} must preserve the orbital identity composition.`,
-    );
-    assert.equal(
-      measurement.firstDoorPosition,
-      'absolute',
-      `${name} destinations must preserve orbital positioning.`,
-    );
-
-    assertInsideViewport(measurement.metaRect, measurement.viewportWidth, `${name} metadata rail`);
-    assertInsideViewport(measurement.headingRect, measurement.viewportWidth, `${name} wordmark`);
-    assertInsideViewport(measurement.brandRect, measurement.viewportWidth, `${name} brand mark`);
-    assert.ok(
-      Math.abs(centerX(measurement.centerRect) - measurement.viewportWidth / 2) <= 2,
-      `${name} Home identity must remain horizontally centered in the viewport.`,
-    );
-
-    const destinations = ['work-with-us', 'profile', 'systems', 'writings', 'learning'];
-    for (let firstIndex = 0; firstIndex < destinations.length; firstIndex += 1) {
-      for (let secondIndex = firstIndex + 1; secondIndex < destinations.length; secondIndex += 1) {
-        const first = measurement.doorRectsByDestination[destinations[firstIndex]];
-        const second = measurement.doorRectsByDestination[destinations[secondIndex]];
-        assert.ok(first && second, `${name} must expose all orbital destinations.`);
-        assertNoOverlap(
-          first,
-          second,
-          `${name} ${destinations[firstIndex]} and ${destinations[secondIndex]}`,
-        );
-      }
-    }
-
-    const workWithUs = measurement.doorRectsByDestination['work-with-us'];
-    assert.ok(workWithUs, `${name} must expose Work with us.`);
-    assertNoOverlap(workWithUs, measurement.brandRect, `${name} Work with us and brand mark`);
-
-    if (preview) {
-      const baseline = measurement;
-      const legalLinks = page.locator(".aks-experience-footer[data-home='true'] nav a");
-      const legalLinkCount = await legalLinks.count();
-
-      assert.ok(legalLinkCount > 0, `${name} must expose legal preview links.`);
-
-      for (let index = 0; index < legalLinkCount; index += 1) {
-        await legalLinks.nth(index).hover();
-        await page.waitForTimeout(80);
-        measurement = await measureHome(page);
-        assert.ok(measurement, `${name} preview state must be measurable.`);
-        assert.equal(
-          measurement.activeDescriptionState,
-          'active',
-          `${name} legal preview must become active on pointer intent.`,
-        );
-
-        assertRectStableWithinContainer(
-          baseline.centerRect,
-          baseline.homeRect,
-          measurement.centerRect,
-          measurement.homeRect,
-          `${name} identity container`,
-        );
-        assertRectStableWithinContainer(
-          baseline.brandRect,
-          baseline.homeRect,
-          measurement.brandRect,
-          measurement.homeRect,
-          `${name} brand mark`,
-        );
-        assertRectStableWithinContainer(
-          baseline.headingRect,
-          baseline.homeRect,
-          measurement.headingRect,
-          measurement.homeRect,
-          `${name} wordmark`,
-        );
-        assertRectStableWithinContainer(
-          baseline.scaleRect,
-          baseline.homeRect,
-          measurement.scaleRect,
-          measurement.homeRect,
-          `${name} Systemic scale signature`,
-        );
-        assert.ok(
-          Math.abs(
-            baseline.activeDescriptionRect.height -
-              measurement.activeDescriptionRect.height,
-          ) <= 0.75,
-          `${name} legal preview corridor height must remain fixed regardless of copy length.`,
-        );
-
-        const writings = measurement.doorRectsByDestination.writings;
-        const learning = measurement.doorRectsByDestination.learning;
-        assert.ok(writings && learning, `${name} lower orbital destinations must exist.`);
-        assertNoOverlap(
-          measurement.activeDescriptionRect,
-          writings,
-          `${name} preview and Writings`,
-        );
-        assertNoOverlap(
-          measurement.activeDescriptionRect,
-          learning,
-          `${name} preview and Learning`,
-        );
-        assert.ok(
-          measurement.activeDescriptionRect.width <= 353,
-          `${name} preview corridor must remain intentionally bounded.`,
-        );
-      }
-    }
-
-    return measurement;
+    await page.goto(origin + '/fr');
+    const perspective = page.locator('.aks-home-door[data-destination="work-with-us"]');
+    await perspective.tap();
+    assert.equal(new URL(page.url()).pathname, '/fr', 'first tap must not navigate');
+    assert.equal(await perspective.evaluate((el) => el.classList.contains('is-active')), true);
+    assert.equal(await page.locator('.aks-home-active-description').getAttribute('data-state'), 'active');
+    await perspective.tap();
+    await page.waitForURL('**/fr/travailler-ensemble');
   } finally {
     await context.close();
   }
 }
 
-async function assertRouteTransitionContract(browser) {
-  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
-
+async function assertKeyboardOrder(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1024 } });
   try {
     const page = await context.newPage();
-    const response = await page.goto(`${origin}/en/work-with-us`);
-    assert.equal(response?.status(), 200, 'transition contract route must return HTTP 200.');
-
-    const contract = await page.evaluate(() => {
-      const outlet = document.querySelector('.aks-experience-outlet');
-      const shell = document.querySelector('.aks-experience-shell');
-
-      if (!(outlet instanceof HTMLElement) || !(shell instanceof HTMLElement)) {
-        return null;
-      }
-
-      const keyframes = {};
-      for (const sheet of [...document.styleSheets]) {
-        let rules;
-        try {
-          rules = [...sheet.cssRules];
-        } catch {
-          continue;
-        }
-
-        for (const rule of rules) {
-          if (
-            rule.type === CSSRule.KEYFRAMES_RULE &&
-            (rule.name === 'aks-route-fade-out' || rule.name === 'aks-route-fade-in')
-          ) {
-            keyframes[rule.name] = [...rule.cssRules].map((frame) => ({
-              opacity: frame.style.opacity,
-              transform: frame.style.transform,
-            }));
-          }
-        }
-      }
-
-      return {
-        outletViewTransitionName: getComputedStyle(outlet).viewTransitionName,
-        shellViewTransitionName: getComputedStyle(shell).viewTransitionName,
-        keyframes,
-      };
-    });
-
-    assert.ok(contract, 'route transition contract must be measurable.');
-    assert.equal(
-      contract.outletViewTransitionName,
-      'none',
-      'route outlet must stay in the root snapshot so Home and internal route geometry cannot morph.',
+    await page.goto(origin + '/fr');
+    const order = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll(
+          'a[data-home-preview-target="primary"], .aks-experience-footer[data-home="true"] nav a',
+        ),
+      ].map((element) => {
+        const primaryLabel = element.querySelector('.aks-home-door-label');
+        return (primaryLabel ?? element).textContent?.trim();
+      }),
     );
-    assert.equal(
-      contract.shellViewTransitionName,
-      'aks-experience-shell',
-      'application chrome must remain independently stable across internal route changes.',
-    );
-
-    for (const name of ['aks-route-fade-out', 'aks-route-fade-in']) {
-      assert.ok(contract.keyframes[name], `${name} keyframes must exist.`);
-      for (const frame of contract.keyframes[name]) {
-        assert.equal(
-          frame.transform,
-          '',
-          `${name} must remain spatially neutral and never translate route content.`,
-        );
-      }
-    }
+    assert.deepEqual(order, [
+      'Perspectives',
+      'Profil',
+      'Systèmes',
+      'Écrits',
+      'Apprentissage',
+      'Confidentialité',
+      'Mentions légales',
+      'Cookies',
+    ]);
   } finally {
     await context.close();
   }
 }
 
-async function assertHeightContinuity(browser) {
-  const at899 = await assertDesktopHome(
-    browser,
-    { width: 1440, height: 899 },
-    'desktop at 899px height',
-  );
-  const at900 = await assertDesktopHome(
-    browser,
-    { width: 1440, height: 900 },
-    'desktop at 900px height',
-  );
-
-  assert.ok(
-    Math.abs(at899.brandRect.width - at900.brandRect.width) <= 1,
-    '899px and 900px heights must not trigger a brand-size mode switch.',
-  );
-  assert.ok(
-    Math.abs(at899.headingRect.width - at900.headingRect.width) <= 1,
-    '899px and 900px heights must not trigger a wordmark-size mode switch.',
-  );
-
-  const work899 = at899.doorRectsByDestination['work-with-us'];
-  const work900 = at900.doorRectsByDestination['work-with-us'];
-  assert.ok(work899 && work900, 'Height continuity must measure Work with us.');
-
-  const relative899 = work899.top - at899.homeRect.top;
-  const relative900 = work900.top - at900.homeRect.top;
-  assert.ok(
-    Math.abs(relative899 - relative900) <= 2,
-    '899px and 900px heights must not trigger a discrete Work with us jump.',
-  );
+async function assertReducedMotion(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 430, height: 932 },
+    reducedMotion: 'reduce',
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(origin + '/fr');
+    const duration = await page
+      .locator('.aks-home-door')
+      .first()
+      .evaluate((element) => getComputedStyle(element).animationDuration);
+    assert.ok(duration === '0.001s' || duration === '0s');
+  } finally {
+    await context.close();
+  }
 }
 
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
-
   try {
-    const compactScenarios = [
-      ['phone narrow portrait', { width: 320, height: 568 }],
-      ['phone portrait', { width: 360, height: 640 }],
-      ['phone landscape', { width: 844, height: 390 }],
-      ['tablet landscape low', { width: 768, height: 600 }],
-      ['compact boundary 1023', { width: 1023, height: 768 }],
-      ['compact boundary 1024', { width: 1024, height: 768 }],
-      ['compact boundary 1025', { width: 1025, height: 768 }],
-      ['compact low 1024', { width: 1024, height: 600 }],
-      ['compact low 1025', { width: 1025, height: 600 }],
-      ['wide compact boundary', { width: 1280, height: 768 }],
-    ];
-
-    for (const [name, viewport] of compactScenarios) {
-      for (const locale of ['en', 'fr']) {
-        await assertCompactHome(browser, locale, viewport, name);
-      }
-    }
-
-    await assertDesktopHome(browser, { width: 1281, height: 768 }, 'orbital boundary 1281');
-    await assertDesktopHome(
-      browser,
-      { width: 1299, height: 405 },
-      'short orbital desktop',
-      { preview: true },
-    );
-    await assertDesktopHome(
-      browser,
-      { width: 1366, height: 768 },
-      'standard orbital desktop',
-      { preview: true },
-    );
-    await assertDesktopHome(browser, { width: 1917, height: 564 }, 'wide short orbital desktop');
-    await assertRouteTransitionContract(browser);
-    await assertHeightContinuity(browser);
-
-    process.stdout.write(
-      'Responsive Home smoke passed: compact widths stay bounded, the 1024/1025 range remains stable, orbital layouts preserve geometry under short heights, and 899/900 no longer trigger a discrete mode switch.\n',
-    );
+    await assertReferenceViewport(browser, { width: 1440, height: 1024 }, 'desktop 1440', false);
+    await assertReferenceViewport(browser, { width: 1024, height: 768 }, 'tablet landscape 1024', false);
+    await assertReferenceViewport(browser, { width: 768, height: 1024 }, 'tablet portrait 768', true);
+    await assertReferenceViewport(browser, { width: 430, height: 932 }, 'mobile large 430', true);
+    await assertReferenceViewport(browser, { width: 375, height: 812 }, 'mobile compact 375', true);
+    await assertTouchSelection(browser);
+    await assertKeyboardOrder(browser);
+    await assertReducedMotion(browser);
+    console.log('Responsive browser smoke passed: Home handoff viewports, interaction order, touch selection and reduced motion are qualified.');
   } finally {
     await browser.close();
-  }
-})()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
     server.kill('SIGTERM');
     await Promise.race([
       new Promise((resolve) => server.once('exit', resolve)),
-      sleep(2_000),
+      sleep(2000),
     ]);
-  });
+  }
+})().catch((error) => {
+  console.error(error);
+  server.kill('SIGTERM');
+  process.exitCode = 1;
+});

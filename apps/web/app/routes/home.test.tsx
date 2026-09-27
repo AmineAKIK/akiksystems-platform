@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { HomePortal } from './home';
 
-describe('HomePortal', () => {
-  it('exposes the AkikSystems identity and all five English doors in SSR markup', () => {
+describe('HomePortal handoff contract', () => {
+  it('renders the approved English destination order and brand hierarchy', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <HomePortal locale="en" />
@@ -15,64 +15,58 @@ describe('HomePortal', () => {
     expect(html).toContain('class="aks-home-portal"');
     expect(html).toContain('id="aks-home-title"');
     expect(html).toContain('>AkikSystems</h1>');
-    expect(html).toContain('>Systemic scale</p>');
-    expect(html).toContain('aria-label="Time in Paris"');
-    expect(html).toContain('aria-label="View in French"');
-    expect(html).toContain('href="/fr"');
+    expect(html).toContain('>Systemic Scale</p>');
+    expect(html).toContain('aria-label="Local time in Paris"');
     expect(html).toContain('aria-live="polite"');
-    expect(html).toContain('Products · Projects · Live');
-    expect(html).toContain('aria-label="Explore AkikSystems"');
+    expect(html).toContain('viewBox="0 0 2048 2048"');
 
     const englishDoors = [
-      ['/en/profile', 'Profile'],
-      ['/en/work-with-us', 'Work with us'],
-      ['/en/writings', 'Writings'],
-      ['/en/systems', 'Systems'],
-      ['/en/learning', 'Learning'],
+      ['/en/work-with-us', 'Perspectives', 'Collaboration · Contact'],
+      ['/en/profile', 'Profile', 'Journey · Vision'],
+      ['/en/systems', 'Systems', 'Products · Projects'],
+      ['/en/writings', 'Writings', 'Essays · Notes'],
+      ['/en/learning', 'Learning', 'Dossiers · Training'],
     ] as const;
 
-    for (const [href, label] of englishDoors) {
+    for (const [href, label, summary] of englishDoors) {
       expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
+      expect(html).toContain(`>${summary}</span>`);
     }
 
-    const englishDoorOffsets = englishDoors.map(([href]) =>
-      html.indexOf(`href="${href}"`),
-    );
-    expect(englishDoorOffsets).toEqual(
-      [...englishDoorOffsets].sort((first, second) => first - second),
-    );
+    const offsets = englishDoors.map(([href]) => html.indexOf(`href="${href}"`));
+    expect(offsets).toEqual([...offsets].sort((first, second) => first - second));
   });
 
-  it('keeps the same five-door model fully localized in French', () => {
+  it('uses the French handoff copy verbatim for the visible Home destinations', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <HomePortal locale="fr" />
       </MemoryRouter>,
     );
 
-    expect(html).toContain('aria-label="Explorer AkikSystems"');
-    expect(html).toContain('aria-label="Afficher en anglais"');
-    expect(html).toContain('href="/en"');
-
     const frenchDoors = [
-      ['/fr/profil', 'Profil'],
-      ['/fr/travailler-ensemble', 'Travailler ensemble'],
-      ['/fr/ecrits', 'Écrits'],
-      ['/fr/systems', 'Systèmes'],
-      ['/fr/apprentissage', 'Apprentissage'],
+      ['/fr/travailler-ensemble', 'Perspectives', 'Collaboration · Contact'],
+      ['/fr/profil', 'Profil', 'Parcours · Vision'],
+      ['/fr/systems', 'Systèmes', 'Produits · Projets'],
+      ['/fr/ecrits', 'Écrits', 'Essais · Notes'],
+      ['/fr/apprentissage', 'Apprentissage', 'Dossiers · Formations'],
     ] as const;
 
-    for (const [href, label] of frenchDoors) {
+    for (const [href, label, summary] of frenchDoors) {
       expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
+      expect(html).toContain(`>${summary}</span>`);
     }
 
-    const frenchDoorOffsets = frenchDoors.map(([href]) =>
-      html.indexOf(`href="${href}"`),
+    expect(html).toContain(
+      'Échangeons autour d’un projet, d’une collaboration ou d’une mission. Construisons ensemble ce qui mérite d’exister.',
     );
-    expect(frenchDoorOffsets).toEqual(
-      [...frenchDoorOffsets].sort((first, second) => first - second),
+    expect(html).toContain(
+      'Logiciels, produits et expériences conçus comme des systèmes cohérents. Chaque projet relie usage, technique et intention.',
     );
+
+    const offsets = frenchDoors.map(([href]) => html.indexOf(`href="${href}"`));
+    expect(offsets).toEqual([...offsets].sort((first, second) => first - second));
   });
 });
