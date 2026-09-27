@@ -631,6 +631,15 @@ Profile is one singleton editorial surface with explicit EN/FR publication snaps
 - System depublish/republish behavior without Profile republish;
 - strict Profile snapshot version and structure parsing.
 
+### Profile visual acceptance
+
+The final public Profile is release-qualified against the approved 1440px desktop and 390px mobile references.
+
+- Chromium locks source-derived content width, section spacing, typography, rail geometry, responsive representation, and no-overflow behavior.
+- The acceptance keeps mockup example data out of the product model: no AkikSystems/Sentinel special case, no primary-proof shortcut, and no cross-locale fallback.
+- The canonical emblem, dynamic Stack groups, System ↔ Technology proof, current-System reference, Writing reference, CV, and one-data-model responsive contract remain intact.
+- The complete visual acceptance record lives in `docs/qualification/profile-final-visual-acceptance.md`.
+
 ### Experience context
 
 Professional Experience is modeled once and localized independently from Systems.
