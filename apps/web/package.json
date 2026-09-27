@@ -23,7 +23,8 @@
     "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts",
     "smoke:forwarded-actions": "node scripts/smoke-forwarded-action-origin.mjs",
     "smoke:admin-work-with-us": "node scripts/smoke-work-with-us-admin-browser.cjs",
-    "smoke:profile-public": "node scripts/smoke-profile-public-browser.cjs"
+    "smoke:profile-public": "node scripts/smoke-profile-public-browser.cjs",
+    "smoke:profile-admin": "node scripts/smoke-profile-admin-browser.cjs"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
