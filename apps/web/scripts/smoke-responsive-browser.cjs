@@ -149,8 +149,14 @@ async function assertKeyboardOrder(browser) {
     const page = await context.newPage();
     await page.goto(origin + '/fr');
     const order = await page.evaluate(() =>
-      [...document.querySelectorAll('a[data-home-preview-target="primary"], .aks-experience-footer[data-home="true"] nav a')]
-        .map((element) => element.textContent?.trim()),
+      [
+        ...document.querySelectorAll(
+          'a[data-home-preview-target="primary"], .aks-experience-footer[data-home="true"] nav a',
+        ),
+      ].map((element) => {
+        const primaryLabel = element.querySelector('.aks-home-door-label');
+        return (primaryLabel ?? element).textContent?.trim();
+      }),
     );
     assert.deepEqual(order, [
       'Perspectives',
