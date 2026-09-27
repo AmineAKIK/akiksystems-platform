@@ -25,7 +25,7 @@ function systemSnapshot(
   summary: string,
 ) {
   return {
-    version: 1,
+    version: 2,
     systemId,
     locale,
     presentationKind: 'standard',
