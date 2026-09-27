@@ -1,10 +1,15 @@
 :root {
   --aks-experience-space-background: radial-gradient(
-    ellipse at 50% 50vh,
-    #071216 0%,
-    #050c10 28%,
-    #03080a 72%,
-    #010304 100%
+    ellipse at 50% 47.8%,
+    #0d0c19 0%,
+    #0d0c19 13%,
+    #0c0c18 27%,
+    #0b0d18 42%,
+    #0a0d17 57%,
+    #090d17 70%,
+    #080c16 82%,
+    #070a14 92%,
+    #060912 100%
   );
   --aks-experience-chrome-surface: #010304;
   --aks-experience-chrome-overlay: rgb(1 3 4 / 88%);
