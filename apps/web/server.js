@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 
-import { parseAuthEnv, parseWebServerEnv } from '@akiksystems/config/env';
+import { parseWebServerEnv } from '@akiksystems/config/env';
 import {
   createLogger,
   runWithObservabilityContext,
@@ -11,10 +11,8 @@ import express from 'express';
 
 const BUILD_PATH = './build/server/index.js';
 const env = parseWebServerEnv(process.env);
-const authEnv = parseAuthEnv(process.env);
 const DEVELOPMENT = env.NODE_ENV === 'development';
 const STAGING = process.env.RAILWAY_ENVIRONMENT_NAME === 'staging';
-const ADMIN_ORIGIN = new URL(authEnv.BETTER_AUTH_URL).origin;
 const PORT = env.PORT;
 const logger = createLogger({
   service: 'web',
@@ -32,22 +30,7 @@ const databaseHealth =
 const app = express();
 
 app.disable('x-powered-by');
-// Railway is the single public reverse-proxy hop in front of this process.
-// Keep the outer Express app aligned with the React Router sub-app so request
-// protocol/host semantics consistently describe the original public request.
 app.set('trust proxy', 1);
-
-/**
- * @param {string} path
- * @returns {boolean}
- */
-function isAdminRequestPath(path) {
-  return (
-    path === '/admin' ||
-    path.startsWith('/admin/') ||
-    path.startsWith('/admin.')
-  );
-}
 
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
@@ -95,43 +78,9 @@ app.use((request, response, next) => {
     response.setHeader('X-Robots-Tag', noIndexDirective);
   }
 
-  if (isAdminRequestPath(request.path)) {
-    response.setHeader('Cache-Control', 'private, no-store, max-age=0');
-    response.setHeader('Pragma', 'no-cache');
-    response.setHeader('X-Robots-Tag', noIndexDirective);
-  }
-
   next();
 });
 
-app.use((request, response, next) => {
-  if (
-    !isAdminRequestPath(request.path) ||
-    ['GET', 'HEAD', 'OPTIONS'].includes(request.method)
-  ) {
-    next();
-    return;
-  }
-
-  const origin = request.get('origin');
-
-  if (origin === undefined || origin !== ADMIN_ORIGIN) {
-    logger.warn('security.csrf_origin_rejected', {
-      method: request.method,
-      path: request.path,
-      origin: origin ?? null,
-    });
-    response.status(403).json({ status: 'forbidden' });
-    return;
-  }
-
-  next();
-});
-
-/**
- * @param {unknown} value
- * @returns {string | undefined}
- */
 function normalizeRequestId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value)
     ? value
@@ -139,7 +88,8 @@ function normalizeRequestId(value) {
 }
 
 app.use((request, response, next) => {
-  const requestId = normalizeRequestId(request.get('x-request-id')) ?? randomUUID();
+  const requestId =
+    normalizeRequestId(request.get('x-request-id')) ?? randomUUID();
   const correlationId =
     normalizeRequestId(request.get('x-correlation-id')) ?? requestId;
   const startedAt = performance.now();
@@ -167,11 +117,7 @@ app.get('/health', async (_request, response) => {
     response.status(503).json({
       status: 'degraded',
       service: 'web',
-      checks: {
-        database: {
-          status: 'unconfigured',
-        },
-      },
+      checks: { database: { status: 'unconfigured' } },
     });
     return;
   }
@@ -186,10 +132,7 @@ app.get('/health', async (_request, response) => {
       status: 'degraded',
       service: 'web',
       checks: {
-        database: {
-          status: 'error',
-          latencyMs: database.latencyMs,
-        },
+        database: { status: 'error', latencyMs: database.latencyMs },
       },
     });
     return;
@@ -199,10 +142,7 @@ app.get('/health', async (_request, response) => {
     status: 'ok',
     service: 'web',
     checks: {
-      database: {
-        status: 'ok',
-        latencyMs: database.latencyMs,
-      },
+      database: { status: 'ok', latencyMs: database.latencyMs },
     },
   });
 });
@@ -217,9 +157,7 @@ if (env.NODE_ENV === 'test') {
 
 if (DEVELOPMENT) {
   const viteDevServer = await import('vite').then((vite) =>
-    vite.createServer({
-      server: { middlewareMode: true },
-    }),
+    vite.createServer({ server: { middlewareMode: true } }),
   );
 
   app.use(viteDevServer.middlewares);
@@ -236,17 +174,15 @@ if (DEVELOPMENT) {
     }
   });
 } else {
-  app.use('/assets', express.static('build/client/assets', { immutable: true, maxAge: '1y' }));
+  app.use(
+    '/assets',
+    express.static('build/client/assets', { immutable: true, maxAge: '1y' }),
+  );
   app.use(express.static('build/client', { maxAge: '1h' }));
   app.use(await import(BUILD_PATH).then((module) => module.app));
 }
 
-const serverErrorHandler = (
-  /** @type {unknown} */ error,
-  /** @type {import('express').Request} */ request,
-  /** @type {import('express').Response} */ response,
-  /** @type {import('express').NextFunction} */ next,
-) => {
+const serverErrorHandler = (error, request, response, next) => {
   const requestId = response.getHeader('x-request-id');
   const correlationId = response.getHeader('x-correlation-id');
 
@@ -261,31 +197,20 @@ const serverErrorHandler = (
   if (response.headersSent) {
     next(error);
   } else {
-    response.status(500).json({
-      status: 'error',
-      requestId,
-    });
+    response.status(500).json({ status: 'error', requestId });
   }
 };
 
 app.use(serverErrorHandler);
 
 const server = app.listen(PORT, () => {
-  logger.info('web.started', {
-    port: PORT,
-    environment: env.NODE_ENV,
-  });
+  logger.info('web.started', { port: PORT, environment: env.NODE_ENV });
 });
 
 let stopping = false;
 
-/**
- * @param {NodeJS.Signals} signal
- */
 async function shutdown(signal) {
-  if (stopping) {
-    return;
-  }
+  if (stopping) return;
 
   stopping = true;
   logger.info('web.shutdown.started', { signal });
