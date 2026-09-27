@@ -66,6 +66,21 @@ export interface SystemPublicationSnapshot {
   media: SystemPublicationMedia[];
 }
 
+function isPublicationTechnology(
+  value: unknown,
+): value is SystemPublicationTechnology {
+  if (typeof value !== 'object' || value === null) return false;
+  const technology = value as Record<string, unknown>;
+
+  return (
+    typeof technology.id === 'string' &&
+    typeof technology.slug === 'string' &&
+    typeof technology.name === 'string' &&
+    typeof technology.position === 'number' &&
+    (technology.evidence === null || typeof technology.evidence === 'string')
+  );
+}
+
 function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapshot {
   return (
     typeof value === 'object' &&
@@ -85,6 +100,7 @@ function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapsh
     'presentationDocument' in value &&
     'technologies' in value &&
     Array.isArray(value.technologies) &&
+    value.technologies.every(isPublicationTechnology) &&
     'links' in value &&
     Array.isArray(value.links) &&
     'media' in value &&
