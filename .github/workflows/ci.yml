@@ -98,6 +98,12 @@ jobs:
       - name: Verify database connectivity
         run: pnpm db:check
 
+      - name: Verify System technology evidence
+        run: pnpm db:verify-system-technologies
+
+      - name: Verify System publication snapshots
+        run: pnpm db:verify-system-publication-snapshots
+
       - name: Verify Work with us System selection
         run: pnpm db:verify-work-with-us-selected-proof
 
