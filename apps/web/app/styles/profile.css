@@ -1492,6 +1492,11 @@
     font-size: 0.9375rem;
   }
 
+  .aks-profile-guidance-intro .aks-profile-body-copy {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
   .aks-profile-section-heading h2,
   .aks-profile-guidance-intro h2 {
     font-size: 1.875rem;
@@ -1808,8 +1813,8 @@
   }
 
   .aks-profile-systemic-intro h2 {
-    font-size: clamp(3.75rem, 16vw, 4.75rem);
     max-width: 7ch;
+    font-size: 3.75rem;
   }
 
   .aks-profile-systemic-statement {
