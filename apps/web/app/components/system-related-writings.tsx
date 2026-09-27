@@ -26,7 +26,7 @@ export function SystemRelatedWritings({
 
   return (
     <section className="aks-proof-stack" aria-labelledby="related-writings">
-      <div className="aks-profile-section-heading">
+      <div className="aks-section-heading">
         <Heading id="related-writings" level={2} size="sm">
           {locale === 'fr' ? 'Écrits liés' : 'Related writings'}
         </Heading>
