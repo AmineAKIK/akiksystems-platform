@@ -2,6 +2,7 @@ import type {
   CredentialKind,
   PlatformLocale,
   PresentationDocument,
+  ProfileEditableContent,
   SystemEditorialState,
   SystemEvidencePolicy,
   SystemExperienceRelationKind,
@@ -102,7 +103,7 @@ export interface ProfilesTable {
 export interface ProfileLocalizationsTable {
   profile_id: string;
   locale: PlatformLocale;
-  content: DefaultedColumn<Record<string, unknown>>;
+  content: DefaultedColumn<ProfileEditableContent>;
   editorial_state: DefaultedColumn<SystemEditorialState>;
   published_at: NullableTimestampColumn;
   created_at: TimestampColumn;
