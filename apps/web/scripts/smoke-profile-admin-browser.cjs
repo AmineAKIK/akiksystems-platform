@@ -159,7 +159,7 @@ async function cleanup(id) {
 }
 
 const server = spawn(process.execPath, ['server.js'], {
-  cwd: path.join(process.cwd(), 'apps/web'),
+  cwd: path.resolve(__dirname, '..'),
   env: {
     ...process.env,
     NODE_ENV: 'test',
