@@ -362,7 +362,7 @@ async function assertNoHorizontalOverflow(page, label) {
       .fill('Portrait de qualification');
     await clickAndWaitForMessage(
       page,
-      portraitCard.getByRole('button', { name: 'Upload portrait' }),
+      portraitCard.locator('button[value="upload-profile-portrait"]'),
       'Portrait uploaded; EN and FR are now draft.',
     );
 
@@ -376,7 +376,7 @@ async function assertNoHorizontalOverflow(page, label) {
     });
     await clickAndWaitForMessage(
       page,
-      cvCard.getByRole('button', { name: 'Upload CV' }),
+      cvCard.locator('button[value="upload-profile-cv"]'),
       'CV uploaded; EN and FR are now draft.',
     );
 
