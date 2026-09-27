@@ -135,6 +135,10 @@ const stackIcons: ProfileIconName[] = [
   'deploy',
 ];
 
+function stackIconAt(index: number): ProfileIconName {
+  return stackIcons[index % stackIcons.length] ?? 'system';
+}
+
 function hasText(value: string | null | undefined): value is string {
   return typeof value === 'string' && value.trim() !== '';
 }
@@ -311,11 +315,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
   const activeSystemicContent =
     content.systemicScale.steps[activeSystemicStep];
 
-  const mobilityValues = [
-    profile.mobility.worldwide ? ui.worldwide : null,
-    profile.mobility.remote ? ui.remote : null,
-    profile.mobility.relocation ? ui.relocation : null,
-  ].filter((value): value is string => value !== null);
+  const mobilityValues: string[] = [];
+  if (profile.mobility.worldwide) mobilityValues.push(ui.worldwide);
+  if (profile.mobility.remote) mobilityValues.push(ui.remote);
+  if (profile.mobility.relocation) mobilityValues.push(ui.relocation);
 
   return (
     <main className="aks-profile" data-profile-contract="v1">
@@ -505,7 +508,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                               <ProfileIcon
                                 aria-hidden="true"
                                 height="15"
-                                name={stackIcons[index % stackIcons.length]}
+                                name={stackIconAt(index)}
                                 width="15"
                               />
                             </span>
@@ -584,7 +587,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                           <ProfileIcon
                             aria-hidden="true"
                             height="20"
-                            name={stackIcons[index % stackIcons.length]}
+                            name={stackIconAt(index)}
                             width="20"
                           />
                         </span>
@@ -883,10 +886,12 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                           event,
                           index,
                           profileCapabilityStepKeys.length,
-                          (nextIndex) =>
-                            setActiveCapability(
-                              profileCapabilityStepKeys[nextIndex],
-                            ),
+                          (nextIndex) => {
+                            const nextKey = profileCapabilityStepKeys[nextIndex];
+                            if (nextKey !== undefined) {
+                              setActiveCapability(nextKey);
+                            }
+                          },
                         )
                       }
                       role="tab"
@@ -1073,10 +1078,13 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                             event,
                             index,
                             profileSystemicScaleStepKeys.length,
-                            (nextIndex) =>
-                              setActiveSystemicStep(
-                                profileSystemicScaleStepKeys[nextIndex],
-                              ),
+                            (nextIndex) => {
+                              const nextKey =
+                                profileSystemicScaleStepKeys[nextIndex];
+                              if (nextKey !== undefined) {
+                                setActiveSystemicStep(nextKey);
+                              }
+                            },
                           )
                         }
                         role="tab"
