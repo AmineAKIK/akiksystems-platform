@@ -3,8 +3,6 @@
 }
 
 .aks-experience-frame[data-home='true'] {
-  --aks-home-bg-edge: #060912;
-  --aks-home-bg-focus: #0d0c19;
   --aks-home-starlight: #e8edf4;
   --aks-home-silver: #b7bfcc;
   --aks-home-mauve: #93879e;
@@ -12,19 +10,40 @@
   --aks-home-orbital-soft: #8398c4;
   --aks-home-lunar: #aab3c1;
   --aks-home-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  min-height: 100vh;
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
+  display: block;
+  overflow: hidden;
   background: var(--aks-experience-space-background);
 }
 
 .aks-experience-frame[data-home='true'] > .aks-experience-outlet {
-  flex: 1 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .aks-home {
+  --aks-home-mobile-inset: clamp(1rem, 4vw, 1.5rem);
+  --aks-home-perspective-top: clamp(4.625rem, 10.4dvh, 6rem);
+  --aks-home-perspective-identity-gap: clamp(
+    1.5625rem,
+    calc(12.5dvh - 4.78125rem),
+    2.5rem
+  );
+  --aks-home-mark-size: clamp(9rem, 40vw, 10.625rem);
+  --aks-home-mark-wordmark-gap: clamp(1.125rem, 5vw, 1.375rem);
+  --aks-home-wordmark-size: 2rem;
+  --aks-home-preview-height: 4.875rem;
+  --aks-home-nav-start-gap: 1.5rem;
+  --aks-home-nav-row-gap: clamp(
+    2.4375rem,
+    calc(9dvh - 2.125rem),
+    3.125rem
+  );
   position: relative;
-  min-height: calc(100dvh - 4.75rem);
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   color: var(--aks-home-starlight);
 }
@@ -35,24 +54,27 @@
 
 .aks-home-meta {
   position: absolute;
-  z-index: 5;
-  inset-block-start: 2.5rem;
-  inset-inline-start: 50%;
+  z-index: 10;
+  inset-block-start: clamp(1.25rem, 3.4dvh, 2rem);
+  inset-inline: var(--aks-home-mobile-inset);
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  transform: translateX(-50%);
+  justify-content: space-between;
+  gap: 0.75rem;
   color: var(--aks-home-lunar);
 }
 
 .aks-home-clock {
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   color: inherit;
   font-family: var(--aks-font-sans);
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.04375rem;
   line-height: 1.2;
+  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
   opacity: 0.66;
@@ -63,6 +85,7 @@
   display: grid;
   min-width: 2.25rem;
   min-height: 1.75rem;
+  flex: 0 0 auto;
   place-items: center;
   padding-inline: 0.625rem;
   border: 1px solid rgb(131 152 196 / 48%);
@@ -96,42 +119,66 @@
   outline-offset: 4px;
 }
 
-.aks-home-portal,
-.aks-home-orbit {
+/*
+ * Portrait is the default Home composition.
+ *
+ * It intentionally stays active through tablet portrait widths. The previous
+ * 767/768 split is gone: all portrait viewports share one semantic flow with
+ * an identity row, a reserved preview corridor and a 2 × 2 destination grid.
+ */
+.aks-home-portal {
   position: absolute;
   inset: 0;
+  width: 100%;
+  max-width: 56.25rem;
+  height: 100%;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    'perspective perspective'
+    'identity identity'
+    'preview preview'
+    'profile systems'
+    'writings learning';
+  align-content: start;
+  padding:
+    var(--aks-home-perspective-top)
+    var(--aks-home-mobile-inset)
+    7rem;
+}
+
+.aks-home-orbit {
+  display: contents;
 }
 
 .aks-home-center {
-  position: absolute;
-  z-index: 2;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  width: min(42rem, calc(100% - 5rem));
+  grid-area: identity;
   display: grid;
   justify-items: center;
-  transform: translate(-50%, -43%);
+  margin-block-start: var(--aks-home-perspective-identity-gap);
   text-align: center;
 }
 
 .aks-home-brand-mark {
-  width: clamp(14rem, 30vh, 18rem);
-  height: clamp(14rem, 30vh, 18rem);
+  width: var(--aks-home-mark-size);
+  height: var(--aks-home-mark-size);
   color: var(--aks-home-starlight);
 }
 
 .aks-home-wordmark {
-  margin: 1.5rem 0 0;
+  margin: var(--aks-home-mark-wordmark-gap) 0 0;
   color: var(--aks-home-starlight);
   font-family: 'Archivo Black', var(--aks-font-sans);
-  font-size: 3.5rem;
+  font-size: var(--aks-home-wordmark-size);
   font-weight: 400;
-  letter-spacing: -0.105rem;
+  letter-spacing: -0.03em;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .aks-home-scale {
-  margin: 0.9rem 0 0;
+  margin: 0.75rem 0 0;
   color: var(--aks-home-mauve);
   font-family: var(--aks-font-sans);
   font-size: 0.625rem;
@@ -142,26 +189,29 @@
 }
 
 .aks-home-active-description {
-  width: min(38rem, 72vw);
-  height: 5.25rem;
+  grid-area: preview;
+  width: min(100%, 38rem);
+  min-height: var(--aks-home-preview-height);
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto;
   align-content: start;
+  justify-self: center;
   justify-items: center;
   gap: 0.625rem;
-  margin-block-start: 1.25rem;
+  margin-block-start: 1rem;
+  padding-inline: 0.25rem;
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(5px);
+  translate: 0 5px;
   transition:
     opacity 220ms var(--aks-home-ease),
-    transform 220ms var(--aks-home-ease);
+    translate 220ms var(--aks-home-ease);
 }
 
 .aks-home-active-description[data-state='active'] {
   opacity: 1;
-  transform: translateY(0);
+  translate: 0 0;
 }
 
 .aks-home-active-description > span {
@@ -187,25 +237,32 @@
 }
 
 .aks-home-door {
-  position: absolute;
+  position: relative;
   z-index: 3;
+  width: max-content;
+  max-width: 100%;
   display: grid;
-  min-width: 10rem;
-  min-height: 2.75rem;
-  align-content: center;
+  align-content: start;
+  justify-self: center;
   justify-items: center;
   gap: 0.375rem;
-  padding: 0.4rem 0.75rem;
+  padding: 0;
   color: var(--aks-home-lunar);
   text-align: center;
   text-decoration: none;
   opacity: 0;
-  transform: translateY(5px);
+  translate: 0 5px;
   animation: aks-home-destination-enter 400ms var(--aks-home-ease)
     calc(80ms + var(--aks-home-order) * 40ms) forwards;
   transition:
     color 160ms var(--aks-home-ease),
     opacity 160ms var(--aks-home-ease);
+}
+
+.aks-home-door::before {
+  position: absolute;
+  inset: -0.4375rem -0.75rem;
+  content: '';
 }
 
 .aks-home-door-label {
@@ -240,45 +297,45 @@
 }
 
 .aks-home-door[data-destination='work-with-us'] {
-  inset-block-start: 12%;
-  inset-inline-start: 50%;
-  transform: translate(-50%, 5px);
+  grid-area: perspective;
 }
 
 .aks-home-door[data-destination='profile'] {
-  inset-block-start: 43%;
-  inset-inline-start: 17%;
-  transform: translate(-50%, -50%);
+  grid-area: profile;
+  margin-block-start: var(--aks-home-nav-start-gap);
 }
 
 .aks-home-door[data-destination='systems'] {
-  inset-block-start: 43%;
-  inset-inline-start: 83%;
-  transform: translate(-50%, -50%);
+  grid-area: systems;
+  margin-block-start: var(--aks-home-nav-start-gap);
 }
 
 .aks-home-door[data-destination='writings'] {
-  inset-block-start: 82%;
-  inset-inline-start: 29%;
-  transform: translate(-50%, -50%);
+  grid-area: writings;
+  margin-block-start: var(--aks-home-nav-row-gap);
 }
 
 .aks-home-door[data-destination='learning'] {
-  inset-block-start: 82%;
-  inset-inline-start: 71%;
-  transform: translate(-50%, -50%);
+  grid-area: learning;
+  margin-block-start: var(--aks-home-nav-row-gap);
 }
 
 @keyframes aks-home-destination-enter {
   to {
     opacity: 1;
+    translate: 0 0;
   }
 }
 
+/* Home footer is part of the one-screen composition instead of shrinking main. */
 .aks-experience-footer[data-home='true'] {
-  flex: 0 0 4.75rem;
+  position: absolute;
+  z-index: 8;
+  inset-inline: 0;
+  inset-block-end: 2.25rem;
   background: transparent;
   color: var(--aks-home-lunar);
+  pointer-events: none;
 }
 
 .aks-experience-footer[data-home='true']::before {
@@ -286,30 +343,42 @@
 }
 
 .aks-experience-footer[data-home='true'] > .aks-container {
-  width: calc(100% - 5rem);
+  width: 100%;
   max-width: none;
+  padding-inline: var(--aks-home-mobile-inset, 1rem);
 }
 
 .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-  min-height: 4.75rem;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 1rem;
-  padding-block: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 1.875rem;
+  padding: 0;
   color: rgb(170 179 193 / 56%);
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.021875rem;
+  pointer-events: auto;
+}
+
+.aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
+  margin: 0;
 }
 
 .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-  gap: 1.75rem;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 1.75rem);
 }
 
 .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link {
-  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
   color: rgb(170 179 193 / 56%);
+  font-size: 0.6875rem;
+  white-space: nowrap;
   transition: color 160ms var(--aks-home-ease);
 }
 
@@ -319,233 +388,404 @@
   color: var(--aks-home-starlight);
 }
 
-/* Portrait tablets keep the same hierarchy but move the four secondary destinations below identity. */
-@media (min-width: 48rem) and (orientation: portrait) {
-  .aks-home-meta {
-    inset-block-start: 2rem;
-  }
-
-  .aks-home-door[data-destination='work-with-us'] {
-    inset-block-start: 12%;
-  }
-
-  .aks-home-center {
-    inset-block-start: 24%;
-    width: min(42rem, calc(100% - 4rem));
-    transform: translateX(-50%);
-  }
-
-  .aks-home-brand-mark {
-    width: min(38vw, 18rem);
-    height: min(38vw, 18rem);
-  }
-
-  .aks-home-door[data-destination='profile'],
-  .aks-home-door[data-destination='systems'] {
-    inset-block-start: 69%;
-  }
-
-  .aks-home-door[data-destination='profile'] {
-    inset-inline-start: 29%;
-  }
-
-  .aks-home-door[data-destination='systems'] {
-    inset-inline-start: 71%;
-  }
-
-  .aks-home-door[data-destination='writings'],
-  .aks-home-door[data-destination='learning'] {
-    inset-block-start: 84%;
-  }
-
-  .aks-home-door[data-destination='writings'] {
-    inset-inline-start: 29%;
-  }
-
-  .aks-home-door[data-destination='learning'] {
-    inset-inline-start: 71%;
-  }
-
-  .aks-home-active-description {
-    width: min(38rem, calc(100vw - 8rem));
-  }
-
-  .aks-experience-footer[data-home='true'] > .aks-container {
-    width: calc(100% - 4rem);
-  }
-}
-
-@media (max-width: 47.99rem) {
+/* Tablet portrait: same flow, larger art direction, no breakpoint discontinuity at 768px. */
+@media (min-width: 40rem) and (orientation: portrait) {
   .aks-home {
-    min-height: calc(100dvh - 7.5rem);
+    --aks-home-mobile-inset: 2rem;
+    --aks-home-perspective-top: clamp(7.25rem, 12.3dvh, 9rem);
+    --aks-home-perspective-identity-gap: clamp(4.75rem, 8dvh, 5.875rem);
+    --aks-home-mark-size: clamp(13.375rem, 28vw, 14.75rem);
+    --aks-home-mark-wordmark-gap: clamp(1.375rem, 3vw, 1.75rem);
+    --aks-home-wordmark-size: clamp(2.625rem, 5.6vw, 3rem);
+    --aks-home-preview-height: 4.5rem;
+    --aks-home-nav-start-gap: 1.75rem;
+    --aks-home-nav-row-gap: 4.375rem;
   }
 
   .aks-home-meta {
-    inset-block-start: 1.5rem;
-    inset-inline: 1.5rem;
-    justify-content: space-between;
-    gap: 1rem;
-    transform: none;
-  }
-
-  .aks-home-clock {
-    min-width: 0;
-    overflow: hidden;
-    font-size: 0.625rem;
-    text-overflow: ellipsis;
-  }
-
-  .aks-home-language {
-    flex: 0 0 auto;
-  }
-
-  .aks-home-door {
-    min-width: 8rem;
-    padding-inline: 0.25rem;
-  }
-
-  .aks-home-door-label {
-    font-size: 0.875rem;
-  }
-
-  .aks-home-door[data-destination='work-with-us'] {
-    inset-block-start: 10.5%;
-    inset-inline-start: 50%;
-    transform: translate(-50%, 5px);
-  }
-
-  .aks-home-center {
-    inset-block-start: 18dvh;
-    width: calc(100% - 3rem);
+    inset-block-start: clamp(2rem, 4dvh, 2.75rem);
+    inset-inline: auto;
+    left: 50%;
+    justify-content: center;
     transform: translateX(-50%);
   }
 
-  .aks-home-brand-mark {
-    width: clamp(11rem, 47vw, 12.75rem);
-    height: clamp(11rem, 47vw, 12.75rem);
-  }
-
-  .aks-home-wordmark {
-    margin-block-start: 1.25rem;
-    font-size: clamp(2.75rem, 11vw, 3.125rem);
-    letter-spacing: -0.09rem;
+  .aks-home-portal {
+    padding-inline: 2rem;
+    padding-block-end: 5rem;
   }
 
   .aks-home-scale {
-    margin-block-start: 0.8rem;
-    font-size: 0.625rem;
-    letter-spacing: 0.28rem;
+    margin-block-start: 0.75rem;
   }
 
   .aks-home-active-description {
-    width: min(100%, 34rem);
-    height: 5.75rem;
     margin-block-start: 1rem;
-    padding-inline: 0.25rem;
-  }
-
-  .aks-home-active-description p {
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .aks-home-door[data-destination='profile'],
-  .aks-home-door[data-destination='systems'] {
-    inset-block-start: clamp(30.5rem, 56dvh, 33rem);
-  }
-
-  .aks-home-door[data-destination='profile'] {
-    inset-inline-start: 28%;
-  }
-
-  .aks-home-door[data-destination='systems'] {
-    inset-inline-start: 72%;
-  }
-
-  .aks-home-door[data-destination='writings'],
-  .aks-home-door[data-destination='learning'] {
-    inset-block-start: clamp(36.5rem, 66.5dvh, 39rem);
-  }
-
-  .aks-home-door[data-destination='writings'] {
-    inset-inline-start: 28%;
-  }
-
-  .aks-home-door[data-destination='learning'] {
-    inset-inline-start: 72%;
   }
 
   .aks-experience-footer[data-home='true'] {
-    flex-basis: 7.5rem;
+    inset-block-end: 1.75rem;
   }
 
   .aks-experience-footer[data-home='true'] > .aks-container {
-    width: calc(100% - 3rem);
+    padding-inline: 2rem;
   }
 
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-    min-height: 7.5rem;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-content: center;
-    justify-items: center;
-    gap: 1.75rem;
-    padding-block: 0.75rem;
-    text-align: center;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: center;
-    flex-wrap: nowrap;
-    gap: clamp(1rem, 5vw, 1.6rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 1rem;
   }
 
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
     grid-column: 1;
-    grid-row: 2;
-    justify-self: center;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link {
-    min-height: 2.75rem;
-    font-size: 0.6875rem;
-    white-space: nowrap;
-  }
-}
-
-@media (max-width: 24rem) {
-  .aks-home-meta {
-    inset-inline: 1.25rem;
-  }
-
-  .aks-home-clock {
-    font-size: 0.59rem;
-    letter-spacing: 0.025rem;
-  }
-
-  .aks-home-language {
-    min-width: 2.125rem;
-    padding-inline: 0.5rem;
-  }
-
-  .aks-home-door[data-destination='profile'],
-  .aks-home-door[data-destination='writings'] {
-    inset-inline-start: 27%;
-  }
-
-  .aks-home-door[data-destination='systems'],
-  .aks-home-door[data-destination='learning'] {
-    inset-inline-start: 73%;
-  }
-
-  .aks-home-active-description {
-    width: calc(100% - 0.5rem);
+    justify-self: start;
   }
 
   .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    gap: 0.9rem;
+    grid-column: 2;
+    justify-self: center;
+    gap: 1.75rem;
+  }
+}
+
+/*
+ * Orbital landscape.
+ *
+ * Spatial positioning is limited to the orbital composition itself and occurs
+ * inside a 1440px-wide artboard. Horizontal distances are clamped to the
+ * 1024/1440 references so ultrawide screens add breathing room instead of
+ * pulling destinations toward the physical display edges.
+ */
+@media (min-width: 56.25rem) and (orientation: landscape) {
+  .aks-home-meta {
+    inset-block-start: clamp(
+      2rem,
+      calc(3.48dvh + 0.625rem),
+      4rem
+    );
+    inset-inline: auto;
+    left: 50%;
+    justify-content: center;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-portal {
+    --aks-home-orbit-side-distance: clamp(
+      22.125rem,
+      calc(29.33vw + 3.375rem),
+      29.75rem
+    );
+    --aks-home-orbit-lower-distance: clamp(
+      13rem,
+      calc(20.67vw - 0.25rem),
+      18.375rem
+    );
+    --aks-home-orbit-perspective-top: max(
+      7rem,
+      calc(21.7dvh - 2.8125rem)
+    );
+    --aks-home-orbit-mark-top: max(
+      13rem,
+      calc(38.55dvh - 4.0625rem)
+    );
+    --aks-home-orbit-side-top: max(
+      16rem,
+      calc(14.96dvh + 12.1875rem)
+    );
+    --aks-home-orbit-preview-top: max(
+      26.5rem,
+      calc(78.5dvh - 4.75rem)
+    );
+    --aks-home-orbit-lower-top: max(
+      34.125rem,
+      calc(72.27dvh + 1.875rem)
+    );
+    --aks-home-mark-size: clamp(
+      12.375rem,
+      min(20vw, 28dvh),
+      18rem
+    );
+    --aks-home-wordmark-size: clamp(
+      2.75rem,
+      min(3.9vw, 5.5dvh),
+      3.5rem
+    );
+    position: absolute;
+    inset-block: 0;
+    left: 50%;
+    width: min(100%, 90rem);
+    max-width: 90rem;
+    height: 100%;
+    display: block;
+    padding: 0;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-center {
+    position: absolute;
+    top: var(--aks-home-orbit-mark-top);
+    left: 50%;
+    width: min(42rem, 60vw);
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-brand-mark {
+    width: var(--aks-home-mark-size);
+    height: var(--aks-home-mark-size);
+  }
+
+  .aks-home-wordmark {
+    margin-block-start: 0.9375rem;
+    font-size: var(--aks-home-wordmark-size);
+  }
+
+  .aks-home-scale {
+    margin-block-start: 0.5rem;
+  }
+
+  .aks-home-active-description {
+    position: absolute;
+    top: var(--aks-home-orbit-preview-top);
+    left: 50%;
+    width: min(38rem, 58vw);
+    min-height: 4rem;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door {
+    position: absolute;
+    margin: 0;
+  }
+
+  .aks-home-door[data-destination='work-with-us'] {
+    top: var(--aks-home-orbit-perspective-top);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='profile'] {
+    top: var(--aks-home-orbit-side-top);
+    left: calc(50% - var(--aks-home-orbit-side-distance));
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='systems'] {
+    top: var(--aks-home-orbit-side-top);
+    left: calc(50% + var(--aks-home-orbit-side-distance));
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='writings'] {
+    top: var(--aks-home-orbit-lower-top);
+    left: calc(50% - var(--aks-home-orbit-lower-distance));
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    top: var(--aks-home-orbit-lower-top);
+    left: calc(50% + var(--aks-home-orbit-lower-distance));
+    transform: translateX(-50%);
+  }
+
+  .aks-experience-footer[data-home='true'] {
+    inset-block-end: clamp(
+      1.5rem,
+      calc(6.25dvh - 1.5rem),
+      2.5rem
+    );
+  }
+
+  .aks-experience-footer[data-home='true'] > .aks-container {
+    width: min(100%, 90rem);
+    padding-inline: clamp(2rem, 2.78vw, 2.5rem);
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
+    grid-column: 2;
+    justify-self: center;
+    gap: 1.75rem;
+  }
+}
+
+/* Short portrait screens are a deliberate compact composition, not clipped desktop. */
+@media (max-width: 39.99rem) and (orientation: portrait) and (max-height: 42.5rem) {
+  .aks-home {
+    --aks-home-perspective-top: 3.25rem;
+    --aks-home-perspective-identity-gap: 1.125rem;
+    --aks-home-mark-size: 7rem;
+    --aks-home-mark-wordmark-gap: 0.75rem;
+    --aks-home-wordmark-size: 1.75rem;
+    --aks-home-preview-height: 3.875rem;
+    --aks-home-nav-start-gap: 0.75rem;
+    --aks-home-nav-row-gap: 1.375rem;
+  }
+
+  .aks-home-meta {
+    inset-block-start: 1rem;
+  }
+
+  .aks-home-scale {
+    margin-block-start: 0.5rem;
+    letter-spacing: 0.24rem;
+  }
+
+  .aks-home-active-description {
+    gap: 0.35rem;
+    margin-block-start: 0.5rem;
+  }
+
+  .aks-home-active-description > span {
+    font-size: 0.5625rem;
+  }
+
+  .aks-home-active-description p {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .aks-experience-footer[data-home='true'] {
+    inset-block-end: 0.875rem;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    gap: 0.75rem;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
+    gap: 0.875rem;
+  }
+}
+
+/* Phone/tablet landscape gets an intentionally compressed orbital scene. */
+@media (max-width: 56.24rem) and (orientation: landscape) and (max-height: 37.5rem) {
+  .aks-home-meta {
+    inset-block-start: 0.875rem;
+    inset-inline: auto;
+    left: 50%;
+    justify-content: center;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-portal {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    display: block;
+    padding: 0;
+  }
+
+  .aks-home-center {
+    position: absolute;
+    top: clamp(4.75rem, 22dvh, 6rem);
+    left: 50%;
+    width: min(24rem, 48vw);
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-brand-mark {
+    width: clamp(6rem, 28dvh, 7.5rem);
+    height: clamp(6rem, 28dvh, 7.5rem);
+  }
+
+  .aks-home-wordmark {
+    margin-block-start: 0.5rem;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+  }
+
+  .aks-home-scale {
+    margin-block-start: 0.375rem;
+  }
+
+  .aks-home-active-description {
+    position: absolute;
+    top: clamp(15.25rem, 66dvh, 16.75rem);
+    left: 50%;
+    width: min(32rem, 58vw);
+    min-height: 3.5rem;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-active-description p {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .aks-home-door {
+    position: absolute;
+    margin: 0;
+  }
+
+  .aks-home-door[data-destination='work-with-us'] {
+    top: 3.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='profile'] {
+    top: 9rem;
+    left: 15%;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='systems'] {
+    top: 9rem;
+    left: 85%;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='writings'] {
+    top: calc(100dvh - 6.75rem);
+    left: 28%;
+    transform: translateX(-50%);
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    top: calc(100dvh - 6.75rem);
+    left: 72%;
+    transform: translateX(-50%);
+  }
+
+  .aks-experience-footer[data-home='true'] {
+    inset-block-end: max(0.25rem, env(safe-area-inset-bottom));
+  }
+
+  .aks-experience-footer[data-home='true'] > .aks-container {
+    padding-inline: 1rem;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
+    grid-column: 2;
+    justify-self: center;
+    gap: 1rem;
   }
 }
 
