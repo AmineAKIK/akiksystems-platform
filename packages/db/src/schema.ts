@@ -165,6 +165,78 @@ export interface ProfileStackGroupTechnologiesTable {
   created_at: TimestampColumn;
 }
 
+export interface WorkWithUsPagesTable {
+  id: string;
+  singleton_key: DefaultedColumn<'public'>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsLocalizationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  content: DefaultedColumn<Record<string, unknown>>;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsPublicationsTable {
+  page_id: string;
+  locale: PlatformLocale;
+  snapshot: Record<string, unknown>;
+  published_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsSystemsTable {
+  page_id: string;
+  system_id: string;
+  position: number;
+  created_at: TimestampColumn;
+}
+
+export type WorkWithUsInquiryNotificationState =
+  | 'pending'
+  | 'queued'
+  | 'sending'
+  | 'sent'
+  | 'failed'
+  | 'blocked';
+
+export interface WorkWithUsInquiriesTable {
+  id: string;
+  submission_token: string;
+  locale: PlatformLocale;
+  name: string;
+  email: string;
+  organization: string | null;
+  message: string;
+  handled_at: NullableTimestampColumn;
+  created_at: TimestampColumn;
+}
+
+export interface WorkWithUsInquirySettingsTable {
+  singleton_key: DefaultedColumn<'public'>;
+  recipient_email: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface WorkWithUsInquiryNotificationsTable {
+  inquiry_id: string;
+  state: DefaultedColumn<WorkWithUsInquiryNotificationState>;
+  recipient_email: string | null;
+  attempt_count: DefaultedColumn<number>;
+  provider: string | null;
+  provider_message_id: string | null;
+  last_error: string | null;
+  queued_at: NullableTimestampColumn;
+  sent_at: NullableTimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface TechnologiesTable {
   id: string;
   slug: string;
@@ -534,6 +606,35 @@ export type NewProfileStackGroupTechnologyRow =
   Insertable<ProfileStackGroupTechnologiesTable>;
 export type ProfileStackGroupTechnologyUpdate =
   Updateable<ProfileStackGroupTechnologiesTable>;
+
+export type WorkWithUsPageRow = Selectable<WorkWithUsPagesTable>;
+export type NewWorkWithUsPageRow = Insertable<WorkWithUsPagesTable>;
+export type WorkWithUsPageUpdate = Updateable<WorkWithUsPagesTable>;
+
+export type WorkWithUsLocalizationRow = Selectable<WorkWithUsLocalizationsTable>;
+export type NewWorkWithUsLocalizationRow = Insertable<WorkWithUsLocalizationsTable>;
+export type WorkWithUsLocalizationUpdate = Updateable<WorkWithUsLocalizationsTable>;
+
+export type WorkWithUsPublicationRow = Selectable<WorkWithUsPublicationsTable>;
+export type NewWorkWithUsPublicationRow = Insertable<WorkWithUsPublicationsTable>;
+export type WorkWithUsPublicationUpdate = Updateable<WorkWithUsPublicationsTable>;
+
+export type WorkWithUsSystemRow = Selectable<WorkWithUsSystemsTable>;
+export type NewWorkWithUsSystemRow = Insertable<WorkWithUsSystemsTable>;
+export type WorkWithUsSystemUpdate = Updateable<WorkWithUsSystemsTable>;
+
+export type WorkWithUsInquiryRow = Selectable<WorkWithUsInquiriesTable>;
+export type NewWorkWithUsInquiryRow = Insertable<WorkWithUsInquiriesTable>;
+
+export type WorkWithUsInquirySettingsRow =
+  Selectable<WorkWithUsInquirySettingsTable>;
+export type NewWorkWithUsInquirySettingsRow =
+  Insertable<WorkWithUsInquirySettingsTable>;
+
+export type WorkWithUsInquiryNotificationRow =
+  Selectable<WorkWithUsInquiryNotificationsTable>;
+export type NewWorkWithUsInquiryNotificationRow =
+  Insertable<WorkWithUsInquiryNotificationsTable>;
 
 export type TechnologyRow = Selectable<TechnologiesTable>;
 export type NewTechnologyRow = Insertable<TechnologiesTable>;
