@@ -13,15 +13,77 @@ function profile(overrides: Partial<PublicProfile> = {}): PublicProfile {
   content.hero.specialization = 'Software · operations · systems';
   content.hero.introduction = 'I build inspectable software systems.';
   content.hero.cvLabel = 'Download CV';
+
   content.currentProject.eyebrow = 'Current project';
   content.currentProject.roleLabel = 'Role';
   content.currentProject.role = 'Builder';
   content.currentProject.ctaLabel = 'Inspect system';
+  content.currentProject.updatedLabel = 'Updated';
+
+  content.stack.eyebrow = 'Stack';
   content.stack.title = 'What I master, and where to verify it.';
+  content.stack.introduction = 'Every technology is backed by published proof.';
   content.stack.proofCountLabel = 'Proved in';
   content.stack.inspectSystemLabel = 'Inspect system';
+
+  content.guidance.eyebrow = 'What guides my work';
+  content.guidance.title = 'Software matters through real work.';
+  content.guidance.centerLabel = 'Systemic view';
+  content.guidance.benefitLabel = 'What it brings';
+  content.guidance.avoidanceLabel = 'What it avoids';
+  content.guidance.questionsLabel = 'Questions';
+  content.guidance.looks.code.title = 'Code';
+  content.guidance.looks.code.description = 'Build for maintenance.';
+  content.guidance.looks.code.benefit = 'Durable software.';
+  content.guidance.looks.code.avoidance = 'Short-lived shortcuts.';
+  content.guidance.looks.code.questions = ['Can this be maintained?'];
+
+  content.capabilities.eyebrow = 'Capabilities';
+  content.capabilities.title = 'From framing to evolution.';
+  content.capabilities.beforeCodingLabel = 'Before coding';
+  content.capabilities.buildDeliverLabel = 'Build and deliver';
+  content.capabilities.runLiveLabel = 'Run and evolve';
+  content.capabilities.deliverableLabel = 'What you receive';
+  content.capabilities.crossCuttingLabel = 'Throughout the project';
+  content.capabilities.steps.frame.title = 'Frame';
+  content.capabilities.steps.frame.purpose = 'Clarify the real problem.';
+  content.capabilities.steps.frame.actions = ['Map the real workflow.'];
+  content.capabilities.steps.frame.deliverable = 'A clear frame.';
+  content.capabilities.crossCutting.documentation.title = 'Documentation';
+  content.capabilities.crossCutting.documentation.description =
+    'Keep decisions and operating knowledge explicit.';
+
+  content.systemicScale.eyebrow = 'The meaning of the slogan';
   content.systemicScale.title = 'Systemic Scale';
+  content.systemicScale.statementPrimary = 'Intervene on one part.';
+  content.systemicScale.statementSecondary = 'Evaluate across a wider boundary.';
   content.systemicScale.reasoningLinkLabel = 'Read the full reasoning';
+  content.systemicScale.exampleLabel = 'In the example';
+  content.systemicScale.questionLabel = 'The question to ask';
+  content.systemicScale.steps.read_request.title = 'Read the request';
+  content.systemicScale.steps.read_request.principle = 'Start with the request.';
+  content.systemicScale.steps.read_request.example = 'Shared resources.';
+  content.systemicScale.steps.read_request.question = 'What is actually asked?';
+  content.systemicScale.steps.read_request.diagramLeadLabel = 'Observed process';
+  content.systemicScale.steps.read_request.diagramAlt =
+    'Eight-step shared-resource process.';
+  content.systemicScale.processLabels.reservation = 'Reservation';
+  content.systemicScale.processLabels.assignment = 'Assignment';
+  content.systemicScale.processLabels.use = 'Use';
+  content.systemicScale.processLabels.return = 'Return';
+  content.systemicScale.processLabels.verification = 'Verification';
+  content.systemicScale.processLabels.restoration = 'Restoration';
+  content.systemicScale.processLabels.location = 'Location';
+  content.systemicScale.processLabels.available = 'Available';
+
+  content.emblem.eyebrow = 'AkikSystems emblem';
+  content.emblem.title = 'What the emblem says';
+  content.emblem.symbols.eagle.name = 'Eagle';
+  content.emblem.symbols.eagle.concept = 'Overview';
+  content.emblem.symbols.eagle.description = 'Keep the wider view.';
+  content.emblem.conclusion = 'Height of view requires knowledge of the ground.';
+
+  content.callToAction.eyebrow = 'Work together';
   content.callToAction.title = 'Build something useful.';
   content.callToAction.buttonLabel = 'Work with us';
 
@@ -48,18 +110,9 @@ function profile(overrides: Partial<PublicProfile> = {}): PublicProfile {
   };
 }
 
-describe('PublicProfileView final contract', () => {
-  it('renders Profile-owned narrative with live System, Stack proof and Writing references', () => {
+describe('PublicProfileView final experience', () => {
+  it('renders the complete public composition from Profile and canonical references', () => {
     const base = profile();
-    base.content.guidance.title = 'What guides my work';
-    base.content.guidance.looks.code.title = 'Code';
-    base.content.guidance.looks.code.description = 'Build for maintenance.';
-    base.content.capabilities.title = 'Capabilities';
-    base.content.capabilities.steps.frame.title = 'Frame';
-    base.content.capabilities.steps.frame.purpose = 'Clarify the real problem.';
-    base.content.emblem.title = 'The emblem';
-    base.content.emblem.symbols.eagle.name = 'Eagle';
-    base.content.emblem.symbols.eagle.description = 'Keep the wider view.';
 
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
@@ -127,23 +180,33 @@ describe('PublicProfileView final contract', () => {
       </MemoryRouter>,
     );
 
+    expect(html).toContain('class="aks-profile"');
+    expect(html).toContain('data-profile-section="hero"');
+    expect(html).toContain('data-profile-section="stack"');
+    expect(html).toContain('data-profile-section="guidance"');
+    expect(html).toContain('data-profile-section="capabilities"');
+    expect(html).toContain('data-profile-section="systemic-scale"');
+    expect(html).toContain('data-profile-section="cta"');
+
     expect(html).toContain('Qualification Profile');
     expect(html).toContain('Systems builder');
     expect(html).toContain('System One');
     expect(html).toContain('href="/en/systems/system-one"');
     expect(html).toContain('Published relation evidence.');
-    expect(html).toContain('Proved in 1');
-    expect(html).toContain('Read the full reasoning');
+    expect(html).toContain('Proved in 1 system');
     expect(html).toContain('href="/en/writings/systemic-reasoning"');
-    expect(html).toContain('What guides my work');
-    expect(html).toContain('Capabilities');
-    expect(html).toContain('The emblem');
     expect(html).toContain('href="/en/work-with-us"');
+    expect(html).toContain('src="/brand/AKSYS.svg"');
+
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('aria-selected="true"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('Eight-step shared-resource process.');
   });
 
-  it('does not invent canonical references when they are unavailable', () => {
+  it('keeps unavailable canonical references absent without inventing content', () => {
     const base = profile();
-    base.content.systemicScale.title = 'Systemic Scale';
 
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
@@ -172,21 +235,27 @@ describe('PublicProfileView final contract', () => {
       </MemoryRouter>,
     );
 
-    expect(html).toContain('Proved in 0');
-    expect(html).not.toContain('Current project');
-    expect(html).not.toContain('Read the full reasoning');
+    expect(html).toContain('Proved in 0 systems');
+    expect(html).toContain('No published proof in this locale yet.');
+    expect(html).not.toContain('data-profile-section="current-project"');
+    expect(html).not.toContain('Read the full reasoning</a>');
     expect(html).not.toContain('Sentinel');
+    expect(html).not.toContain('AkikSystems</h2>');
   });
 
-  it('uses the localized Profile contract without desktop/mobile content forks', () => {
+  it('uses one localized editorial model for mobile and desktop representations', () => {
     const base = profile({
       locale: 'fr',
       displayName: 'Profil Qualification',
       sourceCvAssetId: 'cv-one',
-      contacts: [{ kind: 'email', value: 'profile@example.test' }],
+      contacts: [
+        { kind: 'email', value: 'profile@example.test' },
+        { kind: 'phone', value: '+33102030405' },
+      ],
       languages: ['fr', 'en'],
       mobility: { worldwide: true, remote: true, relocation: false },
     });
+
     base.content.hero.professionalTitle = 'Constructeur de systèmes';
     base.content.hero.introduction = 'Je construis des systèmes inspectables.';
     base.content.hero.cvLabel = 'Télécharger le CV';
@@ -202,9 +271,13 @@ describe('PublicProfileView final contract', () => {
     expect(html).toContain('Constructeur de systèmes');
     expect(html).toContain('Télécharger le CV');
     expect(html).toContain('href="/fr/profil/cv"');
+    expect(html).toContain('mailto:profile@example.test');
+    expect(html).toContain('tel:+33102030405');
     expect(html).toContain('Français · Anglais');
     expect(html).toContain('International · À distance');
     expect(html).toContain('href="/fr/travailler-ensemble"');
+    expect(html).toContain('aks-profile-emblem-map');
+    expect(html).toContain('aks-profile-emblem-mobile');
     expect(html).toContain('data-profile-contract="v1"');
   });
 });
