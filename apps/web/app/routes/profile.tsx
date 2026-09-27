@@ -1,12 +1,9 @@
-import {
-  getPublicProfile,
-  listPublishedSystemReferences,
-} from '@akiksystems/db';
+import { getPublicProfile } from '@akiksystems/db';
 import { data, useLoaderData, type MetaDescriptor } from 'react-router';
 
 import { PublicProfileView } from '../components/public-profile-view';
-import { appDb } from '../lib/db.server';
 import { requireExactLocale } from '../i18n/locales';
+import { appDb } from '../lib/db.server';
 
 import type { Route } from './+types/profile';
 
@@ -18,38 +15,16 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response('Profile not found.', { status: 404 });
   }
 
-  const referenceIds = [
-    ...new Set([
-      ...profile.representativeSystems.map(({ id }) => id),
-      ...profile.workPrinciples.flatMap(({ evidenceSystem }) =>
-        evidenceSystem === null ? [] : [evidenceSystem.id],
-      ),
-      ...profile.technologyJourney.flatMap(({ evidence }) =>
-        evidence?.kind === 'system' ? [evidence.id] : [],
-      ),
-    ]),
-  ];
-  const systemReferences = await listPublishedSystemReferences(appDb, {
-    locale,
-    ids: referenceIds,
-  });
-
-  const alternate = await appDb
-    .selectFrom('profile_publications')
-    .select('locale')
-    .where('profile_id', '=', profile.id)
-    .where('locale', '=', 'fr')
-    .executeTakeFirst();
+  const alternatePublished = profile.alternateLocale !== null;
 
   return data(
     {
       profile,
-      systemReferences,
       localContext: {
         title: null,
-        alternateHref: alternate === undefined ? null : '/fr/profil',
+        alternateHref: alternatePublished ? '/fr/profil' : null,
       },
-      alternatePublished: alternate !== undefined,
+      alternatePublished,
     },
     {
       headers: {
@@ -68,10 +43,10 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 
   const { profile, alternatePublished } = loaderData;
   const canonicalUrl = `${canonicalOrigin}/en/profile`;
-  const title = profile.displayName ?? 'Amine AKIK';
+  const title = profile.displayName;
   const description =
-    profile.introduction ??
-    profile.professionalTitle ??
+    profile.content.hero.introduction.trim() ||
+    profile.content.hero.professionalTitle.trim() ||
     'AkikSystems professional Profile.';
 
   const descriptors: MetaDescriptor[] = [
@@ -86,10 +61,7 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:url', content: canonicalUrl },
-    {
-      property: 'og:locale',
-      content: 'en_US',
-    },
+    { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary' },
     { tagName: 'link', rel: 'canonical', href: canonicalUrl },
     {
@@ -126,11 +98,6 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
 }
 
 export default function ProfileRoute() {
-  const { profile, systemReferences } = useLoaderData<typeof loader>();
-  return (
-    <PublicProfileView
-      profile={profile}
-      systemReferences={systemReferences}
-    />
-  );
+  const { profile } = useLoaderData<typeof loader>();
+  return <PublicProfileView profile={profile} />;
 }
