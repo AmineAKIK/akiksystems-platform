@@ -315,15 +315,16 @@ export function HomePortal({ locale }: HomePortalProps) {
             AkikSystems
           </h1>
           <p className="aks-home-scale">Systemic Scale</p>
-          <div
-            aria-atomic="true"
-            aria-live="polite"
-            className="aks-home-active-description"
-            data-state={previewActive ? 'active' : 'idle'}
-          >
-            <span>{preview?.label ?? '\u00a0'}</span>
-            <p>{preview?.description ?? '\u00a0'}</p>
-          </div>
+        </div>
+
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="aks-home-active-description"
+          data-state={previewActive ? 'active' : 'idle'}
+        >
+          <span>{preview?.label ?? '\u00a0'}</span>
+          <p>{preview?.description ?? '\u00a0'}</p>
         </div>
       </section>
     </main>
