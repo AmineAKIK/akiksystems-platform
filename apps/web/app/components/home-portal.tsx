@@ -317,6 +317,8 @@ export function HomePortal({ locale }: HomePortalProps) {
           })}
         </nav>
 
+        <span aria-hidden="true" className="aks-home-nav-separator" />
+
         <div className="aks-home-center">
           <HomeEmblem />
           <h1 className="aks-home-wordmark" id="aks-home-title">

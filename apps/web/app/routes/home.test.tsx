@@ -19,6 +19,7 @@ describe('HomePortal handoff contract', () => {
     expect(html).toContain('aria-label="Local time in Paris"');
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain('viewBox="0 0 2048 2048"');
+    expect(html).toContain('class="aks-home-nav-separator"');
 
     const englishDoors = [
       ['/en/work-with-us', 'Perspectives', 'Collaboration · Contact'],
