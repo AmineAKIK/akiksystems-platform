@@ -150,7 +150,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 aria-label={
                   profile.locale === 'fr' ? 'Projet en cours' : 'Current project'
                 }
-                className="aks-admin-card"
+                className="aks-profile-current-project"
               >
                 <div className="aks-proof-stack">
                   {hasText(content.currentProject.eyebrow) ? (
@@ -211,7 +211,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
 
               <div className="aks-proof-stack">
                 {profile.stackGroups.map((group) => (
-                  <article className="aks-admin-card" key={group.id}>
+                  <article className="aks-profile-stack-group" key={group.id}>
                     <div className="aks-proof-stack">
                       <Heading level={3} size="sm">
                         {group.title}
@@ -230,7 +230,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       </Text>
                       {group.proofSystems.map((system) => (
                         <div className="aks-proof-stack" key={system.id}>
-                          <Heading level={4} size="xs">
+                          <Heading level={4} size="sm">
                             {system.title}
                           </Heading>
                           {system.technologies.map((technology) => (
@@ -269,7 +269,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     return null;
                   }
                   return (
-                    <article className="aks-admin-card" key={key}>
+                    <article className="aks-profile-guidance-look" key={key}>
                       <Heading level={3} size="sm">
                         {look.title}
                       </Heading>
@@ -320,7 +320,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   const step = content.capabilities.steps[key];
                   if (!hasText(step.title) && !hasText(step.purpose)) return null;
                   return (
-                    <li className="aks-admin-card" key={key}>
+                    <li className="aks-profile-capability-step" key={key}>
                       <Heading level={3} size="sm">
                         {step.title}
                       </Heading>
@@ -354,7 +354,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     return null;
                   }
                   return (
-                    <article className="aks-admin-card" key={key}>
+                    <article className="aks-profile-guidance-look" key={key}>
                       <Heading level={3} size="sm">
                         {capability.title}
                       </Heading>
@@ -398,7 +398,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   const step = content.systemicScale.steps[key];
                   if (!hasText(step.title) && !hasText(step.principle)) return null;
                   return (
-                    <li className="aks-admin-card" key={key}>
+                    <li className="aks-profile-systemic-scale-step" key={key}>
                       <Heading level={3} size="sm">
                         {step.title}
                       </Heading>
