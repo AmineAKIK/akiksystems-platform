@@ -395,7 +395,7 @@ async function assertNoHorizontalOverflow(page, label) {
 
     await clickAndWaitForMessage(
       page,
-      page.getByRole('button', { name: 'Publish EN' }),
+      page.locator('button[value="publish-profile-localization:en"]'),
       'EN Profile published.',
     );
 
