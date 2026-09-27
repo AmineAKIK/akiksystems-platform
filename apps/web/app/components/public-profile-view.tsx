@@ -230,9 +230,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       </Text>
                       {group.proofSystems.map((system) => (
                         <div className="aks-proof-stack" key={system.id}>
-                          <Heading level={4} size="sm">
-                            {system.title}
-                          </Heading>
+                          <Text tone="strong">{system.title}</Text>
                           {system.technologies.map((technology) => (
                             <Text key={technology.id} size="sm" tone="muted">
                               {technology.name} — {technology.evidence}
@@ -354,7 +352,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     return null;
                   }
                   return (
-                    <article className="aks-profile-guidance-look" key={key}>
+                    <article
+                      className="aks-profile-cross-cutting-capability"
+                      key={key}
+                    >
                       <Heading level={3} size="sm">
                         {capability.title}
                       </Heading>
