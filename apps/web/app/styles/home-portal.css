@@ -665,6 +665,7 @@
     --aks-home-mark-size: clamp(12.75rem, min(20vw, 28dvh), 18rem);
     --aks-home-wordmark-size: clamp(2.75rem, min(3.9vw, 5.5dvh), 3.5rem);
     --aks-home-preview-height: 4rem;
+    --aks-home-pentagon-inset: clamp(4rem, 15vw, 10rem);
   }
 
   .aks-home-portal {
@@ -727,6 +728,14 @@
     margin-block-start: clamp(1rem, 2.2dvh, 1.75rem);
   }
 
+  .aks-home-door[data-destination='writings'] {
+    transform: translateX(var(--aks-home-pentagon-inset));
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    transform: translateX(calc(-1 * var(--aks-home-pentagon-inset)));
+  }
+
   .aks-experience-footer[data-home='true'] {
     inset-block-end: clamp(1.25rem, 2.5dvh, 2rem);
   }
@@ -769,6 +778,7 @@
     --aks-home-mark-size: clamp(5.75rem, 26dvh, 6.5rem);
     --aks-home-wordmark-size: clamp(1.625rem, 4vw, 1.875rem);
     --aks-home-preview-height: 2.875rem;
+    --aks-home-pentagon-inset: clamp(4rem, 15vw, 8rem);
   }
 
   .aks-home-portal {
@@ -833,6 +843,14 @@
   .aks-home-door[data-destination='writings'],
   .aks-home-door[data-destination='learning'] {
     margin-block-start: 0.875rem;
+  }
+
+  .aks-home-door[data-destination='writings'] {
+    transform: translateX(var(--aks-home-pentagon-inset));
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    transform: translateX(calc(-1 * var(--aks-home-pentagon-inset)));
   }
 
   .aks-experience-footer[data-home='true'] {

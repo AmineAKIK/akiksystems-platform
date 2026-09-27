@@ -21,7 +21,7 @@ describe('legal pages', () => {
     expect(metadata).toContainEqual({
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://akiksystems.com/fr/confidentialite',
+      href: 'https://akiksystems.fr/fr/confidentialite',
     });
     expect(metadata).toContainEqual({
       tagName: 'link',

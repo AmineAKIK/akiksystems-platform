@@ -11,13 +11,13 @@ import {
 
 import { SystemExperience } from '../components/system-experience-resolver';
 import { appDb } from '../lib/db.server';
+import { publicCanonicalUrl } from '../lib/public-locales';
 import { publicImageVariantWidths } from '../lib/image-variant.server';
 import { requireLocale } from '../i18n/locales';
 
 import type { Route } from './+types/system-detail';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const canonicalOrigin = 'https://akiksystems.com';
 
 function requiredSlug(value: string | undefined): string {
   if (value === undefined || !slugPattern.test(value)) {
@@ -29,7 +29,7 @@ function requiredSlug(value: string | undefined): string {
 
 
 function publicSystemUrl(locale: 'en' | 'fr', slug: string): string {
-  return `${canonicalOrigin}/${locale}/systems/${slug}`;
+  return publicCanonicalUrl(`/${locale}/systems/${slug}`);
 }
 
 function learningArtifactHref(locale: 'en' | 'fr', slug: string): string {

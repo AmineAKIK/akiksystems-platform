@@ -1,12 +1,8 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import { data, type MetaDescriptor } from 'react-router';
 
-const canonicalOrigin = 'https://akiksystems.com';
+import { publicCanonicalUrl } from './public-locales';
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
-
-export function publicCanonicalUrl(path: string): string {
-  return canonicalOrigin + path;
-}
 
 function openGraphLocale(locale: PlatformLocale): 'en_US' | 'fr_FR' {
   return locale === 'fr' ? 'fr_FR' : 'en_US';

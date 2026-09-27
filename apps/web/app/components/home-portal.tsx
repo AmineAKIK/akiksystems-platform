@@ -14,6 +14,7 @@ import {
   type GlobalDestinationId,
 } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
+import { publicLanguageHref } from '../lib/public-locales';
 import {
   homeDestinationOrder,
   homeDestinationPresentation,
@@ -118,7 +119,7 @@ function ParisContext({ locale }: { locale: Locale }) {
         className="aks-home-language"
         hrefLang={alternateLocale}
         prefetch="intent"
-        to={'/' + alternateLocale}
+        to={publicLanguageHref(alternateLocale, '/' + alternateLocale)}
       >
         <span aria-hidden="true" className="aks-home-language-display">
           <span className="aks-home-language-current" lang={locale}>

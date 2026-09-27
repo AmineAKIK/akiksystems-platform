@@ -4,6 +4,7 @@ import { data, useLoaderData, type MetaDescriptor } from 'react-router';
 import { PublicProfileView } from '../components/public-profile-view';
 import { requireExactLocale } from '../i18n/locales';
 import { appDb } from '../lib/db.server';
+import { publicCanonicalUrl } from '../lib/public-locales';
 
 import type { Route } from './+types/profile';
 
@@ -34,15 +35,13 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-const canonicalOrigin = 'https://akiksystems.com';
-
 export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
   if (loaderData === undefined) {
     return [{ title: 'Profile · AkikSystems' }];
   }
 
   const { profile, alternatePublished } = loaderData;
-  const canonicalUrl = `${canonicalOrigin}/en/profile`;
+  const canonicalUrl = publicCanonicalUrl('/en/profile');
   const title = profile.displayName;
   const description =
     profile.content.hero.introduction.trim() ||
@@ -82,7 +81,7 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
         tagName: 'link',
         rel: 'alternate',
         hrefLang: 'fr',
-        href: `${canonicalOrigin}/fr/profil`,
+        href: publicCanonicalUrl('/fr/profil'),
       },
     );
   }

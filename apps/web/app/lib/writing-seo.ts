@@ -1,10 +1,8 @@
 import type { PlatformLocale, WritingKind } from '@akiksystems/core';
 import type { MetaDescriptor } from 'react-router';
 
-import {
-  buildLocalizedPublicMeta,
-  publicCanonicalUrl,
-} from './public-seo';
+import { publicCanonicalUrl } from './public-locales';
+import { buildLocalizedPublicMeta } from './public-seo';
 
 export interface WritingSeoInput {
   locale: PlatformLocale;

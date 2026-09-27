@@ -1,14 +1,32 @@
-import { Outlet, useLoaderData, useLocation, useMatches } from 'react-router';
+import { Outlet, redirect, useLoaderData, useLocation, useMatches } from 'react-router';
 
 import { ExperienceShell } from '../components/experience-shell';
 import { requireLocale, type Locale } from '../i18n/locales';
+import {
+  localeFromPublicHostname,
+  publicOrigins,
+  publicUrlForLocale,
+} from '../lib/public-locales';
 
 import type { Route } from './+types/locale-layout';
 
-export function loader({ params }: Route.LoaderArgs) {
-  return {
-    locale: requireLocale(params.locale),
-  };
+export function loader({ params, request }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale);
+  const requestUrl = new URL(request.url);
+  const hostnameLocale = localeFromPublicHostname(requestUrl.hostname);
+  const canonicalHostname = new URL(publicOrigins[locale]).hostname;
+
+  if (
+    hostnameLocale !== null &&
+    (hostnameLocale !== locale || requestUrl.hostname !== canonicalHostname)
+  ) {
+    throw redirect(
+      publicUrlForLocale(locale, requestUrl.pathname + requestUrl.search),
+      308,
+    );
+  }
+
+  return { locale };
 }
 
 interface ExperienceMatchData {

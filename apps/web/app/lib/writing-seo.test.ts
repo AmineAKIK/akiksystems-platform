@@ -33,7 +33,7 @@ describe('Writing SEO', () => {
     expect(meta).toContainEqual({
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://akiksystems.com/fr/ecrits/architecture-sans-page-builder',
+      href: 'https://akiksystems.fr/fr/ecrits/architecture-sans-page-builder',
     });
     expect(meta).toContainEqual({
       tagName: 'link',

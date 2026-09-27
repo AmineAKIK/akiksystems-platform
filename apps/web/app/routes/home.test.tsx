@@ -34,7 +34,7 @@ describe('HomePortal handoff contract', () => {
       ['/en/profile', 'Profile', 'Journey · Vision'],
       ['/en/systems', 'Systems', 'Products · Projects'],
       ['/en/writings', 'Writings', 'Essays · Notes'],
-      ['/en/learning', 'Learning', 'Dossiers · Training'],
+      ['/en/learning', 'Learning', 'Credentials · Training'],
     ] as const;
 
     for (const [href, label, summary] of englishDoors) {

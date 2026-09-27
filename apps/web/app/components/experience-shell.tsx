@@ -10,6 +10,7 @@ import {
 import { ExperienceFooter } from './experience-footer';
 import { ExperienceLocalContext } from './experience-local-context';
 import { dictionaryFor, type Locale } from '../i18n/locales';
+import { publicLanguageHref } from '../lib/public-locales';
 
 export interface ExperienceShellProps {
   locale: Locale;
@@ -41,7 +42,11 @@ export function ExperienceShell({
     destinationId === null
       ? `/${alternateLocale}`
       : destinationHref(destinationId, alternateLocale);
-  const languageHref = alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
+  const languagePath = alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
+  const languageHref =
+    languagePath === null
+      ? null
+      : publicLanguageHref(alternateLocale, languagePath);
 
   return (
     <>

@@ -82,11 +82,11 @@ export const homeDestinationPresentation: Record<
       fr: 'Apprentissage',
     },
     summary: {
-      en: 'Dossiers · Training',
+      en: 'Credentials · Training',
       fr: 'Dossiers · Formations',
     },
     description: {
-      en: 'Training, professional dossiers, and projects built through learning.',
+      en: 'Training, credentials, and projects shaped through continuous learning.',
       fr: 'Formations, dossiers professionnels et projets construits par l’apprentissage.',
     },
   },
