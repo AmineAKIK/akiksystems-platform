@@ -26,7 +26,6 @@ export default [
     'admin/writings/:writingId/assets/:assetId',
     'routes/admin-writing-asset.ts',
   ),
-  route('admin/profile/preview/:locale', 'routes/admin-profile-preview.tsx'),
   route('admin/systems', 'routes/admin-systems.tsx'),
   route('admin/systems/:systemId', 'routes/admin-system.tsx'),
   route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
