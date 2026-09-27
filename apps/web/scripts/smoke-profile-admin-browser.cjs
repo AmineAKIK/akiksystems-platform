@@ -310,6 +310,10 @@ async function assertNoHorizontalOverflow(page, label) {
     await page
       .locator('textarea[name="stackTitle"]')
       .fill('What I master, and where to verify it.');
+    const stackTrigger = page.locator('.aks-profile-stack-trigger').first();
+    if ((await stackTrigger.getAttribute('aria-expanded')) !== 'true') {
+      await stackTrigger.click();
+    }
     await page
       .locator('input[name="stackGroupTitle:' + groupId + '"]')
       .fill('Front-end');
