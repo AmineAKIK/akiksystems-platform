@@ -4,24 +4,20 @@ import { randomUUID } from 'node:crypto';
 import {
   createWorkWithUsInquiry,
   ensureWorkWithUsInquirySettings,
-  listWorkWithUsInquiries,
+  getWorkWithUsInquiryNotificationDelivery,
   markWorkWithUsInquiryNotificationBlocked,
   markWorkWithUsInquiryNotificationFailed,
   markWorkWithUsInquiryNotificationQueued,
   markWorkWithUsInquiryNotificationSending,
   markWorkWithUsInquiryNotificationSent,
-  resetWorkWithUsInquiryNotification,
-  setWorkWithUsInquiryHandled,
-  updateWorkWithUsInquiryRecipient,
 } from '../index.js';
 import { createDatabase } from '../database.js';
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
 const marker = randomUUID();
-const email = `handling-${marker}@example.invalid`;
-const initialRecipient = `recipient-${marker}@example.invalid`;
-const updatedRecipient = `updated-${marker}@example.invalid`;
+const email = `delivery-${marker}@example.invalid`;
+const recipient = `recipient-${marker}@example.invalid`;
 
 const previousSettings = await db
   .selectFrom('work_with_us_inquiry_settings')
@@ -32,46 +28,34 @@ const previousSettings = await db
 let inquiryId: string | null = null;
 
 try {
-  const settings = await ensureWorkWithUsInquirySettings(db, initialRecipient);
-  if (previousSettings === undefined) {
-    assert.equal(settings.recipientEmail, initialRecipient);
-  }
-
-  await updateWorkWithUsInquiryRecipient(db, updatedRecipient);
+  await ensureWorkWithUsInquirySettings(db, recipient);
 
   const created = await createWorkWithUsInquiry(db, {
     submissionToken: randomUUID(),
     locale: 'fr',
-    name: 'Qualification traitement',
+    name: 'Qualification livraison',
     email,
     organization: null,
-    message: 'Une demande doit rester traitable même si la notification échoue.',
+    message: 'Une demande publique doit rester livrable sans back-office.',
   });
 
   assert.equal(created.status, 'created');
   if (created.status !== 'created') {
-    throw new Error('Handling qualification inquiry was not created.');
+    throw new Error('Notification qualification inquiry was not created.');
   }
+
   inquiryId = created.inquiryId;
 
-  let inbox = await listWorkWithUsInquiries(db);
-  let item = inbox.find((candidate) => candidate.id === inquiryId);
-  assert.ok(item);
-  assert.equal(item.handledAt, null);
-  assert.equal(item.notification.state, 'pending');
-  assert.equal(item.notification.attemptCount, 0);
+  let delivery = await getWorkWithUsInquiryNotificationDelivery(db, inquiryId);
+  assert.ok(delivery);
+  assert.equal(delivery.state, 'pending');
+  assert.equal(delivery.recipientEmail, previousSettings?.recipient_email ?? recipient);
 
-  assert.equal(await setWorkWithUsInquiryHandled(db, inquiryId, true), true);
-  inbox = await listWorkWithUsInquiries(db);
-  item = inbox.find((candidate) => candidate.id === inquiryId);
-  assert.ok(item?.handledAt instanceof Date);
-
-  assert.equal(await setWorkWithUsInquiryHandled(db, inquiryId, false), true);
   await markWorkWithUsInquiryNotificationQueued(db, inquiryId);
   await markWorkWithUsInquiryNotificationSending(
     db,
     inquiryId,
-    updatedRecipient,
+    delivery.recipientEmail ?? recipient,
     'qualification',
   );
   await markWorkWithUsInquiryNotificationFailed(
@@ -80,24 +64,25 @@ try {
     'Synthetic provider outage.',
   );
 
-  inbox = await listWorkWithUsInquiries(db);
-  item = inbox.find((candidate) => candidate.id === inquiryId);
-  assert.equal(item?.notification.state, 'failed');
-  assert.equal(item?.notification.attemptCount, 1);
-  assert.equal(item?.notification.lastError, 'Synthetic provider outage.');
+  const notification = await db
+    .selectFrom('work_with_us_inquiry_notifications')
+    .select(['state', 'attempt_count', 'last_error'])
+    .where('inquiry_id', '=', inquiryId)
+    .executeTakeFirstOrThrow();
 
-  assert.equal(await resetWorkWithUsInquiryNotification(db, inquiryId), true);
+  assert.equal(notification.state, 'failed');
+  assert.equal(notification.attempt_count, 1);
+  assert.equal(notification.last_error, 'Synthetic provider outage.');
+
   await markWorkWithUsInquiryNotificationBlocked(
     db,
     inquiryId,
     'Synthetic missing transport.',
   );
-  assert.equal(await resetWorkWithUsInquiryNotification(db, inquiryId), true);
-
   await markWorkWithUsInquiryNotificationSending(
     db,
     inquiryId,
-    updatedRecipient,
+    delivery.recipientEmail ?? recipient,
     'qualification',
   );
   await markWorkWithUsInquiryNotificationSent(
@@ -107,18 +92,24 @@ try {
     `message-${marker}`,
   );
 
-  inbox = await listWorkWithUsInquiries(db);
-  item = inbox.find((candidate) => candidate.id === inquiryId);
-  assert.equal(item?.notification.state, 'sent');
-  assert.equal(item?.notification.attemptCount, 2);
-  assert.equal(item?.notification.recipientEmail, updatedRecipient);
-  assert.equal(item?.notification.provider, 'qualification');
-  assert.equal(item?.notification.providerMessageId, `message-${marker}`);
-  assert.ok(item?.notification.sentAt instanceof Date);
-  assert.equal(await resetWorkWithUsInquiryNotification(db, inquiryId), false);
+  delivery = await getWorkWithUsInquiryNotificationDelivery(db, inquiryId);
+  assert.ok(delivery);
+  assert.equal(delivery.state, 'sent');
+  assert.equal(delivery.providerMessageId, `message-${marker}`);
+
+  const sentNotification = await db
+    .selectFrom('work_with_us_inquiry_notifications')
+    .select(['state', 'attempt_count', 'provider_message_id', 'sent_at'])
+    .where('inquiry_id', '=', inquiryId)
+    .executeTakeFirstOrThrow();
+
+  assert.equal(sentNotification.state, 'sent');
+  assert.equal(sentNotification.attempt_count, 2);
+  assert.equal(sentNotification.provider_message_id, `message-${marker}`);
+  assert.ok(sentNotification.sent_at instanceof Date);
 
   process.stdout.write(
-    'Work with us inquiry handling qualification passed: inbox state, recipient administration, retryable notification state, and handled/reopened lifecycle remain independent.\n',
+    'Work with us notification qualification passed: public inquiry delivery remains durable without any administration lifecycle.\n',
   );
 } finally {
   if (inquiryId !== null) {

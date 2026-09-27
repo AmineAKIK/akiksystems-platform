@@ -212,7 +212,7 @@ try {
   assert.doesNotMatch(serialized, /Résumé brouillon/);
   assert.doesNotMatch(serialized, /Texte brouillon privé/);
   assert.doesNotMatch(serialized, /Légende brouillon privée/);
-  assert.doesNotMatch(serialized, /actor_email|admin_audit_events|editorial_state/);
+  assert.doesNotMatch(serialized, /editorial_state/);
 
   await db
     .updateTable('systems')
@@ -227,7 +227,7 @@ try {
   );
 
   process.stdout.write(
-    'Public System verification passed: drafts and archived Systems stay invisible, published projection is coherent, and admin/private fields are excluded.\n',
+    'Public System verification passed: drafts and archived Systems stay invisible, published projection is coherent, and private fields are excluded.\n',
   );
 } finally {
   await db.deleteFrom('systems').where('id', '=', systemId).execute();

@@ -1,48 +1,6 @@
 import { index, route, type RouteConfig } from '@react-router/dev/routes';
 
 export default [
-  route('api/auth/*', 'routes/api-auth.ts'),
-  route('admin/login', 'routes/admin-login.tsx'),
-  route('admin/two-factor', 'routes/admin-two-factor.tsx'),
-  route('admin/security', 'routes/admin-security.tsx'),
-  route('admin/work-with-us', 'routes/admin-work-with-us.tsx'),
-  route(
-    'admin/work-with-us/inquiries',
-    'routes/admin-work-with-us-inquiries.tsx',
-  ),
-  route('admin/profile', 'routes/admin-profile.tsx'),
-  route('admin/profile/assets/:assetId', 'routes/admin-profile-asset.ts'),
-  route('admin/learning', 'routes/admin-learning.tsx'),
-  route('admin/learning/trainings', 'routes/admin-learning-trainings.tsx'),
-  route('admin/learning/credentials', 'routes/admin-learning-credentials.tsx'),
-  route('admin/learning/artifacts', 'routes/admin-learning-artifacts.tsx'),
-  route('admin/writings', 'routes/admin-writings.tsx'),
-  route('admin/writings/categories', 'routes/admin-writing-categories.tsx'),
-  route('admin/writings/tags', 'routes/admin-writing-tags.tsx'),
-  route(
-    'admin/writings/:writingId/preview/:locale',
-    'routes/admin-writing-preview.tsx',
-  ),
-  route(
-    'admin/writings/:writingId/assets/:assetId',
-    'routes/admin-writing-asset.ts',
-  ),
-  route('admin/systems', 'routes/admin-systems.tsx'),
-  route('admin/systems/:systemId', 'routes/admin-system.tsx'),
-  route('admin/systems/:systemId/assets', 'routes/admin-system-assets.tsx'),
-  route(
-    'admin/systems/:systemId/presentation/:locale',
-    'routes/admin-system-presentation.tsx',
-  ),
-  route(
-    'admin/systems/:systemId/preview/:locale',
-    'routes/admin-system-preview.tsx',
-  ),
-  route(
-    'admin/systems/:systemId/preview/:locale/assets/:assetId',
-    'routes/admin-system-preview-asset.ts',
-  ),
-  route('admin', 'routes/admin.tsx'),
   index('routes/locale-index.tsx'),
   route(':locale', 'routes/locale-layout.tsx', [
     index('routes/home.tsx'),
@@ -54,26 +12,14 @@ export default [
     route('profil/cv', 'routes/profile-cv-fr.ts'),
     route('systems', 'routes/systems.tsx'),
     route('writings', 'routes/writings.tsx'),
-    route(
-      'writings/categories/:slug',
-      'routes/writing-category-detail.tsx',
-    ),
+    route('writings/categories/:slug', 'routes/writing-category-detail.tsx'),
     route('writings/tags/:slug', 'routes/writing-tag-detail.tsx'),
-    route(
-      'writings/:slug/assets/:assetId',
-      'routes/writing-detail-asset.ts',
-    ),
+    route('writings/:slug/assets/:assetId', 'routes/writing-detail-asset.ts'),
     route('writings/:slug', 'routes/writing-detail.tsx'),
     route('ecrits', 'routes/writings-fr.tsx'),
-    route(
-      'ecrits/categories/:slug',
-      'routes/writing-category-detail-fr.tsx',
-    ),
+    route('ecrits/categories/:slug', 'routes/writing-category-detail-fr.tsx'),
     route('ecrits/tags/:slug', 'routes/writing-tag-detail-fr.tsx'),
-    route(
-      'ecrits/:slug/assets/:assetId',
-      'routes/writing-detail-asset-fr.ts',
-    ),
+    route('ecrits/:slug/assets/:assetId', 'routes/writing-detail-asset-fr.ts'),
     route('ecrits/:slug', 'routes/writing-detail-fr.tsx'),
     route('learning', 'routes/learning.tsx'),
     route('learning/credentials/:slug', 'routes/credential-detail.tsx'),
@@ -96,9 +42,6 @@ export default [
     route('cookies', 'routes/cookies.tsx'),
     route('about', 'routes/about.tsx'),
     route('systems/:slug', 'routes/system-detail.tsx'),
-    route(
-      'systems/:slug/assets/:assetId',
-      'routes/system-detail-asset.ts',
-    ),
+    route('systems/:slug/assets/:assetId', 'routes/system-detail-asset.ts'),
   ]),
 ] satisfies RouteConfig;

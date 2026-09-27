@@ -37,10 +37,6 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
-      BETTER_AUTH_SECRET: ci-only-better-auth-secret-with-more-than-32-characters
-      BETTER_AUTH_URL: http://127.0.0.1:4177
-      ADMIN_EMAIL: admin@example.invalid
-      ADMIN_PASSWORD: ci-only-admin-password-12345
       BUCKET: ci-placeholder
       REGION: us-east-1
       ENDPOINT: https://example.invalid
@@ -125,11 +121,7 @@ jobs:
       - name: Smoke worker
         run: pnpm smoke:worker
 
-      - name: Bootstrap CI administrator
-        run: pnpm auth:bootstrap-admin
 
-      - name: Smoke forwarded HTTPS action origin
-        run: pnpm --filter @akiksystems/web smoke:forwarded-actions
 
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
@@ -151,14 +143,7 @@ jobs:
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Smoke Work with us end to end
-        env:
-          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
-          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: node apps/web/scripts/smoke-work-with-us-admin-browser.cjs
 
-      - name: Smoke authentication boundary
-        run: pnpm smoke:auth
 
       - name: Smoke public Profile
         env:
@@ -166,11 +151,6 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web smoke:profile-public
 
-      - name: Smoke Profile admin
-        env:
-          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
-          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: pnpm --filter @akiksystems/web smoke:profile-admin
 
       - name: Smoke responsive Home
         env:

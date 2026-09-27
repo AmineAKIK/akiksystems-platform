@@ -1,15 +1,20 @@
 # Web deployment notes
 
-Railway staging must use `GET /health` as the web service healthcheck.
+Railway uses `GET /health` as the web service healthcheck.
 
-That endpoint probes PostgreSQL and represents runtime liveness. Content routes such as
-`/:locale/systems/:slug` are publication-dependent and may intentionally return 404, so they
-must not be used as infrastructure healthchecks.
+The endpoint probes PostgreSQL and represents runtime liveness. Content routes
+may intentionally return 404 when a resource is not public, so they must not be
+used as infrastructure healthchecks.
 
-## Production provisioning
+## Production
 
-Normal Railway production deploys use `pnpm deploy:migrate` as the web pre-deploy command.
+Normal staging and production deploys use:
 
-After an explicitly approved empty-database rebuild, use `pnpm provision:initial` for exactly one production deploy. It runs the current migrations and the guarded administrator bootstrap. After that deploy succeeds, restore the normal `pnpm deploy:migrate` pre-deploy command.
+```sh
+pnpm deploy:migrate
+```
 
-The production database reset performed on 2026-09-27 is recorded in `docs/qualification/production-db-reset-2026-09-27.md`.
+The command applies the application database migrations before the new web
+deployment becomes active.
+
+There is no administrator bootstrap or authentication migration step.
