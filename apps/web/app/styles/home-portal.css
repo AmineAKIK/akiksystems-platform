@@ -15,19 +15,7 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(
-      ellipse at 50% 47.8%,
-      #0d0c19 0%,
-      #0d0c19 13%,
-      #0c0c18 27%,
-      #0b0d18 42%,
-      #0a0d17 57%,
-      #090d17 70%,
-      #080c16 82%,
-      #070a14 92%,
-      #060912 100%
-    );
+  background: var(--aks-experience-space-background);
 }
 
 .aks-experience-frame[data-home='true'] > .aks-experience-outlet {
