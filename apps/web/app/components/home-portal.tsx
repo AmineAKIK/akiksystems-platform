@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import {
@@ -288,7 +295,7 @@ export function HomePortal({ locale }: HomePortalProps) {
                   }
                 }}
                 prefetch="intent"
-                style={{ '--aks-home-order': index } as React.CSSProperties}
+                style={{ '--aks-home-order': index } as CSSProperties}
                 to={destinationHref(destination.id, locale)}
               >
                 <span className="aks-home-door-label">
