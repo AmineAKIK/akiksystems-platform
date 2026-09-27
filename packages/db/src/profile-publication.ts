@@ -464,6 +464,57 @@ export async function getDraftProfile(
   };
 }
 
+export async function getDraftProfilePreview(
+  db: Kysely<Database>,
+  locale: PlatformLocale,
+): Promise<PublicProfile | null> {
+  const draft = await getDraftProfile(db, locale);
+  if (draft === null) return null;
+
+  const stackGroups: ProfilePublicationStackGroup[] = draft.stackGroups.map(
+    (group) => ({
+      id: group.id,
+      position: group.position,
+      title: group.title ?? '',
+      technologies: group.technologies.map((technology) => ({
+        id: technology.id,
+        position: technology.position,
+      })),
+    }),
+  );
+
+  const [currentProject, resolvedStackGroups, systemicScaleWriting] =
+    await Promise.all([
+      resolveCurrentProject(db, locale, draft.currentSystemId),
+      resolveStackGroups(db, locale, stackGroups),
+      draft.systemicScaleWritingId === null
+        ? Promise.resolve(null)
+        : getPublishedWritingReferenceById(db, {
+            locale,
+            id: draft.systemicScaleWritingId,
+          }),
+    ]);
+
+  return {
+    id: draft.id,
+    locale,
+    displayName: draft.displayName ?? '',
+    portraitAssetId: draft.portraitAssetId,
+    portraitAltText: draft.portraitAltText,
+    sourceCvAssetId: draft.sourceCvAssetId,
+    content: draft.content,
+    contacts: draft.contacts
+      .filter((contact) => contact.visible)
+      .map(({ kind, value }) => ({ kind, value })),
+    languages: draft.languages,
+    mobility: draft.mobility,
+    currentProject,
+    stackGroups: resolvedStackGroups,
+    systemicScaleWriting,
+    alternateLocale: null,
+  };
+}
+
 function requiredPublicationText(value: string | null | undefined, label: string): string {
   const normalized = value?.trim() ?? '';
   if (normalized === '') {

@@ -136,6 +136,7 @@ export type {
 export {
   buildProfilePublicationSnapshot,
   getDraftProfile,
+  getDraftProfilePreview,
   getPublicProfile,
   markProfileDraft,
   parseProfilePublicationSnapshot,

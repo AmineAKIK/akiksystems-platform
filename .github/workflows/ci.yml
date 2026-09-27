@@ -166,6 +166,12 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web smoke:profile-public
 
+      - name: Smoke Profile admin
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: pnpm --filter @akiksystems/web smoke:profile-admin
+
       - name: Smoke responsive Home
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules

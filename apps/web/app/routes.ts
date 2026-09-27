@@ -11,6 +11,7 @@ export default [
     'routes/admin-work-with-us-inquiries.tsx',
   ),
   route('admin/profile', 'routes/admin-profile.tsx'),
+  route('admin/profile/assets/:assetId', 'routes/admin-profile-asset.ts'),
   route('admin/learning', 'routes/admin-learning.tsx'),
   route('admin/learning/trainings', 'routes/admin-learning-trainings.tsx'),
   route('admin/learning/credentials', 'routes/admin-learning-credentials.tsx'),
