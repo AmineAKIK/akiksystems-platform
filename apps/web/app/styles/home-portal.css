@@ -498,8 +498,8 @@
       calc(78.5dvh - 4.75rem)
     );
     --aks-home-orbit-lower-top: max(
-      35rem,
-      calc(72.27dvh + 2.75rem)
+      34.125rem,
+      calc(72.27dvh + 1.875rem)
     );
     --aks-home-mark-size: clamp(
       12.375rem,
