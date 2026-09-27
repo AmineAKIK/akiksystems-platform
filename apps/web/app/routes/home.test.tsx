@@ -14,8 +14,10 @@ describe('HomePortal handoff contract', () => {
 
     expect(html).toContain('class="aks-home-portal"');
     expect(html).toContain('id="aks-home-title"');
-    expect(html).toContain('>AkikSystems</h1>');
-    expect(html).toContain('>Systemic Scale</p>');
+    expect(html).toContain('class="aks-home-wordmark-target">AkikSystems</span>');
+    expect(html).toContain('class="aks-home-wordmark-matrix"');
+    expect(html).toContain('aria-label="Systemic Scale"');
+    expect(html).toContain('class="aks-home-scale-letter"');
     expect(html).toContain('aria-label="Local time in Paris"');
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain('viewBox="0 0 2048 2048"');

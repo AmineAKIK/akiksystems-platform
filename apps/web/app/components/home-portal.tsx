@@ -146,6 +146,59 @@ function HomeEmblem() {
   );
 }
 
+const wordmarkTarget = 'AkikSystems';
+const matrixGlyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/{}[]%*+=?';
+const initialWordmarkScramble = '4K!K%Y5T3M?';
+
+function MatrixWordmark() {
+  const [display, setDisplay] = useState(initialWordmarkScramble);
+
+  useEffect(() => {
+    const reducedMotion =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.dataset.motion === 'reduced';
+
+    if (reducedMotion) {
+      setDisplay(wordmarkTarget);
+      return undefined;
+    }
+
+    const startedAt = performance.now();
+    let lastMutationAt = startedAt - 50;
+    let animationFrame = 0;
+
+    const animate = (now: number) => {
+      const elapsed = now - startedAt;
+      const progress = Math.max(0, Math.min(1, (elapsed - 160) / 820));
+      const settledCharacters = Math.floor(progress * wordmarkTarget.length);
+
+      if (now - lastMutationAt >= 34 || progress === 1) {
+        const next = Array.from(wordmarkTarget, (character, index) => {
+          if (index < settledCharacters || progress === 1) return character;
+          return matrixGlyphs[Math.floor(Math.random() * matrixGlyphs.length)];
+        }).join('');
+
+        setDisplay(next);
+        lastMutationAt = now;
+      }
+
+      if (progress < 1) animationFrame = window.requestAnimationFrame(animate);
+    };
+
+    animationFrame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
+
+  return (
+    <h1 className="aks-home-wordmark" id="aks-home-title">
+      <span className="aks-home-wordmark-target">{wordmarkTarget}</span>
+      <span aria-hidden="true" className="aks-home-wordmark-matrix">
+        {display}
+      </span>
+    </h1>
+  );
+}
+
 export function HomePortal({ locale }: HomePortalProps) {
   const dictionary = dictionaryFor(locale);
   const navigate = useNavigate();
@@ -321,10 +374,19 @@ export function HomePortal({ locale }: HomePortalProps) {
 
         <div className="aks-home-center">
           <HomeEmblem />
-          <h1 className="aks-home-wordmark" id="aks-home-title">
-            AkikSystems
-          </h1>
-          <p className="aks-home-scale">Systemic Scale</p>
+          <MatrixWordmark />
+          <p aria-label="Systemic Scale" className="aks-home-scale">
+            {Array.from('Systemic Scale').map((character, index) => (
+              <span
+                aria-hidden="true"
+                className="aks-home-scale-letter"
+                key={index}
+                style={{ '--aks-home-scale-index': index } as CSSProperties}
+              >
+                {character === ' ' ? '\u00a0' : character}
+              </span>
+            ))}
+          </p>
         </div>
 
         <div

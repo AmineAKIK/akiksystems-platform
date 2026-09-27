@@ -167,6 +167,7 @@
 }
 
 .aks-home-wordmark {
+  position: relative;
   margin: var(--aks-home-mark-wordmark-gap) 0 0;
   color: var(--aks-home-starlight);
   font-family: 'Archivo Black', var(--aks-font-sans);
@@ -175,6 +176,19 @@
   letter-spacing: -0.03em;
   line-height: 1;
   white-space: nowrap;
+}
+
+.aks-home-wordmark-target {
+  color: transparent;
+}
+
+.aks-home-wordmark-matrix {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--aks-home-starlight);
+  text-shadow: 0 0 0.625rem rgb(100 135 222 / 22%);
 }
 
 .aks-home-scale {
@@ -186,6 +200,36 @@
   letter-spacing: 0.31rem;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.aks-home-scale-letter {
+  display: inline-block;
+  color: var(--aks-home-mauve);
+  opacity: 0;
+  text-shadow: 0 0 0 transparent;
+  animation: aks-home-scale-ignite 525ms var(--aks-home-ease)
+    calc(var(--aks-home-scale-index) * 35ms) both;
+  will-change: color, opacity, text-shadow;
+}
+
+@keyframes aks-home-scale-ignite {
+  0% {
+    color: rgb(147 135 158 / 24%);
+    opacity: 0.18;
+    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+  }
+
+  46% {
+    color: var(--aks-home-starlight);
+    opacity: 1;
+    text-shadow: 0 0 0.5rem rgb(100 135 222 / 58%);
+  }
+
+  100% {
+    color: var(--aks-home-mauve);
+    opacity: 1;
+    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+  }
 }
 
 .aks-home-active-description {
@@ -777,6 +821,22 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .aks-home-wordmark-target {
+    color: inherit;
+  }
+
+  .aks-home-wordmark-matrix {
+    display: none;
+  }
+
+  .aks-home-scale-letter {
+    color: var(--aks-home-mauve);
+    opacity: 1;
+    text-shadow: none;
+    animation: none;
+    will-change: auto;
+  }
+
   .aks-home-door {
     animation-duration: 1ms;
     animation-delay: 0ms;
@@ -788,6 +848,22 @@
   .aks-experience-footer[data-home='true'] .aks-link {
     transition-duration: 1ms;
   }
+}
+
+html[data-motion='reduced'] .aks-home-wordmark-target {
+  color: inherit;
+}
+
+html[data-motion='reduced'] .aks-home-wordmark-matrix {
+  display: none;
+}
+
+html[data-motion='reduced'] .aks-home-scale-letter {
+  color: var(--aks-home-mauve);
+  opacity: 1;
+  text-shadow: none;
+  animation: none;
+  will-change: auto;
 }
 
 html[data-motion='reduced'] .aks-home-door {
