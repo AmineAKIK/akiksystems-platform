@@ -21,26 +21,25 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     delete from trainings;
 
     delete from profile_publications;
-    delete from profile_work_principles;
-    delete from profile_capability_groups;
+    delete from profile_contacts;
     delete from profile_languages;
-    delete from profile_technology_journey_stage_localizations;
-    delete from profile_experiences;
-    delete from profile_systems;
+    delete from profile_stack_groups;
 
     update profiles
     set
       display_name = null,
       portrait_asset_id = null,
       source_cv_asset_id = null,
+      current_system_id = null,
+      systemic_scale_writing_id = null,
       updated_at = now()
     where singleton_key = 'public';
 
     update profile_localizations
     set
-      professional_title = null,
-      introduction = null,
-      foundational_copy = null,
+      content = '{}'::jsonb,
+      editorial_state = 'draft',
+      published_at = null,
       updated_at = now();
 
     update profile_mobility
@@ -48,12 +47,6 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       worldwide = false,
       remote = false,
       relocation = false,
-      updated_at = now();
-
-    update profile_technology_journey_stages
-    set
-      evidence_experience_id = null,
-      evidence_system_id = null,
       updated_at = now();
 
     delete from systems;
