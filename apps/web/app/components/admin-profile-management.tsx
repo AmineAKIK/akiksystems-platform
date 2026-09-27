@@ -1,5 +1,5 @@
 import type { DraftProfile, PublicSystemReference } from '@akiksystems/db';
-import { Button, Heading, Text } from '@akiksystems/ui';
+import { Button, Heading, Link, Text } from '@akiksystems/ui';
 import { Form } from 'react-router';
 
 interface ProfileAdminManagementActionData {
