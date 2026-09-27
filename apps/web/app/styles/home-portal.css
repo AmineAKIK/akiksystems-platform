@@ -752,13 +752,13 @@
   }
 
   .aks-home-door[data-destination='writings'] {
-    top: calc(100% - 4.125rem);
+    top: calc(100dvh - 4.25rem);
     left: 28%;
     transform: translateX(-50%);
   }
 
   .aks-home-door[data-destination='learning'] {
-    top: calc(100% - 4.125rem);
+    top: calc(100dvh - 4.25rem);
     left: 72%;
     transform: translateX(-50%);
   }
