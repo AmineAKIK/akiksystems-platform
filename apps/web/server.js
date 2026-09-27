@@ -81,6 +81,10 @@ app.use((request, response, next) => {
   next();
 });
 
+/**
+ * @param {unknown} value
+ * @returns {string | undefined}
+ */
 function normalizeRequestId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value)
     ? value
@@ -182,7 +186,12 @@ if (DEVELOPMENT) {
   app.use(await import(BUILD_PATH).then((module) => module.app));
 }
 
-const serverErrorHandler = (error, request, response, next) => {
+const serverErrorHandler = (
+  /** @type {unknown} */ error,
+  /** @type {import('express').Request} */ request,
+  /** @type {import('express').Response} */ response,
+  /** @type {import('express').NextFunction} */ next,
+) => {
   const requestId = response.getHeader('x-request-id');
   const correlationId = response.getHeader('x-correlation-id');
 
@@ -209,6 +218,9 @@ const server = app.listen(PORT, () => {
 
 let stopping = false;
 
+/**
+ * @param {NodeJS.Signals} signal
+ */
 async function shutdown(signal) {
   if (stopping) return;
 
