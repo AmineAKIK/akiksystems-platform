@@ -300,7 +300,6 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
       return hasText(symbol.name) || hasText(symbol.description);
     });
 
-  const activeGuidanceIndex = profileGuidanceKeys.indexOf(activeGuidance);
   const activeCapabilityIndex =
     profileCapabilityStepKeys.indexOf(activeCapability);
   const activeSystemicIndex =
