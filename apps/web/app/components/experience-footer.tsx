@@ -38,6 +38,17 @@ export function ExperienceFooter({
       }
 
       setActiveHref(null);
+
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLElement &&
+        activeElement.matches('[data-home-preview-target="legal"]')
+      ) {
+        activeElement.blur();
+      }
+
+      announceHomeDescription({ channel: 'pointer', content: null });
+      announceHomeDescription({ channel: 'focus', content: null });
     };
 
     document.addEventListener('pointerdown', clearSelectionOutsideLegal);

@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
+import {
+  homeDestinationPresentation,
+  homeLegalPresentation,
+} from '../components/home-portal-content';
 import { HomePortal } from './home';
 
 describe('HomePortal handoff contract', () => {
@@ -19,6 +23,8 @@ describe('HomePortal handoff contract', () => {
     expect(html).toContain('aria-label="Systemic Scale"');
     expect(html).toContain('class="aks-home-scale-letter"');
     expect(html).toContain('aria-label="Local time in Paris"');
+    expect(html).toContain('class="aks-home-language-current" lang="en">EN</span>');
+    expect(html).toContain('class="aks-home-language-target" lang="fr">FR</span>');
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain('viewBox="0 0 2048 2048"');
     expect(html).toContain('class="aks-home-nav-separator"');
@@ -63,13 +69,28 @@ describe('HomePortal handoff contract', () => {
     }
 
     expect(html).toContain(
-      'Échangeons autour d’un projet, d’une collaboration ou d’une mission. Construisons ensemble ce qui mérite d’exister.',
+      'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
     );
     expect(html).toContain(
-      'Logiciels, produits et expériences conçus comme des systèmes cohérents. Chaque projet relie usage, technique et intention.',
+      'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',
     );
 
     const offsets = frenchDoors.map(([href]) => html.indexOf(`href="${href}"`));
     expect(offsets).toEqual([...offsets].sort((first, second) => first - second));
+  });
+
+  it('keeps every Home preview description within 80 characters', () => {
+    const presentations = [
+      ...Object.values(homeDestinationPresentation),
+      ...Object.values(homeLegalPresentation),
+    ];
+
+    for (const presentation of presentations) {
+      for (const locale of ['en', 'fr'] as const) {
+        expect(
+          Array.from(presentation.description[locale]).length,
+        ).toBeLessThanOrEqual(80);
+      }
+    }
   });
 });

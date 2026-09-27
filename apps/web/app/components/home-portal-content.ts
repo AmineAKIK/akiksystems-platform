@@ -30,8 +30,8 @@ export const homeDestinationPresentation: Record<
       fr: 'Collaboration · Contact',
     },
     description: {
-      en: 'Let’s talk about a project, a collaboration, or a mission. Let’s build together what deserves to exist.',
-      fr: 'Échangeons autour d’un projet, d’une collaboration ou d’une mission. Construisons ensemble ce qui mérite d’exister.',
+      en: 'Projects, collaborations, or missions. Let’s build what deserves to exist.',
+      fr: 'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
     },
   },
   profile: {
@@ -44,8 +44,8 @@ export const homeDestinationPresentation: Record<
       fr: 'Parcours · Vision',
     },
     description: {
-      en: 'Journey, convictions, and way of working. What shapes the AkikSystems vision.',
-      fr: 'Parcours, convictions et manière de travailler. Ce qui façonne la vision d’AkikSystems.',
+      en: 'Journey, convictions, and practice—the foundations of the AkikSystems vision.',
+      fr: 'Parcours, convictions et pratique : les fondations de la vision AkikSystems.',
     },
   },
   systems: {
@@ -58,8 +58,8 @@ export const homeDestinationPresentation: Record<
       fr: 'Produits · Projets',
     },
     description: {
-      en: 'Software, products, and experiences designed as coherent systems. Every project connects use, technology, and intent.',
-      fr: 'Logiciels, produits et expériences conçus comme des systèmes cohérents. Chaque projet relie usage, technique et intention.',
+      en: 'Software and products designed as coherent systems, from use to intent.',
+      fr: 'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',
     },
   },
   writings: {
@@ -72,8 +72,8 @@ export const homeDestinationPresentation: Record<
       fr: 'Essais · Notes',
     },
     description: {
-      en: 'Essays, articles, and notes around the ideas that shape systems. Published thinking that is precise and in motion.',
-      fr: 'Essais, articles et notes autour des idées qui façonnent les systèmes. Une pensée publiée, précise et en mouvement.',
+      en: 'Essays and notes on the ideas shaping systems and keeping thought in motion.',
+      fr: 'Essais et notes sur les idées qui façonnent les systèmes et la pensée.',
     },
   },
   learning: {
@@ -86,8 +86,8 @@ export const homeDestinationPresentation: Record<
       fr: 'Dossiers · Formations',
     },
     description: {
-      en: 'Training, professional dossiers, and academic projects. What is built through learning and transmission.',
-      fr: 'Formations, dossiers professionnels et projets académiques. Ce qui se construit en apprenant et en transmettant.',
+      en: 'Training, professional dossiers, and projects built through learning.',
+      fr: 'Formations, dossiers professionnels et projets construits par l’apprentissage.',
     },
   },
 };
@@ -105,8 +105,8 @@ export const homeLegalPresentation: Record<
       fr: 'Données · Protection',
     },
     description: {
-      en: 'How your data is collected, protected, and used. A transparent and responsible approach.',
-      fr: 'Comment vos données sont collectées, protégées et utilisées. Une approche transparente et responsable.',
+      en: 'How your data is collected, protected, and used—with transparency.',
+      fr: 'Comment vos données sont collectées, protégées et utilisées, en transparence.',
     },
   },
   legal: {
@@ -115,8 +115,8 @@ export const homeLegalPresentation: Record<
       fr: 'Éditeur · Responsabilité',
     },
     description: {
-      en: 'Publishing, legal, and regulatory information for the site. A clear reading of responsibilities.',
-      fr: 'Informations éditoriales, juridiques et réglementaires du site. Une lecture claire des responsabilités.',
+      en: 'Publishing and legal information, with responsibilities stated clearly.',
+      fr: 'Informations éditoriales et juridiques, avec des responsabilités claires.',
     },
   },
   cookies: {
@@ -125,8 +125,8 @@ export const homeLegalPresentation: Record<
       fr: 'Préférences · Contrôle',
     },
     description: {
-      en: 'Preferences related to cookies and optional services. You keep control of your experience.',
-      fr: 'Préférences liées aux cookies et aux services optionnels. Vous gardez le contrôle de votre expérience.',
+      en: 'Cookie and optional-service preferences, always under your control.',
+      fr: 'Préférences de cookies et services optionnels, toujours sous votre contrôle.',
     },
   },
 };
