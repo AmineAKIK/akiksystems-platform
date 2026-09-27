@@ -308,6 +308,15 @@ export interface SystemTechnologiesTable {
   created_at: TimestampColumn;
 }
 
+export interface SystemTechnologyLocalizationsTable {
+  system_id: string;
+  technology_id: string;
+  locale: PlatformLocale;
+  evidence: string | null;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
 export interface TrainingsTable {
   id: string;
   provider: string;
@@ -724,6 +733,13 @@ export type SystemTechnologyRow = Selectable<SystemTechnologiesTable>;
 export type NewSystemTechnologyRow = Insertable<SystemTechnologiesTable>;
 export type SystemTechnologyUpdate = Updateable<SystemTechnologiesTable>;
 
+export type SystemTechnologyLocalizationRow =
+  Selectable<SystemTechnologyLocalizationsTable>;
+export type NewSystemTechnologyLocalizationRow =
+  Insertable<SystemTechnologyLocalizationsTable>;
+export type SystemTechnologyLocalizationUpdate =
+  Updateable<SystemTechnologyLocalizationsTable>;
+
 export type TrainingRow = Selectable<TrainingsTable>;
 export type NewTrainingRow = Insertable<TrainingsTable>;
 export type TrainingUpdate = Updateable<TrainingsTable>;
@@ -881,6 +897,7 @@ export interface Database {
   profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
+  system_technology_localizations: SystemTechnologyLocalizationsTable;
   trainings: TrainingsTable;
   training_localizations: TrainingLocalizationsTable;
   training_publications: TrainingPublicationsTable;
