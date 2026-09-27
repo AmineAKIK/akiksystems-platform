@@ -29,7 +29,9 @@ async function waitForServer() {
     try {
       const response = await globalThis.fetch(origin + '/fr');
       if (response.ok) return;
-    } catch {}
+    } catch {
+      // Production server is still starting.
+    }
     await sleep(125);
   }
   throw new Error('Responsive smoke server did not become ready. stderr=' + stderr);
