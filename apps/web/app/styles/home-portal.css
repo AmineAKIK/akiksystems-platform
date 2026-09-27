@@ -675,7 +675,7 @@
 
   .aks-home-door[data-destination='writings'],
   .aks-home-door[data-destination='learning'] {
-    margin-block-start: 0.5rem;
+    margin-block-start: 0.875rem;
   }
 
   .aks-experience-footer[data-home='true'] {
