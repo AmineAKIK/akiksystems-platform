@@ -42,7 +42,7 @@ const emblemGroups = [
   'star-right',
 ] as const;
 
-function formatParisContext(now: Date, locale: Locale): string {
+function formatParisContext(now: Date, locale: Locale) {
   const languageTag = locale === 'fr' ? 'fr-FR' : 'en-GB';
   const time = new Intl.DateTimeFormat(languageTag, {
     hour: '2-digit',
@@ -72,7 +72,10 @@ function formatParisContext(now: Date, locale: Locale): string {
       .find((part) => part.type === 'timeZoneName')
       ?.value.replace('GMT', 'UTC') ?? 'UTC';
 
-  return time + ' · PARIS ' + offset + ' · ' + date;
+  return {
+    context: time + ' · PARIS ' + offset,
+    date,
+  };
 }
 
 function ParisContext({ locale }: { locale: Locale }) {
@@ -88,6 +91,10 @@ function ParisContext({ locale }: { locale: Locale }) {
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
   const localeName = locale === 'fr' ? 'Français' : 'English';
   const alternateName = alternateLocale === 'fr' ? 'français' : 'English';
+  const parisContext =
+    now === null
+      ? { context: '--:--:-- · PARIS UTC', date: '—' }
+      : formatParisContext(now, locale);
 
   return (
     <div className="aks-home-meta">
@@ -96,9 +103,10 @@ function ParisContext({ locale }: { locale: Locale }) {
         className="aks-home-clock"
       >
         <time dateTime={now?.toISOString()}>
-          {now === null
-            ? '--:--:-- · PARIS UTC · —'
-            : formatParisContext(now, locale)}
+          <span className="aks-home-clock-context">
+            {parisContext.context}
+          </span>
+          <span className="aks-home-clock-date">{parisContext.date}</span>
         </time>
       </p>
       <Link
