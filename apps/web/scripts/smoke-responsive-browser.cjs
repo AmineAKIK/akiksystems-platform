@@ -125,6 +125,21 @@ async function measure(page) {
           '.aks-experience-frame[data-home="true"]',
         ),
       ).backgroundImage,
+      diagnostics: {
+        innerHeight: window.innerHeight,
+        visualViewportHeight: window.visualViewport?.height ?? null,
+        frame: rect('.aks-experience-frame[data-home="true"]'),
+        home: rect('.aks-home'),
+        portal: rect('.aks-home-portal'),
+        writingsComputedTop: getComputedStyle(
+          document.querySelector(
+            '.aks-home-door[data-destination="writings"]',
+          ),
+        ).top,
+        compactLandscapeMatches: window.matchMedia(
+          '(max-width: 56.24rem) and (orientation: landscape) and (max-height: 37.5rem)',
+        ).matches,
+      },
     };
   });
 }
@@ -648,6 +663,19 @@ async function assertReducedMotion(browser) {
     ];
 
     for (const [viewport, name] of matrix) {
+      if (viewport.width === 844 && viewport.height === 390) {
+        const { context, page } = await loadViewport(browser, viewport);
+        try {
+          const diagnostics = await measure(page);
+          console.log(
+            '[home-responsive-diagnostics]',
+            JSON.stringify(diagnostics.diagnostics),
+          );
+        } finally {
+          await context.close();
+        }
+      }
+
       await assertGeometry(browser, viewport, name);
     }
 
