@@ -176,7 +176,7 @@ try {
   const privateProfileHtml = await privateProfile.text();
   assert.equal(privateProfile.status, 200);
   assert.match(privateProfileHtml, /data-profile-admin-contract="v1"/);
-  assert.match(privateProfileHtml, /Profile domain · FR/);
+  assert.match(privateProfileHtml, /data-profile-locale="fr"/);
   assert.match(privateProfileHtml, /Final Profile contract/);
   assert.match(privateProfileHtml, /Publication/);
   assert.match(privateProfileHtml, /Structured relations/);
