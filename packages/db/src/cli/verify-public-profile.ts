@@ -5,7 +5,6 @@ import { emptyProfileContent } from '@akiksystems/core';
 
 import { createDatabase } from '../database.js';
 import {
-  getDraftProfile,
   getPublicProfile,
   markProfileDraft,
   parseProfilePublicationSnapshot,
@@ -254,7 +253,7 @@ try {
     .executeTakeFirstOrThrow();
 
   await markProfileDraft(db, { profileId });
-  let states = await localizationStates(profileId);
+  const states = await localizationStates(profileId);
   assert.ok(
     states.every(
       ({ editorial_state, published_at }) =>
