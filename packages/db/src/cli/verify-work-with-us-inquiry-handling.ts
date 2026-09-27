@@ -64,7 +64,7 @@ try {
     'Synthetic provider outage.',
   );
 
-  let notification = await db
+  const notification = await db
     .selectFrom('work_with_us_inquiry_notifications')
     .select(['state', 'attempt_count', 'last_error'])
     .where('inquiry_id', '=', inquiryId)
