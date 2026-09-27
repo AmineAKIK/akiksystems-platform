@@ -144,12 +144,36 @@ function assertNear(actual, expected, tolerance, label) {
 
 function assertInside(rect, width, height, label) {
   assert.ok(rect, label + ' must exist');
-  assert.ok(rect.left >= -1, label + ' must stay inside the left edge');
-  assert.ok(rect.right <= width + 1, label + ' must stay inside the right edge');
-  assert.ok(rect.top >= -1, label + ' must stay inside the top edge');
+  const geometry =
+    ' [top=' +
+    rect.top.toFixed(2) +
+    ', right=' +
+    rect.right.toFixed(2) +
+    ', bottom=' +
+    rect.bottom.toFixed(2) +
+    ', left=' +
+    rect.left.toFixed(2) +
+    ', viewport=' +
+    width +
+    'x' +
+    height +
+    ']';
+
+  assert.ok(
+    rect.left >= -1,
+    label + ' must stay inside the left edge' + geometry,
+  );
+  assert.ok(
+    rect.right <= width + 1,
+    label + ' must stay inside the right edge' + geometry,
+  );
+  assert.ok(
+    rect.top >= -1,
+    label + ' must stay inside the top edge' + geometry,
+  );
   assert.ok(
     rect.bottom <= height + 1,
-    label + ' must stay inside the bottom edge',
+    label + ' must stay inside the bottom edge' + geometry,
   );
 }
 
@@ -238,6 +262,7 @@ async function loadViewport(browser, viewport) {
     viewport.width + 'x' + viewport.height + ' must return 200',
   );
   await page.locator('.aks-home').waitFor();
+  await page.waitForTimeout(720);
   return { context, page };
 }
 
