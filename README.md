@@ -591,6 +591,8 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - `technologies` stores one canonical technology identity with a unique slug and display name.
 - `system_technologies` is an explicit many-to-many relation between Systems and Technologies.
 - `position` preserves a stable display order per System.
+- `system_technology_localizations` owns optional EN/FR evidence for one System ↔ Technology relation; evidence is not duplicated into consumers such as Profile.
+- System publication snapshots capture only the evidence for the published locale, so draft evidence cannot leak into public consumers before that System locale is republished.
 - A System cannot reference the same Technology twice or reuse the same position twice.
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.

@@ -20,7 +20,7 @@ let sourceAssetId: string | null = null;
 
 function systemSnapshot(locale: 'en' | 'fr') {
   return {
-    version: 1,
+    version: 2,
     systemId,
     locale,
     presentationKind: 'standard',

@@ -18,6 +18,7 @@ export interface PublicSystemTechnology {
   slug: string;
   name: string;
   position: number;
+  evidence: string | null;
 }
 
 export interface PublicSystemOrigin {

@@ -91,6 +91,85 @@ try {
     ])
     .execute();
 
+  await db
+    .insertInto('system_technology_localizations')
+    .values([
+      {
+        system_id: firstSystemId,
+        technology_id: reactId,
+        locale: 'en',
+        evidence: 'Built interactive React interfaces with explicit state boundaries.',
+      },
+      {
+        system_id: firstSystemId,
+        technology_id: reactId,
+        locale: 'fr',
+        evidence: 'Construction d’interfaces React avec des frontières d’état explicites.',
+      },
+    ])
+    .execute();
+
+  const localizedEvidence = await db
+    .selectFrom('system_technology_localizations')
+    .select(['locale', 'evidence'])
+    .where('system_id', '=', firstSystemId)
+    .where('technology_id', '=', reactId)
+    .orderBy('locale')
+    .execute();
+
+  assert.deepEqual(
+    localizedEvidence.map(({ locale, evidence }) => ({ locale, evidence })),
+    [
+      {
+        locale: 'en',
+        evidence: 'Built interactive React interfaces with explicit state boundaries.',
+      },
+      {
+        locale: 'fr',
+        evidence: 'Construction d’interfaces React avec des frontières d’état explicites.',
+      },
+    ],
+    'System ↔ Technology evidence must remain independently localized.',
+  );
+
+  await expectPostgresError(
+    '23514',
+    'system_technology_localizations_locale_check',
+    () =>
+      sql`
+        insert into system_technology_localizations (
+          system_id,
+          technology_id,
+          locale,
+          evidence
+        ) values (
+          ${firstSystemId}::uuid,
+          ${typescriptId}::uuid,
+          'de',
+          'Invalid locale'
+        )
+      `.execute(db),
+  );
+
+  await expectPostgresError(
+    '23514',
+    'system_technology_localizations_evidence_not_blank_check',
+    () =>
+      sql`
+        insert into system_technology_localizations (
+          system_id,
+          technology_id,
+          locale,
+          evidence
+        ) values (
+          ${firstSystemId}::uuid,
+          ${typescriptId}::uuid,
+          'en',
+          '   '
+        )
+      `.execute(db),
+  );
+
   const ordered = await db
     .selectFrom('system_technologies')
     .innerJoin(
@@ -180,6 +259,18 @@ try {
 
   assert.equal(Number(relationsAfterTechnologyDelete.count), 0);
 
+  const evidenceAfterTechnologyDelete = await db
+    .selectFrom('system_technology_localizations')
+    .select(({ fn }) => fn.countAll<number>().as('count'))
+    .where('technology_id', '=', reactId)
+    .executeTakeFirstOrThrow();
+
+  assert.equal(
+    Number(evidenceAfterTechnologyDelete.count),
+    0,
+    'Deleting a Technology relation must cascade its localized evidence.',
+  );
+
   await db.deleteFrom('systems').where('id', '=', firstSystemId).execute();
 
   const relationsAfterSystemDelete = await db
@@ -191,7 +282,7 @@ try {
   assert.equal(Number(relationsAfterSystemDelete.count), 0);
 
   process.stdout.write(
-    'Technology relation verification passed: typed entities, reusable N-N relations, explicit ordering, uniqueness, validation, and cascades are enforced.\n',
+    'Technology relation verification passed: typed entities, reusable N-N relations, localized evidence, explicit ordering, uniqueness, validation, and cascades are enforced.\n',
   );
 } finally {
   await db

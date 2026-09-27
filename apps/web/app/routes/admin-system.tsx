@@ -243,11 +243,45 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           'technologies.id',
           'system_technologies.technology_id',
         )
+        .leftJoin(
+          'system_technology_localizations as technology_en',
+          (join) =>
+            join
+              .onRef(
+                'technology_en.system_id',
+                '=',
+                'system_technologies.system_id',
+              )
+              .onRef(
+                'technology_en.technology_id',
+                '=',
+                'system_technologies.technology_id',
+              )
+              .on('technology_en.locale', '=', 'en'),
+        )
+        .leftJoin(
+          'system_technology_localizations as technology_fr',
+          (join) =>
+            join
+              .onRef(
+                'technology_fr.system_id',
+                '=',
+                'system_technologies.system_id',
+              )
+              .onRef(
+                'technology_fr.technology_id',
+                '=',
+                'system_technologies.technology_id',
+              )
+              .on('technology_fr.locale', '=', 'fr'),
+        )
         .select([
           'technologies.id',
           'technologies.slug',
           'technologies.name',
           'system_technologies.position',
+          'technology_en.evidence as evidence_en',
+          'technology_fr.evidence as evidence_fr',
         ])
         .where('system_technologies.system_id', '=', systemId)
         .orderBy('system_technologies.position')
@@ -618,6 +652,80 @@ export async function action({ request, params }: Route.ActionArgs) {
       };
     }
 
+    if (intent === 'technology-evidence') {
+      const locale = requiredFormLocale(form);
+      const technologyId = field(form, 'technologyId');
+      if (!uuidPattern.test(technologyId)) {
+        return { ok: false, message: 'Technology not found.' };
+      }
+
+      const evidence = nullableField(form, 'evidence');
+      const relation = await db
+        .selectFrom('system_technologies')
+        .select('technology_id')
+        .where('system_id', '=', systemId)
+        .where('technology_id', '=', technologyId)
+        .executeTakeFirst();
+
+      if (relation === undefined) {
+        return {
+          ok: false,
+          message: 'Technology evidence must belong to this System stack.',
+        };
+      }
+
+      await db.transaction().execute(async (transaction) => {
+        if (evidence === null) {
+          await transaction
+            .deleteFrom('system_technology_localizations')
+            .where('system_id', '=', systemId)
+            .where('technology_id', '=', technologyId)
+            .where('locale', '=', locale)
+            .execute();
+        } else {
+          await transaction
+            .insertInto('system_technology_localizations')
+            .values({
+              system_id: systemId,
+              technology_id: technologyId,
+              locale,
+              evidence,
+              updated_at: new Date(),
+            })
+            .onConflict((conflict) =>
+              conflict
+                .columns(['system_id', 'technology_id', 'locale'])
+                .doUpdateSet({
+                  evidence,
+                  updated_at: new Date(),
+                }),
+            )
+            .execute();
+        }
+
+        await markSystemDraft(transaction, { systemId, locale });
+
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'system.technology_evidence_updated',
+          entityType: 'system_technology',
+          entityId: `${systemId}:${technologyId}`,
+          systemId,
+          locale,
+          metadata: {
+            technologyId,
+            evidencePresent: evidence !== null,
+          },
+        });
+      });
+
+      return {
+        ok: true,
+        message: `${locale.toUpperCase()} technology evidence updated.`,
+      };
+    }
+
     if (intent === 'technologies') {
       let technologies: Array<{ slug: string; name: string }>;
 
@@ -631,10 +739,13 @@ export async function action({ request, params }: Route.ActionArgs) {
       }
 
       await db.transaction().execute(async (transaction) => {
-        await transaction
-          .deleteFrom('system_technologies')
+        const preservedEvidence = await transaction
+          .selectFrom('system_technology_localizations')
+          .select(['technology_id', 'locale', 'evidence'])
           .where('system_id', '=', systemId)
           .execute();
+
+        const desired: Array<{ technologyId: string; position: number }> = [];
 
         for (const [position, technology] of technologies.entries()) {
           const existing = await transaction
@@ -665,13 +776,43 @@ export async function action({ request, params }: Route.ActionArgs) {
               .execute();
           }
 
+          desired.push({ technologyId, position });
+        }
+
+        await transaction
+          .deleteFrom('system_technologies')
+          .where('system_id', '=', systemId)
+          .execute();
+
+        if (desired.length > 0) {
           await transaction
             .insertInto('system_technologies')
-            .values({
-              system_id: systemId,
-              technology_id: technologyId,
-              position,
-            })
+            .values(
+              desired.map(({ technologyId, position }) => ({
+                system_id: systemId,
+                technology_id: technologyId,
+                position,
+              })),
+            )
+            .execute();
+        }
+
+        const desiredIds = new Set(desired.map(({ technologyId }) => technologyId));
+        const evidenceToRestore = preservedEvidence.filter(({ technology_id }) =>
+          desiredIds.has(technology_id),
+        );
+
+        if (evidenceToRestore.length > 0) {
+          await transaction
+            .insertInto('system_technology_localizations')
+            .values(
+              evidenceToRestore.map((row) => ({
+                system_id: systemId,
+                technology_id: row.technology_id,
+                locale: row.locale,
+                evidence: row.evidence,
+              })),
+            )
             .execute();
         }
 
@@ -861,6 +1002,7 @@ function auditActionLabel(action: string): string {
     'system.localization_published': 'Localization published',
     'system.localization_unpublished': 'Localization unpublished',
     'system.technologies_updated': 'Technology stack updated',
+    'system.technology_evidence_updated': 'Technology evidence updated',
     'system.origin_context_updated': 'Origin context updated',
     'system.links_updated': 'Links updated',
     'system.presentation_updated': 'Presentation updated',
@@ -1200,6 +1342,85 @@ export default function AdminSystem() {
               />
               <Button type="submit">Save technology stack</Button>
             </Form>
+          </section>
+
+          <section className="aks-admin-card">
+            <div className="aks-proof-stack">
+              <Heading level={2} size="sm">Technology evidence</Heading>
+              <Text size="sm" tone="muted">
+                Evidence belongs to each System ↔ Technology relation and is
+                published independently per locale. Empty evidence remains a
+                valid technology relation but cannot serve as a public proof.
+              </Text>
+              {data.technologies.length === 0 ? (
+                <Text size="sm" tone="muted">
+                  Add Technologies to the System before documenting evidence.
+                </Text>
+              ) : (
+                <div className="aks-proof-stack">
+                  {data.technologies.map((technology) => (
+                    <article className="aks-admin-asset" key={technology.id}>
+                      <div className="aks-proof-stack">
+                        <Text tone="strong">{technology.name}</Text>
+                        <Text size="sm" tone="muted">
+                          {technology.slug}
+                        </Text>
+                        <div className="aks-admin-domain-grid">
+                          <Form className="aks-admin-form" method="post">
+                            <input
+                              name="_intent"
+                              type="hidden"
+                              value="technology-evidence"
+                            />
+                            <input name="locale" type="hidden" value="en" />
+                            <input
+                              name="technologyId"
+                              type="hidden"
+                              value={technology.id}
+                            />
+                            <label>
+                              <span>EN evidence</span>
+                              <textarea
+                                defaultValue={technology.evidence_en ?? ''}
+                                name="evidence"
+                                rows={4}
+                              />
+                            </label>
+                            <Button emphasis="quiet" type="submit">
+                              Save EN evidence
+                            </Button>
+                          </Form>
+                          <Form className="aks-admin-form" method="post">
+                            <input
+                              name="_intent"
+                              type="hidden"
+                              value="technology-evidence"
+                            />
+                            <input name="locale" type="hidden" value="fr" />
+                            <input
+                              name="technologyId"
+                              type="hidden"
+                              value={technology.id}
+                            />
+                            <label>
+                              <span>Preuve FR</span>
+                              <textarea
+                                defaultValue={technology.evidence_fr ?? ''}
+                                name="evidence"
+                                rows={4}
+                              />
+                            </label>
+                            <Button emphasis="quiet" type="submit">
+                              Save FR evidence
+                            </Button>
+                          </Form>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
 
           <section className="aks-admin-card">

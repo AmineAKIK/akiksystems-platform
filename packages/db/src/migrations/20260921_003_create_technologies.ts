@@ -53,9 +53,44 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .on('system_technologies')
     .column('technology_id')
     .execute();
+
+  await db.schema
+    .createTable('system_technology_localizations')
+    .addColumn('system_id', 'uuid', (column) => column.notNull())
+    .addColumn('technology_id', 'uuid', (column) => column.notNull())
+    .addColumn('locale', 'text', (column) => column.notNull())
+    .addColumn('evidence', 'text')
+    .addColumn('created_at', 'timestamptz', (column) =>
+      column.notNull().defaultTo(sql`now()`),
+    )
+    .addColumn('updated_at', 'timestamptz', (column) =>
+      column.notNull().defaultTo(sql`now()`),
+    )
+    .addForeignKeyConstraint(
+      'system_technology_localizations_relation_fkey',
+      ['system_id', 'technology_id'],
+      'system_technologies',
+      ['system_id', 'technology_id'],
+      (constraint) => constraint.onDelete('cascade'),
+    )
+    .addPrimaryKeyConstraint('system_technology_localizations_pkey', [
+      'system_id',
+      'technology_id',
+      'locale',
+    ])
+    .addCheckConstraint(
+      'system_technology_localizations_locale_check',
+      sql`locale in ('en', 'fr')`,
+    )
+    .addCheckConstraint(
+      'system_technology_localizations_evidence_not_blank_check',
+      sql`evidence is null or length(trim(evidence)) > 0`,
+    )
+    .execute();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
+  await db.schema.dropTable('system_technology_localizations').execute();
   await db.schema.dropTable('system_technologies').execute();
   await db.schema.dropTable('technologies').execute();
 }

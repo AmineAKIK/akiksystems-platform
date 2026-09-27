@@ -119,7 +119,7 @@ try {
       locale: 'en',
       slug: fixtureSlug,
       snapshot: {
-        version: 1,
+        version: 2,
         systemId: localePartialSystemId,
         locale: 'en',
         presentationKind: 'standard',

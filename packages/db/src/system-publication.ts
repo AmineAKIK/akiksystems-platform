@@ -16,6 +16,7 @@ export interface SystemPublicationTechnology {
   slug: string;
   name: string;
   position: number;
+  evidence: string | null;
 }
 
 export interface SystemPublicationOrigin {
@@ -43,7 +44,7 @@ export interface SystemPublicationMedia {
 }
 
 export interface SystemPublicationSnapshot {
-  version: 1;
+  version: 2;
   systemId: string;
   locale: PlatformLocale;
   presentationKind: SystemPresentationKind;
@@ -65,12 +66,27 @@ export interface SystemPublicationSnapshot {
   media: SystemPublicationMedia[];
 }
 
+function isPublicationTechnology(
+  value: unknown,
+): value is SystemPublicationTechnology {
+  if (typeof value !== 'object' || value === null) return false;
+  const technology = value as Record<string, unknown>;
+
+  return (
+    typeof technology.id === 'string' &&
+    typeof technology.slug === 'string' &&
+    typeof technology.name === 'string' &&
+    typeof technology.position === 'number' &&
+    (technology.evidence === null || typeof technology.evidence === 'string')
+  );
+}
+
 function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapshot {
   return (
     typeof value === 'object' &&
     value !== null &&
     'version' in value &&
-    value.version === 1 &&
+    value.version === 2 &&
     'systemId' in value &&
     typeof value.systemId === 'string' &&
     'locale' in value &&
@@ -84,6 +100,7 @@ function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapsh
     'presentationDocument' in value &&
     'technologies' in value &&
     Array.isArray(value.technologies) &&
+    value.technologies.every(isPublicationTechnology) &&
     'links' in value &&
     Array.isArray(value.links) &&
     'media' in value &&
@@ -157,11 +174,28 @@ async function publicationSource(
         'technologies.id',
         'system_technologies.technology_id',
       )
+      .leftJoin(
+        'system_technology_localizations',
+        (join) =>
+          join
+            .onRef(
+              'system_technology_localizations.system_id',
+              '=',
+              'system_technologies.system_id',
+            )
+            .onRef(
+              'system_technology_localizations.technology_id',
+              '=',
+              'system_technologies.technology_id',
+            )
+            .on('system_technology_localizations.locale', '=', locale),
+      )
       .select([
         'technologies.id',
         'technologies.slug',
         'technologies.name',
         'system_technologies.position',
+        'system_technology_localizations.evidence',
       ])
       .where('system_technologies.system_id', '=', systemId)
       .orderBy('system_technologies.position')
@@ -217,7 +251,7 @@ async function publicationSource(
   );
 
   return {
-    version: 1,
+    version: 2,
     systemId: row.id,
     locale,
     presentationKind: row.presentation_kind,
