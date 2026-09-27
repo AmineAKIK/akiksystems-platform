@@ -1,118 +1,190 @@
 import { strict as assert } from 'node:assert';
 import { randomUUID } from 'node:crypto';
 
-import { sql } from 'kysely';
+import { emptyProfileContent } from '@akiksystems/core';
 
 import { createDatabase } from '../database.js';
-import { getDraftProfile, getPublicProfile } from '../public-profile.js';
-import { bootstrapSystemPublications } from '../system-publication.js';
+import {
+  getDraftProfile,
+  getPublicProfile,
+  markProfileDraft,
+  parseProfilePublicationSnapshot,
+  publishProfileLocalization,
+  unpublishProfileLocalization,
+} from '../profile-publication.js';
+import {
+  markSystemDraft,
+  publishSystemLocalization,
+  unpublishSystemLocalization,
+} from '../system-publication.js';
+import { publishWritingLocalization } from '../writing-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 import { createMigrator, reportMigrationResults } from './migrator.js';
 
-interface PostgreSqlError {
-  code?: string;
-  constraint?: string;
+const db = createDatabase(databaseUrlFromEnv());
+
+const technologyId = randomUUID();
+const firstSystemId = randomUUID();
+const secondSystemId = randomUUID();
+const writingId = randomUUID();
+const portraitId = randomUUID();
+const cvId = randomUUID();
+const stackGroupId = randomUUID();
+
+const presentationDocument = {
+  version: 1 as const,
+  blocks: [{ type: 'paragraph' as const, text: 'Qualification proof.' }],
+};
+
+function profileContent(
+  professionalTitle: string,
+  introduction: string,
+) {
+  const content = emptyProfileContent();
+  content.hero.professionalTitle = professionalTitle;
+  content.hero.introduction = introduction;
+  content.hero.cvLabel = 'Download CV';
+  content.currentProject.role = 'Builder';
+  content.currentProject.ctaLabel = 'Inspect system';
+  content.stack.title = 'Stack';
+  content.stack.proofCountLabel = 'Proved in';
+  content.systemicScale.reasoningLinkLabel = 'Read the full reasoning';
+  return content;
 }
 
-const db = createDatabase(databaseUrlFromEnv());
+async function localizationStates(profileId: string) {
+  return db
+    .selectFrom('profile_localizations')
+    .select(['locale', 'editorial_state', 'published_at'])
+    .where('profile_id', '=', profileId)
+    .orderBy('locale')
+    .execute();
+}
 
 try {
   const migrationResult = await createMigrator(db).migrateToLatest();
   reportMigrationResults(migrationResult.results);
-
-  if (migrationResult.error !== undefined) {
-    throw migrationResult.error;
-  }
-
-  // Deployment commissioning may already have published the initial Profile.
-  // Reset only the qualification snapshot boundary so this verifier can still
-  // prove draft/public separation deterministically.
-  await db.deleteFrom('profile_publications').execute();
+  if (migrationResult.error !== undefined) throw migrationResult.error;
 
   const profiles = await db.selectFrom('profiles').selectAll().execute();
   assert.equal(profiles.length, 1, 'Exactly one public Profile must exist.');
+  const profileId = profiles[0]?.id;
+  assert.ok(profileId);
   assert.equal(profiles[0]?.singleton_key, 'public');
 
   const localizations = await db
     .selectFrom('profile_localizations')
-    .select(['locale'])
+    .select(['locale', 'content', 'editorial_state', 'published_at'])
+    .where('profile_id', '=', profileId)
     .orderBy('locale')
     .execute();
-  assert.deepEqual(localizations.map(({ locale }) => locale), ['en', 'fr']);
 
-  const english = await getDraftProfile(db, 'en');
-  const french = await getDraftProfile(db, 'fr');
-  assert.ok(english);
-  assert.ok(french);
-  assert.equal(english.id, french.id, 'EN/FR must share one Profile identity.');
-  assert.equal(english.alternateLocale, 'fr');
-  assert.equal(french.alternateLocale, 'en');
+  assert.deepEqual(
+    localizations.map(({ locale }) => locale),
+    ['en', 'fr'],
+    'The singleton must own exactly one EN and one FR localization.',
+  );
+  assert.ok(localizations.every(({ editorial_state }) => editorial_state === 'draft'));
+  assert.ok(localizations.every(({ published_at }) => published_at === null));
 
+  assert.equal(await getPublicProfile(db, 'en'), null);
+  assert.equal(await getPublicProfile(db, 'fr'), null);
+
+  await assert.rejects(
+    () => publishProfileLocalization(db, { locale: 'en' }),
+    /display name is required/i,
+  );
+
+  await db
+    .updateTable('profiles')
+    .set({ display_name: 'Qualification Profile', updated_at: new Date() })
+    .where('id', '=', profileId)
+    .executeTakeFirstOrThrow();
+
+  await assert.rejects(
+    () => publishProfileLocalization(db, { locale: 'en' }),
+    /professional title is required/i,
+  );
+
+  const englishContent = profileContent(
+    'Systems builder',
+    'Published English introduction.',
+  );
+  const frenchContent = profileContent(
+    'Constructeur de systèmes',
+    'Introduction française publiée.',
+  );
+  frenchContent.hero.cvLabel = 'Télécharger le CV';
+
+  await db
+    .updateTable('profile_localizations')
+    .set({ content: englishContent, updated_at: new Date() })
+    .where('profile_id', '=', profileId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+  await db
+    .updateTable('profile_localizations')
+    .set({ content: frenchContent, updated_at: new Date() })
+    .where('profile_id', '=', profileId)
+    .where('locale', '=', 'fr')
+    .executeTakeFirstOrThrow();
+
+  const firstEnglishSnapshot = await publishProfileLocalization(db, {
+    locale: 'en',
+  });
+  assert.equal(firstEnglishSnapshot.version, 1);
+  assert.equal(firstEnglishSnapshot.content.hero.professionalTitle, 'Systems builder');
+  assert.ok(await getPublicProfile(db, 'en'));
+  assert.equal(await getPublicProfile(db, 'fr'), null);
+
+  const changedEnglishContent = profileContent(
+    'Systems builder',
+    'Unpublished draft introduction.',
+  );
+  await db
+    .updateTable('profile_localizations')
+    .set({ content: changedEnglishContent, updated_at: new Date() })
+    .where('profile_id', '=', profileId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+  await markProfileDraft(db, { profileId, locale: 'en' });
+
+  const publicBeforeRepublish = await getPublicProfile(db, 'en');
+  assert.ok(publicBeforeRepublish);
   assert.equal(
-    await getPublicProfile(db, 'en'),
-    null,
-    'Draft Profile data must not become public before an explicit publication snapshot exists.',
+    publicBeforeRepublish.content.hero.introduction,
+    'Published English introduction.',
+    'Draft Profile copy must not leak into the existing public snapshot.',
   );
 
-  await db
-    .insertInto('profile_publications')
-    .values({
-      profile_id: english.id,
-      locale: 'en',
-      snapshot: english as unknown as Record<string, unknown>,
-      published_at: new Date(),
-      updated_at: new Date(),
-    })
-    .execute();
-
-  const publishedBootstrap = await getPublicProfile(db, 'en');
-  assert.ok(publishedBootstrap);
-  assert.deepEqual(
-    publishedBootstrap,
-    english,
-    'Public Profile reads must come from the stored publication snapshot.',
+  await publishProfileLocalization(db, { locale: 'en' });
+  const publicAfterRepublish = await getPublicProfile(db, 'en');
+  assert.ok(publicAfterRepublish);
+  assert.equal(
+    publicAfterRepublish.content.hero.introduction,
+    'Unpublished draft introduction.',
   );
 
-  await db
-    .updateTable('profile_localizations')
-    .set({
-      introduction: 'Draft changed after publication.',
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', english.id)
-    .where('locale', '=', 'en')
-    .executeTakeFirstOrThrow();
-
-  const publishedAfterDraftMutation = await getPublicProfile(db, 'en');
-  assert.deepEqual(
-    publishedAfterDraftMutation,
-    english,
-    'Editing the normalized draft must not mutate the published Profile snapshot.',
-  );
-
-  await db
-    .updateTable('profile_localizations')
-    .set({
-      introduction: english.introduction,
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', english.id)
-    .where('locale', '=', 'en')
-    .executeTakeFirstOrThrow();
-
-  const profileId = profiles[0]?.id;
-  assert.ok(profileId);
-
-  const portraitId = randomUUID();
   await db
     .insertInto('assets')
-    .values({
-      id: portraitId,
-      storage_key: `qualification/profile/${portraitId}.webp`,
-      original_filename: 'profile.webp',
-      mime_type: 'image/webp',
-      byte_size: 128,
-    })
+    .values([
+      {
+        id: portraitId,
+        storage_key: `qualification/profile/${portraitId}.webp`,
+        original_filename: 'profile.webp',
+        mime_type: 'image/webp',
+        byte_size: 512,
+        width: 800,
+        height: 800,
+      },
+      {
+        id: cvId,
+        storage_key: `qualification/profile/${cvId}.pdf`,
+        original_filename: 'profile.pdf',
+        mime_type: 'application/pdf',
+        byte_size: 2048,
+      },
+    ])
     .execute();
 
   await db
@@ -121,13 +193,13 @@ try {
       {
         asset_id: portraitId,
         locale: 'en',
-        alt_text: 'Professional portrait',
+        alt_text: 'Published portrait alt',
         caption: null,
       },
       {
         asset_id: portraitId,
         locale: 'fr',
-        alt_text: 'Portrait professionnel',
+        alt_text: 'Portrait publié',
         caption: null,
       },
     ])
@@ -136,606 +208,29 @@ try {
   await db
     .updateTable('profiles')
     .set({
-      display_name: 'Qualification Person',
       portrait_asset_id: portraitId,
+      source_cv_asset_id: cvId,
       updated_at: new Date(),
     })
     .where('id', '=', profileId)
     .executeTakeFirstOrThrow();
 
   await db
-    .updateTable('profile_localizations')
-    .set({
-      professional_title: 'Software systems builder',
-      introduction: 'English introduction.',
-      foundational_copy: 'English foundational copy.',
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', profileId)
-    .where('locale', '=', 'en')
-    .executeTakeFirstOrThrow();
-
-  await db
-    .updateTable('profile_localizations')
-    .set({
-      professional_title: 'Concepteur de systèmes logiciels',
-      introduction: 'Introduction française.',
-      foundational_copy: 'Texte fondateur français.',
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', profileId)
-    .where('locale', '=', 'fr')
-    .executeTakeFirstOrThrow();
-
-  const administeredEnglish = await getDraftProfile(db, 'en');
-  const administeredFrench = await getDraftProfile(db, 'fr');
-  assert.ok(administeredEnglish);
-  assert.ok(administeredFrench);
-  assert.equal(administeredEnglish.displayName, 'Qualification Person');
-  assert.equal(administeredFrench.displayName, 'Qualification Person');
-  assert.equal(administeredEnglish.professionalTitle, 'Software systems builder');
-  assert.equal(
-    administeredFrench.professionalTitle,
-    'Concepteur de systèmes logiciels',
-  );
-  assert.equal(administeredEnglish.portraitAssetId, portraitId);
-  assert.equal(administeredEnglish.portraitAltText, 'Professional portrait');
-  assert.equal(
-    administeredFrench.portraitAltText,
-    'Portrait professionnel',
-  );
-
-
-  const firstPrincipleId = randomUUID();
-  const secondPrincipleId = randomUUID();
-
-  await db
-    .insertInto('profile_work_principles')
-    .values([
-      {
-        id: firstPrincipleId,
-        profile_id: profileId,
-        position: 0,
-      },
-      {
-        id: secondPrincipleId,
-        profile_id: profileId,
-        position: 1,
-      },
-    ])
-    .execute();
-
-  await db
-    .insertInto('profile_work_principle_localizations')
-    .values([
-      {
-        principle_id: firstPrincipleId,
-        locale: 'en',
-        title: 'Make evidence inspectable',
-        detail: 'Prefer concrete proof over opaque claims.',
-      },
-      {
-        principle_id: firstPrincipleId,
-        locale: 'fr',
-        title: 'Rendre les preuves inspectables',
-        detail: 'Privilégier des preuves concrètes aux affirmations opaques.',
-      },
-      {
-        principle_id: secondPrincipleId,
-        locale: 'en',
-        title: 'Reduce before adding',
-        detail: null,
-      },
-      {
-        principle_id: secondPrincipleId,
-        locale: 'fr',
-        title: 'Réduire avant d’ajouter',
-        detail: null,
-      },
-    ])
-    .execute();
-
-  const englishWithPrinciples = await getDraftProfile(db, 'en');
-  const frenchWithPrinciples = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithPrinciples);
-  assert.ok(frenchWithPrinciples);
-  assert.deepEqual(
-    englishWithPrinciples.workPrinciples.map(({ title }) => title),
-    ['Make evidence inspectable', 'Reduce before adding'],
-  );
-  assert.deepEqual(
-    frenchWithPrinciples.workPrinciples.map(({ title }) => title),
-    ['Rendre les preuves inspectables', 'Réduire avant d’ajouter'],
-  );
-  assert.equal(
-    englishWithPrinciples.workPrinciples[0]?.detail,
-    'Prefer concrete proof over opaque claims.',
-  );
-  assert.equal(frenchWithPrinciples.workPrinciples[1]?.detail, null);
-
-  await db
-    .deleteFrom('profile_work_principles')
-    .where('profile_id', '=', profileId)
-    .execute();
-
-
-  const architectureGroupId = randomUUID();
-  const deliveryGroupId = randomUUID();
-  const architectureCapabilityId = randomUUID();
-  const deliveryCapabilityId = randomUUID();
-
-  await db
-    .insertInto('profile_capability_groups')
-    .values([
-      {
-        id: architectureGroupId,
-        profile_id: profileId,
-        position: 0,
-      },
-      {
-        id: deliveryGroupId,
-        profile_id: profileId,
-        position: 1,
-      },
-    ])
-    .execute();
-
-  await db
-    .insertInto('profile_capability_group_localizations')
-    .values([
-      {
-        group_id: architectureGroupId,
-        locale: 'en',
-        title: 'Architecture',
-      },
-      {
-        group_id: architectureGroupId,
-        locale: 'fr',
-        title: 'Architecture',
-      },
-      {
-        group_id: deliveryGroupId,
-        locale: 'en',
-        title: 'Delivery',
-      },
-      {
-        group_id: deliveryGroupId,
-        locale: 'fr',
-        title: 'Livraison',
-      },
-    ])
-    .execute();
-
-  await db
-    .insertInto('profile_capabilities')
-    .values([
-      {
-        id: architectureCapabilityId,
-        group_id: architectureGroupId,
-        position: 0,
-      },
-      {
-        id: deliveryCapabilityId,
-        group_id: deliveryGroupId,
-        position: 0,
-      },
-    ])
-    .execute();
-
-  await db
-    .insertInto('profile_capability_localizations')
-    .values([
-      {
-        capability_id: architectureCapabilityId,
-        locale: 'en',
-        title: 'Design bounded systems',
-        summary: 'Shape explicit boundaries and contracts.',
-      },
-      {
-        capability_id: architectureCapabilityId,
-        locale: 'fr',
-        title: 'Concevoir des systèmes délimités',
-        summary: 'Structurer des frontières et des contrats explicites.',
-      },
-      {
-        capability_id: deliveryCapabilityId,
-        locale: 'en',
-        title: 'Qualify delivery paths',
-        summary: null,
-      },
-      {
-        capability_id: deliveryCapabilityId,
-        locale: 'fr',
-        title: 'Qualifier les parcours de livraison',
-        summary: null,
-      },
-    ])
-    .execute();
-
-  const englishWithCapabilities = await getDraftProfile(db, 'en');
-  const frenchWithCapabilities = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithCapabilities);
-  assert.ok(frenchWithCapabilities);
-  assert.deepEqual(
-    englishWithCapabilities.capabilityGroups.map(({ title }) => title),
-    ['Architecture', 'Delivery'],
-  );
-  assert.deepEqual(
-    frenchWithCapabilities.capabilityGroups.map(({ title }) => title),
-    ['Architecture', 'Livraison'],
-  );
-  assert.deepEqual(
-    englishWithCapabilities.capabilityGroups[0]?.capabilities.map(
-      ({ title }) => title,
-    ),
-    ['Design bounded systems'],
-  );
-  assert.equal(
-    frenchWithCapabilities.capabilityGroups[1]?.capabilities[0]?.title,
-    'Qualifier les parcours de livraison',
-  );
-
-  const technologyId = randomUUID();
-  await db
-    .insertInto('technologies')
-    .values({
-      id: technologyId,
-      slug: `qualification-react-${technologyId}`,
-      name: 'React',
-    })
-    .execute();
-
-  const afterTechnologyInsert = await getDraftProfile(db, 'en');
-  assert.ok(afterTechnologyInsert);
-  assert.deepEqual(
-    afterTechnologyInsert.capabilityGroups,
-    englishWithCapabilities.capabilityGroups,
-    'Adding a Technology must not alter Profile capabilities.',
-  );
-
-  await db
-    .deleteFrom('profile_capability_groups')
-    .where('profile_id', '=', profileId)
-    .execute();
-  await db.deleteFrom('technologies').where('id', '=', technologyId).execute();
-
-
-  const firstSystemId = randomUUID();
-  const secondSystemId = randomUUID();
-  const presentation = {
-    version: 1 as const,
-    blocks: [{ type: 'paragraph' as const, text: 'Published proof.' }],
-  };
-
-  await db
-    .insertInto('systems')
-    .values([
-      { id: firstSystemId, lifecycle: 'active', editorial_position: 40 },
-      { id: secondSystemId, lifecycle: 'active', editorial_position: 41 },
-    ])
-    .execute();
-
-  await db
-    .insertInto('system_localizations')
-    .values([
-      {
-        system_id: firstSystemId,
-        locale: 'en',
-        slug: 'profile-proof-one',
-        title: 'Profile Proof One',
-        summary: 'English summary one.',
-        presentation_document: presentation,
-        proof_role: 'Qualification System',
-        proof_maturity: 'Inspectable qualification fixture',
-        proof_demo_nature: 'No separate public demo',
-        proof_data_nature: 'Synthetic qualification data',
-        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
-        editorial_state: 'published',
-        published_at: new Date(),
-      },
-      {
-        system_id: firstSystemId,
-        locale: 'fr',
-        slug: 'preuve-profil-un',
-        title: 'Preuve Profil Un',
-        summary: 'Résumé français un.',
-        presentation_document: presentation,
-        proof_role: 'Qualification System',
-        proof_maturity: 'Inspectable qualification fixture',
-        proof_demo_nature: 'No separate public demo',
-        proof_data_nature: 'Synthetic qualification data',
-        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
-        editorial_state: 'published',
-        published_at: new Date(),
-      },
-      {
-        system_id: secondSystemId,
-        locale: 'en',
-        slug: 'profile-proof-two',
-        title: 'Profile Proof Two',
-        summary: 'English summary two.',
-        presentation_document: presentation,
-        proof_role: 'Qualification System',
-        proof_maturity: 'Inspectable qualification fixture',
-        proof_demo_nature: 'No separate public demo',
-        proof_data_nature: 'Synthetic qualification data',
-        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
-        editorial_state: 'published',
-        published_at: new Date(),
-      },
-      {
-        system_id: secondSystemId,
-        locale: 'fr',
-        slug: 'preuve-profil-deux',
-        title: 'Preuve Profil Deux',
-        summary: 'Résumé français deux.',
-        presentation_document: presentation,
-        proof_role: 'Qualification System',
-        proof_maturity: 'Inspectable qualification fixture',
-        proof_demo_nature: 'No separate public demo',
-        proof_data_nature: 'Synthetic qualification data',
-        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
-        editorial_state: 'draft',
-        published_at: null,
-      },
-    ])
-    .execute();
-
-  await bootstrapSystemPublications(db);
-
-  await db
-    .insertInto('profile_systems')
+    .insertInto('profile_contacts')
     .values([
       {
         profile_id: profileId,
-        system_id: secondSystemId,
-        position: 0,
+        kind: 'email',
+        value: 'profile@example.test',
+        visible: true,
       },
       {
         profile_id: profileId,
-        system_id: firstSystemId,
-        position: 1,
+        kind: 'phone',
+        value: '+33000000000',
+        visible: false,
       },
     ])
-    .execute();
-
-  const englishWithSystems = await getDraftProfile(db, 'en');
-  const frenchWithSystems = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithSystems);
-  assert.ok(frenchWithSystems);
-  assert.deepEqual(
-    englishWithSystems.representativeSystems.map(({ title }) => title),
-    ['Profile Proof Two', 'Profile Proof One'],
-  );
-  assert.deepEqual(
-    englishWithSystems.representativeSystems.map(({ summary }) => summary),
-    ['English summary two.', 'English summary one.'],
-  );
-  assert.deepEqual(
-    frenchWithSystems.representativeSystems.map(({ title }) => title),
-    ['Preuve Profil Un'],
-    'A representative System without a published French localization must not leak into French Profile.',
-  );
-  assert.equal(
-    frenchWithSystems.representativeSystems[0]?.slug,
-    'preuve-profil-un',
-  );
-
-  await db
-    .updateTable('profile_technology_journey_stages')
-    .set({
-      evidence_system_id: secondSystemId,
-      evidence_experience_id: null,
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', profileId)
-    .where('stage_key', '=', 'development_akiksystems')
-    .executeTakeFirstOrThrow();
-
-  const englishWithTechnologyJourney = await getDraftProfile(db, 'en');
-  const frenchWithTechnologyJourney = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithTechnologyJourney);
-  assert.ok(frenchWithTechnologyJourney);
-  assert.deepEqual(
-    englishWithTechnologyJourney.technologyJourney.map(({ key }) => key),
-    [
-      'programming',
-      'networks_telecom',
-      'it_support',
-      'industry',
-      'development_akiksystems',
-    ],
-    'The technological journey must preserve the fixed five-step technical progression.',
-  );
-  assert.equal(
-    englishWithTechnologyJourney.technologyJourney[4]?.evidence?.title,
-    'Profile Proof Two',
-  );
-  assert.equal(
-    englishWithTechnologyJourney.technologyJourney[4]?.evidence?.href,
-    '/en/systems/profile-proof-two',
-  );
-  assert.equal(
-    frenchWithTechnologyJourney.technologyJourney[4]?.evidence,
-    null,
-    'Unpublished localized System evidence must disappear from the technological journey.',
-  );
-
-  await db
-    .updateTable('profile_technology_journey_stages')
-    .set({
-      evidence_system_id: null,
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', profileId)
-    .where('stage_key', '=', 'development_akiksystems')
-    .executeTakeFirstOrThrow();
-
-  const evidencePrincipleId = randomUUID();
-
-  await db
-    .insertInto('profile_work_principles')
-    .values({
-      id: evidencePrincipleId,
-      profile_id: profileId,
-      position: 0,
-      evidence_system_id: secondSystemId,
-    })
-    .execute();
-
-  await db
-    .insertInto('profile_work_principle_localizations')
-    .values([
-      {
-        principle_id: evidencePrincipleId,
-        locale: 'en',
-        title: 'Connect claims to proof',
-        detail: 'Use a concrete example when it adds useful evidence.',
-      },
-      {
-        principle_id: evidencePrincipleId,
-        locale: 'fr',
-        title: 'Relier les affirmations aux preuves',
-        detail: 'Utiliser un exemple concret quand il apporte une preuve utile.',
-      },
-    ])
-    .execute();
-
-  const englishWithPrincipleEvidence = await getDraftProfile(db, 'en');
-  const frenchWithPrincipleEvidence = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithPrincipleEvidence);
-  assert.ok(frenchWithPrincipleEvidence);
-  assert.deepEqual(
-    englishWithPrincipleEvidence.workPrinciples[0]?.evidenceSystem,
-    {
-      id: secondSystemId,
-      slug: 'profile-proof-two',
-      title: 'Profile Proof Two',
-    },
-  );
-  assert.equal(
-    frenchWithPrincipleEvidence.workPrinciples[0]?.evidenceSystem,
-    null,
-    'A principle must not expose a System example when that locale is not published.',
-  );
-
-  let longPrincipleError: unknown;
-  try {
-    await db
-      .insertInto('profile_work_principle_localizations')
-      .values({
-        principle_id: evidencePrincipleId,
-        locale: 'en',
-        title: 'x'.repeat(81),
-        detail: null,
-      })
-      .onConflict((conflict) =>
-        conflict.columns(['principle_id', 'locale']).doUpdateSet({
-          title: 'x'.repeat(81),
-        }),
-      )
-      .execute();
-  } catch (error) {
-    longPrincipleError = error;
-  }
-  assert.ok(longPrincipleError && typeof longPrincipleError === 'object');
-  assert.equal((longPrincipleError as PostgreSqlError).code, '23514');
-  assert.equal(
-    (longPrincipleError as PostgreSqlError).constraint,
-    'profile_work_principle_localizations_title_length_check',
-  );
-
-  await db
-    .deleteFrom('profile_work_principles')
-    .where('id', '=', evidencePrincipleId)
-    .execute();
-
-  await db
-    .deleteFrom('profile_systems')
-    .where('profile_id', '=', profileId)
-    .execute();
-  await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
-
-
-  const selectedExperienceId = randomUUID();
-  const unrelatedExperienceId = randomUUID();
-
-  await db
-    .insertInto('experiences')
-    .values([
-      { id: selectedExperienceId },
-      { id: unrelatedExperienceId },
-    ])
-    .execute();
-
-  await db
-    .insertInto('experience_localizations')
-    .values([
-      {
-        experience_id: selectedExperienceId,
-        locale: 'en',
-        title: 'Selected industrial experience',
-        summary: 'Relevant English industrial context.',
-      },
-      {
-        experience_id: selectedExperienceId,
-        locale: 'fr',
-        title: 'Expérience industrielle sélectionnée',
-        summary: 'Contexte industriel français pertinent.',
-      },
-      {
-        experience_id: unrelatedExperienceId,
-        locale: 'en',
-        title: 'Unrelated older work',
-        summary: 'This must never appear automatically.',
-      },
-    ])
-    .execute();
-
-  const beforeJourneySelection = await getDraftProfile(db, 'en');
-  assert.ok(beforeJourneySelection);
-  assert.deepEqual(
-    beforeJourneySelection.professionalJourney,
-    [],
-    'Existing Experience objects must never enter Profile automatically.',
-  );
-
-  await db
-    .insertInto('profile_experiences')
-    .values({
-      profile_id: profileId,
-      experience_id: selectedExperienceId,
-      position: 0,
-    })
-    .execute();
-
-  const englishWithJourney = await getDraftProfile(db, 'en');
-  const frenchWithJourney = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithJourney);
-  assert.ok(frenchWithJourney);
-  assert.deepEqual(
-    englishWithJourney.professionalJourney.map(({ title }) => title),
-    ['Selected industrial experience'],
-  );
-  assert.deepEqual(
-    frenchWithJourney.professionalJourney.map(({ title }) => title),
-    ['Expérience industrielle sélectionnée'],
-  );
-  assert.equal(
-    englishWithJourney.professionalJourney.some(
-      ({ title }) => title === 'Unrelated older work',
-    ),
-    false,
-    'Unselected older work must remain private even when it exists in the Experience domain.',
-  );
-
-  await db
-    .deleteFrom('profile_experiences')
-    .where('profile_id', '=', profileId)
-    .execute();
-  await db
-    .deleteFrom('experiences')
-    .where('id', 'in', [selectedExperienceId, unrelatedExperienceId])
     .execute();
 
   await db
@@ -752,187 +247,420 @@ try {
     .set({
       worldwide: true,
       remote: true,
-      relocation: true,
-      updated_at: new Date(),
-    })
-    .where('profile_id', '=', profileId)
-    .executeTakeFirstOrThrow();
-
-  const englishWithLanguages = await getDraftProfile(db, 'en');
-  const frenchWithLanguages = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithLanguages);
-  assert.ok(frenchWithLanguages);
-  assert.deepEqual(englishWithLanguages.languages, ['fr', 'en', 'ar']);
-  assert.deepEqual(frenchWithLanguages.languages, ['fr', 'en', 'ar']);
-  assert.deepEqual(englishWithLanguages.mobility, {
-    worldwide: true,
-    remote: true,
-    relocation: true,
-  });
-  assert.deepEqual(frenchWithLanguages.mobility, {
-    worldwide: true,
-    remote: true,
-    relocation: true,
-  });
-
-  let languageCodeError: unknown;
-  try {
-    await sql`
-      insert into profile_languages (profile_id, language_code, position)
-      values (${profileId}::uuid, 'de', 3)
-    `.execute(db);
-  } catch (error) {
-    languageCodeError = error;
-  }
-  assert.ok(languageCodeError && typeof languageCodeError === 'object');
-  assert.equal((languageCodeError as PostgreSqlError).code, '23514');
-  assert.equal(
-    (languageCodeError as PostgreSqlError).constraint,
-    'profile_languages_language_code_check',
-  );
-
-  await db
-    .deleteFrom('profile_languages')
-    .where('profile_id', '=', profileId)
-    .execute();
-
-  const sourceCvId = randomUUID();
-
-  await db
-    .insertInto('assets')
-    .values({
-      id: sourceCvId,
-      storage_key: `qualification/profile/${sourceCvId}.pdf`,
-      original_filename: 'amine-akik-cv.pdf',
-      mime_type: 'application/pdf',
-      byte_size: 2048,
-    })
-    .execute();
-
-  await db
-    .updateTable('profiles')
-    .set({
-      source_cv_asset_id: sourceCvId,
-      updated_at: new Date(),
-    })
-    .where('id', '=', profileId)
-    .executeTakeFirstOrThrow();
-
-  const englishWithCv = await getDraftProfile(db, 'en');
-  const frenchWithCv = await getDraftProfile(db, 'fr');
-  assert.ok(englishWithCv);
-  assert.ok(frenchWithCv);
-  assert.equal(englishWithCv.sourceCvAssetId, sourceCvId);
-  assert.equal(
-    frenchWithCv.sourceCvAssetId,
-    sourceCvId,
-    'The source CV is one shared artifact, not duplicated by locale.',
-  );
-
-  let reusedPortraitError: unknown;
-  try {
-    await db
-      .updateTable('profiles')
-      .set({
-        portrait_asset_id: sourceCvId,
-        updated_at: new Date(),
-      })
-      .where('id', '=', profileId)
-      .executeTakeFirstOrThrow();
-  } catch (error) {
-    reusedPortraitError = error;
-  }
-  assert.ok(reusedPortraitError && typeof reusedPortraitError === 'object');
-  assert.equal((reusedPortraitError as PostgreSqlError).code, '23514');
-  assert.equal(
-    (reusedPortraitError as PostgreSqlError).constraint,
-    'profiles_source_cv_distinct_from_portrait_check',
-  );
-
-  await db
-    .updateTable('profiles')
-    .set({
-      source_cv_asset_id: null,
-      updated_at: new Date(),
-    })
-    .where('id', '=', profileId)
-    .executeTakeFirstOrThrow();
-
-  await db.deleteFrom('assets').where('id', '=', sourceCvId).execute();
-
-  await db
-    .updateTable('profile_mobility')
-    .set({
-      worldwide: false,
-      remote: false,
       relocation: false,
       updated_at: new Date(),
     })
     .where('profile_id', '=', profileId)
     .executeTakeFirstOrThrow();
 
+  await markProfileDraft(db, { profileId });
+  let states = await localizationStates(profileId);
+  assert.ok(
+    states.every(
+      ({ editorial_state, published_at }) =>
+        editorial_state === 'draft' && published_at === null,
+    ),
+    'A global Profile mutation must mark both locales draft.',
+  );
+  assert.ok(
+    await getPublicProfile(db, 'en'),
+    'Marking a localization draft must not delete its previous public snapshot.',
+  );
+
+  await publishProfileLocalization(db, { locale: 'en' });
+  await publishProfileLocalization(db, { locale: 'fr' });
+
+  const publicWithIdentity = await getPublicProfile(db, 'en');
+  assert.ok(publicWithIdentity);
+  assert.equal(publicWithIdentity.portraitAssetId, portraitId);
+  assert.equal(publicWithIdentity.portraitAltText, 'Published portrait alt');
+  assert.equal(publicWithIdentity.sourceCvAssetId, cvId);
+  assert.deepEqual(publicWithIdentity.contacts, [
+    { kind: 'email', value: 'profile@example.test' },
+  ]);
+  assert.deepEqual(publicWithIdentity.languages, ['fr', 'en', 'ar']);
+  assert.deepEqual(publicWithIdentity.mobility, {
+    worldwide: true,
+    remote: true,
+    relocation: false,
+  });
+
+  await db
+    .updateTable('asset_localizations')
+    .set({ alt_text: 'Draft portrait alt', updated_at: new Date() })
+    .where('asset_id', '=', portraitId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+
+  const publicAfterAssetDraft = await getPublicProfile(db, 'en');
+  assert.ok(publicAfterAssetDraft);
+  assert.equal(
+    publicAfterAssetDraft.portraitAltText,
+    'Published portrait alt',
+    'Profile-owned asset presentation data must remain frozen in the Profile snapshot.',
+  );
+
+  await db
+    .insertInto('technologies')
+    .values({
+      id: technologyId,
+      slug: 'qualification-react',
+      name: 'React',
+    })
+    .execute();
+
+  await db
+    .insertInto('systems')
+    .values([
+      { id: firstSystemId, lifecycle: 'active', editorial_position: 10 },
+      { id: secondSystemId, lifecycle: 'active', editorial_position: 20 },
+    ])
+    .execute();
+
+  await db
+    .insertInto('system_localizations')
+    .values([
+      {
+        system_id: firstSystemId,
+        locale: 'en',
+        slug: 'qualification-system-one',
+        title: 'Qualification System One',
+        summary: 'First English proof System.',
+        proof_role: 'Qualification',
+        proof_maturity: 'Inspectable',
+        proof_demo_nature: 'Synthetic',
+        proof_data_nature: 'Synthetic',
+        proof_limits: 'Qualification only.',
+        presentation_document: presentationDocument,
+      },
+      {
+        system_id: firstSystemId,
+        locale: 'fr',
+        slug: 'systeme-qualification-un',
+        title: 'Système Qualification Un',
+        summary: 'Premier système de preuve français.',
+        proof_role: 'Qualification',
+        proof_maturity: 'Inspectable',
+        proof_demo_nature: 'Synthétique',
+        proof_data_nature: 'Synthétique',
+        proof_limits: 'Qualification uniquement.',
+        presentation_document: presentationDocument,
+      },
+      {
+        system_id: secondSystemId,
+        locale: 'en',
+        slug: 'qualification-system-two',
+        title: 'Qualification System Two',
+        summary: 'Second English proof System.',
+        proof_role: 'Qualification',
+        proof_maturity: 'Inspectable',
+        proof_demo_nature: 'Synthetic',
+        proof_data_nature: 'Synthetic',
+        proof_limits: 'Qualification only.',
+        presentation_document: presentationDocument,
+      },
+      {
+        system_id: secondSystemId,
+        locale: 'fr',
+        slug: 'systeme-qualification-deux',
+        title: 'Système Qualification Deux',
+        summary: 'Second système de preuve français.',
+        proof_role: 'Qualification',
+        proof_maturity: 'Inspectable',
+        proof_demo_nature: 'Synthétique',
+        proof_data_nature: 'Synthétique',
+        proof_limits: 'Qualification uniquement.',
+        presentation_document: presentationDocument,
+      },
+    ])
+    .execute();
+
+  await db
+    .insertInto('system_technologies')
+    .values([
+      { system_id: firstSystemId, technology_id: technologyId, position: 0 },
+      { system_id: secondSystemId, technology_id: technologyId, position: 0 },
+    ])
+    .execute();
+
+  await db
+    .insertInto('system_technology_localizations')
+    .values([
+      {
+        system_id: firstSystemId,
+        technology_id: technologyId,
+        locale: 'en',
+        evidence: 'Published React evidence one.',
+      },
+      {
+        system_id: firstSystemId,
+        technology_id: technologyId,
+        locale: 'fr',
+        evidence: 'Preuve React publiée une.',
+      },
+      {
+        system_id: secondSystemId,
+        technology_id: technologyId,
+        locale: 'en',
+        evidence: 'Published React evidence two.',
+      },
+      {
+        system_id: secondSystemId,
+        technology_id: technologyId,
+        locale: 'fr',
+        evidence: 'Preuve React publiée deux.',
+      },
+    ])
+    .execute();
+
+  await publishSystemLocalization(db, { systemId: firstSystemId, locale: 'en' });
+  await publishSystemLocalization(db, { systemId: firstSystemId, locale: 'fr' });
+  await publishSystemLocalization(db, { systemId: secondSystemId, locale: 'en' });
+
+  await db
+    .insertInto('profile_stack_groups')
+    .values({ id: stackGroupId, profile_id: profileId, position: 0 })
+    .execute();
+
+  await db
+    .insertInto('profile_stack_group_localizations')
+    .values([
+      { group_id: stackGroupId, locale: 'en', title: 'Front-end' },
+      { group_id: stackGroupId, locale: 'fr', title: 'Front-end' },
+    ])
+    .execute();
+
+  await db
+    .insertInto('profile_stack_group_technologies')
+    .values({
+      group_id: stackGroupId,
+      technology_id: technologyId,
+      position: 0,
+    })
+    .execute();
+
+  await db
+    .insertInto('writings')
+    .values({
+      id: writingId,
+      kind: 'article',
+      lifecycle: 'active',
+      editorial_position: 90,
+    })
+    .execute();
+
+  await db
+    .insertInto('writing_localizations')
+    .values([
+      {
+        writing_id: writingId,
+        locale: 'en',
+        slug: 'qualification-systemic-scale',
+        title: 'Qualification systemic scale',
+        summary: 'Qualification reasoning.',
+        body: 'Qualification reasoning body.',
+      },
+      {
+        writing_id: writingId,
+        locale: 'fr',
+        slug: 'qualification-echelle-systemique',
+        title: 'Qualification échelle systémique',
+        summary: 'Raisonnement de qualification.',
+        body: 'Corps du raisonnement de qualification.',
+      },
+    ])
+    .execute();
+
+  await publishWritingLocalization(db, { writingId, locale: 'en' });
+
   await db
     .updateTable('profiles')
     .set({
-      display_name: null,
-      portrait_asset_id: null,
+      current_system_id: secondSystemId,
+      systemic_scale_writing_id: writingId,
       updated_at: new Date(),
     })
     .where('id', '=', profileId)
     .executeTakeFirstOrThrow();
 
+  await markProfileDraft(db, { profileId });
+  await publishProfileLocalization(db, { locale: 'en' });
+  await publishProfileLocalization(db, { locale: 'fr' });
+
+  const englishProofs = await getPublicProfile(db, 'en');
+  const frenchBeforeExternalPublications = await getPublicProfile(db, 'fr');
+  assert.ok(englishProofs);
+  assert.ok(frenchBeforeExternalPublications);
+  assert.equal(englishProofs.currentProject?.id, secondSystemId);
+  assert.equal(englishProofs.stackGroups[0]?.proofCount, 2);
+  assert.equal(englishProofs.systemicScaleWriting?.id, writingId);
+  assert.equal(
+    frenchBeforeExternalPublications.currentProject,
+    null,
+    'A selected System without a publication in the active locale must stay hidden.',
+  );
+  assert.equal(frenchBeforeExternalPublications.stackGroups[0]?.proofCount, 1);
+  assert.equal(
+    frenchBeforeExternalPublications.systemicScaleWriting,
+    null,
+    'A selected Writing without a publication in the active locale must stay hidden.',
+  );
+
+  await publishSystemLocalization(db, { systemId: secondSystemId, locale: 'fr' });
+  await publishWritingLocalization(db, { writingId, locale: 'fr' });
+
+  const frenchAfterExternalPublications = await getPublicProfile(db, 'fr');
+  assert.ok(frenchAfterExternalPublications);
+  assert.equal(
+    frenchAfterExternalPublications.currentProject?.id,
+    secondSystemId,
+    'Publishing the selected System must make it appear without republishing Profile.',
+  );
+  assert.equal(frenchAfterExternalPublications.stackGroups[0]?.proofCount, 2);
+  assert.equal(
+    frenchAfterExternalPublications.systemicScaleWriting?.id,
+    writingId,
+    'Publishing the selected Writing must make it appear without republishing Profile.',
+  );
+
   await db
-    .updateTable('profile_localizations')
+    .updateTable('system_technology_localizations')
     .set({
-      professional_title: null,
-      introduction: null,
-      foundational_copy: null,
+      evidence: 'Unpublished React evidence one.',
       updated_at: new Date(),
     })
-    .where('profile_id', '=', profileId)
-    .execute();
+    .where('system_id', '=', firstSystemId)
+    .where('technology_id', '=', technologyId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
+  await markSystemDraft(db, { systemId: firstSystemId, locale: 'en' });
 
-  await db.deleteFrom('assets').where('id', '=', portraitId).execute();
-  await db
-    .deleteFrom('profile_publications')
-    .where('profile_id', '=', profileId)
-    .execute();
-
-  let duplicateError: unknown;
-  try {
-    await db
-      .insertInto('profiles')
-      .values({ id: randomUUID(), singleton_key: 'public' })
-      .execute();
-  } catch (error) {
-    duplicateError = error;
-  }
-  assert.ok(duplicateError && typeof duplicateError === 'object');
-  assert.equal((duplicateError as PostgreSqlError).code, '23505');
+  const beforeSystemRepublish = await getPublicProfile(db, 'en');
+  assert.ok(beforeSystemRepublish);
+  const beforeEvidence =
+    beforeSystemRepublish.stackGroups[0]?.proofSystems
+      .find(({ id }) => id === firstSystemId)
+      ?.technologies[0]?.evidence;
   assert.equal(
-    (duplicateError as PostgreSqlError).constraint,
-    'profiles_singleton_key_key',
+    beforeEvidence,
+    'Published React evidence one.',
+    'System draft evidence must never leak through Profile.',
   );
 
-  let localeError: unknown;
-  try {
-    await sql`
-      insert into profile_localizations (profile_id, locale)
-      values (${profiles[0]?.id}::uuid, 'de')
-    `.execute(db);
-  } catch (error) {
-    localeError = error;
-  }
-  assert.ok(localeError && typeof localeError === 'object');
-  assert.equal((localeError as PostgreSqlError).code, '23514');
+  await publishSystemLocalization(db, { systemId: firstSystemId, locale: 'en' });
+  const afterSystemRepublish = await getPublicProfile(db, 'en');
+  assert.ok(afterSystemRepublish);
+  const afterEvidence =
+    afterSystemRepublish.stackGroups[0]?.proofSystems
+      .find(({ id }) => id === firstSystemId)
+      ?.technologies[0]?.evidence;
+  assert.equal(afterEvidence, 'Unpublished React evidence one.');
+
+  await unpublishSystemLocalization(db, {
+    systemId: firstSystemId,
+    locale: 'en',
+  });
+  const afterSystemUnpublish = await getPublicProfile(db, 'en');
+  assert.ok(afterSystemUnpublish);
   assert.equal(
-    (localeError as PostgreSqlError).constraint,
-    'profile_localizations_locale_check',
+    afterSystemUnpublish.stackGroups[0]?.proofCount,
+    1,
+    'A System removed from the canonical public source must disappear from Profile proof resolution.',
   );
 
-  process.stdout.write(
-    'Public Profile verification passed: singleton identity, draft/public snapshot separation, editable shared/localized identity, localized portrait metadata, stable ordered bilingual working principles with optional published System evidence, representative published System references, intentional professional-journey selection, capability groups distinct from technologies, structured languages and mobility, optional shared source CV linkage, a fixed localized five-step technological journey with publication-aware evidence, and database constraints are enforced.\n',
+  await publishSystemLocalization(db, { systemId: firstSystemId, locale: 'en' });
+  const afterSystemReturn = await getPublicProfile(db, 'en');
+  assert.ok(afterSystemReturn);
+  assert.equal(afterSystemReturn.stackGroups[0]?.proofCount, 2);
+
+  assert.equal(
+    parseProfilePublicationSnapshot({ version: 99 }),
+    null,
+    'Unknown Profile snapshot versions must be rejected.',
+  );
+  assert.equal(
+    parseProfilePublicationSnapshot({
+      ...firstEnglishSnapshot,
+      stackGroups: [{ id: stackGroupId, position: 0, title: 'Broken' }],
+    }),
+    null,
+    'Malformed Profile snapshots must be rejected instead of loosely accepted.',
+  );
+
+  await unpublishProfileLocalization(db, { locale: 'en' });
+  assert.equal(await getPublicProfile(db, 'en'), null);
+  assert.ok(
+    await getPublicProfile(db, 'fr'),
+    'Unpublishing EN must not remove the independent FR publication.',
+  );
+
+  console.log(
+    'Public Profile verification passed: final schema, strict snapshots, locale isolation, live canonical references, Stack evidence and draft/public boundaries are enforced.',
   );
 } finally {
+  const profile = await db
+    .selectFrom('profiles')
+    .select('id')
+    .where('singleton_key', '=', 'public')
+    .executeTakeFirst();
+
+  if (profile !== undefined) {
+    await db
+      .deleteFrom('profile_publications')
+      .where('profile_id', '=', profile.id)
+      .execute();
+    await db
+      .deleteFrom('profile_stack_groups')
+      .where('profile_id', '=', profile.id)
+      .execute();
+    await db
+      .deleteFrom('profile_contacts')
+      .where('profile_id', '=', profile.id)
+      .execute();
+    await db
+      .deleteFrom('profile_languages')
+      .where('profile_id', '=', profile.id)
+      .execute();
+    await db
+      .updateTable('profile_mobility')
+      .set({
+        worldwide: false,
+        remote: false,
+        relocation: false,
+        updated_at: new Date(),
+      })
+      .where('profile_id', '=', profile.id)
+      .execute();
+    await db
+      .updateTable('profiles')
+      .set({
+        display_name: null,
+        portrait_asset_id: null,
+        source_cv_asset_id: null,
+        current_system_id: null,
+        systemic_scale_writing_id: null,
+        updated_at: new Date(),
+      })
+      .where('id', '=', profile.id)
+      .execute();
+    await db
+      .updateTable('profile_localizations')
+      .set({
+        content: {},
+        editorial_state: 'draft',
+        published_at: null,
+        updated_at: new Date(),
+      })
+      .where('profile_id', '=', profile.id)
+      .execute();
+  }
+
+  await db.deleteFrom('writings').where('id', '=', writingId).execute();
+  await db
+    .deleteFrom('systems')
+    .where('id', 'in', [firstSystemId, secondSystemId])
+    .execute();
+  await db.deleteFrom('technologies').where('id', '=', technologyId).execute();
+  await db.deleteFrom('assets').where('id', 'in', [portraitId, cvId]).execute();
   await db.destroy();
 }
