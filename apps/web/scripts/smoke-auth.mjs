@@ -175,11 +175,14 @@ try {
   );
   const privateProfileHtml = await privateProfile.text();
   assert.equal(privateProfile.status, 200);
+  assert.match(privateProfileHtml, /aks-admin-profile-page/);
   assert.match(privateProfileHtml, /data-profile-admin-contract="v1"/);
-  assert.match(privateProfileHtml, /data-profile-locale="fr"/);
-  assert.match(privateProfileHtml, /Final Profile contract/);
-  assert.match(privateProfileHtml, /Publication/);
-  assert.match(privateProfileHtml, /Structured relations/);
+  assert.match(privateProfileHtml, /data-admin-locale="fr"/);
+  assert.match(privateProfileHtml, /Live Profile editor/);
+  assert.match(privateProfileHtml, /Structure &amp; canonical relations/);
+  assert.match(privateProfileHtml, /Stack groups/);
+  assert.match(privateProfileHtml, /name="heroProfessionalTitle"/);
+  assert.match(privateProfileHtml, /name="displayName"/);
   assert.doesNotMatch(privateProfileHtml, /workPrinciples|technologyJourney/);
   assert.match(
     privateProfileHtml,
