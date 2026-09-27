@@ -68,6 +68,15 @@ export interface SystemTechnology {
   position: number;
 }
 
+export interface SystemTechnologyLocalization {
+  systemId: SystemId;
+  technologyId: TechnologyId;
+  locale: PlatformLocale;
+  evidence: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export const trainingStates = ['planned', 'in_progress', 'completed'] as const;
 
 export type TrainingState = (typeof trainingStates)[number];
