@@ -193,15 +193,15 @@ export function ProfileAdminEditor({
   const [activeStackId, setActiveStackId] = useState(
     preview.stackGroups[0]?.id ?? null,
   );
-  const [activeGuidance, setActiveGuidance] = useState(
-    profileGuidanceKeys[0],
-  );
-  const [activeCapability, setActiveCapability] = useState(
-    profileCapabilityStepKeys[0],
-  );
-  const [activeSystemic, setActiveSystemic] = useState(
-    profileSystemicScaleStepKeys[0],
-  );
+  const [activeGuidance, setActiveGuidance] = useState<
+    (typeof profileGuidanceKeys)[number]
+  >(profileGuidanceKeys[0]);
+  const [activeCapability, setActiveCapability] = useState<
+    (typeof profileCapabilityStepKeys)[number]
+  >(profileCapabilityStepKeys[0]);
+  const [activeSystemic, setActiveSystemic] = useState<
+    (typeof profileSystemicScaleStepKeys)[number]
+  >(profileSystemicScaleStepKeys[0]);
   const publicHref = locale === 'fr' ? '/fr/profil' : '/en/profile';
   const localeLabel = locale === 'fr' ? 'Français' : 'English';
 
