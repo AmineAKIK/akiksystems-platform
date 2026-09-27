@@ -764,6 +764,50 @@
   }
 }
 
+/* Large landscapes use the available canvas without diluting the focal point. */
+@media (min-width: 80rem) and (min-height: 45rem) and (orientation: landscape) {
+  .aks-home {
+    --aks-home-mark-size: clamp(17rem, min(21vw, 31dvh), 20rem);
+    --aks-home-wordmark-size: clamp(3.25rem, min(4.3vw, 6.2dvh), 4rem);
+    --aks-home-pentagon-inset: clamp(8rem, 11vw, 11rem);
+  }
+
+  .aks-home-portal {
+    width: min(calc(100% - 5rem), 88rem);
+    grid-template-columns:
+      minmax(12rem, 1fr)
+      minmax(26rem, 32rem)
+      minmax(12rem, 1fr);
+    column-gap: clamp(2rem, 3vw, 4rem);
+  }
+
+  .aks-home-door[data-destination='work-with-us'] {
+    margin-block-end: clamp(2.5rem, 4.5dvh, 4rem);
+  }
+
+  .aks-home-door[data-destination='writings'],
+  .aks-home-door[data-destination='learning'] {
+    margin-block-start: clamp(2rem, 3.5dvh, 3.25rem);
+  }
+
+  .aks-home-door-label {
+    font-size: 1rem;
+    letter-spacing: 0.1rem;
+  }
+
+  .aks-home-door-summary {
+    font-size: 0.6875rem;
+  }
+
+  .aks-home-active-description > span {
+    font-size: 0.6875rem;
+  }
+
+  .aks-home-active-description p {
+    font-size: 0.9375rem;
+  }
+}
+
 /* Compact landscape is the same centered grid, compressed—not a separate absolute scene. */
 @media (max-width: 56.24rem) and (orientation: landscape) and (max-height: 37.5rem) {
   .aks-experience-frame[data-home='true'] {
