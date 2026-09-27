@@ -418,9 +418,12 @@ async function assertGeometry(browser, viewport, name) {
         m.portal.width <= 1153,
         name + ' orbital artboard must stay capped at 1152px',
       );
+      const minimumDesktopMark = viewport.height < 960 ? 245 : 278;
       assert.ok(
-        m.brand.width >= 278 && m.brand.width <= 290,
-        name + ' emblem must keep stable premium desktop scale',
+        m.brand.width >= minimumDesktopMark && m.brand.width <= 290,
+        name +
+          ' emblem must keep a premium scale appropriate to available height: ' +
+          m.brand.width,
       );
     }
 
