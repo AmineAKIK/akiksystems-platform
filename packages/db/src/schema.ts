@@ -2,6 +2,7 @@ import type {
   CredentialKind,
   PlatformLocale,
   PresentationDocument,
+  ProfileEditableContent,
   SystemEditorialState,
   SystemEvidencePolicy,
   SystemExperienceRelationKind,
@@ -39,12 +40,7 @@ export type DefaultedColumn<Value> = ColumnType<
 >;
 
 export type ProfileLanguageCode = 'fr' | 'en' | 'ar';
-export type ProfileTechnologyJourneyStageKey =
-  | 'programming'
-  | 'networks_telecom'
-  | 'it_support'
-  | 'industry'
-  | 'development_akiksystems';
+export type ProfileContactKind = 'linkedin' | 'github' | 'email' | 'phone';
 
 export interface SystemMetadataTable {
   key: string;
@@ -98,6 +94,8 @@ export interface ProfilesTable {
   display_name: string | null;
   portrait_asset_id: string | null;
   source_cv_asset_id: string | null;
+  current_system_id: string | null;
+  systemic_scale_writing_id: string | null;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
@@ -105,9 +103,9 @@ export interface ProfilesTable {
 export interface ProfileLocalizationsTable {
   profile_id: string;
   locale: PlatformLocale;
-  professional_title: string | null;
-  introduction: string | null;
-  foundational_copy: string | null;
+  content: DefaultedColumn<ProfileEditableContent>;
+  editorial_state: DefaultedColumn<SystemEditorialState>;
+  published_at: NullableTimestampColumn;
   created_at: TimestampColumn;
   updated_at: TimestampColumn;
 }
@@ -118,6 +116,54 @@ export interface ProfilePublicationsTable {
   snapshot: Record<string, unknown>;
   published_at: TimestampColumn;
   updated_at: TimestampColumn;
+}
+
+export interface ProfileContactsTable {
+  profile_id: string;
+  kind: ProfileContactKind;
+  value: string;
+  visible: DefaultedColumn<boolean>;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileLanguagesTable {
+  profile_id: string;
+  language_code: ProfileLanguageCode;
+  position: number;
+  created_at: TimestampColumn;
+}
+
+export interface ProfileMobilityTable {
+  profile_id: string;
+  worldwide: boolean;
+  remote: boolean;
+  relocation: boolean;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileStackGroupsTable {
+  id: string;
+  profile_id: string;
+  position: number;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileStackGroupLocalizationsTable {
+  group_id: string;
+  locale: PlatformLocale;
+  title: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+}
+
+export interface ProfileStackGroupTechnologiesTable {
+  group_id: string;
+  technology_id: string;
+  position: number;
+  created_at: TimestampColumn;
 }
 
 export interface WorkWithUsPagesTable {
@@ -190,107 +236,6 @@ export interface WorkWithUsInquiryNotificationsTable {
   queued_at: NullableTimestampColumn;
   sent_at: NullableTimestampColumn;
   updated_at: TimestampColumn;
-}
-
-export interface ProfileWorkPrinciplesTable {
-  id: string;
-  profile_id: string;
-  position: number;
-  evidence_system_id: string | null;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileWorkPrincipleLocalizationsTable {
-  principle_id: string;
-  locale: PlatformLocale;
-  title: string;
-  detail: string | null;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileCapabilityGroupsTable {
-  id: string;
-  profile_id: string;
-  position: number;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileCapabilityGroupLocalizationsTable {
-  group_id: string;
-  locale: PlatformLocale;
-  title: string;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileCapabilitiesTable {
-  id: string;
-  group_id: string;
-  position: number;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileCapabilityLocalizationsTable {
-  capability_id: string;
-  locale: PlatformLocale;
-  title: string;
-  summary: string | null;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileLanguagesTable {
-  profile_id: string;
-  language_code: ProfileLanguageCode;
-  position: number;
-  created_at: TimestampColumn;
-}
-
-export interface ProfileMobilityTable {
-  profile_id: string;
-  worldwide: boolean;
-  remote: boolean;
-  relocation: boolean;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileTechnologyJourneyStagesTable {
-  profile_id: string;
-  stage_key: ProfileTechnologyJourneyStageKey;
-  position: number;
-  evidence_experience_id: string | null;
-  evidence_system_id: string | null;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileTechnologyJourneyStageLocalizationsTable {
-  profile_id: string;
-  stage_key: ProfileTechnologyJourneyStageKey;
-  locale: PlatformLocale;
-  title: string;
-  summary: string | null;
-  created_at: TimestampColumn;
-  updated_at: TimestampColumn;
-}
-
-export interface ProfileExperiencesTable {
-  profile_id: string;
-  experience_id: string;
-  position: number;
-  created_at: TimestampColumn;
-}
-
-export interface ProfileSystemsTable {
-  profile_id: string;
-  system_id: string;
-  position: number;
-  created_at: TimestampColumn;
 }
 
 export interface TechnologiesTable {
@@ -633,6 +578,36 @@ export type ProfilePublicationRow = Selectable<ProfilePublicationsTable>;
 export type NewProfilePublicationRow = Insertable<ProfilePublicationsTable>;
 export type ProfilePublicationUpdate = Updateable<ProfilePublicationsTable>;
 
+export type ProfileContactRow = Selectable<ProfileContactsTable>;
+export type NewProfileContactRow = Insertable<ProfileContactsTable>;
+export type ProfileContactUpdate = Updateable<ProfileContactsTable>;
+
+export type ProfileLanguageRow = Selectable<ProfileLanguagesTable>;
+export type NewProfileLanguageRow = Insertable<ProfileLanguagesTable>;
+export type ProfileLanguageUpdate = Updateable<ProfileLanguagesTable>;
+
+export type ProfileMobilityRow = Selectable<ProfileMobilityTable>;
+export type NewProfileMobilityRow = Insertable<ProfileMobilityTable>;
+export type ProfileMobilityUpdate = Updateable<ProfileMobilityTable>;
+
+export type ProfileStackGroupRow = Selectable<ProfileStackGroupsTable>;
+export type NewProfileStackGroupRow = Insertable<ProfileStackGroupsTable>;
+export type ProfileStackGroupUpdate = Updateable<ProfileStackGroupsTable>;
+
+export type ProfileStackGroupLocalizationRow =
+  Selectable<ProfileStackGroupLocalizationsTable>;
+export type NewProfileStackGroupLocalizationRow =
+  Insertable<ProfileStackGroupLocalizationsTable>;
+export type ProfileStackGroupLocalizationUpdate =
+  Updateable<ProfileStackGroupLocalizationsTable>;
+
+export type ProfileStackGroupTechnologyRow =
+  Selectable<ProfileStackGroupTechnologiesTable>;
+export type NewProfileStackGroupTechnologyRow =
+  Insertable<ProfileStackGroupTechnologiesTable>;
+export type ProfileStackGroupTechnologyUpdate =
+  Updateable<ProfileStackGroupTechnologiesTable>;
+
 export type WorkWithUsPageRow = Selectable<WorkWithUsPagesTable>;
 export type NewWorkWithUsPageRow = Insertable<WorkWithUsPagesTable>;
 export type WorkWithUsPageUpdate = Updateable<WorkWithUsPagesTable>;
@@ -661,69 +636,6 @@ export type WorkWithUsInquiryNotificationRow =
   Selectable<WorkWithUsInquiryNotificationsTable>;
 export type NewWorkWithUsInquiryNotificationRow =
   Insertable<WorkWithUsInquiryNotificationsTable>;
-
-export type ProfileWorkPrincipleRow = Selectable<ProfileWorkPrinciplesTable>;
-export type NewProfileWorkPrincipleRow = Insertable<ProfileWorkPrinciplesTable>;
-export type ProfileWorkPrincipleUpdate = Updateable<ProfileWorkPrinciplesTable>;
-
-export type ProfileWorkPrincipleLocalizationRow =
-  Selectable<ProfileWorkPrincipleLocalizationsTable>;
-export type NewProfileWorkPrincipleLocalizationRow =
-  Insertable<ProfileWorkPrincipleLocalizationsTable>;
-export type ProfileWorkPrincipleLocalizationUpdate =
-  Updateable<ProfileWorkPrincipleLocalizationsTable>;
-
-export type ProfileCapabilityGroupRow = Selectable<ProfileCapabilityGroupsTable>;
-export type NewProfileCapabilityGroupRow = Insertable<ProfileCapabilityGroupsTable>;
-export type ProfileCapabilityGroupUpdate = Updateable<ProfileCapabilityGroupsTable>;
-
-export type ProfileCapabilityGroupLocalizationRow =
-  Selectable<ProfileCapabilityGroupLocalizationsTable>;
-export type NewProfileCapabilityGroupLocalizationRow =
-  Insertable<ProfileCapabilityGroupLocalizationsTable>;
-export type ProfileCapabilityGroupLocalizationUpdate =
-  Updateable<ProfileCapabilityGroupLocalizationsTable>;
-
-export type ProfileCapabilityRow = Selectable<ProfileCapabilitiesTable>;
-export type NewProfileCapabilityRow = Insertable<ProfileCapabilitiesTable>;
-export type ProfileCapabilityUpdate = Updateable<ProfileCapabilitiesTable>;
-
-export type ProfileCapabilityLocalizationRow =
-  Selectable<ProfileCapabilityLocalizationsTable>;
-export type NewProfileCapabilityLocalizationRow =
-  Insertable<ProfileCapabilityLocalizationsTable>;
-export type ProfileCapabilityLocalizationUpdate =
-  Updateable<ProfileCapabilityLocalizationsTable>;
-
-export type ProfileLanguageRow = Selectable<ProfileLanguagesTable>;
-export type NewProfileLanguageRow = Insertable<ProfileLanguagesTable>;
-export type ProfileLanguageUpdate = Updateable<ProfileLanguagesTable>;
-
-export type ProfileMobilityRow = Selectable<ProfileMobilityTable>;
-export type NewProfileMobilityRow = Insertable<ProfileMobilityTable>;
-export type ProfileMobilityUpdate = Updateable<ProfileMobilityTable>;
-
-export type ProfileTechnologyJourneyStageRow =
-  Selectable<ProfileTechnologyJourneyStagesTable>;
-export type NewProfileTechnologyJourneyStageRow =
-  Insertable<ProfileTechnologyJourneyStagesTable>;
-export type ProfileTechnologyJourneyStageUpdate =
-  Updateable<ProfileTechnologyJourneyStagesTable>;
-
-export type ProfileTechnologyJourneyStageLocalizationRow =
-  Selectable<ProfileTechnologyJourneyStageLocalizationsTable>;
-export type NewProfileTechnologyJourneyStageLocalizationRow =
-  Insertable<ProfileTechnologyJourneyStageLocalizationsTable>;
-export type ProfileTechnologyJourneyStageLocalizationUpdate =
-  Updateable<ProfileTechnologyJourneyStageLocalizationsTable>;
-
-export type ProfileExperienceRow = Selectable<ProfileExperiencesTable>;
-export type NewProfileExperienceRow = Insertable<ProfileExperiencesTable>;
-export type ProfileExperienceUpdate = Updateable<ProfileExperiencesTable>;
-
-export type ProfileSystemRow = Selectable<ProfileSystemsTable>;
-export type NewProfileSystemRow = Insertable<ProfileSystemsTable>;
-export type ProfileSystemUpdate = Updateable<ProfileSystemsTable>;
 
 export type TechnologyRow = Selectable<TechnologiesTable>;
 export type NewTechnologyRow = Insertable<TechnologiesTable>;
@@ -876,6 +788,12 @@ export interface Database {
   profiles: ProfilesTable;
   profile_localizations: ProfileLocalizationsTable;
   profile_publications: ProfilePublicationsTable;
+  profile_contacts: ProfileContactsTable;
+  profile_languages: ProfileLanguagesTable;
+  profile_mobility: ProfileMobilityTable;
+  profile_stack_groups: ProfileStackGroupsTable;
+  profile_stack_group_localizations: ProfileStackGroupLocalizationsTable;
+  profile_stack_group_technologies: ProfileStackGroupTechnologiesTable;
   work_with_us_pages: WorkWithUsPagesTable;
   work_with_us_localizations: WorkWithUsLocalizationsTable;
   work_with_us_publications: WorkWithUsPublicationsTable;
@@ -883,18 +801,6 @@ export interface Database {
   work_with_us_inquiries: WorkWithUsInquiriesTable;
   work_with_us_inquiry_settings: WorkWithUsInquirySettingsTable;
   work_with_us_inquiry_notifications: WorkWithUsInquiryNotificationsTable;
-  profile_work_principles: ProfileWorkPrinciplesTable;
-  profile_work_principle_localizations: ProfileWorkPrincipleLocalizationsTable;
-  profile_capability_groups: ProfileCapabilityGroupsTable;
-  profile_capability_group_localizations: ProfileCapabilityGroupLocalizationsTable;
-  profile_capabilities: ProfileCapabilitiesTable;
-  profile_capability_localizations: ProfileCapabilityLocalizationsTable;
-  profile_languages: ProfileLanguagesTable;
-  profile_mobility: ProfileMobilityTable;
-  profile_technology_journey_stages: ProfileTechnologyJourneyStagesTable;
-  profile_technology_journey_stage_localizations: ProfileTechnologyJourneyStageLocalizationsTable;
-  profile_experiences: ProfileExperiencesTable;
-  profile_systems: ProfileSystemsTable;
   technologies: TechnologiesTable;
   system_technologies: SystemTechnologiesTable;
   system_technology_localizations: SystemTechnologyLocalizationsTable;

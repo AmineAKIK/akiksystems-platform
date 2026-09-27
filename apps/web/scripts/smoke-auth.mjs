@@ -175,16 +175,12 @@ try {
   );
   const privateProfileHtml = await privateProfile.text();
   assert.equal(privateProfile.status, 200);
-  assert.match(privateProfileHtml, /aks-admin-profile-page/);
-  assert.match(privateProfileHtml, /aks-admin-profile-inline-editor/);
-  assert.match(privateProfileHtml, /Live page editor/);
-  assert.match(privateProfileHtml, /name="displayName"/);
-  assert.match(privateProfileHtml, /name="professionalTitle"/);
-  assert.match(privateProfileHtml, /name="introduction"/);
-  assert.match(privateProfileHtml, /Portrait non défini|Portrait défini/);
-  assert.match(privateProfileHtml, /Aucun système représentatif sélectionné/);
-  assert.match(privateProfileHtml, /name="journey-programming-title"/);
-  assert.match(privateProfileHtml, /Structure, evidence &amp; assets/);
+  assert.match(privateProfileHtml, /data-profile-admin-contract="v1"/);
+  assert.match(privateProfileHtml, /data-profile-locale="fr"/);
+  assert.match(privateProfileHtml, /Final Profile contract/);
+  assert.match(privateProfileHtml, /Publication/);
+  assert.match(privateProfileHtml, /Structured relations/);
+  assert.doesNotMatch(privateProfileHtml, /workPrinciples|technologyJourney/);
   assert.match(
     privateProfileHtml,
     /href="\/admin\/profile\?locale=fr"/,

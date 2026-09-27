@@ -110,7 +110,7 @@ export default function WritingCategoryDetailRoute() {
           </header>
 
           <section className="aks-proof-stack" aria-labelledby="category-writings">
-            <div className="aks-profile-section-heading">
+            <div className="aks-section-heading">
               <Heading id="category-writings" level={2} size="sm">
                 {category.locale === 'fr'
                   ? 'Écrits dans cette catégorie'

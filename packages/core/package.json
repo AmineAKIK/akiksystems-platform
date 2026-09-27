@@ -15,6 +15,10 @@
     "./work-with-us-content": {
       "types": "./src/work-with-us-content.ts",
       "default": "./src/work-with-us-content.ts"
+    },
+    "./profile-content": {
+      "types": "./src/profile-content.ts",
+      "default": "./src/profile-content.ts"
     }
   },
   "types": "./dist/index.d.ts",

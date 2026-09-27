@@ -108,7 +108,7 @@ export default function WritingTagDetailRoute() {
           </header>
 
           <section className="aks-proof-stack" aria-labelledby="tag-writings">
-            <div className="aks-profile-section-heading">
+            <div className="aks-section-heading">
               <Heading id="tag-writings" level={2} size="sm">
                 {tag.locale === 'fr'
                   ? 'Écrits avec ce tag'
