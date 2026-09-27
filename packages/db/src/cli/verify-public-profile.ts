@@ -645,7 +645,7 @@ try {
     await db
       .updateTable('profile_localizations')
       .set({
-        content: {},
+        content: emptyProfileContent(),
         editorial_state: 'draft',
         published_at: null,
         updated_at: new Date(),
