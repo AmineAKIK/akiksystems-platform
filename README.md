@@ -597,115 +597,39 @@ Technologies are modeled as reusable typed entities rather than strings embedded
 - Deleting a System or Technology removes only the corresponding relation rows through foreign-key cascades.
 - The model intentionally avoids comma-separated stack storage so later features can query, reuse, order, and enrich technologies independently.
 
-### Profile post-CV value-add qualification
+### Profile domain
 
-AKS-068 qualifies Profile for a visitor who already knows common CV facts and should discover meaningful new context rather than a repetition.
+Profile is one singleton editorial surface with explicit EN/FR publication snapshots and live references to canonical domains.
 
-- The automated proxy first establishes a deterministic CV-like baseline in a fresh browser context: identity, professional title, Marelli, languages, and mobility.
-- It then visits the localized Profile on desktop/mobile in EN/FR.
-- Identity may repeat for orientation, but Marelli chronology must stay outside the first view and remain collapsed inside the professional-evidence disclosure.
-- The test verifies new value beyond the baseline: immediate Sentinel proof, a concrete How I work principle linked to Sentinel, a Technical Capability, and the development/AkikSystems technological-journey stage.
-- Technical depth must add capability context rather than regress into a React/Docker-style tool list.
-- CI records structured observations with `priorCvExposure: "simulated-baseline"` and the newly discovered evidence/context.
-- This is a deterministic product proxy, not a substitute for a human study using the real CV PDF. A human post-CV study should still ask what new information or evidence the Profile added after reading the CV.
+- `profiles` owns global identity and structural references: display name, portrait Asset, source CV Asset, current System, and the Writing selected for Systemic Scale.
+- `profile_localizations` owns the locale-specific `ProfileEditableContent` JSON, editorial state, and publication timestamp. The JSON carries controlled narrative content only; fixed concepts and interaction structure stay in code.
+- `profile_publications` stores the explicit published Profile snapshot for one locale. Publishing replaces that locale snapshot; draft edits do not mutate the public page.
+- Publication requires only a display name, hero professional title, and hero introduction. Optional sections remain absent when they contain no useful content.
+- `profile_contacts` supports only `linkedin`, `github`, `email`, and `phone`, with independent visibility.
+- `profile_languages` and `profile_mobility` preserve structured global facts rather than duplicating localized prose.
+- `profile_stack_groups`, their localized titles, and ordered Technology membership define Profile's curated Stack groups. Canonical Technology identity remains owned by `technologies`.
+- Stack proof is never authored in Profile. Public proof is resolved from the current published System snapshots, where localized evidence belongs to the `System ↔ Technology` relation.
+- The selected current project is stored only as a System ID. System title, summary, technologies, URL, and public availability are resolved from the canonical System publication in the active locale.
+- Systemic Scale stores only a Writing ID. The public Writing title, slug, URL, and availability are resolved from the canonical Writing publication in the active locale.
+- There is no EN/FR fallback. A canonical reference without a publication in the active locale disappears from that locale's Profile until its source is published again.
+- Depublishing a referenced System or Writing removes it from Profile immediately; republishing it restores the reference without requiring a Profile republish.
+- Desktop and mobile consume the same editorial contract. Responsive composition belongs to the renderer rather than the data model.
+- The old work-principle, technological-journey, capability-group, representative-System, and Profile-Experience models were exploratory and are not part of the final domain.
 
-### Profile direct-entry comprehension qualification
+### Profile publication qualification
 
-AKS-067 qualifies the Profile as a first-contact destination for someone who has not seen the CV.
+`pnpm db:verify-public-profile` verifies the final boundary on a migrated database:
 
-- The automated proxy starts from a fresh browser context and loads `/en/profile` or `/fr/profil` as the first visited route.
-- It does not visit Home, the source-CV route, or any other context first.
-- Desktop and mobile scenarios verify the visitor can identify Amine, his professional position, what he builds, and the immediate Sentinel proof from the first reading.
-- The test then verifies that one intentional disclosure action reveals a concrete How I work principle and a concrete Technical Capability.
-- The recorded CI observation explicitly marks `priorCvExposure: false` and captures the resolved proof deep link.
-- This is a deterministic comprehension proxy, not a substitute for a human comprehension study. Human validation should still ask participants to describe who Amine is, what he builds, how he works, and where proof lives without prompting.
-
-### Profile progressive depth
-
-Profile keeps the first reading immediately scannable and moves deeper proof behind native, one-step disclosures.
-
-- Identity, positioning, immediate System proof, languages, and mobility remain visible on first reading.
-- Deeper content is grouped into three stable native `details` disclosures: technical depth, professional evidence, and How I work.
-- Disclosures are closed by default and open with one intentional pointer or keyboard action.
-- All deeper content remains in SSR HTML; progressive depth does not depend on JavaScript.
-- Technical depth contains the technological journey and Technical Capabilities.
-- Professional evidence contains selected relevant Experience and additional representative Systems.
-- How I work contains concise principles and their optional System examples.
-- Existing deep System links remain real routes; disclosures do not duplicate evidence.
-- EN/FR labels are localized and both collapsed and expanded states remain mobile-safe.
-
-### Profile technological journey
-
-The Profile technological journey is a fixed five-step technical progression, not a complete autobiography or a tool inventory.
-
-- The stage order is structural: programming → networks/telecom → IT support → relevant industry → development/AkikSystems.
-- Each stage has concise EN/FR title and summary copy, constrained in PostgreSQL.
-- Admin can edit the localized copy but cannot reorder or invent extra stages.
-- A stage can reuse at most one Profile-selected evidence object: an Experience for context or a System for inspectable proof.
-- Experience evidence is shown as context; System evidence links to its real localized deep route only when that locale is published.
-- Concrete technologies such as React or Docker remain outside this narrative and are handled separately from capabilities.
-- The public timeline is responsive and preserves the same five-step order in EN/FR.
-
-### Profile How I work
-
-Working principles stay deliberately short and practice-oriented, with optional links to inspectable System evidence.
-
-- Principle titles are limited to 80 characters and details to 240 characters in both server validation and PostgreSQL.
-- Internal methodology names remain excluded from public copy.
-- Each principle may reference one active System as an evidence/example relation.
-- The public Profile exposes that example only when the referenced System is published and presentation-ready in the current locale.
-- The example link reuses the System title and deep route without copying its summary into the principle.
-- Evidence association is administered separately from the bilingual principle text and is audit logged.
-- Re-editing the ordered principle text preserves evidence associations by principle position.
-
-### Profile first view
-
-The Profile first view is composed as identity plus immediate proof rather than a generic portfolio hero.
-
-- Portrait, display name, professional title, introduction, and foundational copy establish the professional position.
-- The first published representative System is promoted as immediate proof with its live localized summary and deep link.
-- That System is removed from the lower representative-System list to avoid duplicate proof in the same reading path.
-- If no representative System exists, the first view remains useful and does not invent placeholder proof.
-- The composition collapses to a single column on narrower layouts and remains readable without horizontal scrolling.
-- Job-seeker badges or generic open-to-work messaging are intentionally absent; the view communicates mastery through identity and inspectable evidence.
-- Later Profile tickets remain responsible for How I work composition, technological journey, Technical Capabilities, and progressive-depth behavior.
-
-### Profile source CV
-
-The Profile can expose one optional source CV artifact without turning the Profile into an HTML copy of the CV.
-
-- `profiles.source_cv_asset_id` points to one shared Asset and remains nullable.
-- The CV reference is distinct from the portrait reference.
-- `/admin/profile` accepts PDF only, supports replacement/removal, and records audit events.
-- Public Profile renders no CV copy; it exposes only an optional localized link.
-- The same PDF is served through `/en/profile/cv` and `/fr/profil/cv`.
-- Public delivery verifies the referenced Asset is a PDF and returns 404 when no valid CV is linked.
-- Replacing the CV updates the Profile reference before best-effort cleanup of the old storage object.
-
-### Profile languages and mobility
-
-Profile languages and mobility are structured facts rather than duplicated localized prose.
-
-- `profile_languages` stores the ordered public language codes `fr`, `en`, and `ar`.
-- PostgreSQL restricts the language vocabulary and prevents duplicate codes or positions per Profile.
-- `profile_mobility` stores independent `worldwide`, `remote`, and `relocation` flags for the singleton public Profile.
-- `/admin/profile` manages language inclusion/order and mobility flags in one controlled form.
-- The public Profile localizes labels in code for EN/FR while preserving the same underlying facts.
-- Empty language/mobility facts do not create placeholder public copy.
-
-### Profile capabilities
-
-Profile capabilities are modeled and presented separately from concrete Technologies.
-
-- `profile_capability_groups` owns ordered conceptual groupings for the public Profile.
-- `profile_capability_group_localizations` localizes group labels independently in EN/FR.
-- `profile_capabilities` owns ordered capability identity within a group.
-- `profile_capability_localizations` stores localized capability title and optional summary.
-- Capability tables have no relation to `technologies` or `system_technologies`; tools remain evidence/context rather than being treated as abilities.
-- The Profile admin rejects capability/group titles that exactly reuse an existing Technology name or slug.
-- Public Profile renders capabilities as semantic grouped abilities with explanatory copy, not as badges, tags, logos, or a technology stack.
-- The section keeps group/capability ordering from the read model and reflows from two columns to one on mobile.
-- Concrete technologies such as React or Docker remain visually and conceptually outside the Technical Capabilities section.
+- singleton and independent EN/FR localizations;
+- minimum publication readiness;
+- draft/public isolation and explicit republish behavior;
+- global structured mutations marking both locales draft without deleting existing snapshots;
+- portrait/CV/contact/language/mobility snapshot behavior;
+- live current-System and Writing resolution with no locale fallback;
+- Stack evidence sourced only from published System snapshots;
+- no System evidence draft leak through Profile;
+- System depublish/republish behavior without Profile republish;
+- strict Profile snapshot version and structure parsing.
 
 ### Experience context
 
