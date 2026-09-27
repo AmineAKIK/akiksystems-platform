@@ -115,19 +115,14 @@ export {
   ensureWorkWithUsInquirySettings,
   getWorkWithUsInquiryNotificationDelivery,
   getWorkWithUsInquirySettings,
-  listWorkWithUsInquiries,
   markWorkWithUsInquiryNotificationBlocked,
   markWorkWithUsInquiryNotificationFailed,
   markWorkWithUsInquiryNotificationQueued,
   markWorkWithUsInquiryNotificationQueueFailed,
   markWorkWithUsInquiryNotificationSending,
   markWorkWithUsInquiryNotificationSent,
-  resetWorkWithUsInquiryNotification,
-  setWorkWithUsInquiryHandled,
-  updateWorkWithUsInquiryRecipient,
 } from './work-with-us-inquiry-handling.js';
 export type {
-  WorkWithUsInquiryAdminItem,
   WorkWithUsInquiryNotificationDelivery,
   WorkWithUsInquiryNotificationState,
   WorkWithUsInquirySettings,
@@ -194,12 +189,8 @@ export type {
   PublicSystemOrigin,
   PublicSystemTechnology,
 } from './public-system.js';
-export { writeAdminAuditEvent } from './admin-audit.js';
-export type { AdminAuditEventInput, AdminAuditMetadata } from './admin-audit.js';
 export { checkDatabaseConnection, createDatabase } from './database.js';
 export type {
-  AdminAuditEventRow,
-  AdminAuditEventsTable,
   AssetLocalizationRow,
   AssetLocalizationUpdate,
   AssetLocalizationsTable,
@@ -267,7 +258,6 @@ export type {
   ExperienceRow,
   ExperiencesTable,
   ExperienceUpdate,
-  NewAdminAuditEventRow,
   NewAssetLocalizationRow,
   NewAssetRow,
   NewCredentialLocalizationRow,
