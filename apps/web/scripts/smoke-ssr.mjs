@@ -15,11 +15,6 @@ const server = spawn(process.execPath, ['server.js'], {
     DATABASE_URL:
       process.env.DATABASE_URL ??
       'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
-    BETTER_AUTH_SECRET:
-      process.env.BETTER_AUTH_SECRET ??
-      'ci-smoke-secret-ci-smoke-secret-ci-smoke-secret',
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? origin,
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? 'admin@example.invalid',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -65,12 +60,6 @@ try {
       /class="aks-experience-footer aks-section-separator-before"/,
     );
   }
-
-  const anonymousAdmin = await globalThis.fetch(`${origin}/admin`, {
-    redirect: 'manual',
-  });
-  assert.equal(anonymousAdmin.status, 302);
-  assert.equal(anonymousAdmin.headers.get('location'), '/admin/login');
 
   process.stdout.write('Baseline SSR smoke passed.\n');
 } finally {

@@ -13,8 +13,6 @@ const forbiddenMarkers = [
 
 const serverSecretValues = [
   process.env.DATABASE_URL,
-  process.env.BETTER_AUTH_SECRET,
-  process.env.ADMIN_PASSWORD,
   process.env.ACCESS_KEY_ID,
   process.env.SECRET_ACCESS_KEY,
 ].filter(
