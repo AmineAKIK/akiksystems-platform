@@ -1,4 +1,4 @@
-import { emptyProfileContent } from '@akiksystems/core';
+import { emptyProfileContent } from '@akiksystems/core/profile-content';
 import type { PublicProfile } from '@akiksystems/db';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
