@@ -21,7 +21,7 @@ const assetId = randomUUID();
 const learningArtifactId = randomUUID();
 
 const systemSnapshot = {
-  version: 1,
+  version: 2,
   systemId,
   locale: 'en',
   presentationKind: 'standard',
