@@ -1112,14 +1112,16 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 id="profile-systemic-panel"
                 role="tabpanel"
               >
-                <div className="aks-profile-systemic-copy">
-                  <span className="aks-profile-micro-label">
-                    {String(activeSystemicIndex + 1).padStart(2, '0')}
-                  </span>
-                  <h3>{activeSystemicContent.title}</h3>
-                  {hasText(activeSystemicContent.principle) ? (
-                    <p>{activeSystemicContent.principle}</p>
-                  ) : null}
+                <div className="aks-profile-systemic-panel-summary">
+                  <div className="aks-profile-systemic-copy">
+                    <span className="aks-profile-micro-label">
+                      {String(activeSystemicIndex + 1).padStart(2, '0')}
+                    </span>
+                    <h3>{activeSystemicContent.title}</h3>
+                    {hasText(activeSystemicContent.principle) ? (
+                      <p>{activeSystemicContent.principle}</p>
+                    ) : null}
+                  </div>
 
                   {hasText(activeSystemicContent.example) ? (
                     <div className="aks-profile-systemic-example">
@@ -1127,6 +1129,15 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                         {content.systemicScale.exampleLabel}
                       </span>
                       <p>{activeSystemicContent.example}</p>
+                    </div>
+                  ) : null}
+
+                  {hasText(activeSystemicContent.question) ? (
+                    <div className="aks-profile-systemic-question">
+                      <span className="aks-profile-micro-label">
+                        {content.systemicScale.questionLabel}
+                      </span>
+                      <strong>{activeSystemicContent.question}</strong>
                     </div>
                   ) : null}
                 </div>
@@ -1169,15 +1180,6 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                     })}
                   </div>
                 </div>
-
-                {hasText(activeSystemicContent.question) ? (
-                  <div className="aks-profile-systemic-question">
-                    <span className="aks-profile-micro-label">
-                      {content.systemicScale.questionLabel}
-                    </span>
-                    <strong>{activeSystemicContent.question}</strong>
-                  </div>
-                ) : null}
               </div>
             </div>
 
