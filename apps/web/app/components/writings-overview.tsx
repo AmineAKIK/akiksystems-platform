@@ -42,7 +42,7 @@ export function WritingsOverview({
             aria-labelledby="published-writings"
             data-unified-editorial-surface
           >
-            <div className="aks-profile-section-heading">
+            <div className="aks-section-heading">
               <Heading id="published-writings" level={2} size="sm">
                 {locale === 'fr' ? 'Flux éditorial' : 'Editorial feed'}
               </Heading>
