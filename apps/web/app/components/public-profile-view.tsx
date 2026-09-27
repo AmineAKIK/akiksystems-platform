@@ -4,7 +4,7 @@ import {
   profileEmblemSymbolKeys,
   profileGuidanceKeys,
   profileSystemicScaleStepKeys,
-} from '@akiksystems/core';
+} from '@akiksystems/core/profile-content';
 import type { PublicProfile } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
