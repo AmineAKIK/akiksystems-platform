@@ -83,6 +83,20 @@ function requiredLocale(form: FormData): PlatformLocale {
   return locale;
 }
 
+function actionScope(
+  intent: string,
+): 'content' | 'structure' | 'stack' | 'assets' {
+  if (intent === 'save-profile-global') return 'structure';
+  if (intent.includes('profile-stack')) return 'stack';
+  if (
+    intent.includes('profile-portrait') ||
+    intent.includes('profile-cv')
+  ) {
+    return 'assets';
+  }
+  return 'content';
+}
+
 function localizedCommand(
   intent: string,
 ): { operation: 'save' | 'publish'; locale: PlatformLocale } | null {
@@ -691,10 +705,16 @@ export async function handleProfileAdminAction(request: Request) {
         'Systemic Scale Writing',
       );
 
-      await Promise.all([
-        ensurePublishedSystem(currentSystemId, locale),
-        ensurePublishedWriting(systemicScaleWritingId, locale),
-      ]);
+      const canonicalChecks: Promise<void>[] = [];
+      if (currentSystemId !== profile.current_system_id) {
+        canonicalChecks.push(ensurePublishedSystem(currentSystemId, locale));
+      }
+      if (systemicScaleWritingId !== profile.systemic_scale_writing_id) {
+        canonicalChecks.push(
+          ensurePublishedWriting(systemicScaleWritingId, locale),
+        );
+      }
+      await Promise.all(canonicalChecks);
 
       const selectedLanguages = form
         .getAll('languages')
@@ -909,6 +929,17 @@ export async function handleProfileAdminAction(request: Request) {
 
       const moved = await moveProfileGroup(profile.id, groupId, direction);
 
+      if (moved) {
+        await writeAdminAuditEvent(appDb, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.stack_group_order_changed',
+          entityType: 'profile',
+          entityId: profile.id,
+          metadata: { groupId, direction },
+        });
+      }
+
       return {
         scope: 'stack' as const,
         ok: true,
@@ -1025,6 +1056,14 @@ export async function handleProfileAdminAction(request: Request) {
 
             if (Number(result.numDeletedRows) > 0) {
               await markProfileDraft(transaction, { profileId: profile.id });
+              await writeAdminAuditEvent(transaction, {
+                actorUserId: session.user.id,
+                actorEmail: session.user.email,
+                action: 'profile.stack_technology_removed',
+                entityType: 'profile',
+                entityId: profile.id,
+                metadata: { groupId, technologyId },
+              });
             }
 
             return Number(result.numDeletedRows) > 0;
@@ -1053,6 +1092,17 @@ export async function handleProfileAdminAction(request: Request) {
         technologyId,
         direction,
       );
+
+      if (moved) {
+        await writeAdminAuditEvent(appDb, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.stack_technology_order_changed',
+          entityType: 'profile',
+          entityId: profile.id,
+          metadata: { groupId, technologyId, direction },
+        });
+      }
 
       return {
         scope: 'stack' as const,
@@ -1201,6 +1251,14 @@ export async function handleProfileAdminAction(request: Request) {
         }
 
         await markProfileDraft(transaction, { profileId: profile.id });
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: 'profile.portrait_alt_saved',
+          entityType: 'asset',
+          entityId: portraitAssetId,
+          metadata: { profileId: profile.id, locales: ['en', 'fr'] },
+        });
       });
 
       return {
@@ -1229,6 +1287,20 @@ export async function handleProfileAdminAction(request: Request) {
           .executeTakeFirstOrThrow();
 
         await markProfileDraft(transaction, { profileId: profile.id });
+        await writeAdminAuditEvent(transaction, {
+          actorUserId: session.user.id,
+          actorEmail: session.user.email,
+          action: portrait
+            ? 'profile.portrait_removed_from_draft'
+            : 'profile.cv_removed_from_draft',
+          entityType: 'profile',
+          entityId: profile.id,
+          metadata: {
+            assetId: portrait
+              ? profile.portrait_asset_id
+              : profile.source_cv_asset_id,
+          },
+        });
       });
 
       await retireUnusedProfileAssets(profile.id);
@@ -1249,7 +1321,7 @@ export async function handleProfileAdminAction(request: Request) {
     };
   } catch (error) {
     return {
-      scope: 'content' as const,
+      scope: actionScope(intent),
       ok: false,
       message:
         error instanceof Error ? error.message : 'Profile operation failed.',
