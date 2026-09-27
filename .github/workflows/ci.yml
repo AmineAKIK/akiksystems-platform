@@ -160,6 +160,12 @@ jobs:
       - name: Smoke authentication boundary
         run: pnpm smoke:auth
 
+      - name: Smoke public Profile
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: pnpm --filter @akiksystems/web smoke:profile-public
+
       - name: Smoke responsive Home
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
