@@ -12,6 +12,7 @@ import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());
 const systemId = randomUUID();
+const technologyId = randomUUID();
 
 try {
   await db.insertInto('systems').values({
@@ -36,6 +37,34 @@ try {
       blocks: [{ type: 'paragraph', text: 'Published body.' }],
     },
   }).execute();
+
+  await db
+    .insertInto('technologies')
+    .values({
+      id: technologyId,
+      slug: 'snapshot-react',
+      name: 'React',
+    })
+    .execute();
+
+  await db
+    .insertInto('system_technologies')
+    .values({
+      system_id: systemId,
+      technology_id: technologyId,
+      position: 0,
+    })
+    .execute();
+
+  await db
+    .insertInto('system_technology_localizations')
+    .values({
+      system_id: systemId,
+      technology_id: technologyId,
+      locale: 'en',
+      evidence: 'Published React evidence.',
+    })
+    .execute();
 
   await db.insertInto('system_links').values([
     {
@@ -64,6 +93,7 @@ try {
   });
   assert.ok(published);
   assert.equal(published.title, 'Published title');
+  assert.equal(published.technologies[0]?.evidence, 'Published React evidence.');
   assert.deepEqual(
     published.links.map(({ kind }) => kind),
     ['documentation'],
@@ -74,6 +104,16 @@ try {
     title: 'Unpublished draft title',
     updated_at: new Date(),
   }).where('system_id', '=', systemId).where('locale', '=', 'en').execute();
+  await db
+    .updateTable('system_technology_localizations')
+    .set({
+      evidence: 'Unpublished draft React evidence.',
+      updated_at: new Date(),
+    })
+    .where('system_id', '=', systemId)
+    .where('technology_id', '=', technologyId)
+    .where('locale', '=', 'en')
+    .executeTakeFirstOrThrow();
   await markSystemDraft(db, { systemId, locale: 'en' });
 
   const stillPublished = await getPublishedSystem(db, {
@@ -86,6 +126,11 @@ try {
     'Published title',
     'draft edits must not mutate the public snapshot',
   );
+  assert.equal(
+    stillPublished.technologies[0]?.evidence,
+    'Published React evidence.',
+    'draft technology evidence must not leak into the public System snapshot',
+  );
 
   await publishSystemLocalization(db, { systemId, locale: 'en' });
   const republished = await getPublishedSystem(db, {
@@ -94,6 +139,11 @@ try {
   });
   assert.ok(republished);
   assert.equal(republished.title, 'Unpublished draft title');
+  assert.equal(
+    republished.technologies[0]?.evidence,
+    'Unpublished draft React evidence.',
+    'republishing must atomically publish the localized technology evidence',
+  );
 
   await unpublishSystemLocalization(db, { systemId, locale: 'en' });
   assert.equal(
@@ -107,5 +157,6 @@ try {
   process.stdout.write('System publication snapshot qualification passed.\n');
 } finally {
   await db.deleteFrom('systems').where('id', '=', systemId).execute();
+  await db.deleteFrom('technologies').where('id', '=', technologyId).execute();
   await db.destroy();
 }
