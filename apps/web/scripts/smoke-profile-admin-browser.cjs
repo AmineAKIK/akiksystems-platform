@@ -422,8 +422,12 @@ async function assertNoHorizontalOverflow(page, label) {
     await page
       .getByText('Qualified systems builder', { exact: false })
       .waitFor();
-    await page.getByText('Profile Admin System', { exact: true }).waitFor();
     await page
+      .locator('.aks-profile-current-project')
+      .getByRole('heading', { name: 'Profile Admin System' })
+      .waitFor();
+    await page
+      .locator('.aks-profile-stack')
       .getByText(
         'Published System ↔ Technology proof from the admin smoke.',
         { exact: true },
