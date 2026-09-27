@@ -79,6 +79,21 @@ export interface PublishedWriting extends PublishedWritingListItem {
   alternate: { locale: PlatformLocale; slug: string } | null;
 }
 
+export interface PublishedWritingReference {
+  id: string;
+  locale: PlatformLocale;
+  slug: string;
+  title: string;
+  href: string;
+}
+
+export function writingReferenceHref(
+  locale: PlatformLocale,
+  slug: string,
+): string {
+  return locale === 'fr' ? `/fr/ecrits/${slug}` : `/en/writings/${slug}`;
+}
+
 function requiredText(value: string | null, label: string): string {
   const normalized = value?.trim() ?? '';
   if (normalized === '') {
@@ -503,6 +518,31 @@ async function hydratePublishedWritingRows(
     tags: resolveTags(snapshot.tagIds, tagsById),
     systems: resolveSystems(snapshot.systemIds, systemsById),
   }));
+}
+
+export async function getPublishedWritingReferenceById(
+  db: Kysely<Database>,
+  input: { locale: PlatformLocale; id: string },
+): Promise<PublishedWritingReference | null> {
+  const row = await db
+    .selectFrom('writing_publications')
+    .innerJoin('writings', 'writings.id', 'writing_publications.writing_id')
+    .select(['writing_publications.snapshot'])
+    .where('writings.lifecycle', '=', 'active')
+    .where('writing_publications.writing_id', '=', input.id)
+    .where('writing_publications.locale', '=', input.locale)
+    .executeTakeFirst();
+
+  if (row === undefined) return null;
+
+  const snapshot = parseWritingPublicationSnapshot(row.snapshot);
+  return {
+    id: snapshot.writingId,
+    locale: snapshot.locale,
+    slug: snapshot.slug,
+    title: snapshot.title,
+    href: writingReferenceHref(snapshot.locale, snapshot.slug),
+  };
 }
 
 export async function listPublishedWritings(
