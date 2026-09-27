@@ -97,16 +97,16 @@ try {
   assert.equal(delivery.state, 'sent');
   assert.equal(delivery.providerMessageId, `message-${marker}`);
 
-  notification = await db
+  const sentNotification = await db
     .selectFrom('work_with_us_inquiry_notifications')
     .select(['state', 'attempt_count', 'provider_message_id', 'sent_at'])
     .where('inquiry_id', '=', inquiryId)
     .executeTakeFirstOrThrow();
 
-  assert.equal(notification.state, 'sent');
-  assert.equal(notification.attempt_count, 2);
-  assert.equal(notification.provider_message_id, `message-${marker}`);
-  assert.ok(notification.sent_at instanceof Date);
+  assert.equal(sentNotification.state, 'sent');
+  assert.equal(sentNotification.attempt_count, 2);
+  assert.equal(sentNotification.provider_message_id, `message-${marker}`);
+  assert.ok(sentNotification.sent_at instanceof Date);
 
   process.stdout.write(
     'Work with us notification qualification passed: public inquiry delivery remains durable without any administration lifecycle.\n',
