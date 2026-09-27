@@ -442,16 +442,25 @@
   color: var(--aks-home-starlight);
 }
 
-/* 320px: metadata stays centered as a group, clock becomes two clean lines. */
+/* Up to 344px: center the two-line clock independently from the language control. */
 @media (max-width: 21.5rem) {
   .aks-home-meta {
     inset-block-start: 0.875rem;
-    max-width: calc(100% - 1.5rem);
-    gap: 0.5rem;
+    width: calc(100% - 1.5rem);
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    padding-inline: 2.75rem;
   }
 
   .aks-home-clock {
-    text-align: start;
+    text-align: center;
+  }
+
+  .aks-home-language {
+    position: absolute;
+    inset-inline-end: 0;
   }
 
   .aks-home-clock time {
