@@ -98,6 +98,9 @@ jobs:
       - name: Verify database connectivity
         run: pnpm db:check
 
+      - name: Verify Profile domain
+        run: pnpm db:verify-public-profile
+
       - name: Verify System technology evidence
         run: pnpm db:verify-system-technologies
 
