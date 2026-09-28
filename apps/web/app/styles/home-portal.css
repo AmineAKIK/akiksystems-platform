@@ -980,6 +980,10 @@
 
 /* Extreme short landscapes keep every label in dedicated vertical bands. */
 @media (orientation: landscape) and (max-height: 22.5rem) {
+  .aks-home-portal {
+    inset-block-end: 4rem;
+  }
+
   .aks-home-center {
     top: 40%;
   }
