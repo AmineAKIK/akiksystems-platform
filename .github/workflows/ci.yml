@@ -177,3 +177,9 @@ jobs:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: node apps/web/scripts/smoke-responsive-browser.cjs
+
+      - name: Smoke responsive Systems
+        env:
+          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
+          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
+        run: node apps/web/scripts/smoke-systems-browser.cjs
