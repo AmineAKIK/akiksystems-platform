@@ -139,7 +139,7 @@ async function inspectViewport(browser, viewport) {
       if (viewport.width <= 768) {
         assert.ok(
           target.height >= 44,
-          viewport.width + 'px target ' + (target.label || 'unnamed') + ' must stay usable',
+          viewport.width + 'px target ' + (target.label || 'unnamed') + ' measured ' + target.height + 'px; expected at least 44px',
         );
       }
     }
