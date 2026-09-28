@@ -48,7 +48,7 @@ export function buildLocalizedPublicMeta({
   const canonicalUrl = publicCanonicalUrl(canonicalPath);
   const socialImageUrl = publicUrlForLocale(
     locale,
-    '/brand/og-akiksystems.svg',
+    '/brand/og-akiksystems.png',
   );
   const socialImageAlt =
     locale === 'fr'
@@ -70,7 +70,7 @@ export function buildLocalizedPublicMeta({
     { property: 'og:image', content: socialImageUrl },
     { property: 'og:image:width', content: '1200' },
     { property: 'og:image:height', content: '630' },
-    { property: 'og:image:type', content: 'image/svg+xml' },
+    { property: 'og:image:type', content: 'image/png' },
     { property: 'og:image:alt', content: socialImageAlt },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
