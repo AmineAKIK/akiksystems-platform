@@ -1,78 +1,22 @@
-import {
-  listPublishedCredentials,
-  listPublishedLearningArtifacts,
-  listPublishedTrainings,
-} from '@akiksystems/db';
-import { data, useLoaderData } from 'react-router';
+import { useLoaderData } from 'react-router';
 
-import { LearningOverview } from '../components/learning-overview';
-import { requireExactLocale } from '../i18n/locales';
-import { appDb } from '../lib/db.server';
-import { buildLocalizedPublicMeta, buildNoIndexMeta } from '../lib/public-seo';
+import {
+  PendingDestinationRoute,
+  pendingDestinationLoader,
+  pendingDestinationMeta,
+} from './pending-destination';
 
 import type { Route } from './+types/learning-fr';
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const locale = requireExactLocale(params.locale, 'fr');
-  const [credentials, learningArtifacts, trainings] = await Promise.all([
-    listPublishedCredentials(appDb, locale),
-    listPublishedLearningArtifacts(appDb, locale),
-    listPublishedTrainings(appDb, locale),
-  ]);
-
-  return data(
-    {
-      locale,
-      credentials: credentials.map((credential) => ({
-        ...credential,
-        publishedAt: credential.publishedAt.toISOString(),
-      })),
-      learningArtifacts: learningArtifacts.map((artifact) => ({
-        ...artifact,
-        publishedAt: artifact.publishedAt.toISOString(),
-      })),
-      trainings: trainings.map((training) => ({
-        ...training,
-        publishedAt: training.publishedAt.toISOString(),
-      })),
-      localContext: {
-        title: null,
-        alternateHref: '/en/learning',
-      },
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
-      },
-    },
-  );
+export function loader({ params }: Route.LoaderArgs) {
+  return pendingDestinationLoader(params.locale, 'fr', 'learning');
 }
 
-export function meta({ loaderData }: Route.MetaArgs) {
-  if (loaderData === undefined) {
-    return buildNoIndexMeta('Apprentissage · AkikSystems');
-  }
-
-  return buildLocalizedPublicMeta({
-    title: 'Apprentissage',
-    description: 'Contexte de formation et preuves d’apprentissage inspectables chez AkikSystems.',
-    locale: 'fr',
-    canonicalPath: '/fr/apprentissage',
-    alternate: {
-      locale: 'en',
-      path: '/en/learning',
-    },
-  });
+export function meta() {
+  return pendingDestinationMeta('fr', 'learning');
 }
 
 export default function LearningFrRoute() {
-  const { credentials, learningArtifacts, trainings } = useLoaderData<typeof loader>();
-  return (
-    <LearningOverview
-      credentials={credentials}
-      learningArtifacts={learningArtifacts}
-      locale="fr"
-      trainings={trainings}
-    />
-  );
+  const { locale, destinationId } = useLoaderData<typeof loader>();
+  return <PendingDestinationRoute destinationId={destinationId} locale={locale} />;
 }

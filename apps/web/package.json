@@ -4,49 +4,34 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "content:bootstrap-dwwm": "tsx scripts/bootstrap-dwwm.ts",
-    "content:bootstrap-sentinel-dossier": "tsx scripts/bootstrap-sentinel-dossier.ts",
-    "content:bootstrap-protocap": "tsx scripts/bootstrap-protocap.ts",
-    "content:bootstrap-oria": "tsx scripts/bootstrap-oria.ts",
-    "content:bootstrap-tugeres": "tsx scripts/bootstrap-tugeres.ts",
     "build": "react-router build",
     "check:client-secrets": "node scripts/check-client-secrets.mjs",
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
     "smoke:observability": "node scripts/smoke-observability.mjs",
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
+    "smoke:systems-public": "node scripts/smoke-systems-browser.cjs",
     "start": "node server.js",
-    "typecheck": "react-router typegen && tsc -b",
-    "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts",
-    "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts",
-    "smoke:profile-public": "node scripts/smoke-profile-public-browser.cjs",
-    "smoke:systems-public": "node scripts/smoke-systems-browser.cjs"
+    "typecheck": "react-router typegen && tsc -b"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
-    "@akiksystems/core": "workspace:*",
-    "@akiksystems/db": "workspace:*",
     "@akiksystems/ui": "workspace:*",
     "@fontsource/archivo": "^5.3.0",
     "@fontsource/archivo-black": "^5.3.0",
     "@react-router/express": "8.4.0",
     "@react-router/node": "8.4.0",
     "express": "^5.2.1",
-    "graphile-worker": "0.18.0",
     "isbot": "^5.1.36",
-    "pg": "8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router": "8.4.0",
-    "zod": "4.6.5"
+    "react-router": "8.4.0"
   },
   "devDependencies": {
     "@react-router/dev": "8.4.0",
     "@types/express": "^5.0.6",
-    "@types/pg": "8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "cross-env": "^10.0.0",
-    "tsx": "4.23.13",
     "vite": "^8.0.3"
   }
 }

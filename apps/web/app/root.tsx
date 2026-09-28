@@ -5,8 +5,6 @@ import '@fontsource/archivo-black/latin-400.css';
 import '@akiksystems/ui/styles.css';
 import './styles/app.css';
 import './styles/home-portal.css';
-import './styles/work-with-us.css';
-import './styles/profile.css';
 import './styles/legal.css';
 import './styles/systems.css';
 

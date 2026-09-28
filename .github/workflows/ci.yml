@@ -19,29 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_DB: akiksystems
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d akiksystems"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/akiksystems
-      BUCKET: ci-placeholder
-      REGION: us-east-1
-      ENDPOINT: https://example.invalid
-      ACCESS_KEY_ID: ci-placeholder
-      SECRET_ACCESS_KEY: ci-placeholder
 
     steps:
       - name: Checkout
@@ -58,9 +37,6 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-
-      - name: Install image processing runtime
-        run: sudo apt-get update && sudo apt-get install -y libvips-tools
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
@@ -95,7 +71,6 @@ jobs:
           docker run --rm -d --name akiksystems-web-ci-runtime --network host \
             -e NODE_ENV=production \
             -e PORT=4188 \
-            -e DATABASE_URL="$DATABASE_URL" \
             akiksystems-web-ci
           trap 'docker logs akiksystems-web-ci-runtime || true; docker rm -f akiksystems-web-ci-runtime >/dev/null 2>&1 || true' EXIT
           for attempt in $(seq 1 40); do
@@ -107,44 +82,14 @@ jobs:
           curl --fail --silent -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/en)" = "421"
 
-      - name: Build worker production image
-        run: docker build -f apps/worker/Dockerfile -t akiksystems-worker-ci .
-
       - name: Verify client/server boundary
         run: pnpm --filter @akiksystems/web check:client-secrets
-
-      - name: Migrate database
-        run: pnpm deploy:migrate
-
-      - name: Verify database connectivity
-        run: pnpm db:check
-
-      - name: Verify Profile domain
-        run: pnpm db:verify-public-profile
-
-      - name: Verify System technology evidence
-        run: pnpm db:verify-system-technologies
-
-      - name: Verify System publication snapshots
-        run: pnpm db:verify-system-publication-snapshots
-
-      - name: Verify Work with us System selection
-        run: pnpm db:verify-work-with-us-selected-proof
-
-      - name: Verify Work with us inquiry persistence
-        run: pnpm db:verify-work-with-us-inquiries
-
-      - name: Verify Work with us inquiry handling
-        run: pnpm db:verify-work-with-us-inquiry-handling
 
       - name: Smoke SSR
         run: pnpm smoke:web
 
       - name: Smoke observability
         run: pnpm smoke:observability
-
-      - name: Smoke worker
-        run: pnpm smoke:worker
 
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
@@ -165,12 +110,6 @@ jobs:
           npm init -y
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
-
-      - name: Smoke public Profile
-        env:
-          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
-          PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: pnpm --filter @akiksystems/web smoke:profile-public
 
       - name: Smoke responsive Home
         env:

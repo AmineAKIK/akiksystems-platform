@@ -3,7 +3,6 @@ import process from 'node:process';
 
 import { parseWebServerEnv } from '@akiksystems/config/env';
 import { createLogger, runWithObservabilityContext } from '@akiksystems/config/observability';
-import { createPostgresHealthCheck } from '@akiksystems/db/health';
 import express from 'express';
 
 const BUILD_PATH = './build/server/index.js';
@@ -11,18 +10,7 @@ const env = parseWebServerEnv(process.env);
 const DEVELOPMENT = env.NODE_ENV === 'development';
 const STAGING = process.env.RAILWAY_ENVIRONMENT_NAME === 'staging';
 const PORT = env.PORT;
-const logger = createLogger({
-  service: 'web',
-  redactValues: [env.DATABASE_URL],
-});
-const databaseHealth =
-  env.DATABASE_URL === undefined
-    ? undefined
-    : createPostgresHealthCheck(env.DATABASE_URL, {
-        onPoolError(error) {
-          logger.error('database.pool.error', error);
-        },
-      });
+const logger = createLogger({ service: 'web' });
 
 const app = express();
 
@@ -55,22 +43,14 @@ function isAllowedHostname(hostname) {
 const publicSitemapEntries = {
   en: [
     ['/en', '/fr'],
-    ['/en/profile', '/fr/profil'],
     ['/en/systems', '/fr/systems'],
-    ['/en/writings', '/fr/ecrits'],
-    ['/en/learning', '/fr/apprentissage'],
-    ['/en/work-with-us', '/fr/travailler-ensemble'],
     ['/en/privacy', '/fr/confidentialite'],
     ['/en/legal-notice', '/fr/mentions-legales'],
     ['/en/cookies', '/fr/cookies'],
   ],
   fr: [
     ['/fr', '/en'],
-    ['/fr/profil', '/en/profile'],
     ['/fr/systems', '/en/systems'],
-    ['/fr/ecrits', '/en/writings'],
-    ['/fr/apprentissage', '/en/learning'],
-    ['/fr/travailler-ensemble', '/en/work-with-us'],
     ['/fr/confidentialite', '/en/privacy'],
     ['/fr/mentions-legales', '/en/legal-notice'],
     ['/fr/cookies', '/en/cookies'],
@@ -167,24 +147,14 @@ app.get('/robots.txt', (request, response) => {
 
   response
     .type('text/plain')
-    .send(
-      'User-agent: *\n' +
-        'Allow: /\n' +
-        'Disallow: /admin\n' +
-        'Sitemap: ' +
-        origin +
-        '/sitemap.xml\n',
-    );
+    .send('User-agent: *\nAllow: /\nSitemap: ' + origin + '/sitemap.xml\n');
 });
 
 app.get('/sitemap.xml', (request, response) => {
   response.type('application/xml').send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
 });
 
-/**
- * @param {unknown} value
- * @returns {string | undefined}
- */
+/** @param {unknown} value @returns {string | undefined} */
 function normalizeRequestId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value) ? value : undefined;
 }
@@ -211,47 +181,13 @@ app.use((request, response, next) => {
   runWithObservabilityContext({ requestId, correlationId }, next);
 });
 
-app.get('/health', async (_request, response) => {
-  if (databaseHealth === undefined) {
-    logger.warn('health.database.unconfigured');
-    response.status(503).json({
-      status: 'degraded',
-      service: 'web',
-      checks: { database: { status: 'unconfigured' } },
-    });
-    return;
-  }
-
-  const database = await databaseHealth.check();
-
-  if (!database.ok) {
-    logger.error('health.database.failed', database.error, {
-      latencyMs: database.latencyMs,
-    });
-    response.status(503).json({
-      status: 'degraded',
-      service: 'web',
-      checks: {
-        database: { status: 'error', latencyMs: database.latencyMs },
-      },
-    });
-    return;
-  }
-
-  response.status(200).json({
-    status: 'ok',
-    service: 'web',
-    checks: {
-      database: { status: 'ok', latencyMs: database.latencyMs },
-    },
-  });
+app.get('/health', (_request, response) => {
+  response.status(200).json({ status: 'ok', service: 'web' });
 });
 
 if (env.NODE_ENV === 'test') {
   app.get('/__test/server-error', () => {
-    throw new Error(
-      `Synthetic server failure using ${env.DATABASE_URL ?? 'no-database-configured'}`,
-    );
+    throw new Error('Synthetic server failure');
   });
 }
 
@@ -311,21 +247,18 @@ const server = app.listen(PORT, () => {
 
 let stopping = false;
 
-/**
- * @param {NodeJS.Signals} signal
- */
+/** @param {NodeJS.Signals} signal */
 async function shutdown(signal) {
   if (stopping) return;
 
   stopping = true;
   logger.info('web.shutdown.started', { signal });
 
-  server.close(async (error) => {
+  server.close((error) => {
     if (error !== undefined) {
       logger.error('web.shutdown.error', error, { signal });
     }
 
-    await databaseHealth?.close();
     logger.info('web.shutdown.completed', { signal });
     process.exit(error === undefined ? 0 : 1);
   });

@@ -27,12 +27,7 @@ export interface LegalPageDefinition {
   content: Record<Locale, LegalPageContent>;
 }
 
-const enUpdated = '25 September 2026';
-const frUpdated = '25 septembre 2026';
-const privacyEnUpdated = '26 September 2026';
-const privacyFrUpdated = '26 septembre 2026';
-const baselineUpdatedAtIso = '2026-09-25';
-const privacyUpdatedAtIso = '2026-09-26';
+const updatedAtIso = '2026-09-28';
 
 export const legalPages: readonly LegalPageDefinition[] = [
   {
@@ -44,69 +39,45 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Data protection',
         title: 'Privacy policy',
         description:
-          'How AkikSystems handles personal data across public browsing, Work with us inquiries, and private administration.',
+          'How the code-only AkikSystems public site handles technical and personal data.',
         updatedLabel: 'Last updated',
-        updatedAt: privacyEnUpdated,
-        updatedAtIso: privacyUpdatedAtIso,
+        updatedAt: '28 September 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'controller',
             title: 'Who is responsible',
             paragraphs: [
-              'Amine AKIK, publishing under the AkikSystems name, is responsible for the processing described on this page. Privacy questions can be raised through the Work with us page.',
+              'Amine AKIK, publishing under the AkikSystems name, is responsible for the processing described on this page.',
             ],
           },
           {
             id: 'public-browsing',
-            title: 'Public browsing data',
+            title: 'Public browsing',
             paragraphs: [
-              'Public pages do not use advertising trackers, audience-measurement scripts, or third-party social widgets. The Work with us page contains the contact form described below. AkikSystems does not use public browsing or inquiry data to create marketing profiles.',
-              'The server creates request and correlation identifiers and records limited technical events such as the requested path, HTTP method, response status, and processing duration. Infrastructure providers may also process connection data, including IP addresses, to deliver and secure the service.',
+              'The public site does not use advertising trackers, audience-measurement scripts, third-party social widgets, user accounts, or a private administration.',
+              'The application creates request and correlation identifiers and records limited technical events such as the requested path, HTTP method, response status, and processing duration. Infrastructure providers may also process connection data, including IP addresses, to deliver and secure the service.',
             ],
           },
           {
-            id: 'work-with-us-inquiries',
-            title: 'Work with us inquiries',
+            id: 'no-application-database',
+            title: 'No application database',
             paragraphs: [
-              'When you submit the Work with us form, AkikSystems stores your name, email address, optional organisation, free-form message, selected locale, and the technical submission identifier used to make retries idempotent. The administration also stores operational handling and notification metadata such as status, timestamps, delivery attempts, notification recipient, provider identifier, and provider message identifier where applicable.',
-              'These data are used to receive and read the inquiry, reply or follow up, prevent abuse, and maintain operational traceability of the handling and notification path. Do not include personal data that is unnecessary for your request.',
-              'If “Listen to my message” is available, it uses browser speech synthesis as a progressive enhancement. AkikSystems does not send the message or audio to a separate speech service as part of that feature.',
+              'The current public application is code-only. Published page content is stored in the repository and deployed with the application. AkikSystems does not use an application database to store editorial content, visitor profiles, submissions, or administration sessions.',
             ],
           },
           {
-            id: 'administration',
-            title: 'Private administration data',
+            id: 'contact',
+            title: 'Contact data',
             paragraphs: [
-              'The private administration is restricted to the configured administrator. It processes the administrator email address, password-derived authentication material, session information, two-factor authentication data when enabled, rate-limit records, and an audit trail for significant editorial actions.',
-              'This processing is necessary to protect the service, control access, and maintain the integrity and traceability of published content. It is not used for advertising or commercial profiling.',
+              'The website does not currently provide a server-side contact form. If a future page introduces a mechanism that collects personal data, this policy will be updated before that collection is enabled.',
             ],
           },
           {
-            id: 'purposes',
-            title: 'Purposes and legal grounds',
-            items: [
-              'Deliver public pages and media requested by the visitor.',
-              'Receive, review, and reply to Work with us inquiries on the basis of legitimate interests in managing correspondence and, where the message concerns a possible engagement, taking steps requested before entering into a contract.',
-              'Maintain service security, diagnose failures, and prevent abuse on the basis of legitimate interests.',
-              'Authenticate and secure the private administration on the basis of legitimate interests and the operation of the service.',
-              'Meet legal obligations when applicable.',
-            ],
-          },
-          {
-            id: 'recipients',
-            title: 'Recipients and hosting',
+            id: 'hosting',
+            title: 'Hosting and recipients',
             paragraphs: [
-              'Data is limited to the publisher and technical providers needed to operate the service. The application and its operational data, including Work with us inquiries, are hosted using Railway services.',
-              'Work with us inquiries are accessible through the authenticated administration. If transactional email notifications are enabled, the name, email address, optional organisation, and message are sent to the configured email delivery provider solely to alert the administrator. The current integration supports Resend; when no provider is configured, the inquiry remains in the administration inbox and is not transmitted through that email channel.',
-              'AkikSystems does not sell personal data and does not disclose it to advertisers.',
-            ],
-          },
-          {
-            id: 'retention',
-            title: 'Retention',
-            paragraphs: [
-              'Technical logs are kept only for the period reasonably necessary for security, incident investigation, and service operation, subject to the retention applied by the infrastructure provider. Administration records are retained while the account or audit evidence remains necessary, then deleted or anonymised unless a legal obligation requires longer retention.',
-              'Work with us inquiries are retained for the time needed to manage the exchange, follow-up, abuse or security issues, and any applicable legal obligations. The application does not currently enforce an automatic time-based deletion deadline for inquiries; deletion is therefore an administrative operation. Marking an inquiry as handled changes workflow state only and does not delete the inquiry or its notification metadata.',
+              'The application is hosted using Railway infrastructure. Technical data is limited to what is required to deliver, secure, observe, and troubleshoot the public service. AkikSystems does not sell personal data and does not disclose it to advertisers.',
             ],
           },
           {
@@ -114,14 +85,6 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Your rights',
             paragraphs: [
               'Where the GDPR applies, you may request access, correction, deletion, restriction, portability, or object to processing, depending on the legal basis and circumstances. You may also lodge a complaint with the competent supervisory authority; in France, this is the CNIL.',
-              'Use the Work with us page to submit a privacy request. Enough information may be requested to verify identity before acting on a request.',
-            ],
-          },
-          {
-            id: 'changes',
-            title: 'Changes to this policy',
-            paragraphs: [
-              'This policy is updated when the service, its providers, or applicable requirements change. The date above identifies the current published version.',
             ],
           },
         ],
@@ -130,69 +93,45 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Protection des données',
         title: 'Politique de confidentialité',
         description:
-          'Comment AkikSystems traite les données personnelles lors de la navigation, des demandes Travailler ensemble et de l’administration privée.',
+          'Comment le site public AkikSystems, désormais code-only, traite les données techniques et personnelles.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: privacyFrUpdated,
-        updatedAtIso: privacyUpdatedAtIso,
+        updatedAt: '28 septembre 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'responsable',
             title: 'Responsable du traitement',
             paragraphs: [
-              'Amine AKIK, qui publie sous le nom AkikSystems, est responsable des traitements décrits sur cette page. Toute question relative à la vie privée peut être adressée depuis la page Travailler ensemble.',
+              'Amine AKIK, qui publie sous le nom AkikSystems, est responsable des traitements décrits sur cette page.',
             ],
           },
           {
             id: 'navigation-publique',
-            title: 'Données de navigation publique',
+            title: 'Navigation publique',
             paragraphs: [
-              'Les pages publiques n’utilisent ni traceur publicitaire, ni outil de mesure d’audience, ni widget social tiers. La page Travailler ensemble contient le formulaire de contact décrit ci-dessous. AkikSystems n’utilise ni les données de navigation publique ni les demandes reçues pour établir des profils marketing.',
-              'Le serveur crée des identifiants de requête et de corrélation et journalise des événements techniques limités : chemin demandé, méthode HTTP, statut de réponse et durée de traitement. Les prestataires d’infrastructure peuvent également traiter des données de connexion, notamment l’adresse IP, afin d’acheminer et de sécuriser le service.',
+              'Le site public n’utilise ni traceur publicitaire, ni outil de mesure d’audience, ni widget social tiers, ni compte utilisateur, ni administration privée.',
+              'L’application crée des identifiants de requête et de corrélation et journalise des événements techniques limités : chemin demandé, méthode HTTP, statut de réponse et durée de traitement. Les prestataires d’infrastructure peuvent également traiter des données de connexion, notamment l’adresse IP, afin d’acheminer et de sécuriser le service.',
             ],
           },
           {
-            id: 'demandes-travailler-ensemble',
-            title: 'Demandes Travailler ensemble',
+            id: 'aucune-base-applicative',
+            title: 'Aucune base de données applicative',
             paragraphs: [
-              'Lorsque vous envoyez le formulaire Travailler ensemble, AkikSystems enregistre votre nom, votre adresse électronique, votre organisation facultative, votre message libre, la langue sélectionnée et l’identifiant technique de soumission utilisé pour rendre les nouvelles tentatives idempotentes. L’administration conserve aussi des métadonnées opérationnelles de traitement et de notification : état, horodatages, tentatives de livraison, destinataire de notification, identifiant du fournisseur et identifiant du message fournisseur lorsqu’ils existent.',
-              'Ces données servent à recevoir et lire la demande, y répondre ou assurer son suivi, prévenir les abus et conserver la traçabilité opérationnelle du traitement et de la notification. N’incluez pas de données personnelles inutiles à votre demande.',
-              'Lorsque « Écouter mon message » est disponible, cette fonction utilise la synthèse vocale du navigateur comme amélioration progressive. AkikSystems n’envoie pas le message ni de contenu audio à un service vocal distinct dans le cadre de cette fonction.',
+              'L’application publique actuelle est code-only. Les contenus publiés sont stockés dans le dépôt et déployés avec l’application. AkikSystems n’utilise pas de base de données applicative pour stocker des contenus éditoriaux, des profils visiteurs, des soumissions ou des sessions d’administration.',
             ],
           },
           {
-            id: 'administration',
-            title: 'Données de l’administration privée',
+            id: 'contact',
+            title: 'Données de contact',
             paragraphs: [
-              'L’administration privée est réservée à l’administrateur configuré. Elle traite son adresse électronique, les éléments d’authentification dérivés du mot de passe, les informations de session, les données de double authentification lorsqu’elle est activée, les enregistrements de limitation de débit et une piste d’audit des actions éditoriales significatives.',
-              'Ces traitements sont nécessaires pour protéger le service, contrôler les accès et préserver l’intégrité et la traçabilité des contenus publiés. Ils ne servent ni à la publicité ni au profilage commercial.',
+              'Le site ne fournit actuellement aucun formulaire de contact traité côté serveur. Si une future page introduit un mécanisme collectant des données personnelles, la présente politique sera mise à jour avant son activation.',
             ],
           },
           {
-            id: 'finalites',
-            title: 'Finalités et bases juridiques',
-            items: [
-              'Fournir les pages et médias publics demandés par le visiteur.',
-              'Recevoir, examiner et traiter les demandes Travailler ensemble sur le fondement de l’intérêt légitime lié à la gestion des échanges et, lorsqu’une demande concerne une collaboration éventuelle, prendre les mesures demandées avant la conclusion d’un contrat.',
-              'Sécuriser le service, diagnostiquer les incidents et prévenir les abus sur le fondement de l’intérêt légitime.',
-              'Authentifier et sécuriser l’administration privée sur le fondement de l’intérêt légitime et des besoins de fonctionnement du service.',
-              'Respecter les obligations légales applicables.',
-            ],
-          },
-          {
-            id: 'destinataires',
-            title: 'Destinataires et hébergement',
+            id: 'hebergement',
+            title: 'Hébergement et destinataires',
             paragraphs: [
-              'Les données sont limitées à l’éditeur et aux prestataires techniques nécessaires au fonctionnement du service. L’application et ses données opérationnelles, y compris les demandes Travailler ensemble, sont hébergées au moyen des services Railway.',
-              'Les demandes Travailler ensemble sont accessibles dans l’administration authentifiée. Si les notifications transactionnelles par e-mail sont activées, le nom, l’adresse électronique, l’organisation facultative et le message sont transmis au fournisseur de livraison d’e-mails configuré uniquement afin d’alerter l’administrateur. L’intégration actuelle prend en charge Resend ; lorsqu’aucun fournisseur n’est configuré, la demande reste dans l’inbox d’administration et n’est pas transmise par ce canal e-mail.',
-              'AkikSystems ne vend aucune donnée personnelle et ne la communique pas à des annonceurs.',
-            ],
-          },
-          {
-            id: 'conservation',
-            title: 'Durées de conservation',
-            paragraphs: [
-              'Les journaux techniques sont conservés uniquement pendant la durée raisonnablement nécessaire à la sécurité, à l’analyse des incidents et à l’exploitation du service, sous réserve des durées appliquées par le prestataire d’infrastructure. Les données d’administration sont conservées tant que le compte ou la preuve d’audit reste nécessaire, puis supprimées ou anonymisées sauf obligation légale contraire.',
-              'Les demandes Travailler ensemble sont conservées pendant la durée nécessaire à la gestion de l’échange, à son suivi, au traitement des abus ou incidents de sécurité et aux obligations légales applicables. L’application n’applique actuellement aucune échéance automatique de suppression fondée sur le temps ; la suppression reste donc une opération d’administration. Marquer une demande comme traitée ne la supprime pas et ne supprime pas ses métadonnées de notification.',
+              'L’application est hébergée au moyen de l’infrastructure Railway. Les données techniques sont limitées à ce qui est nécessaire pour fournir, sécuriser, observer et dépanner le service public. AkikSystems ne vend aucune donnée personnelle et ne la communique pas à des annonceurs.',
             ],
           },
           {
@@ -200,14 +139,6 @@ export const legalPages: readonly LegalPageDefinition[] = [
             title: 'Vos droits',
             paragraphs: [
               'Lorsque le RGPD s’applique, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, la portabilité ou vous opposer au traitement, selon sa base juridique et les circonstances. Vous pouvez également saisir l’autorité de contrôle compétente ; en France, il s’agit de la CNIL.',
-              'Utilisez la page Travailler ensemble pour exercer un droit. Des informations suffisantes pourront être demandées afin de vérifier votre identité avant de traiter la demande.',
-            ],
-          },
-          {
-            id: 'evolutions',
-            title: 'Évolution de cette politique',
-            paragraphs: [
-              'Cette politique est mise à jour lorsque le service, ses prestataires ou les exigences applicables évoluent. La date ci-dessus identifie la version actuellement publiée.',
             ],
           },
         ],
@@ -223,16 +154,16 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Publisher information',
         title: 'Legal notice',
         description:
-          'Publisher, hosting, responsibility, and intellectual-property information for akiksystems.com.',
+          'Publisher, hosting, responsibility, and intellectual-property information for AkikSystems.',
         updatedLabel: 'Last updated',
-        updatedAt: enUpdated,
-        updatedAtIso: baselineUpdatedAtIso,
+        updatedAt: '28 September 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'publisher',
             title: 'Publisher',
             paragraphs: [
-              'This website is published by Amine AKIK under the AkikSystems name as an independent software and editorial activity. The publication director is Amine AKIK. Requests can be made through the Work with us page.',
+              'This website is published by Amine AKIK under the AkikSystems name as an independent software and editorial activity. The publication director is Amine AKIK.',
             ],
           },
           {
@@ -251,24 +182,17 @@ export const legalPages: readonly LegalPageDefinition[] = [
             ],
           },
           {
-            id: 'external-links',
-            title: 'External links',
-            paragraphs: [
-              'External links are provided for context or evidence. AkikSystems does not control third-party availability, security, or later changes and is not responsible for third-party content.',
-            ],
-          },
-          {
             id: 'responsibility',
             title: 'Responsibility',
             paragraphs: [
-              'Reasonable care is taken to keep published information accurate and the service available. Information may nevertheless become incomplete or outdated, and uninterrupted availability cannot be guaranteed. Technical and editorial material is provided for information and does not replace advice adapted to a specific situation.',
+              'Reasonable care is taken to keep published information accurate and the service available. Information may nevertheless become incomplete or outdated, and uninterrupted availability cannot be guaranteed.',
             ],
           },
           {
             id: 'law',
             title: 'Applicable law',
             paragraphs: [
-              'This website and this notice are governed by French law, subject to any mandatory rules that apply to the visitor. Any dispute should first be raised with the publisher in an attempt to reach an amicable resolution.',
+              'This website and this notice are governed by French law, subject to any mandatory rules that apply to the visitor.',
             ],
           },
         ],
@@ -277,16 +201,16 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Informations sur l’éditeur',
         title: 'Mentions légales',
         description:
-          'Informations relatives à l’éditeur, à l’hébergement, à la responsabilité et à la propriété intellectuelle de akiksystems.com.',
+          'Informations relatives à l’éditeur, à l’hébergement, à la responsabilité et à la propriété intellectuelle d’AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: frUpdated,
-        updatedAtIso: baselineUpdatedAtIso,
+        updatedAt: '28 septembre 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'editeur',
             title: 'Éditeur',
             paragraphs: [
-              'Ce site est édité par Amine AKIK sous le nom AkikSystems, dans le cadre d’une activité indépendante de création logicielle et éditoriale. Le directeur de la publication est Amine AKIK. Toute demande peut être adressée depuis la page Travailler ensemble.',
+              'Ce site est édité par Amine AKIK sous le nom AkikSystems, dans le cadre d’une activité indépendante de création logicielle et éditoriale. Le directeur de la publication est Amine AKIK.',
             ],
           },
           {
@@ -305,24 +229,17 @@ export const legalPages: readonly LegalPageDefinition[] = [
             ],
           },
           {
-            id: 'liens-externes',
-            title: 'Liens externes',
-            paragraphs: [
-              'Les liens externes sont fournis à titre de contexte ou de preuve. AkikSystems ne contrôle ni leur disponibilité, ni leur sécurité, ni leurs évolutions et n’est pas responsable des contenus tiers.',
-            ],
-          },
-          {
             id: 'responsabilite',
             title: 'Responsabilité',
             paragraphs: [
-              'Un soin raisonnable est apporté à l’exactitude des informations publiées et à la disponibilité du service. Certaines informations peuvent néanmoins devenir incomplètes ou obsolètes et une disponibilité ininterrompue ne peut être garantie. Les contenus techniques et éditoriaux sont fournis à titre informatif et ne remplacent pas un conseil adapté à une situation particulière.',
+              'Un soin raisonnable est apporté à l’exactitude des informations publiées et à la disponibilité du service. Certaines informations peuvent néanmoins devenir incomplètes ou obsolètes et une disponibilité ininterrompue ne peut être garantie.',
             ],
           },
           {
             id: 'droit',
             title: 'Droit applicable',
             paragraphs: [
-              'Le site et les présentes mentions sont soumis au droit français, sous réserve des règles impératives applicables au visiteur. Tout différend devra d’abord être porté à la connaissance de l’éditeur afin de rechercher une solution amiable.',
+              'Le site et les présentes mentions sont soumis au droit français, sous réserve des règles impératives applicables au visiteur.',
             ],
           },
         ],
@@ -337,46 +254,31 @@ export const legalPages: readonly LegalPageDefinition[] = [
       en: {
         eyebrow: 'Browser storage',
         title: 'Cookie policy',
-        description:
-          'A precise account of cookies and similar browser storage used by AkikSystems.',
+        description: 'Current cookie and browser-storage policy for the public AkikSystems site.',
         updatedLabel: 'Last updated',
-        updatedAt: enUpdated,
-        updatedAtIso: baselineUpdatedAtIso,
+        updatedAt: '28 September 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'public-pages',
             title: 'Public pages',
             paragraphs: [
-              'AkikSystems does not currently set advertising, audience-measurement, personalisation, or social-network cookies on public pages. No consent banner is shown because there are no optional cookies to accept or refuse.',
-              'The locale is expressed in the URL rather than stored in a cookie. Essential navigation features do not require persistent browser storage.',
+              'AkikSystems does not currently set advertising, audience-measurement, personalisation, social-network, authentication, or administration cookies on public pages.',
+              'The locale is expressed in the URL rather than stored in a cookie. Essential navigation does not require persistent browser storage.',
             ],
           },
           {
-            id: 'admin-cookie',
-            title: 'Strictly necessary administration cookie',
+            id: 'consent',
+            title: 'Consent',
             paragraphs: [
-              'After a successful administrator sign-in, the authentication service sets a session cookie with an AkikSystems-specific name. It is required to keep the private administration authenticated and cannot be disabled while using that area.',
-            ],
-            items: [
-              'Purpose: authentication, session continuity, and protection of the private administration.',
-              'Access: HttpOnly, so application scripts cannot read it.',
-              'Transmission: Secure in production and SameSite=Lax.',
-              'Scope: the website path; it is not an advertising or cross-site tracking cookie.',
-              'Lifetime: the server-side session is configured for a maximum of 12 hours and may end earlier after sign-out or invalidation.',
+              'No consent banner is shown because the current application does not use optional cookies or comparable tracking technologies.',
             ],
           },
           {
-            id: 'controls',
-            title: 'Your controls',
-            paragraphs: [
-              'You can inspect, block, or delete cookies in your browser settings. Blocking the administration session cookie prevents authenticated administration but does not prevent access to public content.',
-            ],
-          },
-          {
-            id: 'changes',
+            id: 'future-changes',
             title: 'Future changes',
             paragraphs: [
-              'If optional cookies or comparable tracking technologies are introduced, this page will be updated and an appropriate consent mechanism will be provided before they are activated where consent is required.',
+              'If optional cookies or comparable technologies are introduced later, this page will be updated and an appropriate consent mechanism will be provided before activation where consent is required.',
             ],
           },
         ],
@@ -385,45 +287,31 @@ export const legalPages: readonly LegalPageDefinition[] = [
         eyebrow: 'Stockage dans le navigateur',
         title: 'Politique relative aux cookies',
         description:
-          'Présentation précise des cookies et stockages similaires utilisés par AkikSystems.',
+          'Politique actuelle relative aux cookies et au stockage navigateur du site public AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: frUpdated,
-        updatedAtIso: baselineUpdatedAtIso,
+        updatedAt: '28 septembre 2026',
+        updatedAtIso,
         sections: [
           {
             id: 'pages-publiques',
             title: 'Pages publiques',
             paragraphs: [
-              'AkikSystems ne dépose actuellement aucun cookie publicitaire, de mesure d’audience, de personnalisation ou de réseau social sur les pages publiques. Aucun bandeau de consentement n’est affiché puisqu’aucun cookie facultatif n’est à accepter ou refuser.',
-              'La langue est exprimée dans l’URL et non stockée dans un cookie. Les fonctions essentielles de navigation ne nécessitent aucun stockage persistant dans le navigateur.',
+              'AkikSystems ne dépose actuellement aucun cookie publicitaire, de mesure d’audience, de personnalisation, de réseau social, d’authentification ou d’administration sur les pages publiques.',
+              'La langue est exprimée dans l’URL et non stockée dans un cookie. La navigation essentielle ne nécessite aucun stockage persistant dans le navigateur.',
             ],
           },
           {
-            id: 'cookie-administration',
-            title: 'Cookie d’administration strictement nécessaire',
+            id: 'consentement',
+            title: 'Consentement',
             paragraphs: [
-              'Après une connexion réussie de l’administrateur, le service d’authentification dépose un cookie de session portant un nom propre à AkikSystems. Il est indispensable au maintien de la session dans l’administration privée et ne peut pas être désactivé pendant son utilisation.',
-            ],
-            items: [
-              'Finalité : authentification, continuité de session et protection de l’administration privée.',
-              'Accès : HttpOnly, ce qui empêche les scripts applicatifs de le lire.',
-              'Transmission : Secure en production et SameSite=Lax.',
-              'Portée : le chemin du site ; il ne s’agit ni d’un cookie publicitaire ni d’un traceur intersites.',
-              'Durée : la session côté serveur est configurée pour une durée maximale de 12 heures et peut prendre fin plus tôt après déconnexion ou invalidation.',
-            ],
-          },
-          {
-            id: 'reglages',
-            title: 'Vos réglages',
-            paragraphs: [
-              'Vous pouvez consulter, bloquer ou supprimer les cookies depuis les réglages de votre navigateur. Le blocage du cookie de session empêche l’utilisation authentifiée de l’administration, sans empêcher l’accès aux contenus publics.',
+              'Aucun bandeau de consentement n’est affiché puisque l’application actuelle n’utilise aucun cookie facultatif ni technologie de suivi comparable.',
             ],
           },
           {
             id: 'evolutions',
             title: 'Évolutions futures',
             paragraphs: [
-              'Si des cookies facultatifs ou des technologies de suivi comparables sont ajoutés, cette page sera mise à jour et un mécanisme de consentement adapté sera présenté avant leur activation lorsque le consentement est requis.',
+              'Si des cookies facultatifs ou des technologies comparables sont ajoutés ultérieurement, cette page sera mise à jour et un mécanisme de consentement adapté sera présenté avant leur activation lorsque le consentement est requis.',
             ],
           },
         ],
