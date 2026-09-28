@@ -1595,6 +1595,11 @@
 }
 
 @media (max-width: 48rem) {
+  .aks-systems-button,
+  .aks-systems-quick-link {
+    min-height: 44px;
+  }
+
   .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.7rem;
