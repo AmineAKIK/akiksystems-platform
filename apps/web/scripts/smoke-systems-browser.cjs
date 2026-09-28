@@ -138,7 +138,7 @@ async function inspectViewport(browser, viewport) {
     for (const target of measurement.touchTargets) {
       if (viewport.width <= 768) {
         assert.ok(
-          target.height >= 36,
+          target.height >= 44,
           viewport.width + 'px target ' + (target.label || 'unnamed') + ' must stay usable',
         );
       }
