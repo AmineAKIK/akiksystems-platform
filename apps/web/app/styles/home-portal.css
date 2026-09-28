@@ -70,7 +70,7 @@
   line-height: 1.2;
   text-align: center;
   text-transform: uppercase;
-  opacity: 0.66;
+  opacity: 0.76;
 }
 
 .aks-home-clock time {
@@ -113,7 +113,7 @@
 
 .aks-home-language-current,
 .aks-home-language-separator {
-  color: rgb(170 179 193 / 38%);
+  color: rgb(170 179 193 / 72%);
 }
 
 .aks-home-language-target {
@@ -358,7 +358,7 @@
 }
 
 .aks-home-door-summary {
-  color: rgb(170 179 193 / 56%);
+  color: rgb(170 179 193 / 72%);
   font-family: var(--aks-font-sans);
   font-size: 0.625rem;
   font-weight: 500;
@@ -492,7 +492,7 @@
   align-items: center;
   gap: 1.25rem;
   padding: 0;
-  color: rgb(170 179 193 / 56%);
+  color: rgb(170 179 193 / 72%);
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.021875rem;
@@ -513,7 +513,7 @@
 .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link {
   display: inline-flex;
   align-items: center;
-  color: rgb(170 179 193 / 56%);
+  color: rgb(170 179 193 / 72%);
   font-size: 0.6875rem;
   white-space: nowrap;
   transition: color 160ms var(--aks-home-ease);
@@ -869,8 +869,8 @@
 
   .aks-home-scale {
     margin-block-start: 0.25rem;
-    font-size: 0.5rem;
-    letter-spacing: 0.22rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.18rem;
   }
 
   .aks-home-active-description {
@@ -885,11 +885,11 @@
   }
 
   .aks-home-active-description > span {
-    font-size: 0.5rem;
+    font-size: 0.6875rem;
   }
 
   .aks-home-active-description p {
-    font-size: clamp(0.625rem, 2.2dvh, 0.75rem);
+    font-size: 0.75rem;
     line-height: 1.25;
   }
 
@@ -898,7 +898,7 @@
   }
 
   .aks-home-door-summary {
-    font-size: clamp(0.5625rem, 1.9dvh, 0.625rem);
+    font-size: 0.6875rem;
   }
 
   .aks-experience-footer[data-home='true'] {
