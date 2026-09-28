@@ -86,7 +86,13 @@
   z-index: -2;
   inset: 0;
   background:
-    linear-gradient(90deg, rgb(2 5 8 / 90%) 0%, rgb(2 5 8 / 70%) 31%, rgb(2 5 8 / 20%) 64%, rgb(2 5 8 / 32%) 100%),
+    linear-gradient(
+      90deg,
+      rgb(2 5 8 / 90%) 0%,
+      rgb(2 5 8 / 70%) 31%,
+      rgb(2 5 8 / 20%) 64%,
+      rgb(2 5 8 / 32%) 100%
+    ),
     linear-gradient(180deg, rgb(1 5 9 / 5%) 56%, rgb(2 5 8 / 78%) 90%, #05070a 100%);
 }
 
@@ -341,7 +347,13 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgb(7 16 26 / 56%), transparent 27%, transparent 72%, rgb(7 16 26 / 30%)),
+    linear-gradient(
+      90deg,
+      rgb(7 16 26 / 56%),
+      transparent 27%,
+      transparent 72%,
+      rgb(7 16 26 / 30%)
+    ),
     linear-gradient(180deg, rgb(7 16 26 / 18%), transparent 68%, rgb(7 16 26 / 60%));
   content: '';
   pointer-events: none;
@@ -377,10 +389,22 @@
   letter-spacing: 0.08em;
 }
 
-.aks-systems-atlas-label--inputs { top: 39%; left: 17%; }
-.aks-systems-atlas-label--signals { top: 34%; right: 17%; }
-.aks-systems-atlas-label--context { bottom: 22%; left: 21%; }
-.aks-systems-atlas-label--output { right: 18%; bottom: 22%; }
+.aks-systems-atlas-label--inputs {
+  top: 39%;
+  left: 17%;
+}
+.aks-systems-atlas-label--signals {
+  top: 34%;
+  right: 17%;
+}
+.aks-systems-atlas-label--context {
+  bottom: 22%;
+  left: 21%;
+}
+.aks-systems-atlas-label--output {
+  right: 18%;
+  bottom: 22%;
+}
 
 .aks-systems-atlas-signal {
   position: absolute;
@@ -695,7 +719,8 @@
 
 .aks-systems-tools li {
   display: grid;
-  grid-template-columns: 2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(5rem, 0.48fr) auto 1.2rem;
+  grid-template-columns:
+    2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(5rem, 0.48fr) auto 1.2rem;
   gap: 0.9rem;
   min-height: 4.15rem;
   align-items: center;
@@ -870,7 +895,13 @@
 
   .aks-systems-hero-overlay {
     background:
-      linear-gradient(180deg, rgb(2 5 8 / 62%) 0%, rgb(2 5 8 / 24%) 45%, rgb(2 5 8 / 70%) 86%, #05070a 100%),
+      linear-gradient(
+        180deg,
+        rgb(2 5 8 / 62%) 0%,
+        rgb(2 5 8 / 24%) 45%,
+        rgb(2 5 8 / 70%) 86%,
+        #05070a 100%
+      ),
       linear-gradient(90deg, rgb(2 5 8 / 75%), transparent 74%);
   }
 
