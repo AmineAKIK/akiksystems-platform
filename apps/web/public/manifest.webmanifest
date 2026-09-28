@@ -1,0 +1,24 @@
+{
+  "name": "AkikSystems",
+  "short_name": "AkikSystems",
+  "description": "AkikSystems — Systemic Scale",
+  "start_url": "/en",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#11110f",
+  "theme_color": "#11110f",
+  "icons": [
+    {
+      "src": "/brand/AKSYS.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
