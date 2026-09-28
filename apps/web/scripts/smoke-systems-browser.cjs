@@ -51,6 +51,19 @@ async function inspectViewport(browser, viewport) {
   );
   await page.locator('.aks-systems-page').waitFor();
   await page.locator('.aks-systems-hero-media').waitFor();
+  await page.locator('.aks-systems-page').evaluate((root) => {
+    for (const image of root.querySelectorAll('img')) {
+      image.loading = 'eager';
+    }
+  });
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll('.aks-systems-page img')].every(
+        (image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0,
+      ),
+    undefined,
+    { timeout: 15_000 },
+  );
   await page.screenshot({
     fullPage: true,
     path: path.join(screenshotDirectory, `systems-${viewport.width}.png`),
