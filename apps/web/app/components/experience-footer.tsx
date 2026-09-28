@@ -8,7 +8,11 @@ import {
 } from 'react';
 import { Link, useNavigate } from 'react-router';
 
-import { legalPageHref, legalPages } from '../i18n/legal-pages';
+import {
+  legalNavigationPages,
+  legalPageHref,
+  type LegalNavigationPage,
+} from '../i18n/legal-navigation';
 import type { Locale } from '../i18n/locales';
 import { announceHomeDescription } from './home-description-events';
 import { homeLegalPresentation } from './home-portal-content';
@@ -66,17 +70,17 @@ export function ExperienceFooter({
     [],
   );
 
-  const previewFor = (page: (typeof legalPages)[number]) => ({
+  const previewFor = (page: LegalNavigationPage) => ({
     description: home
       ? homeLegalPresentation[page.id].description[locale]
-      : page.content[locale].description,
+      : page.description[locale],
     label: page.label[locale],
   });
 
   const followLegalPage = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
-    page: (typeof legalPages)[number],
+    page: LegalNavigationPage,
   ) => {
     if (
       !home ||
@@ -127,7 +131,7 @@ export function ExperienceFooter({
               locale === 'fr' ? 'Informations légales' : 'Legal information'
             }
           >
-            {legalPages.map((page) => {
+            {legalNavigationPages.map((page) => {
               const href = legalPageHref(page.id, locale);
               const preview = previewFor(page);
 
