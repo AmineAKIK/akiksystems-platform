@@ -10,7 +10,6 @@ export default defineRailway((_ctx) => {
     build:
       'pnpm --filter @akiksystems/core build && pnpm --filter @akiksystems/db build && pnpm --filter @akiksystems/web build',
     start: 'node server.js',
-    preDeploy: 'node node_modules/@akiksystems/db/dist/cli/migrate.js latest',
     replicas: {
       'europe-west4': 1,
     },
@@ -25,6 +24,7 @@ export default defineRailway((_ctx) => {
     source,
     build: 'pnpm --filter @akiksystems/worker build',
     start: 'pnpm --filter @akiksystems/worker start',
+    preDeploy: 'pnpm deploy:migrate',
     replicas: {
       'europe-west4': 1,
     },
