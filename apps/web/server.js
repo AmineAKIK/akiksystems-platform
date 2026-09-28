@@ -153,7 +153,7 @@ app.use((request, response, next) => {
 });
 
 app.use((request, response, next) => {
-  if (!isAllowedHostname(request.hostname)) {
+  if (request.path !== '/health' && !isAllowedHostname(request.hostname)) {
     response.status(421).type('text/plain').send('Misdirected Request');
     return;
   }
