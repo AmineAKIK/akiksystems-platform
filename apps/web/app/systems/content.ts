@@ -31,15 +31,16 @@ export interface SystemsPageContent {
   };
   hero: {
     eyebrow: string;
-    title: string;
+    title: [string, string];
     state: string;
-    intro: string;
+    intro: [string, string];
   };
   rail: Array<{ index: string; label: string }>;
-  atlas: {
+  sentinel: {
     eyebrow: string;
     name: string;
     updated: string;
+    mapLabel: string;
     summary: string;
     status: SystemsStatus;
     statusLabel: string;
@@ -83,9 +84,9 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     },
     hero: {
       eyebrow: 'SYSTÈMES / SYSTEMIC SCALE',
-      title: 'ATELIER AKIKSYSTEMS',
-      state: 'OUVERT',
-      intro: 'Une composition produit immersive pour entrer dans la chaîne d’opérations.',
+      title: ['LIBRES', 'PAR LA'],
+      state: 'MAÎTRISE',
+      intro: ['La machine prend la charge.', 'L’humain prend de la hauteur.'],
     },
     rail: [
       { index: '01', label: 'CONCEVOIR' },
@@ -94,22 +95,21 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       { index: '04', label: 'DÉPLOYER' },
       { index: '05', label: 'OBSERVER' },
     ],
-    atlas: {
-      eyebrow: 'POSTE DE TRAVAIL OUVERT',
-      name: 'ATLAS / OPS',
+    sentinel: {
+      eyebrow: 'SYSTÈME EN CONSTRUCTION',
+      name: 'SENTINEL',
       updated: 'Mis à jour aujourd’hui',
-      summary: 'Un espace pour transformer les décisions complexes en chaînes d’action lisibles.',
+      mapLabel:
+        'Carte interactive de Sentinel : cycle des incidents, rôles, architecture, sécurité, design et livraison',
+      summary:
+        'Suivre une anomalie de production, de la déclaration à la capitalisation, sans jamais perdre la trace des décisions.',
       status: 'building',
       statusLabel: 'EN CONSTRUCTION',
-      note: 'Architecture, priorités et signaux restent volontairement inspectables.',
-      bullets: [
-        'Clarifier la chaîne de décision',
-        'Tester les relais d’équipe',
-        'Préparer la mise en ligne',
-      ],
+      note: 'Parcourez la carte : chaque orbe, lien et pastille est inspectable.',
+      bullets: ['Signaler vite et juste', 'Résoudre et documenter', 'Capitaliser pour apprendre'],
       actions: [
-        { label: 'Prévisualiser', href: '#operation', kind: 'primary' },
-        { label: 'Inspecter', href: '#workbench', kind: 'secondary' },
+        { label: 'Voir les stations', href: '#operation', kind: 'primary' },
+        { label: 'Inspecter l’établi', href: '#workbench', kind: 'secondary' },
         { label: 'Demander un accès', href: '#perspectives', kind: 'secondary' },
       ],
     },
@@ -221,9 +221,9 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     },
     hero: {
       eyebrow: 'SYSTEMS / SYSTEMIC SCALE',
-      title: 'AKIKSYSTEMS WORKSHOP',
-      state: 'OPEN',
-      intro: 'An immersive product composition for entering the chain of operations.',
+      title: ['FREE', 'THROUGH'],
+      state: 'MASTERY',
+      intro: ['Machines take the grind.', 'People keep the growth.'],
     },
     rail: [
       { index: '01', label: 'DESIGN' },
@@ -232,18 +232,21 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       { index: '04', label: 'DEPLOY' },
       { index: '05', label: 'OBSERVE' },
     ],
-    atlas: {
-      eyebrow: 'OPEN WORKSTATION',
-      name: 'ATLAS / OPS',
+    sentinel: {
+      eyebrow: 'SYSTEM UNDER CONSTRUCTION',
+      name: 'SENTINEL',
       updated: 'Updated today',
-      summary: 'A space for turning complex decisions into readable chains of action.',
+      mapLabel:
+        'Interactive map of Sentinel: incident cycle, roles, architecture, security, design and delivery',
+      summary:
+        'Follow a production anomaly from report to shared knowledge, without ever losing the trail of decisions.',
       status: 'building',
       statusLabel: 'BUILDING',
-      note: 'Architecture, priorities and signals remain deliberately inspectable.',
-      bullets: ['Clarify the decision chain', 'Test team handoffs', 'Prepare the release'],
+      note: 'Explore the map: every orb, link and chip can be inspected. Map content is in French.',
+      bullets: ['Report fast and right', 'Resolve and document', 'Capitalise to learn'],
       actions: [
-        { label: 'Preview', href: '#operation', kind: 'primary' },
-        { label: 'Inspect', href: '#workbench', kind: 'secondary' },
+        { label: 'See the stations', href: '#operation', kind: 'primary' },
+        { label: 'Inspect the workbench', href: '#workbench', kind: 'secondary' },
         { label: 'Request access', href: '#perspectives', kind: 'secondary' },
       ],
     },

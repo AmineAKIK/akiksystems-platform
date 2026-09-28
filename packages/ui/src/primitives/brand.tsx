@@ -1,6 +1,21 @@
-import type { AnchorHTMLAttributes, ImgHTMLAttributes } from 'react';
+import type { AnchorHTMLAttributes, SVGAttributes } from 'react';
 
-export interface BrandMarkProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> {
+/** Vector groups of /brand/AKSYS.svg, drawn inline so the emblem stays crisp at any size. */
+export const brandEmblemGroups = [
+  'frame-and-serpent',
+  'eagle',
+  'leaf-left-upper',
+  'leaf-right-upper',
+  'leaf-left-middle',
+  'leaf-right-middle',
+  'leaf-right-lower',
+  'leaf-left-lower',
+  'star-center',
+  'star-left',
+  'star-right',
+] as const;
+
+export interface BrandMarkProps extends Omit<SVGAttributes<SVGSVGElement>, 'children'> {
   title?: string;
 }
 
@@ -8,17 +23,19 @@ export function BrandMark({ className, title, ...props }: BrandMarkProps) {
   const labelled = title !== undefined;
 
   return (
-    <img
-      alt={labelled ? title : ''}
+    <svg
       aria-hidden={labelled ? undefined : true}
       className={['aks-brand-mark', className].filter(Boolean).join(' ')}
-      decoding="async"
-      draggable={false}
-      height={2048}
-      src="/brand/AKSYS.svg"
-      width={2048}
+      focusable="false"
+      role={labelled ? 'img' : undefined}
+      viewBox="0 0 2048 2048"
       {...props}
-    />
+    >
+      {labelled ? <title>{title}</title> : null}
+      {brandEmblemGroups.map((group) => (
+        <use fill="currentColor" href={`/brand/AKSYS.svg#${group}`} key={group} />
+      ))}
+    </svg>
   );
 }
 

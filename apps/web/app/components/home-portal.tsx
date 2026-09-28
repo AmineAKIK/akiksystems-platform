@@ -6,6 +6,7 @@ import {
   type MouseEvent,
   type PointerEvent,
 } from 'react';
+import { brandEmblemGroups } from '@akiksystems/ui';
 import { Link, useNavigate } from 'react-router';
 
 import {
@@ -25,20 +26,6 @@ import {
 interface HomePortalProps {
   locale: Locale;
 }
-
-const emblemGroups = [
-  'frame-and-serpent',
-  'eagle',
-  'leaf-left-upper',
-  'leaf-right-upper',
-  'leaf-left-middle',
-  'leaf-right-middle',
-  'leaf-right-lower',
-  'leaf-left-lower',
-  'star-center',
-  'star-left',
-  'star-right',
-] as const;
 
 function formatParisContext(now: Date, locale: Locale) {
   const languageTag = locale === 'fr' ? 'fr-FR' : 'en-GB';
@@ -136,7 +123,7 @@ function HomeEmblem() {
       focusable="false"
       viewBox="0 0 2048 2048"
     >
-      {emblemGroups.map((group) => (
+      {brandEmblemGroups.map((group) => (
         <use fill="currentColor" href={'/brand/AKSYS.svg#' + group} key={group} />
       ))}
     </svg>

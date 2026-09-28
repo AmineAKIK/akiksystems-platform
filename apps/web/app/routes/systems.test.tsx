@@ -18,7 +18,7 @@ describe('SystemsPage code-only contract', () => {
 
       expect(html).toContain('class="aks-systems-page"');
       expect(html).toContain('data-systems-section="hero"');
-      expect(html).toContain('data-systems-section="atlas"');
+      expect(html).toContain('data-systems-section="sentinel"');
       expect(html).toContain('data-systems-section="operation"');
       expect(html).toContain('data-systems-section="manifesto"');
       expect(html).toContain('data-systems-section="workbench"');

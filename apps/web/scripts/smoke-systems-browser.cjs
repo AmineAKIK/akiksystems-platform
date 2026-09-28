@@ -96,7 +96,9 @@ async function inspectViewport(browser, viewport) {
     });
 
     const hero = document.querySelector('.aks-systems-hero')?.getBoundingClientRect();
-    const atlas = document.querySelector('.aks-systems-atlas-console')?.getBoundingClientRect();
+    const sentinel = document.querySelector('.aks-systems-sentinel-map')?.getBoundingClientRect();
+    const sentinelMounted =
+      document.querySelector('.aks-systems-sentinel-map svg [role="tab"]') !== null;
     const feature = document
       .querySelector('.aks-systems-station--feature figure')
       ?.getBoundingClientRect();
@@ -110,7 +112,8 @@ async function inspectViewport(browser, viewport) {
       naturalImages,
       touchTargets,
       heroHeight: hero?.height ?? 0,
-      atlasWidth: atlas?.width ?? 0,
+      sentinelWidth: sentinel?.width ?? 0,
+      sentinelMounted,
       featureWidth: feature?.width ?? 0,
       pageWidth: document.querySelector('.aks-systems-page')?.getBoundingClientRect().width ?? 0,
     };
@@ -123,7 +126,7 @@ async function inspectViewport(browser, viewport) {
     );
     assert.deepEqual(measurement.sectionOrder, [
       'hero',
-      'atlas',
+      'sentinel',
       'operation',
       'manifesto',
       'workbench',
@@ -131,8 +134,8 @@ async function inspectViewport(browser, viewport) {
     ]);
     assert.equal(
       measurement.naturalImages.length,
-      7,
-      'Systems must render the seven dossier media assets',
+      5,
+      'Systems must render the five dossier media assets',
     );
     for (const image of measurement.naturalImages) {
       assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');
@@ -140,7 +143,10 @@ async function inspectViewport(browser, viewport) {
     assert.ok(
       measurement.heroHeight >= (viewport.width <= 480 ? 900 : viewport.width <= 768 ? 700 : 680),
     );
-    assert.ok(measurement.atlasWidth > 0 && measurement.atlasWidth <= measurement.pageWidth + 1);
+    assert.ok(
+      measurement.sentinelWidth > 0 && measurement.sentinelWidth <= measurement.pageWidth + 1,
+    );
+    assert.ok(measurement.sentinelMounted, 'Sentinel map must mount its interactive SVG');
     assert.ok(
       measurement.featureWidth > 0 && measurement.featureWidth <= measurement.pageWidth + 1,
     );

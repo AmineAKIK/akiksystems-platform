@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router';
 
+import { SentinelMap } from './sentinel-map-view';
 import type { SystemsAction, SystemsPageContent, SystemsStation, SystemsStatus } from './content';
 
 const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
@@ -19,8 +20,7 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
   },
 };
 
-const stationMedia: Record<SystemsStation['id'], string> = {
-  cirrus: '/systems/cirrus.webp',
+const stationMedia: Record<Exclude<SystemsStation['id'], 'cirrus'>, string> = {
   mosaique: '/systems/mosaique.webp',
   'radar-cli': '/systems/radar-cli.webp',
   sonar: '/systems/sonar.webp',
@@ -71,6 +71,8 @@ function StationImage({
   station: SystemsStation;
   compact?: boolean;
 }) {
+  if (station.id === 'cirrus') return null;
+
   return (
     <img
       alt=""
@@ -81,7 +83,7 @@ function StationImage({
           : 'aks-systems-station-image'
       }
       decoding="async"
-      loading={station.id === 'cirrus' ? 'eager' : 'lazy'}
+      loading="lazy"
       src={stationMedia[station.id]}
     />
   );
@@ -118,19 +120,22 @@ export function SystemsHero({
       <img
         alt=""
         aria-hidden="true"
-        className="aks-systems-hero-media"
+        className="aks-systems-hero-media aks-systems-hero-media--topography"
         decoding="sync"
         fetchPriority="high"
-        src="/systems/hero.webp"
+        src="/systems/hero-topography.svg"
       />
       <div aria-hidden="true" className="aks-systems-hero-overlay" />
       <div className="aks-systems-wrap aks-systems-hero-copy">
         <p className="aks-systems-kicker">{content.eyebrow}</p>
         <h1 id="systems-title">
-          <span className="aks-systems-hero-title">{content.title}</span>
+          <span className="aks-systems-hero-title">{content.title[0]}</span>{' '}
+          <span className="aks-systems-hero-title">{content.title[1]}</span>{' '}
           <span className="aks-systems-hero-state">{content.state}</span>
         </h1>
-        <p className="aks-systems-hero-intro">{content.intro}</p>
+        <p className="aks-systems-hero-intro">
+          <span>{content.intro[0]}</span> <span>{content.intro[1]}</span>
+        </p>
       </div>
       <div className="aks-systems-wrap aks-systems-hero-rail">
         <OperationRail items={rail} />
@@ -139,110 +144,37 @@ export function SystemsHero({
   );
 }
 
-function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
-  const nav =
-    locale === 'fr'
-      ? ['PULSATIONS', 'DONNÉES', 'FLUX', 'ARCHIVES']
-      : ['PULSES', 'DATA', 'FLOW', 'ARCHIVES'];
-
-  return (
-    <div className="aks-systems-atlas-console">
-      <div className="aks-systems-atlas-toolbar">
-        <div className="aks-systems-atlas-brand">
-          <span aria-hidden="true" className="aks-systems-atlas-icon">
-            ✦
-          </span>
-          <strong>ATLAS / OPS</strong>
-          <span className="aks-systems-atlas-crumb">/ ATLAS / CHAÎNE / OPS</span>
-        </div>
-        <div className="aks-systems-atlas-indicators" aria-hidden="true">
-          <i />
-          <i />
-          <b>{locale === 'fr' ? 'PARAMÈTRES' : 'SETTINGS'}</b>
-        </div>
-      </div>
-      <div className="aks-systems-atlas-body">
-        <aside aria-hidden="true" className="aks-systems-atlas-nav">
-          <span>01</span>
-          {nav.map((item, index) => (
-            <small className={index === 0 ? 'is-active' : undefined} key={item}>
-              {item}
-            </small>
-          ))}
-          <i />
-          <i />
-          <i />
-        </aside>
-        <div className="aks-systems-atlas-stage">
-          <img alt="" aria-hidden="true" decoding="async" src="/systems/atlas.webp" />
-          <div aria-hidden="true" className="aks-systems-atlas-core">
-            <span>ATLAS</span>
-          </div>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--inputs"
-          >
-            INPUTS
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--signals"
-          >
-            SIGNALS
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--context"
-          >
-            CONTEXT
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--output"
-          >
-            OUTPUT
-          </span>
-          <div className="aks-systems-atlas-signal">
-            <span>{locale === 'fr' ? 'SIGNAL DE CONTRÔLE' : 'CONTROL SIGNAL'}</span>
-            <strong>{locale === 'fr' ? 'VARIATION DÉTECTÉE' : 'VARIATION DETECTED'}</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function AtlasWorkspace({
+export function SentinelWorkspace({
   locale,
   content,
 }: {
   locale: 'en' | 'fr';
-  content: SystemsPageContent['atlas'];
+  content: SystemsPageContent['sentinel'];
 }) {
   return (
     <section
-      aria-labelledby="atlas-title"
-      className="aks-systems-section aks-systems-atlas"
-      data-systems-section="atlas"
+      aria-labelledby="sentinel-title"
+      className="aks-systems-section aks-systems-sentinel"
+      data-systems-section="sentinel"
     >
       <div className="aks-systems-wrap">
-        <div className="aks-systems-atlas-heading">
+        <div className="aks-systems-sentinel-heading">
           <div>
             <p className="aks-systems-kicker">{content.eyebrow}</p>
-            <h2 id="atlas-title">{content.name}</h2>
+            <h2 id="sentinel-title">{content.name}</h2>
           </div>
-          <div className="aks-systems-atlas-meta">
+          <div className="aks-systems-sentinel-meta">
             <StatusPill locale={locale} status={content.status} label={content.statusLabel} />
             <span>{content.updated}</span>
           </div>
         </div>
-        <AtlasConsole locale={locale} />
-        <div className="aks-systems-atlas-footer">
-          <div className="aks-systems-atlas-summary">
+        <SentinelMap label={content.mapLabel} />
+        <div className="aks-systems-sentinel-footer">
+          <div className="aks-systems-sentinel-summary">
             <p>{content.summary}</p>
             <span>{content.note}</span>
           </div>
-          <ul className="aks-systems-atlas-bullets">
+          <ul className="aks-systems-sentinel-bullets">
             {content.bullets.map((item) => (
               <li key={item}>{item}</li>
             ))}
@@ -262,10 +194,10 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
   return (
     <article className="aks-systems-station aks-systems-station--feature">
       <figure>
-        <div className="aks-systems-station-media">
-          <StationImage station={station} />
-          <p className="aks-systems-media-label">ORCHESTRATION ET DÉCISION</p>
-        </div>
+        <div
+          aria-hidden="true"
+          className="aks-systems-station-media aks-systems-station-backdrop"
+        />
         <figcaption>
           <div>
             <p>{station.note}</p>
@@ -450,7 +382,7 @@ export function SystemsPage({
   return (
     <main className="aks-systems-page" data-locale={locale}>
       <SystemsHero content={content.hero} rail={content.rail} />
-      <AtlasWorkspace content={content.atlas} locale={locale} />
+      <SentinelWorkspace content={content.sentinel} locale={locale} />
       <section
         aria-labelledby="operation-title"
         className="aks-systems-section aks-systems-operation"
