@@ -997,7 +997,7 @@
 /* Extreme short landscapes keep every label in dedicated vertical bands. */
 @media (orientation: landscape) and (max-height: 22.5rem) {
   .aks-home {
-    --aks-home-preview-top: 65%;
+    --aks-home-preview-top: 66.5%;
   }
 
   .aks-home-portal {
