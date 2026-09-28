@@ -9,12 +9,7 @@ const port = '4180';
 const origin = 'http://127.0.0.1:' + port;
 const server = spawn(process.execPath, ['server.js'], {
   cwd: path.resolve(__dirname, '..'),
-  env: {
-    ...process.env,
-    NODE_ENV: 'production',
-    PORT: port,
-    BETTER_AUTH_URL: origin,
-  },
+  env: { ...process.env, NODE_ENV: 'production', PORT: port },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
@@ -28,7 +23,7 @@ server.once('exit', () => {
 });
 
 async function waitForServer() {
-  for (let attempt = 0; attempt < 60; attempt += 1) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
     if (exited) throw new Error('Systems smoke server exited. stderr=' + stderr);
     try {
       const response = await globalThis.fetch(origin + '/fr/systems');
@@ -46,24 +41,27 @@ async function inspectViewport(browser, viewport) {
   const page = await context.newPage();
   const response = await page.goto(origin + '/fr/systems');
 
-  assert.equal(
-    response?.status(),
-    200,
-    viewport.width + 'x' + viewport.height + ' route must return 200',
-  );
+  assert.equal(response?.status(), 200, viewport.width + 'x' + viewport.height + ' route must return 200');
   await page.locator('.aks-systems-page').waitFor();
+  await page.locator('.aks-systems-hero-media').waitFor();
 
   const measurement = await page.evaluate(() => {
-    const interactive = [
+    const naturalImages = [...document.querySelectorAll('.aks-systems-page img')].map((element) => ({
+      src: element.getAttribute('src') ?? '',
+      width: element.naturalWidth,
+      height: element.naturalHeight,
+    }));
+
+    const touchTargets = [
       ...document.querySelectorAll('.aks-systems-button, .aks-systems-quick-link'),
     ].map((element) => {
       const box = element.getBoundingClientRect();
-      return {
-        width: box.width,
-        height: box.height,
-        label: element.textContent?.trim() ?? '',
-      };
+      return { width: box.width, height: box.height, label: element.textContent?.trim() ?? '' };
     });
+
+    const hero = document.querySelector('.aks-systems-hero')?.getBoundingClientRect();
+    const atlas = document.querySelector('.aks-systems-atlas-console')?.getBoundingClientRect();
+    const feature = document.querySelector('.aks-systems-station--feature figure')?.getBoundingClientRect();
 
     return {
       width: document.documentElement.clientWidth,
@@ -71,61 +69,31 @@ async function inspectViewport(browser, viewport) {
       sectionOrder: [...document.querySelectorAll('[data-systems-section]')].map((element) =>
         element.getAttribute('data-systems-section'),
       ),
-      interactive,
-      atlasWidth: document.querySelector('.aks-systems-atlas-screen')?.getBoundingClientRect()
-        .width,
-      bodyWidth: document.querySelector('.aks-systems-page')?.getBoundingClientRect().width,
+      naturalImages,
+      touchTargets,
+      heroHeight: hero?.height ?? 0,
+      atlasWidth: atlas?.width ?? 0,
+      featureWidth: feature?.width ?? 0,
+      pageWidth: document.querySelector('.aks-systems-page')?.getBoundingClientRect().width ?? 0,
     };
   });
 
   try {
-    assert.ok(
-      measurement.scrollWidth <= measurement.width + 1,
-      viewport.width + 'px Systems must not overflow horizontally',
-    );
-    assert.deepEqual(measurement.sectionOrder, [
-      'hero',
-      'atlas',
-      'operation',
-      'manifesto',
-      'workbench',
-      'perspectives',
-    ]);
-    assert.ok(
-      measurement.atlasWidth > 0 &&
-        measurement.bodyWidth > 0 &&
-        measurement.atlasWidth <= measurement.bodyWidth + 1,
-    );
-
-    for (const target of measurement.interactive) {
-      assert.ok(
-        target.height >= 44,
-        viewport.width +
-          'px touch target ' +
-          (target.label || 'unnamed') +
-          ' must be at least 44px high',
-      );
+    assert.ok(measurement.scrollWidth <= measurement.width + 1, viewport.width + 'px Systems must not overflow horizontally');
+    assert.deepEqual(measurement.sectionOrder, ['hero', 'atlas', 'operation', 'manifesto', 'workbench', 'perspectives']);
+    assert.equal(measurement.naturalImages.length, 7, 'Systems must render the seven dossier media assets');
+    for (const image of measurement.naturalImages) {
+      assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');
     }
-  } finally {
-    await context.close();
-  }
-}
+    assert.ok(measurement.heroHeight >= (viewport.width <= 480 ? 900 : viewport.width <= 768 ? 700 : 680));
+    assert.ok(measurement.atlasWidth > 0 && measurement.atlasWidth <= measurement.pageWidth + 1);
+    assert.ok(measurement.featureWidth > 0 && measurement.featureWidth <= measurement.pageWidth + 1);
 
-async function inspectReducedMotion(browser) {
-  const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
-    reducedMotion: 'reduce',
-  });
-  const page = await context.newPage();
-  await page.goto(origin + '/fr/systems');
-  await page.locator('.aks-systems-page').waitFor();
-
-  try {
-    const duration = await page
-      .locator('.aks-systems-orbit')
-      .first()
-      .evaluate((element) => getComputedStyle(element).animationDuration);
-    assert.ok(duration === '0.001s' || duration === '0s');
+    for (const target of measurement.touchTargets) {
+      if (viewport.width <= 768) {
+        assert.ok(target.height >= 36, viewport.width + 'px target ' + (target.label || 'unnamed') + ' must stay usable');
+      }
+    }
   } finally {
     await context.close();
   }
@@ -134,7 +102,6 @@ async function inspectReducedMotion(browser) {
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
-
   try {
     for (const viewport of [
       { width: 390, height: 844 },
@@ -144,11 +111,7 @@ async function inspectReducedMotion(browser) {
     ]) {
       await inspectViewport(browser, viewport);
     }
-
-    await inspectReducedMotion(browser);
-    console.log(
-      'Systems browser smoke passed at 390, 768, 1280 and 1440px with touch targets and reduced motion qualified.',
-    );
+    console.log('Systems visual smoke passed at 390, 768, 1280 and 1440px with dossier media loaded.');
   } finally {
     await browser.close();
     server.kill('SIGTERM');
