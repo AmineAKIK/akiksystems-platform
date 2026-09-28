@@ -24,9 +24,9 @@ export function loader({ params, request }: Route.LoaderArgs) {
 
 interface ExperienceMatchData {
   localContext?: {
-    title: string;
+    title: string | null;
     alternateHref?: string | null;
-    shellMode?: 'reading';
+    shellMode?: 'reading' | 'immersive';
   };
 }
 
@@ -45,7 +45,7 @@ function localContext(matches: ReturnType<typeof useMatches>) {
   } satisfies {
     title: string | null;
     alternateHref?: string | null;
-    shellMode?: 'reading';
+    shellMode?: 'reading' | 'immersive';
   };
 }
 

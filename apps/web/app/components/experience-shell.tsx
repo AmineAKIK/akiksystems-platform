@@ -17,7 +17,7 @@ export interface ExperienceShellProps {
   pathname: string;
   alternateHref?: string | null;
   currentTitle?: string | null;
-  mode?: 'default' | 'reading';
+  mode?: 'default' | 'reading' | 'immersive';
   children: ReactNode;
 }
 
@@ -45,6 +45,21 @@ export function ExperienceShell({
   const languagePath = alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
   const languageHref =
     languagePath === null ? null : publicLanguageHref(alternateLocale, languagePath);
+
+  if (mode === 'immersive') {
+    return (
+      <>
+        <a className="aks-skip-link" href="#experience-outlet">
+          {dictionary.shell.skipToContent}
+        </a>
+        <div className="aks-experience-frame" data-mode="immersive">
+          <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
+            {children}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
