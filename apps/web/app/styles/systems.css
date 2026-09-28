@@ -1829,3 +1829,62 @@
     font-size: clamp(2.35rem, 11vw, 2.8rem);
   }
 }
+
+
+/* Final dossier alignment: preserve the photographic hero stacking and the exact
+ * mobile section rhythm from the supplied 390px board. */
+.aks-systems-hero-media {
+  z-index: 0;
+}
+
+.aks-systems-hero-overlay {
+  z-index: 1;
+}
+
+.aks-systems-hero-copy {
+  z-index: 2;
+}
+
+.aks-systems-hero-rail {
+  z-index: 3;
+}
+
+@media (max-width: 30rem) {
+  .aks-systems-atlas-footer .aks-systems-actions {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-columns: none;
+    gap: 0.45rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-button {
+    width: auto;
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding-inline: 0.8rem;
+  }
+
+  .aks-systems-operation {
+    padding-bottom: 13rem;
+  }
+
+  .aks-systems-manifesto {
+    min-height: 610px;
+  }
+
+  .aks-systems-manifesto-grid {
+    margin-top: 4.5rem;
+  }
+
+  .aks-systems-workbench {
+    min-height: 840px;
+  }
+
+  .aks-systems-tools li {
+    min-height: 5.75rem;
+  }
+
+  .aks-systems-perspectives {
+    min-height: 44rem;
+  }
+}
