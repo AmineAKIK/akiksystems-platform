@@ -719,8 +719,10 @@
 
 .aks-systems-tools li {
   display: grid;
-  grid-template-columns:
-    2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(5rem, 0.48fr) auto 1.2rem;
+  grid-template-columns: 2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(
+      5rem,
+      0.48fr
+    ) auto 1.2rem;
   gap: 0.9rem;
   min-height: 4.15rem;
   align-items: center;
@@ -756,9 +758,7 @@
 .aks-systems-perspectives {
   min-height: 44rem;
   padding-block: 7.6rem 3rem;
-  background:
-    radial-gradient(circle at 27% 8%, rgb(24 37 67 / 58%), transparent 32rem),
-    #05070a;
+  background: radial-gradient(circle at 27% 8%, rgb(24 37 67 / 58%), transparent 32rem), #05070a;
 }
 
 .aks-systems-perspectives-inner {
