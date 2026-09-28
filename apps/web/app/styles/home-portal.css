@@ -717,6 +717,7 @@
     --aks-home-mark-size: clamp(12.75rem, min(19vw, 31dvh), 21rem);
     --aks-home-wordmark-size: clamp(2.75rem, min(4.2vw, 6.2dvh), 4.25rem);
     --aks-home-preview-height: clamp(4rem, 7dvh, 4.75rem);
+    --aks-home-preview-top: 72%;
   }
 
   .aks-home-portal {
@@ -763,12 +764,12 @@
   }
 
   .aks-home-door[data-destination='writings'] {
-    top: 88%;
+    top: calc(var(--aks-home-preview-top) + var(--aks-home-preview-height) + 2rem);
     left: 27%;
   }
 
   .aks-home-door[data-destination='learning'] {
-    top: 88%;
+    top: calc(var(--aks-home-preview-top) + var(--aks-home-preview-height) + 2rem);
     left: 73%;
   }
 
@@ -790,7 +791,7 @@
 
   .aks-home-active-description {
     position: absolute;
-    top: 73%;
+    top: var(--aks-home-preview-top);
     left: 50%;
     margin: 0;
     transform: translateX(-50%);
