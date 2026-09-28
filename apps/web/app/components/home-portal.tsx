@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type MouseEvent,
   type PointerEvent,
 } from 'react';
@@ -241,8 +240,8 @@ function MatrixWordmark() {
           <span
             aria-hidden="true"
             className="aks-home-scale-letter"
+            data-scale-index={index}
             key={index}
-            style={{ '--aks-home-scale-index': index } as CSSProperties}
           >
             {character === ' ' ? '\u00a0' : character}
           </span>
@@ -421,8 +420,8 @@ export function HomePortal({ locale }: HomePortalProps) {
                     updatePreview('pointer', null);
                   }
                 }}
+                data-home-order={index}
                 prefetch="intent"
-                style={{ '--aks-home-order': index } as CSSProperties}
                 to={destinationHref(destination.id, locale)}
               >
                 <span className="aks-home-door-label">
