@@ -854,6 +854,7 @@
     --aks-home-mark-size: clamp(4.5rem, 24dvh, 9rem);
     --aks-home-wordmark-size: clamp(1.25rem, 6dvh, 2.5rem);
     --aks-home-preview-height: clamp(2.25rem, 11dvh, 2.875rem);
+    --aks-home-preview-top: 68%;
   }
 
   .aks-home-portal {
@@ -901,12 +902,12 @@
   }
 
   .aks-home-door[data-destination='writings'] {
-    top: 90%;
+    top: calc(var(--aks-home-preview-top) + var(--aks-home-preview-height) + 2rem);
     left: 28%;
   }
 
   .aks-home-door[data-destination='learning'] {
-    top: 90%;
+    top: calc(var(--aks-home-preview-top) + var(--aks-home-preview-height) + 2rem);
     left: 72%;
   }
 
@@ -930,7 +931,7 @@
 
   .aks-home-active-description {
     position: absolute;
-    top: 68%;
+    top: var(--aks-home-preview-top);
     left: 50%;
     width: min(60%, 28rem);
     height: var(--aks-home-preview-height);
@@ -986,6 +987,10 @@
 
 /* Extreme short landscapes keep every label in dedicated vertical bands. */
 @media (orientation: landscape) and (max-height: 22.5rem) {
+  .aks-home {
+    --aks-home-preview-top: 65%;
+  }
+
   .aks-home-portal {
     inset-block-end: 4rem;
   }
@@ -994,18 +999,9 @@
     top: 37%;
   }
 
-  .aks-home-active-description {
-    top: 65%;
-  }
-
   .aks-home-door[data-destination='profile'],
   .aks-home-door[data-destination='systems'] {
     top: 43%;
-  }
-
-  .aks-home-door[data-destination='writings'],
-  .aks-home-door[data-destination='learning'] {
-    top: 96%;
   }
 
   .aks-experience-footer[data-home='true'] {
