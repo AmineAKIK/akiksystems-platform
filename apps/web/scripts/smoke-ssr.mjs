@@ -81,14 +81,14 @@ try {
     const nonceMatch = csp.match(/'nonce-([^']+)'/);
     assert.ok(nonceMatch, `/${locale} CSP must include a per-response nonce.`);
     const nonce = nonceMatch[1];
-    const inlineScripts = [...html.matchAll(/<script\\b([^>]*)>/g)]
+    const inlineScripts = [...html.matchAll(/<script\b([^>]*)>/g)]
       .map((match) => match[1])
-      .filter((attributes) => !/\\bsrc=/.test(attributes));
+      .filter((attributes) => !/\bsrc=/.test(attributes));
     assert.ok(inlineScripts.length > 0, `/${locale} must render framework inline scripts.`);
     for (const attributes of inlineScripts) {
       assert.match(
         attributes,
-        new RegExp('\\\\bnonce="' + nonce + '"'),
+        new RegExp('\\\bnonce="' + nonce + '"'),
         `/${locale} inline scripts must carry the CSP nonce.`,
       );
     }
