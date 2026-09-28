@@ -13,15 +13,15 @@ export interface SystemsStation {
   name: string;
   function: string;
   status: SystemsStatus;
+  statusLabel: string;
   note: string;
-  visual: 'flow' | 'mosaic' | 'radar' | 'sonar' | 'detour';
 }
 
 export interface SystemsTool {
   name: string;
   function: string;
   environment: string;
-  status: SystemsStatus;
+  action: string;
 }
 
 export interface SystemsPageContent {
@@ -39,9 +39,12 @@ export interface SystemsPageContent {
   atlas: {
     eyebrow: string;
     name: string;
+    updated: string;
     summary: string;
     status: SystemsStatus;
+    statusLabel: string;
     note: string;
+    bullets: string[];
     actions: SystemsAction[];
   };
   operation: {
@@ -54,6 +57,7 @@ export interface SystemsPageContent {
     eyebrow: string;
     lines: [string, string, string];
     body: string;
+    signature: string;
   };
   workbench: {
     eyebrow: string;
@@ -70,22 +74,6 @@ export interface SystemsPageContent {
   };
 }
 
-const shared = {
-  stations: [
-    { id: 'cirrus', name: 'CIRRUS', status: 'deployed', visual: 'flow' },
-    { id: 'mosaique', name: 'MOSAÏQUE', status: 'building', visual: 'mosaic' },
-    { id: 'radar-cli', name: 'RADAR CLI', status: 'experimental', visual: 'radar' },
-    { id: 'sonar', name: 'SONAR', status: 'building', visual: 'sonar' },
-    { id: 'detour', name: 'DÉTOUR', status: 'experimental', visual: 'detour' },
-  ] as const,
-  tools: [
-    { name: 'TRACE', status: 'deployed' },
-    { name: 'RELAIS', status: 'private' },
-    { name: 'BALISE', status: 'experimental' },
-    { name: 'SILLON', status: 'building' },
-  ] as const,
-};
-
 export const systemsPageContent: Record<Locale, SystemsPageContent> = {
   fr: {
     meta: {
@@ -101,76 +89,113 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     },
     rail: [
       { index: '01', label: 'CONCEVOIR' },
-      { index: '02', label: 'OBSERVER' },
+      { index: '02', label: 'ASSEMBLER' },
       { index: '03', label: 'TESTER' },
-      { index: '04', label: 'AFFINER' },
-      { index: '05', label: 'PARTAGER' },
+      { index: '04', label: 'DÉPLOYER' },
+      { index: '05', label: 'OBSERVER' },
     ],
     atlas: {
-      eyebrow: 'POSTE DE TRAVAIL / 001',
+      eyebrow: 'POSTE DE TRAVAIL OUVERT',
       name: 'ATLAS / OPS',
+      updated: 'Mis à jour aujourd’hui',
       summary: 'Un espace pour transformer les décisions complexes en chaînes d’action lisibles.',
       status: 'building',
+      statusLabel: 'EN CONSTRUCTION',
       note: 'Architecture, priorités et signaux restent volontairement inspectables.',
+      bullets: [
+        'Clarifier la chaîne de décision',
+        'Tester les relais d’équipe',
+        'Préparer la mise en ligne',
+      ],
       actions: [
         { label: 'Prévisualiser', href: '#operation', kind: 'primary' },
         { label: 'Inspecter', href: '#workbench', kind: 'secondary' },
-        { label: 'Notes d’atelier', href: '#perspectives', kind: 'secondary' },
+        { label: 'Demander un accès', href: '#perspectives', kind: 'secondary' },
       ],
     },
     operation: {
       eyebrow: 'STATIONS OPÉRATIONNELLES',
       title: 'EN OPÉRATION',
-      intro:
-        'Cinq surfaces, un même atelier : observer les flux, comparer les signaux et ajuster sans masquer les décisions.',
+      intro: 'Des outils vivants, au travail dans leur environnement réel.',
     },
-    stations: shared.stations.map((station) => {
-      const copy = {
-        cirrus: {
-          function:
-            'Orchestrer des flux énergétiques et rendre les décisions opératoires visibles.',
-          note: 'Flux, dépendances et bascules dans une même station.',
-        },
-        mosaique: {
-          function: 'Assembler des signaux dispersés en une vue exploitable.',
-          note: 'Une surface dense pour croiser plusieurs lectures sans perdre le contexte.',
-        },
-        'radar-cli': {
-          function: 'Explorer relations, alertes et bascules depuis une interface compacte.',
-          note: 'Le détail reste accessible sans transformer la station en tableau de bord décoratif.',
-        },
-        sonar: {
-          function: 'Écouter les pulsations d’un système avant qu’il ne dévie.',
-          note: 'Lecture rapide, signal court, sortie immédiate.',
-        },
-        detour: {
-          function: 'Produire une alternative avant le chemin évident.',
-          note: 'Deux chemins sont comparés avant de retenir une trajectoire.',
-        },
-      }[station.id];
-      return { ...station, ...copy };
-    }),
+    stations: [
+      {
+        id: 'cirrus',
+        name: 'CIRRUS',
+        function: 'Lire les transformations lentes avant qu’elles ne deviennent visibles.',
+        status: 'deployed',
+        statusLabel: 'FLUX ACTIF',
+        note: 'Orchestration et circulation des décisions.',
+      },
+      {
+        id: 'mosaique',
+        name: 'MOSAÏQUE',
+        function: 'Assembler des points de vue sans les aplatir.',
+        status: 'building',
+        statusLabel: 'OUVERT',
+        note: 'Composition collective.',
+      },
+      {
+        id: 'radar-cli',
+        name: 'RADAR CLI',
+        function: 'Détecter les signaux faibles depuis le terminal.',
+        status: 'deployed',
+        statusLabel: 'EN LIGNE',
+        note: 'Outil de détection.',
+      },
+      {
+        id: 'sonar',
+        name: 'SONAR',
+        function: 'Écouter la profondeur d’une situation avant d’agir.',
+        status: 'deployed',
+        statusLabel: 'EN OPÉRATION',
+        note: 'Lecture profonde.',
+      },
+      {
+        id: 'detour',
+        name: 'DÉTOUR',
+        function: 'Produire une autre route quand le chemin se ferme.',
+        status: 'building',
+        statusLabel: 'SUR INVITATION',
+        note: 'Trajectoires alternatives.',
+      },
+    ],
     manifesto: {
-      eyebrow: 'MODE DE TRAVAIL',
+      eyebrow: 'NOTRE MOUVEMENT',
       lines: ['Construire,', 'observer,', 'ajuster.'],
       body: 'Tous nos systèmes partagent le même geste : faire, regarder ce que le réel répond, puis remettre l’ouvrage en mouvement.',
+      signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
     },
     workbench: {
       eyebrow: 'OUTILS / WORKBENCH',
       title: 'ÉTABLI',
-      intro: 'Quatre outils compacts pour documenter, relayer, signaler et reprendre le travail.',
-      tools: shared.tools.map((tool) => {
-        const copy = {
-          TRACE: { function: 'Capturer la décision', environment: 'atelier' },
-          RELAIS: { function: 'Passer le relais proprement', environment: 'équipe' },
-          BALISE: { function: 'Voir ce qui mérite attention', environment: 'terminal' },
-          SILLON: {
-            function: 'Reprendre une piste sans perdre le contexte',
-            environment: 'local',
-          },
-        }[tool.name];
-        return { ...tool, ...copy };
-      }),
+      intro: 'Outils, scripts et petites pièces pour accélérer le travail quotidien.',
+      tools: [
+        {
+          name: 'TRACE',
+          function: 'Consigner les décisions',
+          environment: 'NAVIGATEUR',
+          action: 'OUVRIR',
+        },
+        {
+          name: 'RELAIS',
+          function: 'Passer le témoin proprement',
+          environment: 'SLACK',
+          action: 'INSTALLER',
+        },
+        {
+          name: 'BALISE',
+          function: 'Vérifier une mise en ligne',
+          environment: 'TERMINAL',
+          action: 'COPIER',
+        },
+        {
+          name: 'SILLON',
+          function: 'Rejouer un parcours',
+          environment: 'SCRIPT',
+          action: 'CONSULTER',
+        },
+      ],
     },
     perspectives: {
       eyebrow: 'PERSPECTIVES',
@@ -192,85 +217,104 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     meta: {
       title: 'Systems',
       description:
-        'AkikSystems workshop: software systems, tools, and experiments presented as an inspectable chain of operations.',
+        'The AkikSystems workshop: systems, tools and software experiments presented as an inspectable chain of operations.',
     },
     hero: {
       eyebrow: 'SYSTEMS / SYSTEMIC SCALE',
       title: 'AKIKSYSTEMS WORKSHOP',
       state: 'OPEN',
-      intro: 'An immersive product composition for entering the operating chain.',
+      intro: 'An immersive product composition for entering the chain of operations.',
     },
     rail: [
       { index: '01', label: 'DESIGN' },
-      { index: '02', label: 'OBSERVE' },
+      { index: '02', label: 'ASSEMBLE' },
       { index: '03', label: 'TEST' },
-      { index: '04', label: 'REFINE' },
-      { index: '05', label: 'SHARE' },
+      { index: '04', label: 'DEPLOY' },
+      { index: '05', label: 'OBSERVE' },
     ],
     atlas: {
-      eyebrow: 'WORKSTATION / 001',
+      eyebrow: 'OPEN WORKSTATION',
       name: 'ATLAS / OPS',
+      updated: 'Updated today',
       summary: 'A space for turning complex decisions into readable chains of action.',
       status: 'building',
-      note: 'Architecture, priorities, and signals remain deliberately inspectable.',
+      statusLabel: 'BUILDING',
+      note: 'Architecture, priorities and signals remain deliberately inspectable.',
+      bullets: ['Clarify the decision chain', 'Test team handoffs', 'Prepare the release'],
       actions: [
         { label: 'Preview', href: '#operation', kind: 'primary' },
         { label: 'Inspect', href: '#workbench', kind: 'secondary' },
-        { label: 'Workshop notes', href: '#perspectives', kind: 'secondary' },
+        { label: 'Request access', href: '#perspectives', kind: 'secondary' },
       ],
     },
     operation: {
       eyebrow: 'OPERATIONAL STATIONS',
       title: 'IN OPERATION',
-      intro:
-        'Five surfaces, one workshop: observe flows, compare signals, and adjust without hiding decisions.',
+      intro: 'Living tools, at work in their real environment.',
     },
-    stations: shared.stations.map((station) => {
-      const copy = {
-        cirrus: {
-          function: 'Orchestrate energy flows and make operational decisions visible.',
-          note: 'Flows, dependencies, and switches in one station.',
-        },
-        mosaique: {
-          function: 'Assemble dispersed signals into an actionable view.',
-          note: 'A dense surface for crossing multiple readings without losing context.',
-        },
-        'radar-cli': {
-          function: 'Explore relations, alerts, and switches through a compact interface.',
-          note: 'Detail remains accessible without turning the station into a decorative dashboard.',
-        },
-        sonar: {
-          function: 'Listen to a system’s pulse before it drifts.',
-          note: 'Fast reading, short signal, immediate exit.',
-        },
-        detour: {
-          function: 'Produce an alternative before the obvious path.',
-          note: 'Two paths are compared before a trajectory is retained.',
-        },
-      }[station.id];
-      return { ...station, ...copy };
-    }),
+    stations: [
+      {
+        id: 'cirrus',
+        name: 'CIRRUS',
+        function: 'Read slow transformations before they become visible.',
+        status: 'deployed',
+        statusLabel: 'ACTIVE FLOW',
+        note: 'Decision orchestration and circulation.',
+      },
+      {
+        id: 'mosaique',
+        name: 'MOSAÏQUE',
+        function: 'Assemble viewpoints without flattening them.',
+        status: 'building',
+        statusLabel: 'OPEN',
+        note: 'Collective composition.',
+      },
+      {
+        id: 'radar-cli',
+        name: 'RADAR CLI',
+        function: 'Detect weak signals from the terminal.',
+        status: 'deployed',
+        statusLabel: 'ONLINE',
+        note: 'Detection tool.',
+      },
+      {
+        id: 'sonar',
+        name: 'SONAR',
+        function: 'Listen to the depth of a situation before acting.',
+        status: 'deployed',
+        statusLabel: 'IN OPERATION',
+        note: 'Deep reading.',
+      },
+      {
+        id: 'detour',
+        name: 'DÉTOUR',
+        function: 'Produce another route when the path closes.',
+        status: 'building',
+        statusLabel: 'BY INVITATION',
+        note: 'Alternative trajectories.',
+      },
+    ],
     manifesto: {
-      eyebrow: 'WORKING MODE',
+      eyebrow: 'OUR MOVEMENT',
       lines: ['Build,', 'observe,', 'adjust.'],
       body: 'Every system shares the same gesture: make something, watch what reality returns, then put the work back in motion.',
+      signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
     },
     workbench: {
       eyebrow: 'TOOLS / WORKBENCH',
       title: 'WORKBENCH',
-      intro: 'Four compact tools to document, relay, signal, and resume work.',
-      tools: shared.tools.map((tool) => {
-        const copy = {
-          TRACE: { function: 'Capture the decision', environment: 'workshop' },
-          RELAIS: { function: 'Hand work over cleanly', environment: 'team' },
-          BALISE: { function: 'See what deserves attention', environment: 'terminal' },
-          SILLON: {
-            function: 'Resume a path without losing context',
-            environment: 'local',
-          },
-        }[tool.name];
-        return { ...tool, ...copy };
-      }),
+      intro: 'Tools, scripts and small pieces that speed up everyday work.',
+      tools: [
+        { name: 'TRACE', function: 'Record decisions', environment: 'BROWSER', action: 'OPEN' },
+        {
+          name: 'RELAIS',
+          function: 'Hand work over cleanly',
+          environment: 'SLACK',
+          action: 'INSTALL',
+        },
+        { name: 'BALISE', function: 'Verify a release', environment: 'TERMINAL', action: 'COPY' },
+        { name: 'SILLON', function: 'Replay a path', environment: 'SCRIPT', action: 'VIEW' },
+      ],
     },
     perspectives: {
       eyebrow: 'PERSPECTIVES',

@@ -27,17 +27,25 @@ const stationMedia: Record<SystemsStation['id'], string> = {
   detour: '/systems/detour.webp',
 };
 
-function StatusPill({ locale, status }: { locale: 'en' | 'fr'; status: SystemsStatus }) {
+function StatusPill({
+  locale,
+  status,
+  label,
+}: {
+  locale: 'en' | 'fr';
+  status: SystemsStatus;
+  label?: string;
+}) {
   return (
     <span className="aks-systems-status" data-status={status}>
       <span aria-hidden="true" className="aks-systems-status-dot" />
-      {statusLabels[locale][status]}
+      {label ?? statusLabels[locale][status]}
     </span>
   );
 }
 
 function ActionLink({ action }: { action: SystemsAction }) {
-  const className = `aks-systems-button aks-systems-button--${action.kind}`;
+  const className = \`aks-systems-button aks-systems-button--\${action.kind}\`;
 
   if (action.href.startsWith('/')) {
     return (
@@ -134,8 +142,8 @@ export function SystemsHero({
 function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
   const nav =
     locale === 'fr'
-      ? ['VUE', 'FLUX', 'SIGNAUX', 'SORTIES']
-      : ['VIEW', 'FLOW', 'SIGNALS', 'OUTPUTS'];
+      ? ['PULSATIONS', 'DONNÉES', 'FLUX', 'ARCHIVES']
+      : ['PULSES', 'DATA', 'FLOW', 'ARCHIVES'];
 
   return (
     <div className="aks-systems-atlas-console">
@@ -145,14 +153,21 @@ function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
             ✦
           </span>
           <strong>ATLAS / OPS</strong>
+          <span className="aks-systems-atlas-crumb">/ ATLAS / CHAÎNE / OPS</span>
         </div>
-        <span className="aks-systems-atlas-live">LIVE</span>
+        <div className="aks-systems-atlas-indicators" aria-hidden="true">
+          <i />
+          <i />
+          <b>{locale === 'fr' ? 'PARAMÈTRES' : 'SETTINGS'}</b>
+        </div>
       </div>
       <div className="aks-systems-atlas-body">
         <aside aria-hidden="true" className="aks-systems-atlas-nav">
-          <span className="is-active">01</span>
-          {nav.map((item) => (
-            <small key={item}>{item}</small>
+          <span>01</span>
+          {nav.map((item, index) => (
+            <small className={index === 0 ? 'is-active' : undefined} key={item}>
+              {item}
+            </small>
           ))}
           <i />
           <i />
@@ -160,36 +175,9 @@ function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
         </aside>
         <div className="aks-systems-atlas-stage">
           <img alt="" aria-hidden="true" decoding="async" src="/systems/atlas.webp" />
-          <div aria-hidden="true" className="aks-systems-atlas-core">
-            <span>ATLAS</span>
-          </div>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--inputs"
-          >
-            INPUTS
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--signals"
-          >
-            SIGNALS
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--context"
-          >
-            CONTEXT
-          </span>
-          <span
-            aria-hidden="true"
-            className="aks-systems-atlas-label aks-systems-atlas-label--output"
-          >
-            OUTPUT
-          </span>
           <div className="aks-systems-atlas-signal">
-            <span>{locale === 'fr' ? 'signal critique' : 'critical signal'}</span>
-            <strong>{locale === 'fr' ? 'variation détectée' : 'variation detected'}</strong>
+            <span>{locale === 'fr' ? 'SIGNAL DE CONTRÔLE' : 'CONTROL SIGNAL'}</span>
+            <strong>{locale === 'fr' ? 'VARIATION DÉTECTÉE' : 'VARIATION DETECTED'}</strong>
           </div>
         </div>
       </div>
@@ -216,14 +204,22 @@ export function AtlasWorkspace({
             <p className="aks-systems-kicker">{content.eyebrow}</p>
             <h2 id="atlas-title">{content.name}</h2>
           </div>
-          <StatusPill locale={locale} status={content.status} />
+          <div className="aks-systems-atlas-meta">
+            <StatusPill locale={locale} status={content.status} label={content.statusLabel} />
+            <span>{content.updated}</span>
+          </div>
         </div>
         <AtlasConsole locale={locale} />
         <div className="aks-systems-atlas-footer">
-          <div>
+          <div className="aks-systems-atlas-summary">
             <p>{content.summary}</p>
             <span>{content.note}</span>
           </div>
+          <ul className="aks-systems-atlas-bullets">
+            {content.bullets.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
           <div className="aks-systems-actions">
             {content.actions.map((action) => (
               <ActionLink action={action} key={action.label} />
@@ -241,13 +237,14 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
       <figure>
         <div className="aks-systems-station-media">
           <StationImage station={station} />
+          <p className="aks-systems-media-label">ORCHESTRATION ET DÉCISION</p>
         </div>
         <figcaption>
           <div>
             <p>{station.note}</p>
             <h3>{station.name}</h3>
           </div>
-          <StatusPill locale={locale} status={station.status} />
+          <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
         </figcaption>
       </figure>
       <p className="aks-systems-station-function">{station.function}</p>
@@ -263,13 +260,11 @@ function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: Syst
           <figure>
             <div className="aks-systems-station-media">
               <StationImage station={station} />
+              <p className="aks-systems-media-label">{station.note}</p>
             </div>
             <figcaption>
-              <div>
-                <p>{station.note}</p>
-                <h3>{station.name}</h3>
-              </div>
-              <StatusPill locale={locale} status={station.status} />
+              <h3>{station.name}</h3>
+              <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
             </figcaption>
           </figure>
           <p className="aks-systems-station-function">{station.function}</p>
@@ -295,9 +290,9 @@ function QuickStationRow({
           </div>
           <h3>{station.name}</h3>
           <p>{station.function}</p>
-          <StatusPill locale={locale} status={station.status} />
+          <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
           <a
-            aria-label={`${station.name}: ${station.note}`}
+            aria-label={\`\${station.name}: \${station.note}\`}
             className="aks-systems-quick-link"
             href="#workbench"
           >
@@ -319,7 +314,10 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
     >
       <div aria-hidden="true" className="aks-systems-manifesto-orbit" />
       <div className="aks-systems-wrap aks-systems-manifesto-inner">
-        <p className="aks-systems-kicker">{content.eyebrow}</p>
+        <div className="aks-systems-manifesto-meta">
+          <p className="aks-systems-kicker">{content.eyebrow}</p>
+          <span>{content.signature}</span>
+        </div>
         <div className="aks-systems-manifesto-grid">
           <h2 id="systems-manifesto-title">
             <span>{content.lines[0]}</span>
@@ -334,7 +332,6 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
 }
 
 export function Workbench({
-  locale,
   content,
 }: {
   locale: 'en' | 'fr';
@@ -351,7 +348,12 @@ export function Workbench({
         <div className="aks-systems-workbench-heading">
           <div>
             <p className="aks-systems-kicker">{content.eyebrow}</p>
-            <h2 id="workbench-title">{content.title}</h2>
+            <div className="aks-systems-workbench-title">
+              <span aria-hidden="true" className="aks-systems-workbench-mark">
+                ✳
+              </span>
+              <h2 id="workbench-title">{content.title}</h2>
+            </div>
           </div>
           <p>{content.intro}</p>
         </div>
@@ -362,7 +364,9 @@ export function Workbench({
               <strong>{tool.name}</strong>
               <span className="aks-systems-tool-function">{tool.function}</span>
               <span className="aks-systems-tool-env">{tool.environment}</span>
-              <StatusPill locale={locale} status={tool.status} />
+              <span className="aks-systems-tool-action">
+                <i aria-hidden="true" /> {tool.action}
+              </span>
               <span aria-hidden="true" className="aks-systems-tool-arrow">
                 ↗
               </span>
@@ -406,7 +410,7 @@ export function SystemsPage({
 }) {
   const station = (id: SystemsStation['id']) => {
     const match = content.stations.find((candidate) => candidate.id === id);
-    if (match === undefined) throw new Error(`Missing Systems station: ${id}`);
+    if (match === undefined) throw new Error(\`Missing Systems station: \${id}\`);
     return match;
   };
 

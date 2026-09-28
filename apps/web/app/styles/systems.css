@@ -1218,3 +1218,606 @@
     transition-duration: 1ms !important;
   }
 }
+
+
+/* Systems V1.1 dossier fidelity pass. The supplied 1440 / 1280 / 768 / 390 boards
+ * are the visual source of truth for these final layout corrections. */
+.aks-systems-wrap {
+  width: min(calc(100% - 7rem), 82rem);
+}
+
+.aks-systems-hero-overlay {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(2 5 8 / 46%) 0%,
+      rgb(2 5 8 / 29%) 28%,
+      rgb(2 5 8 / 9%) 58%,
+      rgb(2 5 8 / 20%) 100%
+    ),
+    linear-gradient(180deg, rgb(1 5 9 / 2%) 54%, rgb(2 5 8 / 37%) 86%, #05070a 100%);
+}
+
+.aks-systems-hero-media {
+  object-position: 50% 52%;
+  filter: saturate(0.98) contrast(1.05) brightness(0.9);
+}
+
+.aks-systems-hero-copy {
+  padding-top: clamp(6.75rem, 8.5vw, 8.5rem);
+}
+
+.aks-systems-hero h1 {
+  font-size: clamp(4rem, 6.7vw, 6rem);
+}
+
+.aks-systems-hero-title {
+  width: 9.2ch;
+}
+
+.aks-systems-atlas-meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+  color: var(--systems-muted);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+}
+
+.aks-systems-atlas-toolbar {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 1rem;
+}
+
+.aks-systems-atlas-brand,
+.aks-systems-atlas-indicators {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.aks-systems-atlas-icon {
+  display: grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border-radius: 0.38rem;
+  background: var(--systems-blue);
+  color: white;
+}
+
+.aks-systems-atlas-crumb {
+  overflow: hidden;
+  color: rgb(255 255 255 / 32%);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aks-systems-atlas-indicators i {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  background: #889cff;
+}
+
+.aks-systems-atlas-indicators i:nth-child(2) {
+  background: var(--systems-lime);
+}
+
+.aks-systems-atlas-indicators b {
+  min-height: 1.8rem;
+  padding: 0.43rem 0.7rem;
+  border-radius: 999px;
+  background: #f3f3ef;
+  color: #0a0d12;
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+}
+
+.aks-systems-atlas-body {
+  grid-template-columns: 8rem minmax(0, 1fr);
+  min-height: 36.5rem;
+}
+
+.aks-systems-atlas-nav {
+  padding: 1.3rem 0.85rem;
+}
+
+.aks-systems-atlas-nav small {
+  padding: 0.48rem 0.55rem;
+  border-radius: 0.22rem;
+}
+
+.aks-systems-atlas-nav small.is-active {
+  background: rgb(45 92 255 / 31%);
+  color: white;
+}
+
+.aks-systems-atlas-stage {
+  min-height: 36.5rem;
+  background:
+    linear-gradient(rgb(4 8 14 / 6%), rgb(4 8 14 / 6%)),
+    radial-gradient(circle at 50% 48%, rgb(29 59 140 / 22%), transparent 48%);
+}
+
+.aks-systems-atlas-stage > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.98;
+}
+
+.aks-systems-atlas-signal {
+  right: 1.2rem;
+  bottom: 1.2rem;
+}
+
+.aks-systems-atlas-footer {
+  grid-template-columns: minmax(17rem, 0.8fr) minmax(14rem, 0.58fr) auto;
+  gap: 2rem;
+  align-items: start;
+}
+
+.aks-systems-atlas-summary {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.aks-systems-atlas-summary span {
+  color: var(--systems-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.aks-systems-atlas-bullets {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  color: var(--systems-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.aks-systems-atlas-bullets li::before {
+  margin-right: 0.6rem;
+  color: var(--systems-text);
+  content: '—';
+}
+
+.aks-systems-atlas-footer .aks-systems-actions {
+  justify-content: flex-end;
+}
+
+.aks-systems-station-media {
+  position: relative;
+  overflow: hidden;
+  background: #080d14;
+}
+
+.aks-systems-station-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aks-systems-station--feature .aks-systems-station-media {
+  aspect-ratio: 2.08 / 1;
+}
+
+.aks-systems-station--feature .aks-systems-station-image {
+  object-position: 50% 50%;
+}
+
+.aks-systems-station--pair .aks-systems-station-media {
+  aspect-ratio: 1.08 / 1;
+}
+
+.aks-systems-station--pair .aks-systems-station-image {
+  object-position: center;
+}
+
+.aks-systems-media-label {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.95rem;
+  padding: 0.24rem 0.42rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(2 6 10 / 58%);
+  color: rgb(255 255 255 / 62%);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aks-systems-station figcaption {
+  padding: 0.86rem 1rem 0.95rem;
+}
+
+.aks-systems-station--pair figcaption {
+  align-items: end;
+}
+
+.aks-systems-station--pair h3 {
+  font-size: clamp(2rem, 3.6vw, 3.7rem);
+}
+
+.aks-systems-quick-media {
+  overflow: hidden;
+  height: 4.35rem;
+  border-radius: 0.28rem;
+  background: #0a0f17;
+}
+
+.aks-systems-station-image--compact {
+  object-fit: cover;
+  object-position: center;
+}
+
+.aks-systems-manifesto-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.aks-systems-manifesto-meta > span {
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+}
+
+.aks-systems-workbench-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.aks-systems-workbench-mark {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--systems-lime);
+  border-radius: 50%;
+  color: var(--systems-lime);
+  font-size: 1.15rem;
+}
+
+.aks-systems-tools li {
+  grid-template-columns:
+    2.25rem minmax(7rem, 0.48fr) minmax(12rem, 1.1fr) minmax(6rem, 0.42fr)
+    minmax(5.5rem, 0.4fr) 1rem;
+}
+
+.aks-systems-tool-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: var(--systems-text) !important;
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.58rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.aks-systems-tool-action i {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--systems-lime);
+}
+
+.aks-systems-perspectives {
+  min-height: 40rem;
+}
+
+@media (max-width: 80rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 6rem), 73rem);
+  }
+
+  .aks-systems-atlas-body,
+  .aks-systems-atlas-stage {
+    min-height: 32rem;
+  }
+
+  .aks-systems-atlas-footer {
+    grid-template-columns: minmax(15rem, 0.78fr) minmax(12rem, 0.55fr) auto;
+    gap: 1.4rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-actions {
+    max-width: 18rem;
+  }
+}
+
+@media (max-width: 64rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 3rem), 61rem);
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(3rem, 7.2vw, 4.25rem);
+  }
+
+  .aks-systems-atlas-meta {
+    justify-items: start;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    min-height: 25rem;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 25rem;
+  }
+
+  .aks-systems-atlas-footer {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-actions {
+    max-width: none;
+    justify-content: flex-start;
+  }
+
+  .aks-systems-operation {
+    padding-block: 6.4rem 5.6rem;
+  }
+
+  .aks-systems-manifesto-meta {
+    align-items: flex-start;
+  }
+
+  .aks-systems-tools li {
+    grid-template-columns: 2rem minmax(6rem, 0.5fr) minmax(0, 1fr) minmax(5rem, 0.45fr) 1rem;
+  }
+
+  .aks-systems-tool-env {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    min-height: 3.15rem;
+    padding-block: 0.35rem;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-brand-signature {
+    grid-row: 1;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu {
+    display: block;
+    grid-row: 1;
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-meta {
+    display: none;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-trigger {
+    width: 2.35rem;
+    min-height: 2.35rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgb(4 8 13 / 52%);
+    font-size: 0;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-icon {
+    font-size: 1rem;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-nav {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 1rem;
+    width: min(18rem, calc(100vw - 2rem));
+    padding: 0.6rem;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 0.35rem;
+    background: rgb(5 8 12 / 96%);
+    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 38%);
+  }
+
+  .aks-systems-hero-media {
+    object-position: 54% 54%;
+  }
+
+  .aks-systems-atlas-toolbar {
+    min-height: 3rem;
+  }
+
+  .aks-systems-atlas-crumb {
+    display: none;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 21rem;
+  }
+
+  .aks-systems-atlas-nav {
+    display: none;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 21rem;
+  }
+
+  .aks-systems-atlas-signal {
+    right: 0.7rem;
+    bottom: 0.7rem;
+  }
+
+  .aks-systems-manifesto-meta > span {
+    max-width: 12rem;
+    text-align: right;
+  }
+
+  .aks-systems-tools li {
+    grid-template-columns: 1.6rem minmax(6rem, 0.48fr) minmax(0, 1fr) auto 1rem;
+  }
+
+  .aks-systems-tool-action {
+    font-size: 0.52rem !important;
+  }
+}
+
+@media (max-width: 30rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 1.5rem), 27rem);
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(2.25rem, 10vw, 2.7rem);
+    line-height: 0.9;
+  }
+
+  .aks-systems-hero-copy {
+    padding-top: 5.25rem;
+  }
+
+  .aks-systems-hero-media {
+    object-position: 58% 50%;
+  }
+
+  .aks-systems-hero-overlay {
+    background:
+      linear-gradient(180deg, rgb(2 5 8 / 16%), rgb(2 5 8 / 31%) 58%, #05070a 92%),
+      linear-gradient(90deg, rgb(2 5 8 / 48%), transparent 82%);
+  }
+
+  .aks-systems-atlas-body,
+  .aks-systems-atlas-stage {
+    min-height: 18.5rem;
+  }
+
+  .aks-systems-atlas-indicators i {
+    display: none;
+  }
+
+  .aks-systems-atlas-indicators b {
+    font-size: 0.44rem;
+  }
+
+  .aks-systems-atlas-bullets {
+    font-size: 0.62rem;
+  }
+
+  .aks-systems-station--feature .aks-systems-station-media,
+  .aks-systems-station--pair .aks-systems-station-media {
+    aspect-ratio: 1.65 / 1;
+  }
+
+  .aks-systems-quick {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem 0.75rem;
+    padding-block: 0.85rem 1rem;
+  }
+
+  .aks-systems-quick-media {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3.1 / 1;
+  }
+
+  .aks-systems-quick h3 {
+    grid-column: 1;
+    font-size: 1.45rem;
+  }
+
+  .aks-systems-quick p {
+    display: block;
+    grid-column: 1 / -1;
+    font-size: 0.68rem;
+  }
+
+  .aks-systems-quick .aks-systems-status {
+    display: inline-flex;
+    grid-column: 1;
+  }
+
+  .aks-systems-quick-link {
+    grid-row: 2;
+    grid-column: 2;
+    width: 2rem;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .aks-systems-quick-link span {
+    font-size: 0.75rem;
+  }
+
+  .aks-systems-manifesto-meta {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .aks-systems-manifesto-meta > span {
+    justify-self: end;
+  }
+
+  .aks-systems-manifesto h2 {
+    font-size: clamp(2.8rem, 13.5vw, 3.35rem);
+  }
+
+  .aks-systems-tools li {
+    grid-template-columns: 1.3rem minmax(0, 1fr) auto;
+    gap: 0.25rem 0.55rem;
+    min-height: 4.5rem;
+    padding-block: 0.65rem;
+  }
+
+  .aks-systems-tool-index {
+    grid-row: 1 / 3;
+  }
+
+  .aks-systems-tool-function {
+    grid-column: 2;
+    font-size: 0.62rem !important;
+  }
+
+  .aks-systems-tool-env {
+    display: none;
+  }
+
+  .aks-systems-tool-action {
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  .aks-systems-tool-arrow {
+    grid-row: 2;
+    grid-column: 3;
+  }
+
+  .aks-systems-perspectives h2 {
+    font-size: clamp(2.35rem, 11vw, 2.8rem);
+  }
+}
