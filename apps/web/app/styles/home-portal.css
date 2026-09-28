@@ -246,6 +246,21 @@
   will-change: color, opacity, text-shadow;
 }
 
+.aks-home-scale-letter[data-scale-index='0'] { --aks-home-scale-index: 0; }
+.aks-home-scale-letter[data-scale-index='1'] { --aks-home-scale-index: 1; }
+.aks-home-scale-letter[data-scale-index='2'] { --aks-home-scale-index: 2; }
+.aks-home-scale-letter[data-scale-index='3'] { --aks-home-scale-index: 3; }
+.aks-home-scale-letter[data-scale-index='4'] { --aks-home-scale-index: 4; }
+.aks-home-scale-letter[data-scale-index='5'] { --aks-home-scale-index: 5; }
+.aks-home-scale-letter[data-scale-index='6'] { --aks-home-scale-index: 6; }
+.aks-home-scale-letter[data-scale-index='7'] { --aks-home-scale-index: 7; }
+.aks-home-scale-letter[data-scale-index='8'] { --aks-home-scale-index: 8; }
+.aks-home-scale-letter[data-scale-index='9'] { --aks-home-scale-index: 9; }
+.aks-home-scale-letter[data-scale-index='10'] { --aks-home-scale-index: 10; }
+.aks-home-scale-letter[data-scale-index='11'] { --aks-home-scale-index: 11; }
+.aks-home-scale-letter[data-scale-index='12'] { --aks-home-scale-index: 12; }
+.aks-home-scale-letter[data-scale-index='13'] { --aks-home-scale-index: 13; }
+
 .aks-home-scale[data-animation='running'] .aks-home-scale-letter {
   animation: aks-home-scale-ignite 525ms var(--aks-home-ease)
     calc(var(--aks-home-scale-index) * 35ms) both;
@@ -341,6 +356,12 @@
     color 160ms var(--aks-home-ease),
     opacity 160ms var(--aks-home-ease);
 }
+
+.aks-home-door[data-home-order='0'] { --aks-home-order: 0; }
+.aks-home-door[data-home-order='1'] { --aks-home-order: 1; }
+.aks-home-door[data-home-order='2'] { --aks-home-order: 2; }
+.aks-home-door[data-home-order='3'] { --aks-home-order: 3; }
+.aks-home-door[data-home-order='4'] { --aks-home-order: 4; }
 
 .aks-home-door::before {
   position: absolute;
