@@ -33,11 +33,10 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           sudo apt-get update
-          sudo apt-get install -y libvips-tools
+          sudo apt-get install -y libvips-tools libavif-bin
 
       - name: Restore Systems implementation
-        run: |
-          tar -xzf .systems-seed.tar.gz
+        run: tar -xzf .systems-seed.tar.gz
 
       - name: Optimize dossier media
         shell: bash
@@ -45,17 +44,15 @@ jobs:
           set -euo pipefail
           mkdir -p apps/web/public/systems
           vips copy apps/web/public/systems-source/hero.jpg "apps/web/public/systems/hero.webp[Q=72,strip]"
-          vips copy apps/web/public/systems-source/hero.jpg "apps/web/public/systems/hero.avif[Q=50,strip]"
+          avifenc --jobs all --min 24 --max 36 --speed 6 apps/web/public/systems-source/hero.jpg apps/web/public/systems/hero.avif
           for name in cirrus mosaic radar-cli sonar detour; do
             vips copy "apps/web/public/systems-source/$name.png" "apps/web/public/systems/$name.webp[Q=72,strip]"
-            vips copy "apps/web/public/systems-source/$name.png" "apps/web/public/systems/$name.avif[Q=50,strip]"
+            avifenc --jobs all --min 24 --max 36 --speed 6 "apps/web/public/systems-source/$name.png" "apps/web/public/systems/$name.avif"
           done
           test "$(stat -c%s apps/web/public/systems/hero.webp)" -le 327680
           test "$(stat -c%s apps/web/public/systems/hero.avif)" -le 327680
-          for name in cirrus; do
-            test "$(stat -c%s apps/web/public/systems/$name.webp)" -le 225280
-            test "$(stat -c%s apps/web/public/systems/$name.avif)" -le 225280
-          done
+          test "$(stat -c%s apps/web/public/systems/cirrus.webp)" -le 225280
+          test "$(stat -c%s apps/web/public/systems/cirrus.avif)" -le 225280
           for name in mosaic radar-cli; do
             test "$(stat -c%s apps/web/public/systems/$name.webp)" -le 184320
             test "$(stat -c%s apps/web/public/systems/$name.avif)" -le 184320
