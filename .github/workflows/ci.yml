@@ -50,10 +50,7 @@ jobs:
         run: pnpm lint
 
       - name: Format check
-        run: |
-          pnpm exec prettier --write apps/web/app/styles/systems.css
-          git diff -- apps/web/app/styles/systems.css
-          pnpm format:check
+        run: pnpm format:check
 
       - name: Typecheck
         run: pnpm typecheck
