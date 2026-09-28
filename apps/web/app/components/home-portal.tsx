@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -262,35 +263,36 @@ export function HomePortal({ locale }: HomePortalProps) {
   const pointedPreview = useRef<HomeDescriptionDetail | null>(null);
   const selectedPreview = useRef<HomeDescriptionDetail | null>(null);
   const lastPointerType = useRef<string | null>(null);
+  const navigationTimer = useRef<number | null>(null);
 
-  const restorePreview = () => {
+  const restorePreview = useCallback(() => {
     const next =
       pointedPreview.current ??
       focusedPreview.current ??
       selectedPreview.current;
     setPreview(next);
     setPreviewActive(next !== null);
-  };
+  }, []);
 
-  const updatePreview = (
+  const updatePreview = useCallback((
     channel: HomeDescriptionEventDetail['channel'],
     content: HomeDescriptionDetail | null,
   ) => {
     if (channel === 'pointer') pointedPreview.current = content;
     else focusedPreview.current = content;
     restorePreview();
-  };
+  }, [restorePreview]);
 
-  const destinationPreview = (id: GlobalDestinationId) => ({
+  const destinationPreview = useCallback((id: GlobalDestinationId) => ({
     description: homeDestinationPresentation[id].description[locale],
     label: homeDestinationPresentation[id].label[locale],
-  });
+  }), [locale]);
 
-  const clearTouchSelection = () => {
+  const clearTouchSelection = useCallback(() => {
     selectedPreview.current = null;
     setActiveDestination(null);
     restorePreview();
-  };
+  }, [restorePreview]);
 
   useEffect(() => {
     const receiveDescription = (event: Event) => {
@@ -319,7 +321,16 @@ export function HomePortal({ locale }: HomePortalProps) {
       window.removeEventListener(homeDescriptionEvent, receiveDescription);
       document.removeEventListener('pointerdown', clearSelectionOutsidePrimary);
     };
-  });
+  }, [clearTouchSelection, updatePreview]);
+
+  useEffect(
+    () => () => {
+      if (navigationTimer.current !== null) {
+        window.clearTimeout(navigationTimer.current);
+      }
+    },
+    [],
+  );
 
   const followDestination = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -351,10 +362,13 @@ export function HomePortal({ locale }: HomePortalProps) {
 
     event.preventDefault();
     setActiveDestination(id);
-    window.setTimeout(
-      () => navigate(destinationHref(id, locale)),
-      160,
-    );
+    if (navigationTimer.current !== null) {
+      window.clearTimeout(navigationTimer.current);
+    }
+    navigationTimer.current = window.setTimeout(() => {
+      navigationTimer.current = null;
+      navigate(destinationHref(id, locale));
+    }, 160);
   };
 
   return (
