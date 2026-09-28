@@ -38,6 +38,7 @@ const allowedPublicHostnames = new Set([
   'www.akiksystems.fr',
 ]);
 
+/** @param {string} hostname */
 function isAllowedHostname(hostname) {
   const normalized = hostname.toLowerCase();
   return (
@@ -50,6 +51,7 @@ function isAllowedHostname(hostname) {
   );
 }
 
+/** @type {Record<'en' | 'fr', Array<[string, string]>>} */
 const publicSitemapEntries = {
   en: [
     ['/en', '/fr'],
@@ -75,10 +77,12 @@ const publicSitemapEntries = {
   ],
 };
 
+/** @param {string} hostname @returns {'en' | 'fr'} */
 function sitemapLocaleForHostname(hostname) {
   return hostname.toLowerCase().replace(/^www\./, '') === 'akiksystems.fr' ? 'fr' : 'en';
 }
 
+/** @param {'en' | 'fr'} locale */
 function sitemapXml(locale) {
   const origin = locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
   const alternateOrigin = locale === 'fr' ? 'https://akiksystems.com' : 'https://akiksystems.fr';
