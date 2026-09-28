@@ -1,9 +1,25 @@
 import { strict as assert } from 'node:assert';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import process from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-const port = '4173';
+async function reservePort() {
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  assert.ok(address && typeof address === 'object');
+  const port = address.port;
+  await new Promise((resolve, reject) =>
+    server.close((error) => (error ? reject(error) : resolve())),
+  );
+  return String(port);
+}
+
+const port = await reservePort();
 const origin = `http://127.0.0.1:${port}`;
 
 const server = spawn(process.execPath, ['server.js'], {
@@ -20,12 +36,20 @@ const server = spawn(process.execPath, ['server.js'], {
 });
 
 let stderr = '';
+let exited = false;
 server.stderr.on('data', (chunk) => {
   stderr += chunk.toString();
 });
+server.once('exit', () => {
+  exited = true;
+});
 
 async function waitForServer() {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (exited) {
+      throw new Error(`SSR server exited before readiness. stderr=${stderr}`);
+    }
+
     try {
       const response = await globalThis.fetch(`${origin}/en`);
       if (response.ok) return;
@@ -53,7 +77,11 @@ try {
     assert.equal(response.status, 200, `/${locale} must return HTTP 200.`);
     assert.match(html, new RegExp(`<html lang="${locale}"`));
     assert.match(html, /class="aks-home-portal"/);
-    assert.match(html, /<h1[^>]*>AkikSystems<\/h1>/);
+    assert.match(
+      html,
+      /<h1[^>]*>[\s\S]*?AkikSystems[\s\S]*?<\/h1>/,
+      'Home h1 must expose the AkikSystems text regardless of internal animation markup.',
+    );
     assert.match(html, /class="aks-home-orbit"/);
     assert.match(
       html,
@@ -63,7 +91,7 @@ try {
 
   process.stdout.write('Baseline SSR smoke passed.\n');
 } finally {
-  server.kill('SIGTERM');
+  if (!server.killed) server.kill('SIGTERM');
   await Promise.race([
     new Promise((resolve) => server.once('exit', resolve)),
     sleep(2_000),
