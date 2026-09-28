@@ -99,12 +99,13 @@ jobs:
             akiksystems-web-ci
           trap 'docker logs akiksystems-web-ci-runtime || true; docker rm -f akiksystems-web-ci-runtime >/dev/null 2>&1 || true' EXIT
           for attempt in $(seq 1 40); do
-            if curl --fail --silent http://127.0.0.1:4188/health >/dev/null; then
-              exit 0
+            if curl --fail --silent -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null; then
+              break
             fi
             sleep 0.25
           done
-          exit 1
+          curl --fail --silent -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/en)" = "421"
 
       - name: Build worker production image
         run: docker build -f apps/worker/Dockerfile -t akiksystems-worker-ci .
