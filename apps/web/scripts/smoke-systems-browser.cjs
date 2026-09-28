@@ -64,6 +64,16 @@ async function inspectViewport(browser, viewport) {
     undefined,
     { timeout: 15_000 },
   );
+  await page.evaluate(async () => {
+    const images = [...document.querySelectorAll('.aks-systems-page img')];
+    for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => setTimeout(resolve, 35));
+    }
+    await Promise.all(images.map((image) => image.decode().catch(() => undefined)));
+    window.scrollTo(0, 0);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
   await page.screenshot({
     fullPage: true,
     path: path.join(screenshotDirectory, `systems-${viewport.width}.png`),
