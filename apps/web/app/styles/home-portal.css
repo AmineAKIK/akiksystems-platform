@@ -863,7 +863,7 @@
     --aks-home-mark-size: clamp(4.5rem, 24dvh, 9rem);
     --aks-home-wordmark-size: clamp(1.25rem, 6dvh, 2.5rem);
     --aks-home-preview-height: clamp(2.25rem, 11dvh, 2.875rem);
-    --aks-home-preview-top: 66%;
+    --aks-home-preview-top: 66.35%;
   }
 
   .aks-home-portal {
