@@ -2,19 +2,14 @@
 
 Railway uses `GET /health` as the web service healthcheck.
 
-The endpoint probes PostgreSQL and represents runtime liveness. Content routes
-may intentionally return 404 when a resource is not public, so they must not be
-used as infrastructure healthchecks.
+The endpoint only reports that the web process is running. It has no external
+dependency: the application ships its content in code and uses no database,
+worker, or object storage.
 
 ## Production
 
-Normal staging and production deploys use:
+Staging and production deploy the `web` service from `main`. The build is
+`pnpm --filter @akiksystems/web build` and the start command is
+`node server.js`. The only runtime configuration is `NODE_ENV` and `PORT`.
 
-```sh
-pnpm deploy:migrate
-```
-
-The command applies the application database migrations before the new web
-deployment becomes active.
-
-There is no administrator bootstrap or authentication migration step.
+There is no migration, bootstrap, or administrator step.

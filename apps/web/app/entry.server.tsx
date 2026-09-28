@@ -29,6 +29,8 @@ function contentSecurityPolicy(nonce: string, scriptHashes: readonly string[]) {
     `'nonce-${nonce}'`,
     ...scriptHashes.map((hash) => `'sha256-${hash}'`),
   ].join(' ');
+  // Vite dev injects CSS as inline <style> tags and uses a websocket for HMR.
+  const isDev = import.meta.env.DEV;
 
   return [
     "default-src 'self'",
@@ -38,9 +40,9 @@ function contentSecurityPolicy(nonce: string, scriptHashes: readonly string[]) {
     "form-action 'self'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "style-src 'self'",
+    isDev ? "style-src 'self' 'unsafe-inline'" : "style-src 'self'",
     `script-src ${scriptSources}`,
-    "connect-src 'self'",
+    isDev ? "connect-src 'self' ws: wss:" : "connect-src 'self'",
   ].join('; ');
 }
 
