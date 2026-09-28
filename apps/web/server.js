@@ -121,18 +121,7 @@ function sitemapXml(locale) {
   );
 }
 
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "style-src 'self'",
-  "script-src 'self'",
-  "connect-src 'self'",
-].join('; ');
+
 
 app.use((request, response, next) => {
   const writeHead = response.writeHead;
@@ -145,7 +134,6 @@ app.use((request, response, next) => {
     return Reflect.apply(writeHead, this, [statusCode, ...args]);
   };
 
-  response.setHeader('Content-Security-Policy', contentSecurityPolicy);
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.setHeader(
