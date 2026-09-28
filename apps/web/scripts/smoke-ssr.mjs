@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:net';
 import process from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
