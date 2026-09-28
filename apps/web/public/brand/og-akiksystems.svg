@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AkikSystems</title>
+  <desc id="desc">AkikSystems — Systemic Scale</desc>
+  <rect width="1200" height="630" fill="#11110f"/>
+  <circle cx="250" cy="315" r="155" fill="none" stroke="#6487de" stroke-width="4"/>
+  <circle cx="250" cy="315" r="125" fill="none" stroke="#93879e" stroke-width="2"/>
+  <path d="M170 410 250 205l80 205M205 330h90" fill="none" stroke="#e8edf4" stroke-width="12" stroke-linecap="round"/>
+  <text x="485" y="300" fill="#e8edf4" font-family="Arial,Helvetica,sans-serif" font-size="76" font-weight="700">AkikSystems</text>
+  <text x="490" y="365" fill="#aab3c1" font-family="Arial,Helvetica,sans-serif" font-size="30" letter-spacing="8">SYSTEMIC SCALE</text>
+</svg>
