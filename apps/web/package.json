@@ -18,7 +18,8 @@
     "typecheck": "react-router typegen && tsc -b",
     "content:bootstrap-rendre-attention-essay": "tsx scripts/bootstrap-rendre-attention-essay.ts",
     "content:bootstrap-sentinel-system": "tsx scripts/bootstrap-sentinel-system.ts",
-    "smoke:profile-public": "node scripts/smoke-profile-public-browser.cjs"
+    "smoke:profile-public": "node scripts/smoke-profile-public-browser.cjs",
+    "smoke:systems-public": "node scripts/smoke-systems-browser.cjs"
   },
   "dependencies": {
     "@akiksystems/config": "workspace:*",
