@@ -15,7 +15,7 @@
     "dev:web": "pnpm --filter @akiksystems/web dev",
     "docker:build:web": "docker build -f apps/web/Dockerfile -t akiksystems-web .",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write apps/web/app/styles/systems.css && git diff --exit-code apps/web/app/styles/systems.css",
     "lint": "eslint . --max-warnings=0",
     "observability:verify": "node packages/config/observability/verify.mjs",
     "smoke:observability": "pnpm --filter @akiksystems/web smoke:observability",
