@@ -34,9 +34,7 @@ export function validateSystemPublicationReadiness(
   if (!hasText(candidate.slug)) {
     errors.push('Slug is required before publication.');
   } else if (!slugPattern.test(candidate.slug)) {
-    errors.push(
-      'Slug must use lowercase letters, numbers, and single hyphens only.',
-    );
+    errors.push('Slug must use lowercase letters, numbers, and single hyphens only.');
   }
 
   if (!hasText(candidate.title)) {
@@ -70,20 +68,12 @@ export function validateSystemPublicationReadiness(
   if (candidate.presentationDocument === null) {
     errors.push('Presentation document is required before publication.');
   } else {
-    const validation = validatePresentationDocument(
-      candidate.presentationDocument,
-    );
+    const validation = validatePresentationDocument(candidate.presentationDocument);
 
     if (!validation.success) {
-      errors.push(
-        ...validation.errors.map(
-          (error) => `Presentation document: ${error}`,
-        ),
-      );
+      errors.push(...validation.errors.map((error) => `Presentation document: ${error}`));
     } else if (candidate.presentationDocument.blocks.length === 0) {
-      errors.push(
-        'Presentation document must contain at least one block before publication.',
-      );
+      errors.push('Presentation document must contain at least one block before publication.');
     }
   }
 

@@ -3,12 +3,8 @@ import { sql, type Kysely } from 'kysely';
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('systems')
-    .addColumn('editorial_position', 'integer', (column) =>
-      column.notNull().defaultTo(0),
-    )
-    .addColumn('featured', 'boolean', (column) =>
-      column.notNull().defaultTo(false),
-    )
+    .addColumn('editorial_position', 'integer', (column) => column.notNull().defaultTo(0))
+    .addColumn('featured', 'boolean', (column) => column.notNull().defaultTo(false))
     .execute();
 
   await sql`
@@ -26,10 +22,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await db.schema
     .alterTable('systems')
-    .addCheckConstraint(
-      'systems_editorial_position_check',
-      sql`editorial_position >= 0`,
-    )
+    .addCheckConstraint('systems_editorial_position_check', sql`editorial_position >= 0`)
     .execute();
 
   await db.schema

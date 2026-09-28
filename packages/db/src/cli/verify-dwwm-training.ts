@@ -29,12 +29,7 @@ try {
     }),
     db
       .selectFrom('trainings')
-      .select([
-        'provider',
-        'state',
-        'start_date',
-        'end_date',
-      ])
+      .select(['provider', 'state', 'start_date', 'end_date'])
       .where('id', '=', trainingId)
       .executeTakeFirstOrThrow(),
   ]);
@@ -46,18 +41,12 @@ try {
   assert.equal(shared.start_date, null);
   assert.equal(shared.end_date, null);
 
-  assert.equal(
-    english.title,
-    'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674',
-  );
+  assert.equal(english.title, 'Full-Stack Web & Mobile Developer — Professional Title RNCP 37674');
   assert.match(english.summary, /level-5 Professional Title RNCP 37674/);
   assert.match(english.body ?? '', /French Ministry of Labour Professional Title/);
   assert.equal(english.alternate?.slug, 'developpeur-web-web-mobile');
 
-  assert.equal(
-    french.title,
-    'Développeur web et web mobile — Titre professionnel RNCP 37674',
-  );
+  assert.equal(french.title, 'Développeur web et web mobile — Titre professionnel RNCP 37674');
   assert.match(french.summary, /titre professionnel Développeur web et web mobile de niveau 5/);
   assert.match(french.body ?? '', /délivré par le ministère du Travail/);
   assert.equal(french.alternate?.slug, 'full-stack-web-mobile-developer');

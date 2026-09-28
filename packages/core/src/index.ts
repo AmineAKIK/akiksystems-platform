@@ -8,18 +8,11 @@ export const systemLifecycles = ['active', 'archived'] as const;
 
 export type SystemLifecycle = (typeof systemLifecycles)[number];
 
-export const systemPresentationKinds = [
-  'standard',
-  'guided_demo',
-  'interactive_entry',
-] as const;
+export const systemPresentationKinds = ['standard', 'guided_demo', 'interactive_entry'] as const;
 
 export type SystemPresentationKind = (typeof systemPresentationKinds)[number];
 
-export const systemEvidencePolicies = [
-  'all_supported',
-  'documented_only',
-] as const;
+export const systemEvidencePolicies = ['all_supported', 'documented_only'] as const;
 
 export type SystemEvidencePolicy = (typeof systemEvidencePolicies)[number];
 
@@ -227,8 +220,7 @@ export interface ExperienceLocalization {
 
 export const systemExperienceRelationKinds = ['origin_context'] as const;
 
-export type SystemExperienceRelationKind =
-  (typeof systemExperienceRelationKinds)[number];
+export type SystemExperienceRelationKind = (typeof systemExperienceRelationKinds)[number];
 
 export interface SystemExperience {
   systemId: SystemId;
@@ -277,12 +269,7 @@ export type AssetUploadMimeType = (typeof assetUploadMimeTypes)[number];
 
 export const assetUploadMaxBytes = 10 * 1024 * 1024;
 
-export const systemLinkKinds = [
-  'live',
-  'repository',
-  'demo',
-  'documentation',
-] as const;
+export const systemLinkKinds = ['live', 'repository', 'demo', 'documentation'] as const;
 
 export type SystemLinkKind = (typeof systemLinkKinds)[number];
 
@@ -290,11 +277,7 @@ export function isSystemLinkAllowedByEvidencePolicy(
   policy: SystemEvidencePolicy,
   kind: SystemLinkKind,
 ): boolean {
-  return (
-    policy === 'all_supported' ||
-    kind === 'repository' ||
-    kind === 'documentation'
-  );
+  return policy === 'all_supported' || kind === 'repository' || kind === 'documentation';
 }
 
 export type SystemLinkId = string;

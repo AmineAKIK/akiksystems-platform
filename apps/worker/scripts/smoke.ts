@@ -72,9 +72,7 @@ const completed = new Promise<void>((resolve, reject) => {
   const timeout = setTimeout(() => {
     reject(
       new Error(
-        `Timed out waiting for worker smoke tasks. Completed: ${[
-          ...completedTasks,
-        ].join(', ')}`,
+        `Timed out waiting for worker smoke tasks. Completed: ${[...completedTasks].join(', ')}`,
       ),
     );
   }, 15_000);
@@ -132,10 +130,7 @@ try {
   assert.equal(sentMessages.length, 1);
   assert.equal(sentMessages[0]?.to, recipientEmail);
   assert.equal(sentMessages[0]?.replyTo, inquiryEmail);
-  assert.equal(
-    sentMessages[0]?.idempotencyKey,
-    `work-with-us-inquiry/${inquiryId}`,
-  );
+  assert.equal(sentMessages[0]?.idempotencyKey, `work-with-us-inquiry/${inquiryId}`);
   assert.match(sentMessages[0]?.text ?? '', /durable inquiry/);
 
   const notification = await db
@@ -165,10 +160,7 @@ try {
   await runner.stop('Work with us worker smoke complete');
   await runner.promise;
 
-  await db
-    .deleteFrom('work_with_us_inquiries')
-    .where('id', '=', inquiryId)
-    .execute();
+  await db.deleteFrom('work_with_us_inquiries').where('id', '=', inquiryId).execute();
 
   if (previousSettings === undefined) {
     await db
@@ -189,6 +181,4 @@ try {
   await db.destroy();
 }
 
-console.info(
-  '[worker-smoke] graceful shutdown and asynchronous inquiry notification verified.',
-);
+console.info('[worker-smoke] graceful shutdown and asynchronous inquiry notification verified.');

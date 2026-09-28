@@ -60,9 +60,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   let status = 500;
   let title = locale === 'fr' ? 'Erreur inattendue' : 'Unexpected error';
   let details =
-    locale === 'fr'
-      ? 'La requête n’a pas pu être traitée.'
-      : 'The request could not be completed.';
+    locale === 'fr' ? 'La requête n’a pas pu être traitée.' : 'The request could not be completed.';
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
@@ -74,9 +72,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
           ? 'La page AkikSystems demandée n’existe pas.'
           : 'The requested AkikSystems page does not exist.';
     } else {
-      title =
-        error.statusText ||
-        (locale === 'fr' ? 'Erreur de requête' : 'Request error');
+      title = error.statusText || (locale === 'fr' ? 'Erreur de requête' : 'Request error');
       details = error.statusText || details;
     }
   } else if (import.meta.env.DEV && error instanceof Error) {

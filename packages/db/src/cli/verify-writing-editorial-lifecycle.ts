@@ -83,9 +83,7 @@ try {
     'Archived Writings must disappear from public deep-link resolution.',
   );
   assert.equal(
-    (await listPublishedWritings(db, 'fr')).some(
-      (writing) => writing.writingId === writingId,
-    ),
+    (await listPublishedWritings(db, 'fr')).some((writing) => writing.writingId === writingId),
     false,
     'Archived Writings must disappear from public lists.',
   );
@@ -113,11 +111,7 @@ try {
     ['published', 'published'],
     'Entity archive state must remain separate from localized publication state.',
   );
-  assert.ok(
-    localizationStates.every(
-      (localization) => localization.published_at instanceof Date,
-    ),
-  );
+  assert.ok(localizationStates.every((localization) => localization.published_at instanceof Date));
 
   await assert.rejects(
     publishWritingLocalization(db, { writingId, locale: 'en' }),

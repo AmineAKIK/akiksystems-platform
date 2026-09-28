@@ -50,10 +50,7 @@ export {
   publishCategoryLocalization,
   unpublishCategoryLocalization,
 } from './category-publication.js';
-export type {
-  CategoryPublicationSnapshot,
-  PublishedCategory,
-} from './category-publication.js';
+export type { CategoryPublicationSnapshot, PublishedCategory } from './category-publication.js';
 export {
   getPublishedTag,
   listPublishedTags,
@@ -61,10 +58,7 @@ export {
   publishTagLocalization,
   unpublishTagLocalization,
 } from './tag-publication.js';
-export type {
-  PublishedTag,
-  TagPublicationSnapshot,
-} from './tag-publication.js';
+export type { PublishedTag, TagPublicationSnapshot } from './tag-publication.js';
 export {
   getPublishedWriting,
   getPublishedWritingReferenceById,
@@ -89,10 +83,18 @@ export type {
 } from './writing-publication.js';
 export { bootstrapOriaDomain } from './oria-bootstrap.js';
 export { bootstrapTugeresDomain } from './tugeres-bootstrap.js';
-export type { BootstrapTugeresInput, BootstrapTugeresResult, TugeresMediaInput } from './tugeres-bootstrap.js';
+export type {
+  BootstrapTugeresInput,
+  BootstrapTugeresResult,
+  TugeresMediaInput,
+} from './tugeres-bootstrap.js';
 export type { BootstrapOriaInput, BootstrapOriaResult, OriaMediaInput } from './oria-bootstrap.js';
 export { bootstrapProtoCapDomain } from './protocap-bootstrap.js';
-export type { BootstrapProtoCapInput, BootstrapProtoCapResult, ProtoCapMediaInput } from './protocap-bootstrap.js';
+export type {
+  BootstrapProtoCapInput,
+  BootstrapProtoCapResult,
+  ProtoCapMediaInput,
+} from './protocap-bootstrap.js';
 export {
   buildWorkWithUsPublicationSnapshot,
   getPublishedWorkWithUsPage,
@@ -103,10 +105,7 @@ export type {
   PublishedWorkWithUsPage,
   WorkWithUsPublicationSnapshot,
 } from './work-with-us-publication.js';
-export {
-  createWorkWithUsInquiry,
-  workWithUsInquiryRateLimit,
-} from './work-with-us-inquiry.js';
+export { createWorkWithUsInquiry, workWithUsInquiryRateLimit } from './work-with-us-inquiry.js';
 export type {
   CreateWorkWithUsInquiryInput,
   CreateWorkWithUsInquiryResult,

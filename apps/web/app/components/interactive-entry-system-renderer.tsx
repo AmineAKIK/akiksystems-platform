@@ -5,10 +5,7 @@ import { DeferredDemoLink } from './deferred-demo-link';
 import { SystemProofTransparency } from './system-proof-transparency';
 import { SystemLearningEvidence } from './system-learning-evidence';
 import { SystemRelatedWritings } from './system-related-writings';
-import {
-  SystemPresentation,
-  type SystemDetailViewProps,
-} from './system-detail-view';
+import { SystemPresentation, type SystemDetailViewProps } from './system-detail-view';
 
 export function InteractiveEntrySystemRenderer({
   locale,
@@ -66,11 +63,7 @@ export function InteractiveEntrySystemRenderer({
 
               <div className="aks-interactive-entry-actions">
                 {live !== null ? (
-                  <Link
-                    href={live.url}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
+                  <Link href={live.url} rel="noopener noreferrer" target="_blank">
                     {locale === 'fr'
                       ? 'Ouvrir l’application dans un nouvel onglet'
                       : 'Open the live application in a new tab'}
@@ -89,10 +82,7 @@ export function InteractiveEntrySystemRenderer({
             </aside>
           </header>
 
-          <SystemProofTransparency
-            locale={locale}
-            transparency={proofTransparency}
-          />
+          <SystemProofTransparency locale={locale} transparency={proofTransparency} />
 
           <section className="aks-interactive-entry-boundary">
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
@@ -105,16 +95,9 @@ export function InteractiveEntrySystemRenderer({
             </Text>
           </section>
 
-          <SystemPresentation
-            assets={assets}
-            document={presentationDocument}
-            locale={locale}
-          />
+          <SystemPresentation assets={assets} document={presentationDocument} locale={locale} />
 
-          <SystemLearningEvidence
-            items={learningEvidence}
-            locale={locale}
-          />
+          <SystemLearningEvidence items={learningEvidence} locale={locale} />
 
           <SystemRelatedWritings items={relatedWritings} locale={locale} />
 
@@ -142,18 +125,14 @@ export function InteractiveEntrySystemRenderer({
               >
                 {supportingLinks.map((link) =>
                   link.kind === 'demo' ? (
-                    <DeferredDemoLink
-                      key={link.id}
-                      locale={locale}
-                      url={link.url}
-                    />
+                    <DeferredDemoLink key={link.id} locale={locale} url={link.url} />
                   ) : (
                     <Link href={link.url} key={link.id}>
                       {link.kind === 'repository'
                         ? locale === 'fr'
                           ? 'Dépôt'
                           : 'Repository'
-                        : link.label ?? 'Documentation'}
+                        : (link.label ?? 'Documentation')}
                     </Link>
                   ),
                 )}

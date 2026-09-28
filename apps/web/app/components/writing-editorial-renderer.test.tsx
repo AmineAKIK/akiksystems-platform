@@ -116,9 +116,7 @@ describe('WritingEditorialRenderer', () => {
     const html = renderToStaticMarkup(
       <WritingEditorialRenderer
         assetHref={(assetId, width) =>
-          width === undefined
-            ? `/media/${assetId}`
-            : `/media/${assetId}?width=${width}`
+          width === undefined ? `/media/${assetId}` : `/media/${assetId}?width=${width}`
         }
         assets={assets}
         document={document}
@@ -148,9 +146,7 @@ describe('WritingEditorialRenderer', () => {
     expect(html).toContain('<figcaption>Controlled architecture</figcaption>');
     expect(html).toContain(`src="/media/${assetA}"`);
     expect(html).toContain(`/media/${assetA}?width=320 320w`);
-    expect(html).toContain(
-      'sizes="(max-width: 48rem) calc(100vw - 3rem), 64rem"',
-    );
+    expect(html).toContain('sizes="(max-width: 48rem) calc(100vw - 3rem), 64rem"');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).not.toContain('<script>');
   });

@@ -89,8 +89,7 @@ export interface WritingDocumentValidationResult {
 
 type JsonObject = Record<string, unknown>;
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const languagePattern = /^[a-z0-9+#._-]{1,32}$/i;
 const maxBlocks = 250;
 const maxTextNodeLength = 50_000;
@@ -128,9 +127,7 @@ function validateTextNode(
     value.text.length === 0 ||
     value.text.length > maxTextNodeLength
   ) {
-    errors.push(
-      `${path}.text must be non-empty text up to ${maxTextNodeLength} characters.`,
-    );
+    errors.push(`${path}.text must be non-empty text up to ${maxTextNodeLength} characters.`);
   }
 
   return errors.length === 0;
@@ -204,9 +201,7 @@ function validateParagraphContainer(
     return false;
   }
   if (value.length > maxParagraphsPerContainer) {
-    errors.push(
-      `${path} must contain at most ${maxParagraphsPerContainer} paragraphs.`,
-    );
+    errors.push(`${path} must contain at most ${maxParagraphsPerContainer} paragraphs.`);
   }
 
   value.forEach((paragraph, index) => {
@@ -242,11 +237,7 @@ function validateListItem(
   return nestedErrors.length === 0;
 }
 
-function validateList(
-  value: JsonObject,
-  path: string,
-  errors: string[],
-): boolean {
+function validateList(value: JsonObject, path: string, errors: string[]): boolean {
   if (!hasOnlyKeys(value, ['type', 'content'])) {
     errors.push(`${path} list contains unsupported properties.`);
   }
@@ -267,11 +258,7 @@ function validateList(
   return errors.length === 0;
 }
 
-function validateImage(
-  value: unknown,
-  path: string,
-  errors: string[],
-): value is WritingImageNode {
+function validateImage(value: unknown, path: string, errors: string[]): value is WritingImageNode {
   if (!isObject(value)) {
     errors.push(`${path} must be an image object.`);
     return false;
@@ -285,21 +272,14 @@ function validateImage(
   }
   if (!isObject(value.attrs) || !hasOnlyKeys(value.attrs, ['assetId'])) {
     errors.push(`${path}.attrs must contain only assetId.`);
-  } else if (
-    typeof value.attrs.assetId !== 'string' ||
-    !uuidPattern.test(value.attrs.assetId)
-  ) {
+  } else if (typeof value.attrs.assetId !== 'string' || !uuidPattern.test(value.attrs.assetId)) {
     errors.push(`${path}.attrs.assetId must be a UUID.`);
   }
 
   return errors.length === 0;
 }
 
-function validateBlock(
-  value: unknown,
-  index: number,
-  errors: string[],
-): value is WritingBlockNode {
+function validateBlock(value: unknown, index: number, errors: string[]): value is WritingBlockNode {
   const path = `content[${index}]`;
   if (!isObject(value)) {
     errors.push(`${path} must be an object.`);
@@ -361,9 +341,7 @@ function validateBlock(
             (typeof value.attrs.language !== 'string' ||
               !languagePattern.test(value.attrs.language)))
         ) {
-          errors.push(
-            `${path}.attrs.language must be null or a short language identifier.`,
-          );
+          errors.push(`${path}.attrs.language must be null or a short language identifier.`);
         }
       }
       const nestedErrors: string[] = [];
@@ -387,18 +365,12 @@ function validateBlock(
         value.content.length < 2 ||
         value.content.length > maxGalleryImages
       ) {
-        errors.push(
-          `${path}.content must contain between 2 and ${maxGalleryImages} images.`,
-        );
+        errors.push(`${path}.content must contain between 2 and ${maxGalleryImages} images.`);
         break;
       }
       value.content.forEach((image, imageIndex) => {
         const nestedErrors: string[] = [];
-        validateImage(
-          image,
-          `${path}.content[${imageIndex}]`,
-          nestedErrors,
-        );
+        validateImage(image, `${path}.content[${imageIndex}]`, nestedErrors);
         errors.push(...nestedErrors);
       });
       break;
@@ -413,9 +385,7 @@ function validateBlock(
   return errors.length === before;
 }
 
-export function validateWritingDocument(
-  value: unknown,
-): WritingDocumentValidationResult {
+export function validateWritingDocument(value: unknown): WritingDocumentValidationResult {
   const errors: string[] = [];
 
   if (!isObject(value)) {
@@ -429,9 +399,7 @@ export function validateWritingDocument(
     errors.push('Writing document contains unsupported top-level properties.');
   }
   if (value.version !== writingDocumentVersion) {
-    errors.push(
-      `Writing document version must be ${writingDocumentVersion}.`,
-    );
+    errors.push(`Writing document version must be ${writingDocumentVersion}.`);
   }
   if (value.type !== 'doc') {
     errors.push('Writing document type must be "doc".');
@@ -440,9 +408,7 @@ export function validateWritingDocument(
     errors.push('Writing document content must contain at least one block.');
   } else {
     if (value.content.length > maxBlocks) {
-      errors.push(
-        `Writing document content must contain at most ${maxBlocks} blocks.`,
-      );
+      errors.push(`Writing document content must contain at most ${maxBlocks} blocks.`);
     }
     value.content.forEach((block, index) => {
       validateBlock(block, index, errors);
@@ -483,16 +449,12 @@ export function writingDocumentAssetIds(document: WritingDocument): string[] {
   return ids;
 }
 
-export function writingDocumentFromPlainText(
-  value: string | null | undefined,
-): WritingDocument {
+export function writingDocumentFromPlainText(value: string | null | undefined): WritingDocument {
   const normalized = value?.replace(/\r\n?/g, '\n').trim() ?? '';
   const paragraphs =
     normalized === ''
       ? ['']
-      : normalized
-          .split(/\n\s*\n/)
-          .map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim());
+      : normalized.split(/\n\s*\n/).map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim());
 
   return {
     version: writingDocumentVersion,
@@ -526,16 +488,11 @@ function blockToPlainText(block: WritingBlockNode): string {
       return textNodesToPlainText(block.content);
 
     case 'bulletList':
-      return block.content
-        .map((item) => `• ${paragraphsToPlainText(item.content)}`)
-        .join('\n');
+      return block.content.map((item) => `• ${paragraphsToPlainText(item.content)}`).join('\n');
 
     case 'orderedList':
       return block.content
-        .map(
-          (item, index) =>
-            `${index + 1}. ${paragraphsToPlainText(item.content)}`,
-        )
+        .map((item, index) => `${index + 1}. ${paragraphsToPlainText(item.content)}`)
         .join('\n');
 
     case 'blockquote':
@@ -552,30 +509,18 @@ function blockToPlainText(block: WritingBlockNode): string {
 }
 
 export function writingDocumentToPlainText(document: WritingDocument): string {
-  return document.content
-    .map(blockToPlainText)
-    .filter(Boolean)
-    .join('\n\n')
-    .trim();
+  return document.content.map(blockToPlainText).filter(Boolean).join('\n\n').trim();
 }
 
-
-export function writingDocumentExcerpt(
-  document: WritingDocument,
-  maxLength = 220,
-): string {
-  const normalized = writingDocumentToPlainText(document)
-    .replace(/\s+/g, ' ')
-    .trim();
+export function writingDocumentExcerpt(document: WritingDocument, maxLength = 220): string {
+  const normalized = writingDocumentToPlainText(document).replace(/\s+/g, ' ').trim();
 
   if (normalized.length <= maxLength) return normalized;
 
   const target = normalized.slice(0, Math.max(1, maxLength - 1)).trimEnd();
   const wordBoundary = target.lastIndexOf(' ');
   const clipped =
-    wordBoundary >= Math.floor(maxLength * 0.6)
-      ? target.slice(0, wordBoundary)
-      : target;
+    wordBoundary >= Math.floor(maxLength * 0.6) ? target.slice(0, wordBoundary) : target;
 
   return `${clipped.trimEnd()}…`;
 }

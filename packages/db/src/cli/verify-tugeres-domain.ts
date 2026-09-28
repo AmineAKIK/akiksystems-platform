@@ -106,7 +106,10 @@ try {
     [{ id: mediaId, mimeType: 'image/webp', position: 0 }],
   );
   assert.match(english.media[0]?.caption ?? '', /not evidence of a customer deployment/i);
-  assert.match(french.media[0]?.caption ?? '', /ne constitue pas une preuve de déploiement client/i);
+  assert.match(
+    french.media[0]?.caption ?? '',
+    /ne constitue pas une preuve de déploiement client/i,
+  );
 
   const englishPresentation = JSON.stringify(english.presentationDocument);
   const frenchPresentation = JSON.stringify(french.presentationDocument);

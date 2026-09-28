@@ -31,9 +31,8 @@ export function selectContextualRelatedWritings({
   return [...uniqueCandidates.values()]
     .map((writing) => ({
       writing,
-      sharedSystemCount: writing.systemIds.filter((systemId) =>
-        currentSystems.has(systemId),
-      ).length,
+      sharedSystemCount: writing.systemIds.filter((systemId) => currentSystems.has(systemId))
+        .length,
     }))
     .sort(
       (left, right) =>

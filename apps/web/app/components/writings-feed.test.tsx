@@ -31,11 +31,7 @@ function writing(
     },
     kind: input.kind,
     editorialWeight:
-      input.kind === 'essay'
-        ? 'major'
-        : input.kind === 'article'
-          ? 'featured'
-          : 'normal',
+      input.kind === 'essay' ? 'major' : input.kind === 'article' ? 'featured' : 'normal',
     editorialPosition: 0,
     categoryIds: [],
     tagIds: [],

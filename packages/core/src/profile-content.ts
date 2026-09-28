@@ -1,9 +1,4 @@
-export const profileGuidanceKeys = [
-  'code',
-  'management',
-  'field',
-  'infrastructure',
-] as const;
+export const profileGuidanceKeys = ['code', 'management', 'field', 'infrastructure'] as const;
 
 export const profileCapabilityStepKeys = [
   'frame',
@@ -41,23 +36,14 @@ export const profileSystemicScaleProcessKeys = [
   'available',
 ] as const;
 
-export const profileEmblemSymbolKeys = [
-  'eagle',
-  'snake',
-  'olive',
-  'sea',
-  'stars',
-] as const;
+export const profileEmblemSymbolKeys = ['eagle', 'snake', 'olive', 'sea', 'stars'] as const;
 
 export type ProfileGuidanceKey = (typeof profileGuidanceKeys)[number];
 export type ProfileCapabilityStepKey = (typeof profileCapabilityStepKeys)[number];
 export type ProfileCrossCuttingKey = (typeof profileCrossCuttingKeys)[number];
-export type ProfileSystemicScaleStepKey =
-  (typeof profileSystemicScaleStepKeys)[number];
-export type ProfileSystemicScaleProcessKey =
-  (typeof profileSystemicScaleProcessKeys)[number];
-export type ProfileEmblemSymbolKey =
-  (typeof profileEmblemSymbolKeys)[number];
+export type ProfileSystemicScaleStepKey = (typeof profileSystemicScaleStepKeys)[number];
+export type ProfileSystemicScaleProcessKey = (typeof profileSystemicScaleProcessKeys)[number];
+export type ProfileEmblemSymbolKey = (typeof profileEmblemSymbolKeys)[number];
 
 export interface ProfileHeroContent {
   eyebrow: string;
@@ -200,9 +186,7 @@ function textArray(value: unknown): string[] {
 }
 
 function object(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-    ? (value as Record<string, unknown>)
-    : {};
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
 
 function parseGuidanceLook(value: unknown): ProfileGuidanceLookContent {
@@ -311,10 +295,7 @@ export function parseProfileContent(value: unknown): ProfileEditableContent {
       questionsLabel: text(guidance.questionsLabel),
       conclusion: text(guidance.conclusion),
       looks: Object.fromEntries(
-        profileGuidanceKeys.map((key) => [
-          key,
-          parseGuidanceLook(guidanceLooks[key]),
-        ]),
+        profileGuidanceKeys.map((key) => [key, parseGuidanceLook(guidanceLooks[key])]),
       ) as Record<ProfileGuidanceKey, ProfileGuidanceLookContent>,
     },
     capabilities: {
@@ -327,16 +308,10 @@ export function parseProfileContent(value: unknown): ProfileEditableContent {
       deliverableLabel: text(capabilities.deliverableLabel),
       crossCuttingLabel: text(capabilities.crossCuttingLabel),
       steps: Object.fromEntries(
-        profileCapabilityStepKeys.map((key) => [
-          key,
-          parseCapabilityStep(capabilitySteps[key]),
-        ]),
+        profileCapabilityStepKeys.map((key) => [key, parseCapabilityStep(capabilitySteps[key])]),
       ) as Record<ProfileCapabilityStepKey, ProfileCapabilityStepContent>,
       crossCutting: Object.fromEntries(
-        profileCrossCuttingKeys.map((key) => [
-          key,
-          parseCrossCutting(crossCutting[key]),
-        ]),
+        profileCrossCuttingKeys.map((key) => [key, parseCrossCutting(crossCutting[key])]),
       ) as Record<ProfileCrossCuttingKey, ProfileCrossCuttingContent>,
     },
     systemicScale: {
@@ -349,16 +324,10 @@ export function parseProfileContent(value: unknown): ProfileEditableContent {
       exampleLabel: text(systemicScale.exampleLabel),
       questionLabel: text(systemicScale.questionLabel),
       processLabels: Object.fromEntries(
-        profileSystemicScaleProcessKeys.map((key) => [
-          key,
-          text(processLabels[key]),
-        ]),
+        profileSystemicScaleProcessKeys.map((key) => [key, text(processLabels[key])]),
       ) as Record<ProfileSystemicScaleProcessKey, string>,
       steps: Object.fromEntries(
-        profileSystemicScaleStepKeys.map((key) => [
-          key,
-          parseSystemicStep(systemicSteps[key]),
-        ]),
+        profileSystemicScaleStepKeys.map((key) => [key, parseSystemicStep(systemicSteps[key])]),
       ) as Record<ProfileSystemicScaleStepKey, ProfileSystemicScaleStepContent>,
     },
     emblem: {
@@ -367,10 +336,7 @@ export function parseProfileContent(value: unknown): ProfileEditableContent {
       introduction: text(emblem.introduction),
       conclusion: text(emblem.conclusion),
       symbols: Object.fromEntries(
-        profileEmblemSymbolKeys.map((key) => [
-          key,
-          parseEmblemSymbol(emblemSymbols[key]),
-        ]),
+        profileEmblemSymbolKeys.map((key) => [key, parseEmblemSymbol(emblemSymbols[key])]),
       ) as Record<ProfileEmblemSymbolKey, ProfileEmblemSymbolContent>,
     },
     callToAction: {

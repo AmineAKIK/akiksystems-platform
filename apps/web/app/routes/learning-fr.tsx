@@ -55,8 +55,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
   return buildLocalizedPublicMeta({
     title: 'Apprentissage',
-    description:
-      'Contexte de formation et preuves d’apprentissage inspectables chez AkikSystems.',
+    description: 'Contexte de formation et preuves d’apprentissage inspectables chez AkikSystems.',
     locale: 'fr',
     canonicalPath: '/fr/apprentissage',
     alternate: {
@@ -67,8 +66,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function LearningFrRoute() {
-  const { credentials, learningArtifacts, trainings } =
-    useLoaderData<typeof loader>();
+  const { credentials, learningArtifacts, trainings } = useLoaderData<typeof loader>();
   return (
     <LearningOverview
       credentials={credentials}

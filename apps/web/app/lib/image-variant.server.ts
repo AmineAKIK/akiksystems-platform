@@ -18,9 +18,7 @@ export const publicImageVariantWidths = [320, 640, 960, 1280] as const;
 export function parsePublicImageWidth(value: string | null): number | null {
   if (value === null || value === '') return null;
   const width = Number(value);
-  return publicImageVariantWidths.includes(
-    width as (typeof publicImageVariantWidths)[number],
-  )
+  return publicImageVariantWidths.includes(width as (typeof publicImageVariantWidths)[number])
     ? width
     : null;
 }
@@ -41,13 +39,7 @@ export async function resizePublicImage(
 
   try {
     await writeFile(input, bytes);
-    await execFileAsync('vipsthumbnail', [
-      input,
-      '--size',
-      `${width}x>`,
-      '--output',
-      output,
-    ]);
+    await execFileAsync('vipsthumbnail', [input, '--size', `${width}x>`, '--output', output]);
     return new Uint8Array(await readFile(output));
   } finally {
     await rm(directory, { force: true, recursive: true });

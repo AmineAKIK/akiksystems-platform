@@ -2,10 +2,7 @@ import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 
 import { parseWebServerEnv } from '@akiksystems/config/env';
-import {
-  createLogger,
-  runWithObservabilityContext,
-} from '@akiksystems/config/observability';
+import { createLogger, runWithObservabilityContext } from '@akiksystems/config/observability';
 import { createPostgresHealthCheck } from '@akiksystems/db/health';
 import express from 'express';
 
@@ -79,16 +76,12 @@ const publicSitemapEntries = {
 };
 
 function sitemapLocaleForHostname(hostname) {
-  return hostname.toLowerCase().replace(/^www\./, '') === 'akiksystems.fr'
-    ? 'fr'
-    : 'en';
+  return hostname.toLowerCase().replace(/^www\./, '') === 'akiksystems.fr' ? 'fr' : 'en';
 }
 
 function sitemapXml(locale) {
-  const origin =
-    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
-  const alternateOrigin =
-    locale === 'fr' ? 'https://akiksystems.com' : 'https://akiksystems.fr';
+  const origin = locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
+  const alternateOrigin = locale === 'fr' ? 'https://akiksystems.com' : 'https://akiksystems.fr';
 
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -115,9 +108,7 @@ function sitemapXml(locale) {
           alternatePath +
           '" />\n' +
           '    <xhtml:link rel="alternate" hreflang="x-default" href="' +
-          (locale === 'en'
-            ? origin + path
-            : alternateOrigin + alternatePath) +
+          (locale === 'en' ? origin + path : alternateOrigin + alternatePath) +
           '" />\n' +
           '  </url>',
       )
@@ -161,10 +152,7 @@ app.use((request, response, next) => {
   response.setHeader('X-Frame-Options', 'DENY');
 
   if (env.NODE_ENV === 'production') {
-    response.setHeader(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains',
-    );
+    response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
 
   if (STAGING) {
@@ -185,8 +173,7 @@ app.use((request, response, next) => {
 
 app.get('/robots.txt', (request, response) => {
   const locale = sitemapLocaleForHostname(request.hostname);
-  const origin =
-    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
+  const origin = locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
 
   response
     .type('text/plain')
@@ -201,27 +188,20 @@ app.get('/robots.txt', (request, response) => {
 });
 
 app.get('/sitemap.xml', (request, response) => {
-  response
-    .type('application/xml')
-    .send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
+  response.type('application/xml').send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
 });
-
 
 /**
  * @param {unknown} value
  * @returns {string | undefined}
  */
 function normalizeRequestId(value) {
-  return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value)
-    ? value
-    : undefined;
+  return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/.test(value) ? value : undefined;
 }
 
 app.use((request, response, next) => {
-  const requestId =
-    normalizeRequestId(request.get('x-request-id')) ?? randomUUID();
-  const correlationId =
-    normalizeRequestId(request.get('x-correlation-id')) ?? requestId;
+  const requestId = normalizeRequestId(request.get('x-request-id')) ?? randomUUID();
+  const correlationId = normalizeRequestId(request.get('x-correlation-id')) ?? requestId;
   const startedAt = performance.now();
 
   response.setHeader('x-request-id', requestId);
@@ -304,10 +284,7 @@ if (DEVELOPMENT) {
     }
   });
 } else {
-  app.use(
-    '/assets',
-    express.static('build/client/assets', { immutable: true, maxAge: '1y' }),
-  );
+  app.use('/assets', express.static('build/client/assets', { immutable: true, maxAge: '1y' }));
   app.use(express.static('build/client', { maxAge: '1h' }));
   app.use(await import(BUILD_PATH).then((module) => module.app));
 }

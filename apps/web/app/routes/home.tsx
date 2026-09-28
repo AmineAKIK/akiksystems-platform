@@ -8,7 +8,6 @@ import type { Route } from './+types/home';
 
 export { HomePortal } from '../components/home-portal';
 
-
 export function meta({ params }: Route.MetaArgs) {
   const locale = requireLocale(params.locale);
   const alternateLocale = locale === 'en' ? 'fr' : 'en';

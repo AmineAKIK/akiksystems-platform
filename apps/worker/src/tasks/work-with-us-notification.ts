@@ -12,9 +12,10 @@ import type { Task } from 'graphile-worker';
 import type { WorkWithUsEmailTransport } from '../work-with-us-email.js';
 
 function errorMessage(error: unknown): string {
-  return (
-    error instanceof Error ? error.message : 'Unknown notification transport error.'
-  ).slice(0, 1_000);
+  return (error instanceof Error ? error.message : 'Unknown notification transport error.').slice(
+    0,
+    1_000,
+  );
 }
 
 function notificationText(delivery: {
@@ -55,10 +56,7 @@ export function createWorkWithUsInquiryNotificationTask({
     const db = createDatabase(connectionString);
 
     try {
-      const delivery = await getWorkWithUsInquiryNotificationDelivery(
-        db,
-        payload.inquiryId,
-      );
+      const delivery = await getWorkWithUsInquiryNotificationDelivery(db, payload.inquiryId);
 
       if (delivery === null) {
         logger.warn('work_with_us.notification.inquiry_missing', {
@@ -133,11 +131,7 @@ export function createWorkWithUsInquiryNotificationTask({
           providerMessageId: sent.messageId,
         });
       } catch (error) {
-        await markWorkWithUsInquiryNotificationFailed(
-          db,
-          payload.inquiryId,
-          errorMessage(error),
-        );
+        await markWorkWithUsInquiryNotificationFailed(db, payload.inquiryId, errorMessage(error));
         throw error;
       }
     } finally {

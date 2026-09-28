@@ -2,11 +2,7 @@ import { Outlet, redirect, useLoaderData, useLocation, useMatches } from 'react-
 
 import { ExperienceShell } from '../components/experience-shell';
 import { requireLocale, type Locale } from '../i18n/locales';
-import {
-  localeFromPublicHostname,
-  publicOrigins,
-  publicUrlForLocale,
-} from '../lib/public-locales';
+import { localeFromPublicHostname, publicOrigins, publicUrlForLocale } from '../lib/public-locales';
 
 import type { Route } from './+types/locale-layout';
 
@@ -20,10 +16,7 @@ export function loader({ params, request }: Route.LoaderArgs) {
     hostnameLocale !== null &&
     (hostnameLocale !== locale || requestUrl.hostname !== canonicalHostname)
   ) {
-    throw redirect(
-      publicUrlForLocale(locale, requestUrl.pathname + requestUrl.search),
-      308,
-    );
+    throw redirect(publicUrlForLocale(locale, requestUrl.pathname + requestUrl.search), 308);
   }
 
   return { locale };

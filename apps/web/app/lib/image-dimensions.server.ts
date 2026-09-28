@@ -4,11 +4,7 @@ export interface ImageDimensions {
 }
 
 function readUint24LE(bytes: Uint8Array, offset: number): number {
-  return (
-    bytes[offset]! |
-    (bytes[offset + 1]! << 8) |
-    (bytes[offset + 2]! << 16)
-  );
+  return bytes[offset]! | (bytes[offset + 1]! << 8) | (bytes[offset + 2]! << 16);
 }
 
 function readUint16BE(bytes: Uint8Array, offset: number): number {
@@ -33,10 +29,7 @@ function positive(width: number, height: number): ImageDimensions | null {
 }
 
 function pngDimensions(bytes: Uint8Array): ImageDimensions | null {
-  if (
-    bytes.length < 24 ||
-    ascii(bytes, 1, 3) !== 'PNG'
-  ) {
+  if (bytes.length < 24 || ascii(bytes, 1, 3) !== 'PNG') {
     return null;
   }
 
@@ -73,10 +66,7 @@ function jpegDimensions(bytes: Uint8Array): ImageDimensions | null {
       (marker >= 0xcd && marker <= 0xcf);
 
     if (isSof && length >= 7) {
-      return positive(
-        readUint16BE(bytes, offset + 5),
-        readUint16BE(bytes, offset + 3),
-      );
+      return positive(readUint16BE(bytes, offset + 5), readUint16BE(bytes, offset + 3));
     }
 
     offset += length;
@@ -86,11 +76,7 @@ function jpegDimensions(bytes: Uint8Array): ImageDimensions | null {
 }
 
 function webpDimensions(bytes: Uint8Array): ImageDimensions | null {
-  if (
-    bytes.length < 30 ||
-    ascii(bytes, 0, 4) !== 'RIFF' ||
-    ascii(bytes, 8, 4) !== 'WEBP'
-  ) {
+  if (bytes.length < 30 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP') {
     return null;
   }
 
@@ -105,18 +91,11 @@ function webpDimensions(bytes: Uint8Array): ImageDimensions | null {
     const data = offset + 8;
 
     if (kind === 'VP8X' && data + 10 <= bytes.length) {
-      return positive(
-        1 + readUint24LE(bytes, data + 4),
-        1 + readUint24LE(bytes, data + 7),
-      );
+      return positive(1 + readUint24LE(bytes, data + 4), 1 + readUint24LE(bytes, data + 7));
     }
 
     if (kind === 'VP8 ' && data + 10 <= bytes.length) {
-      if (
-        bytes[data + 3] === 0x9d &&
-        bytes[data + 4] === 0x01 &&
-        bytes[data + 5] === 0x2a
-      ) {
+      if (bytes[data + 3] === 0x9d && bytes[data + 4] === 0x01 && bytes[data + 5] === 0x2a) {
         return positive(
           readUint16BE(new Uint8Array([bytes[data + 7]!, bytes[data + 6]!]), 0) & 0x3fff,
           readUint16BE(new Uint8Array([bytes[data + 9]!, bytes[data + 8]!]), 0) & 0x3fff,
@@ -153,10 +132,7 @@ function avifDimensions(bytes: Uint8Array): ImageDimensions | null {
   return null;
 }
 
-export function imageDimensions(
-  mimeType: string,
-  bytes: Uint8Array,
-): ImageDimensions | null {
+export function imageDimensions(mimeType: string, bytes: Uint8Array): ImageDimensions | null {
   switch (mimeType) {
     case 'image/png':
       return pngDimensions(bytes);

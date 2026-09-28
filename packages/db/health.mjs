@@ -33,7 +33,9 @@ export function createPostgresHealthCheck(connectionString, { onPoolError } = {}
         return {
           ok,
           latencyMs: Math.round((performance.now() - startedAt) * 100) / 100,
-          ...(ok ? {} : { error: new Error('PostgreSQL health query returned an invalid result.') }),
+          ...(ok
+            ? {}
+            : { error: new Error('PostgreSQL health query returned an invalid result.') }),
         };
       } catch (error) {
         return {

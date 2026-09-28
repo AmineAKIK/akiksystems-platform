@@ -5,9 +5,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable('writing_assets')
     .addColumn('writing_id', 'uuid', (column) => column.notNull())
     .addColumn('asset_id', 'uuid', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('writing_assets_pkey', ['writing_id', 'asset_id'])
     .addForeignKeyConstraint(
       'writing_assets_writing_id_fkey',

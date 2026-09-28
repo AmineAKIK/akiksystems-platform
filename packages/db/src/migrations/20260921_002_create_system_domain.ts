@@ -4,16 +4,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('systems')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('lifecycle', 'text', (column) =>
-      column.notNull().defaultTo('active'),
-    )
+    .addColumn('lifecycle', 'text', (column) => column.notNull().defaultTo('active'))
     .addColumn('archived_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addCheckConstraint(
       'systems_lifecycle_archive_check',
       sql`(lifecycle = 'active' and archived_at is null) or
@@ -30,28 +24,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('slug', 'text')
     .addColumn('title', 'text')
     .addColumn('summary', 'text')
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('system_localizations_pkey', [
-      'system_id',
-      'locale',
-    ])
-    .addUniqueConstraint('system_localizations_locale_slug_key', [
-      'locale',
-      'slug',
-    ])
-    .addCheckConstraint(
-      'system_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('system_localizations_pkey', ['system_id', 'locale'])
+    .addUniqueConstraint('system_localizations_locale_slug_key', ['locale', 'slug'])
+    .addCheckConstraint('system_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'system_localizations_editorial_publication_check',
       sql`(editorial_state = 'draft' and published_at is null) or

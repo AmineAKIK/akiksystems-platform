@@ -6,20 +6,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('id', 'uuid', (column) => column.primaryKey())
     .addColumn('slug', 'text', (column) => column.notNull().unique())
     .addColumn('name', 'text', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addCheckConstraint(
-      'technologies_slug_not_blank_check',
-      sql`length(trim(slug)) > 0`,
-    )
-    .addCheckConstraint(
-      'technologies_name_not_blank_check',
-      sql`length(trim(name)) > 0`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addCheckConstraint('technologies_slug_not_blank_check', sql`length(trim(slug)) > 0`)
+    .addCheckConstraint('technologies_name_not_blank_check', sql`length(trim(name)) > 0`)
     .execute();
 
   await db.schema
@@ -31,21 +21,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('technologies.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('system_technologies_pkey', [
-      'system_id',
-      'technology_id',
-    ])
-    .addUniqueConstraint('system_technologies_system_position_key', [
-      'system_id',
-      'position',
-    ])
-    .addCheckConstraint(
-      'system_technologies_position_check',
-      sql`position >= 0`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('system_technologies_pkey', ['system_id', 'technology_id'])
+    .addUniqueConstraint('system_technologies_system_position_key', ['system_id', 'position'])
+    .addCheckConstraint('system_technologies_position_check', sql`position >= 0`)
     .execute();
 
   await db.schema
@@ -60,12 +39,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('technology_id', 'uuid', (column) => column.notNull())
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('evidence', 'text')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addForeignKeyConstraint(
       'system_technology_localizations_relation_fkey',
       ['system_id', 'technology_id'],
@@ -78,10 +53,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       'technology_id',
       'locale',
     ])
-    .addCheckConstraint(
-      'system_technology_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addCheckConstraint('system_technology_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'system_technology_localizations_evidence_not_blank_check',
       sql`evidence is null or length(trim(evidence)) > 0`,

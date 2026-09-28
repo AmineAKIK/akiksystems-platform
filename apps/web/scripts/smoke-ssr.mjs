@@ -29,8 +29,7 @@ const server = spawn(process.execPath, ['server.js'], {
     NODE_ENV: 'production',
     PORT: port,
     DATABASE_URL:
-      process.env.DATABASE_URL ??
-      'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
+      process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -83,17 +82,11 @@ try {
       'Home h1 must expose the AkikSystems text regardless of internal animation markup.',
     );
     assert.match(html, /class="aks-home-orbit"/);
-    assert.match(
-      html,
-      /class="aks-experience-footer aks-section-separator-before"/,
-    );
+    assert.match(html, /class="aks-experience-footer aks-section-separator-before"/);
   }
 
   process.stdout.write('Baseline SSR smoke passed.\n');
 } finally {
   if (!server.killed) server.kill('SIGTERM');
-  await Promise.race([
-    new Promise((resolve) => server.once('exit', resolve)),
-    sleep(2_000),
-  ]);
+  await Promise.race([new Promise((resolve) => server.once('exit', resolve)), sleep(2_000)]);
 }

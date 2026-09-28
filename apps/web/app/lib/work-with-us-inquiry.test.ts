@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  validateWorkWithUsInquiryForm,
-  workWithUsInquiryLimits,
-} from './work-with-us-inquiry';
+import { validateWorkWithUsInquiryForm, workWithUsInquiryLimits } from './work-with-us-inquiry';
 
 function form(values: Record<string, string>): FormData {
   const result = new FormData();

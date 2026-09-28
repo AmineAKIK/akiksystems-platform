@@ -10,8 +10,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema
-    .alterTable('profiles')
-    .dropColumn('systemic_scale_writing_id')
-    .execute();
+  await db.schema.alterTable('profiles').dropColumn('systemic_scale_writing_id').execute();
 }

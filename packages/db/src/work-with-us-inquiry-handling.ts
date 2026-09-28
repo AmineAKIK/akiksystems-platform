@@ -1,10 +1,7 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import type { Kysely } from 'kysely';
 
-import type {
-  Database,
-  WorkWithUsInquiryNotificationState,
-} from './schema.js';
+import type { Database, WorkWithUsInquiryNotificationState } from './schema.js';
 
 export type { WorkWithUsInquiryNotificationState } from './schema.js';
 
@@ -102,8 +99,7 @@ export async function getWorkWithUsInquiryNotificationDelivery(
     message: row.message,
     createdAt: row.created_at,
     state: row.notification_state as WorkWithUsInquiryNotificationState,
-    recipientEmail:
-      row.configured_recipient_email ?? row.notification_recipient_email,
+    recipientEmail: row.configured_recipient_email ?? row.notification_recipient_email,
     providerMessageId: row.notification_provider_message_id,
   };
 }

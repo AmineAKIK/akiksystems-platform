@@ -15,10 +15,7 @@ import {
   SystemLearningEvidence,
   type SystemLearningEvidenceItem,
 } from './system-learning-evidence';
-import {
-  SystemRelatedWritings,
-  type SystemRelatedWritingItem,
-} from './system-related-writings';
+import { SystemRelatedWritings, type SystemRelatedWritingItem } from './system-related-writings';
 
 export interface SystemDetailTechnology {
   id: string;
@@ -122,8 +119,7 @@ export function PresentationBlockView({
         return (
           <p key={key}>
             <Link href={asset.url}>
-              {asset.caption ??
-                (locale === 'fr' ? 'Ouvrir le document' : 'Open document')}
+              {asset.caption ?? (locale === 'fr' ? 'Ouvrir le document' : 'Open document')}
             </Link>
           </p>
         );
@@ -147,9 +143,7 @@ export function PresentationBlockView({
             }
             width={asset.width ?? undefined}
           />
-          {asset.caption !== null ? (
-            <figcaption>{asset.caption}</figcaption>
-          ) : null}
+          {asset.caption !== null ? <figcaption>{asset.caption}</figcaption> : null}
         </figure>
       );
     }
@@ -157,9 +151,7 @@ export function PresentationBlockView({
       return (
         <blockquote className="aks-system-presentation-quote" key={key}>
           <Text>{block.text}</Text>
-          {block.attribution !== null ? (
-            <footer>— {block.attribution}</footer>
-          ) : null}
+          {block.attribution !== null ? <footer>— {block.attribution}</footer> : null}
         </blockquote>
       );
   }
@@ -211,89 +203,73 @@ export function StandardSystemRenderer({
 }: SystemDetailViewProps) {
   return (
     <main className="aks-system-detail" id="system-content" tabIndex={-1}>
-        <Container>
-          <article className="aks-system-detail-stack">
-            <header className="aks-system-detail-header">
-              {preview ? (
-                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                  {locale === 'fr' ? 'Aperçu privé' : 'Private preview'}
-                </Text>
-              ) : null}
-
-              <Heading level={1} size="lg">
-                {title}
-              </Heading>
-              <Text>{summary}</Text>
-
-              {technologies.length > 0 ? (
-                <ul className="aks-system-detail-tags" aria-label={locale === 'fr' ? 'Technologies utilisées' : 'Technologies'}>
-                  {technologies.map((technology) => (
-                    <li key={technology.id}>{technology.name}</li>
-                  ))}
-                </ul>
-              ) : null}
-
-              {links.length > 0 ? (
-                <nav
-                  aria-label={
-                    locale === 'fr' ? 'Liens du système' : 'System links'
-                  }
-                  className="aks-proof-actions"
-                >
-                  {links.map((link) =>
-                    link.kind === 'demo' ? (
-                      <DeferredDemoLink
-                        key={link.id}
-                        locale={locale}
-                        url={link.url}
-                      />
-                    ) : (
-                      <Link href={link.url} key={link.id}>
-                        {link.label ?? linkLabel(link.kind, locale)}
-                      </Link>
-                    ),
-                  )}
-                </nav>
-              ) : null}
-            </header>
-
-            <SystemProofTransparency
-              locale={locale}
-              transparency={proofTransparency}
-            />
-
-            {originTitle !== null ? (
-              <aside className="aks-system-detail-context">
-                <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                  {locale === 'fr' ? 'Contexte d’origine' : 'Origin context'}
-                </Text>
-                <Heading level={2} size="sm">
-                  {originTitle}
-                </Heading>
-                {originSummary !== null ? (
-                  <Text tone="muted">{originSummary}</Text>
-                ) : null}
-              </aside>
+      <Container>
+        <article className="aks-system-detail-stack">
+          <header className="aks-system-detail-header">
+            {preview ? (
+              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                {locale === 'fr' ? 'Aperçu privé' : 'Private preview'}
+              </Text>
             ) : null}
 
-            <SystemPresentation
-              assets={assets}
-              document={presentationDocument}
-              locale={locale}
-            />
+            <Heading level={1} size="lg">
+              {title}
+            </Heading>
+            <Text>{summary}</Text>
 
-            <SystemLearningEvidence
-              items={learningEvidence}
-              locale={locale}
-            />
+            {technologies.length > 0 ? (
+              <ul
+                className="aks-system-detail-tags"
+                aria-label={locale === 'fr' ? 'Technologies utilisées' : 'Technologies'}
+              >
+                {technologies.map((technology) => (
+                  <li key={technology.id}>{technology.name}</li>
+                ))}
+              </ul>
+            ) : null}
 
-            <SystemRelatedWritings items={relatedWritings} locale={locale} />
-          </article>
-        </Container>
+            {links.length > 0 ? (
+              <nav
+                aria-label={locale === 'fr' ? 'Liens du système' : 'System links'}
+                className="aks-proof-actions"
+              >
+                {links.map((link) =>
+                  link.kind === 'demo' ? (
+                    <DeferredDemoLink key={link.id} locale={locale} url={link.url} />
+                  ) : (
+                    <Link href={link.url} key={link.id}>
+                      {link.label ?? linkLabel(link.kind, locale)}
+                    </Link>
+                  ),
+                )}
+              </nav>
+            ) : null}
+          </header>
+
+          <SystemProofTransparency locale={locale} transparency={proofTransparency} />
+
+          {originTitle !== null ? (
+            <aside className="aks-system-detail-context">
+              <Text className="aks-proof-eyebrow" size="sm" tone="muted">
+                {locale === 'fr' ? 'Contexte d’origine' : 'Origin context'}
+              </Text>
+              <Heading level={2} size="sm">
+                {originTitle}
+              </Heading>
+              {originSummary !== null ? <Text tone="muted">{originSummary}</Text> : null}
+            </aside>
+          ) : null}
+
+          <SystemPresentation assets={assets} document={presentationDocument} locale={locale} />
+
+          <SystemLearningEvidence items={learningEvidence} locale={locale} />
+
+          <SystemRelatedWritings items={relatedWritings} locale={locale} />
+        </article>
+      </Container>
     </main>
   );
 }
-
 
 /**
  * Backward-compatible alias while callers migrate to the explicit

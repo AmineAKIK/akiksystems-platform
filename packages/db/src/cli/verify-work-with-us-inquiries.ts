@@ -109,15 +109,7 @@ try {
 
   const persisted = await db
     .selectFrom('work_with_us_inquiries')
-    .select([
-      'id',
-      'submission_token',
-      'locale',
-      'name',
-      'email',
-      'organization',
-      'message',
-    ])
+    .select(['id', 'submission_token', 'locale', 'name', 'email', 'organization', 'message'])
     .where('submission_token', '=', firstToken)
     .execute();
 
@@ -136,10 +128,7 @@ try {
   );
 } finally {
   if (createdIds.length > 0) {
-    await db
-      .deleteFrom('work_with_us_inquiries')
-      .where('id', 'in', createdIds)
-      .execute();
+    await db.deleteFrom('work_with_us_inquiries').where('id', 'in', createdIds).execute();
   }
   await db.destroy();
 }

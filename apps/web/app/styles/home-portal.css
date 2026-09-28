@@ -147,10 +147,7 @@
  */
 .aks-home-portal {
   position: absolute;
-  inset:
-    clamp(4.5rem, 9dvh, 5.5rem)
-    var(--aks-home-gutter)
-    clamp(5.75rem, 11dvh, 6.75rem);
+  inset: clamp(4.5rem, 9dvh, 5.5rem) var(--aks-home-gutter) clamp(5.75rem, 11dvh, 6.75rem);
   width: auto;
   max-width: 52rem;
   height: auto;
@@ -246,20 +243,48 @@
   will-change: color, opacity, text-shadow;
 }
 
-.aks-home-scale-letter[data-scale-index='0'] { --aks-home-scale-index: 0; }
-.aks-home-scale-letter[data-scale-index='1'] { --aks-home-scale-index: 1; }
-.aks-home-scale-letter[data-scale-index='2'] { --aks-home-scale-index: 2; }
-.aks-home-scale-letter[data-scale-index='3'] { --aks-home-scale-index: 3; }
-.aks-home-scale-letter[data-scale-index='4'] { --aks-home-scale-index: 4; }
-.aks-home-scale-letter[data-scale-index='5'] { --aks-home-scale-index: 5; }
-.aks-home-scale-letter[data-scale-index='6'] { --aks-home-scale-index: 6; }
-.aks-home-scale-letter[data-scale-index='7'] { --aks-home-scale-index: 7; }
-.aks-home-scale-letter[data-scale-index='8'] { --aks-home-scale-index: 8; }
-.aks-home-scale-letter[data-scale-index='9'] { --aks-home-scale-index: 9; }
-.aks-home-scale-letter[data-scale-index='10'] { --aks-home-scale-index: 10; }
-.aks-home-scale-letter[data-scale-index='11'] { --aks-home-scale-index: 11; }
-.aks-home-scale-letter[data-scale-index='12'] { --aks-home-scale-index: 12; }
-.aks-home-scale-letter[data-scale-index='13'] { --aks-home-scale-index: 13; }
+.aks-home-scale-letter[data-scale-index='0'] {
+  --aks-home-scale-index: 0;
+}
+.aks-home-scale-letter[data-scale-index='1'] {
+  --aks-home-scale-index: 1;
+}
+.aks-home-scale-letter[data-scale-index='2'] {
+  --aks-home-scale-index: 2;
+}
+.aks-home-scale-letter[data-scale-index='3'] {
+  --aks-home-scale-index: 3;
+}
+.aks-home-scale-letter[data-scale-index='4'] {
+  --aks-home-scale-index: 4;
+}
+.aks-home-scale-letter[data-scale-index='5'] {
+  --aks-home-scale-index: 5;
+}
+.aks-home-scale-letter[data-scale-index='6'] {
+  --aks-home-scale-index: 6;
+}
+.aks-home-scale-letter[data-scale-index='7'] {
+  --aks-home-scale-index: 7;
+}
+.aks-home-scale-letter[data-scale-index='8'] {
+  --aks-home-scale-index: 8;
+}
+.aks-home-scale-letter[data-scale-index='9'] {
+  --aks-home-scale-index: 9;
+}
+.aks-home-scale-letter[data-scale-index='10'] {
+  --aks-home-scale-index: 10;
+}
+.aks-home-scale-letter[data-scale-index='11'] {
+  --aks-home-scale-index: 11;
+}
+.aks-home-scale-letter[data-scale-index='12'] {
+  --aks-home-scale-index: 12;
+}
+.aks-home-scale-letter[data-scale-index='13'] {
+  --aks-home-scale-index: 13;
+}
 
 .aks-home-scale[data-animation='running'] .aks-home-scale-letter {
   animation: aks-home-scale-ignite 525ms var(--aks-home-ease)
@@ -357,11 +382,21 @@
     opacity 160ms var(--aks-home-ease);
 }
 
-.aks-home-door[data-home-order='0'] { --aks-home-order: 0; }
-.aks-home-door[data-home-order='1'] { --aks-home-order: 1; }
-.aks-home-door[data-home-order='2'] { --aks-home-order: 2; }
-.aks-home-door[data-home-order='3'] { --aks-home-order: 3; }
-.aks-home-door[data-home-order='4'] { --aks-home-order: 4; }
+.aks-home-door[data-home-order='0'] {
+  --aks-home-order: 0;
+}
+.aks-home-door[data-home-order='1'] {
+  --aks-home-order: 1;
+}
+.aks-home-door[data-home-order='2'] {
+  --aks-home-order: 2;
+}
+.aks-home-door[data-home-order='3'] {
+  --aks-home-order: 3;
+}
+.aks-home-door[data-home-order='4'] {
+  --aks-home-order: 4;
+}
 
 .aks-home-door::before {
   position: absolute;
@@ -435,11 +470,7 @@
   align-self: center;
   justify-self: center;
   translate: 0 0.4375rem;
-  background: radial-gradient(
-    circle at center,
-    var(--aks-home-orbital) 0 1.5px,
-    transparent 2px
-  );
+  background: radial-gradient(circle at center, var(--aks-home-orbital) 0 1.5px, transparent 2px);
   pointer-events: none;
   user-select: none;
 }
@@ -449,7 +480,7 @@
   position: absolute;
   inset: 50% auto auto 50%;
   border-radius: 999px;
-  content: "";
+  content: '';
   transform: translate(-50%, -50%);
 }
 
@@ -689,10 +720,7 @@
   }
 
   .aks-home-portal {
-    inset:
-      clamp(5.25rem, 8dvh, 6.5rem)
-      auto
-      clamp(4.75rem, 7dvh, 5.75rem);
+    inset: clamp(5.25rem, 8dvh, 6.5rem) auto clamp(4.75rem, 7dvh, 5.75rem);
     left: 50%;
     width: min(calc(100% - 4rem), 110rem);
     max-width: none;

@@ -31,13 +31,11 @@ export interface PublicLearningArtifactSystem {
   href: string;
 }
 
-export interface PublishedLearningArtifactListItem
-  extends LearningArtifactPublicationSnapshot {
+export interface PublishedLearningArtifactListItem extends LearningArtifactPublicationSnapshot {
   publishedAt: Date;
 }
 
-export interface PublishedLearningArtifact
-  extends PublishedLearningArtifactListItem {
+export interface PublishedLearningArtifact extends PublishedLearningArtifactListItem {
   alternate: { locale: PlatformLocale; slug: string } | null;
   training: PublicLearningArtifactTraining | null;
   system: PublicLearningArtifactSystem | null;
@@ -46,9 +44,7 @@ export interface PublishedLearningArtifact
 function requiredText(value: string | null, label: string): string {
   const normalized = value?.trim() ?? '';
   if (normalized === '') {
-    throw new Error(
-      `LearningArtifact ${label} is required before publication.`,
-    );
+    throw new Error(`LearningArtifact ${label} is required before publication.`);
   }
   return normalized;
 }
@@ -308,10 +304,7 @@ export async function getPublishedLearningArtifact(
   return {
     ...snapshot,
     publishedAt: row.published_at,
-    alternate:
-      alternate === undefined
-        ? null
-        : { locale: alternate.locale, slug: alternate.slug },
+    alternate: alternate === undefined ? null : { locale: alternate.locale, slug: alternate.slug },
     training,
     system:
       systemReference === null

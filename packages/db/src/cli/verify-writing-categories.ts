@@ -141,9 +141,7 @@ try {
     [categoryA, categoryB],
   );
   assert.deepEqual(
-    (await listPublishedCategories(db, 'fr')).map(
-      (category) => category.categoryId,
-    ),
+    (await listPublishedCategories(db, 'fr')).map((category) => category.categoryId),
     [categoryA],
     'A missing FR publication must not fall back to EN.',
   );

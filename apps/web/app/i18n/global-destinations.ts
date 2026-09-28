@@ -75,16 +75,11 @@ export function destinationById(id: GlobalDestinationId): GlobalDestination {
   return destination;
 }
 
-export function destinationHref(
-  destination: GlobalDestinationId,
-  locale: Locale,
-): string {
+export function destinationHref(destination: GlobalDestinationId, locale: Locale): string {
   return `/${locale}/${destinationById(destination).slug[locale]}`;
 }
 
-export function destinationFromPathname(
-  pathname: string,
-): GlobalDestinationId | null {
+export function destinationFromPathname(pathname: string): GlobalDestinationId | null {
   const segments = pathname.split('/').filter(Boolean);
 
   if (segments.length < 2) {

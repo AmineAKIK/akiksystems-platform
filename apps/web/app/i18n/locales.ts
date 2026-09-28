@@ -49,7 +49,8 @@ const dictionaries = {
     about: {
       eyebrow: 'Runtime proof',
       title: 'Client navigation is enabled',
-      description: 'This second route is reachable through React Router without a full-page navigation.',
+      description:
+        'This second route is reachable through React Router without a full-page navigation.',
       homeLink: 'Return to the server-rendered home route',
     },
   },
@@ -74,7 +75,8 @@ const dictionaries = {
     about: {
       eyebrow: 'Preuve du runtime',
       title: 'La navigation côté client est active',
-      description: 'Cette seconde route est accessible avec React Router sans rechargement complet.',
+      description:
+        'Cette seconde route est accessible avec React Router sans rechargement complet.',
       homeLink: 'Retourner à la page d’accueil rendue côté serveur',
     },
   },
@@ -95,10 +97,7 @@ export function requireLocale(value: string | undefined): Locale {
   return value;
 }
 
-export function requireExactLocale(
-  value: string | undefined,
-  expected: Locale,
-): Locale {
+export function requireExactLocale(value: string | undefined, expected: Locale): Locale {
   const locale = requireLocale(value);
 
   if (locale !== expected) {

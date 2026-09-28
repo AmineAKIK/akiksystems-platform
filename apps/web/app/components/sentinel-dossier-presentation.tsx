@@ -108,10 +108,7 @@ function parseBlocks(value: string): DossierBlock[] {
   return blocks;
 }
 
-function parseDossierSections(
-  body: string | null,
-  locale: PlatformLocale,
-): DossierSection[] {
+function parseDossierSections(body: string | null, locale: PlatformLocale): DossierSection[] {
   if (body === null || body.trim() === '') return [];
 
   const parsed = body
@@ -135,15 +132,10 @@ function parseDossierSections(
 }
 
 function trainingHref(locale: PlatformLocale, slug: string): string {
-  return locale === 'fr'
-    ? `/${locale}/apprentissage/${slug}`
-    : `/${locale}/learning/${slug}`;
+  return locale === 'fr' ? `/${locale}/apprentissage/${slug}` : `/${locale}/learning/${slug}`;
 }
 
-export function isSentinelDossierArtifact(
-  locale: PlatformLocale,
-  slug: string,
-): boolean {
+export function isSentinelDossierArtifact(locale: PlatformLocale, slug: string): boolean {
   return (
     (locale === 'en' && slug === 'sentinel-dwwm-project-dossier') ||
     (locale === 'fr' && slug === 'dossier-projet-dwwm-sentinel')
@@ -208,10 +200,7 @@ export function SentinelDossierPresentation({
             </dl>
           </header>
 
-          <section
-            className="aks-dossier-context"
-            aria-labelledby="dossier-context-links"
-          >
+          <section className="aks-dossier-context" aria-labelledby="dossier-context-links">
             <div className="aks-dossier-section-heading">
               <Text className="aks-proof-eyebrow" size="sm" tone="muted">
                 {locale === 'fr' ? 'Relations' : 'Relationships'}
@@ -247,11 +236,7 @@ export function SentinelDossierPresentation({
           <div className="aks-dossier-reading-layout">
             <nav
               className="aks-dossier-nav"
-              aria-label={
-                locale === 'fr'
-                  ? 'Sommaire du dossier'
-                  : 'Dossier table of contents'
-              }
+              aria-label={locale === 'fr' ? 'Sommaire du dossier' : 'Dossier table of contents'}
             >
               <Text className="aks-proof-eyebrow" size="sm" tone="muted">
                 {locale === 'fr' ? 'Sommaire' : 'Contents'}
@@ -260,9 +245,7 @@ export function SentinelDossierPresentation({
                 {parsedSections.map((section, index) => (
                   <li key={section.key}>
                     <a href={`#dossier-${section.key}`}>
-                      <span aria-hidden="true">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
+                      <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                       {section.title}
                     </a>
                   </li>
@@ -303,9 +286,7 @@ export function SentinelDossierPresentation({
                         {artifact.training !== null ? (
                           <div className="aks-dossier-evidence-card">
                             <Text size="sm" tone="muted">
-                              {locale === 'fr'
-                                ? 'Contexte de formation'
-                                : 'Training context'}
+                              {locale === 'fr' ? 'Contexte de formation' : 'Training context'}
                             </Text>
                             <Link href={trainingHref(locale, artifact.training.slug)}>
                               {artifact.training.title}
@@ -315,20 +296,14 @@ export function SentinelDossierPresentation({
                         {artifact.system !== null ? (
                           <div className="aks-dossier-evidence-card">
                             <Text size="sm" tone="muted">
-                              {locale === 'fr'
-                                ? 'Système inspectable'
-                                : 'Inspectable System'}
+                              {locale === 'fr' ? 'Système inspectable' : 'Inspectable System'}
                             </Text>
-                            <Link href={artifact.system.href}>
-                              {artifact.system.title}
-                            </Link>
+                            <Link href={artifact.system.href}>{artifact.system.title}</Link>
                           </div>
                         ) : null}
                         <div className="aks-dossier-evidence-card">
                           <Text size="sm" tone="muted">
-                            {locale === 'fr'
-                              ? 'Candidat d’examen'
-                              : 'Examination candidate'}
+                            {locale === 'fr' ? 'Candidat d’examen' : 'Examination candidate'}
                           </Text>
                           <Link href="https://github.com/AmineAKIK/sentinel-fullstack/releases/tag/v1.0.0-rc.9">
                             v1.0.0-rc.9 · ed26a25e…
@@ -346,9 +321,7 @@ export function SentinelDossierPresentation({
                             </Text>
                           ) : (
                             <Link href={sourceHref}>
-                              {locale === 'fr'
-                                ? 'Ouvrir le PDF original'
-                                : 'Open original PDF'}
+                              {locale === 'fr' ? 'Ouvrir le PDF original' : 'Open original PDF'}
                             </Link>
                           )}
                         </div>
@@ -362,9 +335,7 @@ export function SentinelDossierPresentation({
 
           <footer className="aks-dossier-footer">
             <Link href={overviewHref}>
-              {locale === 'fr'
-                ? 'Retour à Apprentissage'
-                : 'Back to Learning'}
+              {locale === 'fr' ? 'Retour à Apprentissage' : 'Back to Learning'}
             </Link>
           </footer>
         </article>

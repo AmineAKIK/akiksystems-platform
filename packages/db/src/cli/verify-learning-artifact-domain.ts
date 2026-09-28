@@ -201,10 +201,7 @@ try {
     slug: 'qualified-learning-artifact',
   });
   assert.equal(stablePublic?.title, 'Qualified Learning Artifact');
-  assert.equal(
-    stablePublic?.summary,
-    'Published first-class learning evidence.',
-  );
+  assert.equal(stablePublic?.summary, 'Published first-class learning evidence.');
 
   await assert.rejects(
     db.deleteFrom('trainings').where('id', '=', trainingId).execute(),
@@ -291,15 +288,9 @@ try {
     'AKS-089/100 LearningArtifact domain qualification passed: Training context is optional but explicit, System/source evidence stays optional, bilingual publication snapshots remain stable, and standalone evidence can publish without inventing a Training.\n',
   );
 } finally {
-  await db
-    .deleteFrom('learning_artifacts')
-    .where('id', '=', learningArtifactId)
-    .execute();
+  await db.deleteFrom('learning_artifacts').where('id', '=', learningArtifactId).execute();
   await db.deleteFrom('assets').where('id', '=', assetId).execute();
-  await db
-    .deleteFrom('system_publications')
-    .where('system_id', '=', systemId)
-    .execute();
+  await db.deleteFrom('system_publications').where('system_id', '=', systemId).execute();
   await db.deleteFrom('systems').where('id', '=', systemId).execute();
   await db.deleteFrom('trainings').where('id', '=', trainingId).execute();
   await db.destroy();

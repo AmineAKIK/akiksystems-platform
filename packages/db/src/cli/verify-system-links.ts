@@ -93,11 +93,8 @@ try {
     ],
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_links_kind_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_links_kind_check', () =>
+    sql`
         insert into system_links (id, system_id, kind, url, position)
         values (
           ${randomUUID()}::uuid,
@@ -109,11 +106,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_links_url_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_links_url_check', () =>
+    sql`
         insert into system_links (id, system_id, kind, url, position)
         values (
           ${randomUUID()}::uuid,
@@ -125,11 +119,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_links_position_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_links_position_check', () =>
+    sql`
         insert into system_links (id, system_id, kind, url, position)
         values (
           ${randomUUID()}::uuid,
@@ -141,36 +132,30 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23505',
-    'system_links_system_position_key',
-    () =>
-      db
-        .insertInto('system_links')
-        .values({
-          id: randomUUID(),
-          system_id: systemId,
-          kind: 'demo',
-          url: 'https://demo.example.com',
-          position: 1,
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_links_system_position_key', () =>
+    db
+      .insertInto('system_links')
+      .values({
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'demo',
+        url: 'https://demo.example.com',
+        position: 1,
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23505',
-    'system_links_system_kind_url_key',
-    () =>
-      db
-        .insertInto('system_links')
-        .values({
-          id: randomUUID(),
-          system_id: systemId,
-          kind: 'live',
-          url: 'https://sentinel.example.com',
-          position: 3,
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_links_system_kind_url_key', () =>
+    db
+      .insertInto('system_links')
+      .values({
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'live',
+        url: 'https://sentinel.example.com',
+        position: 3,
+      })
+      .execute(),
   );
 
   await db.deleteFrom('systems').where('id', '=', systemId).execute();

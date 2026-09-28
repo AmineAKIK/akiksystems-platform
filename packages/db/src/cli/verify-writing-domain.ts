@@ -134,21 +134,27 @@ try {
   );
 
   await assert.rejects(
-    db.insertInto('writings').values({
-      id: randomUUID(),
-      kind: 'invalid' as 'note',
-      editorial_weight: 'normal',
-      editorial_position: 8,
-    }).execute(),
+    db
+      .insertInto('writings')
+      .values({
+        id: randomUUID(),
+        kind: 'invalid' as 'note',
+        editorial_weight: 'normal',
+        editorial_position: 8,
+      })
+      .execute(),
   );
 
   await assert.rejects(
-    db.insertInto('writings').values({
-      id: randomUUID(),
-      kind: 'note',
-      editorial_weight: 'invalid' as 'normal',
-      editorial_position: 8,
-    }).execute(),
+    db
+      .insertInto('writings')
+      .values({
+        id: randomUUID(),
+        kind: 'note',
+        editorial_weight: 'invalid' as 'normal',
+        editorial_position: 8,
+      })
+      .execute(),
   );
 
   process.stdout.write(

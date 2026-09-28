@@ -46,10 +46,7 @@ try {
 
   const sentinelId = randomUUID();
   systemIds.push(sentinelId);
-  await db
-    .insertInto('systems')
-    .values({ id: sentinelId, editorial_position: 50 })
-    .execute();
+  await db.insertInto('systems').values({ id: sentinelId, editorial_position: 50 }).execute();
   await db
     .insertInto('system_localizations')
     .values([
@@ -63,7 +60,8 @@ try {
         proof_maturity: 'Inspectable implementation',
         proof_demo_nature: 'No separate public demo',
         proof_data_nature: 'Real-world context; no customer data exposed',
-        proof_limits: 'Origin context alone is not evidence of current deployment or publicly exposed operational data.',
+        proof_limits:
+          'Origin context alone is not evidence of current deployment or publicly exposed operational data.',
         presentation_document: {
           version: 1,
           blocks: [{ type: 'paragraph', text: 'Sentinel qualification.' }],
@@ -76,12 +74,14 @@ try {
         locale: 'fr',
         slug: 'sentinel-transparence',
         title: 'Sentinel',
-        summary: 'Visibilité opérationnelle issue d un contexte industriel et de preuves inspectables.',
+        summary:
+          'Visibilité opérationnelle issue d un contexte industriel et de preuves inspectables.',
         proof_role: 'Système logiciel issu d un contexte industriel',
         proof_maturity: 'Implémentation inspectable',
         proof_demo_nature: 'Aucune démo publique séparée',
         proof_data_nature: 'Contexte réel ; aucune donnée client exposée',
-        proof_limits: 'Le contexte d origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
+        proof_limits:
+          'Le contexte d origine ne constitue pas à lui seul une preuve de déploiement actuel ou de données opérationnelles publiques.',
         presentation_document: {
           version: 1,
           blocks: [{ type: 'paragraph', text: 'Qualification Sentinel.' }],
@@ -142,7 +142,11 @@ try {
     assertCompleteTransparency(
       sentinel,
       locale === 'en'
-        ? [/Industrial-context software system/i, /Inspectable implementation/i, /no customer data/i]
+        ? [
+            /Industrial-context software system/i,
+            /Inspectable implementation/i,
+            /no customer data/i,
+          ]
         : [/contexte industriel/i, /Implémentation inspectable/i, /aucune donnée client/i],
     );
 
@@ -151,7 +155,11 @@ try {
       protoSystem,
       locale === 'en'
         ? [/Engineering portfolio/i, /synthetic demonstration data/i, /No industrial deployment/i]
-        : [/Portfolio d ingénierie/i, /Données de démonstration synthétiques/i, /Aucun déploiement industriel/i],
+        : [
+            /Portfolio d ingénierie/i,
+            /Données de démonstration synthétiques/i,
+            /Aucun déploiement industriel/i,
+          ],
     );
     if (protoSystem?.origin?.id) experienceIds.push(protoSystem.origin.id);
 
@@ -167,7 +175,11 @@ try {
     assertCompleteTransparency(
       tugeresSystem,
       locale === 'en'
-        ? [/White-label catering/i, /customer deployment not evidenced/i, /No supportable public demo/i]
+        ? [
+            /White-label catering/i,
+            /customer deployment not evidenced/i,
+            /No supportable public demo/i,
+          ]
         : [/white-label/i, /déploiement client actif non prouvé/i, /Aucune démo publique/i],
     );
   }
@@ -177,13 +189,22 @@ try {
   );
 } finally {
   if (systemIds.length > 0) {
-    await db.deleteFrom('systems').where('id', 'in', [...new Set(systemIds)]).execute();
+    await db
+      .deleteFrom('systems')
+      .where('id', 'in', [...new Set(systemIds)])
+      .execute();
   }
   if (experienceIds.length > 0) {
-    await db.deleteFrom('experiences').where('id', 'in', [...new Set(experienceIds)]).execute();
+    await db
+      .deleteFrom('experiences')
+      .where('id', 'in', [...new Set(experienceIds)])
+      .execute();
   }
   if (assetIds.length > 0) {
-    await db.deleteFrom('assets').where('id', 'in', [...new Set(assetIds)]).execute();
+    await db
+      .deleteFrom('assets')
+      .where('id', 'in', [...new Set(assetIds)])
+      .execute();
   }
   await db.destroy();
 }

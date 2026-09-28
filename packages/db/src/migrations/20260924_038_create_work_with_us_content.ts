@@ -4,22 +4,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('work_with_us_pages')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('singleton_key', 'text', (column) =>
-      column.notNull().defaultTo('public'),
-    )
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addUniqueConstraint('work_with_us_pages_singleton_key_key', [
-      'singleton_key',
-    ])
-    .addCheckConstraint(
-      'work_with_us_pages_singleton_key_check',
-      sql`singleton_key = 'public'`,
-    )
+    .addColumn('singleton_key', 'text', (column) => column.notNull().defaultTo('public'))
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addUniqueConstraint('work_with_us_pages_singleton_key_key', ['singleton_key'])
+    .addCheckConstraint('work_with_us_pages_singleton_key_check', sql`singleton_key = 'public'`)
     .execute();
 
   await db.schema
@@ -39,24 +28,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('inquiry_title', 'text')
     .addColumn('inquiry_body', 'text')
     .addColumn('privacy_note', 'text')
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('work_with_us_localizations_pkey', [
-      'page_id',
-      'locale',
-    ])
-    .addCheckConstraint(
-      'work_with_us_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('work_with_us_localizations_pkey', ['page_id', 'locale'])
+    .addCheckConstraint('work_with_us_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'work_with_us_localizations_state_check',
       sql`editorial_state in ('draft', 'published')`,
@@ -85,20 +62,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('snapshot', 'jsonb', (column) => column.notNull())
-    .addColumn('published_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('work_with_us_publications_pkey', [
-      'page_id',
-      'locale',
-    ])
-    .addCheckConstraint(
-      'work_with_us_publications_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('published_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('work_with_us_publications_pkey', ['page_id', 'locale'])
+    .addCheckConstraint('work_with_us_publications_locale_check', sql`locale in ('en', 'fr')`)
     .execute();
 }
 

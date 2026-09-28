@@ -44,11 +44,7 @@ function writing(
 describe('selectContextualRelatedWritings', () => {
   it('keeps recommendations contextual, unique, ordered, and deliberately capped', () => {
     const current = writing('current-writing', ['sentinel', 'protocap'], 20);
-    const strongest = writing(
-      'strongest-context',
-      ['sentinel', 'protocap'],
-      30,
-    );
+    const strongest = writing('strongest-context', ['sentinel', 'protocap'], 30);
     const earlier = writing('earlier-context', ['sentinel'], 10);
     const later = writing('later-context', ['protocap'], 40);
     const unrelated = writing('unrelated', ['oria'], 1);
@@ -56,14 +52,7 @@ describe('selectContextualRelatedWritings', () => {
     const selected = selectContextualRelatedWritings({
       currentWritingId: current.writingId,
       currentSystemIds: current.systemIds,
-      candidates: [
-        current,
-        strongest,
-        earlier,
-        strongest,
-        later,
-        unrelated,
-      ],
+      candidates: [current, strongest, earlier, strongest, later, unrelated],
     });
 
     expect(selected.map((candidate) => candidate.writingId)).toEqual([

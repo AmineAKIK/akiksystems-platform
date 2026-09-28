@@ -7,15 +7,11 @@ import {
 
 export type WritingEditorDocument = WritingDocument;
 
-export function parseWritingEditorDocument(
-  value: unknown,
-): WritingEditorDocument | null {
+export function parseWritingEditorDocument(value: unknown): WritingEditorDocument | null {
   return parseWritingDocument(value);
 }
 
-export function parseWritingEditorDocumentJson(
-  value: string,
-): WritingEditorDocument | null {
+export function parseWritingEditorDocumentJson(value: string): WritingEditorDocument | null {
   if (value.length > 500_000) return null;
 
   try {
@@ -31,9 +27,7 @@ export function writingEditorDocumentFromPlainText(
   return writingDocumentFromPlainText(value);
 }
 
-export function writingEditorDocumentToPlainText(
-  document: WritingEditorDocument,
-): string {
+export function writingEditorDocumentToPlainText(document: WritingEditorDocument): string {
   return writingDocumentToPlainText(document);
 }
 
@@ -41,8 +35,5 @@ export function writingEditorDocumentForDraft(
   document: unknown,
   fallbackBody: string | null | undefined,
 ): WritingEditorDocument {
-  return (
-    parseWritingDocument(document) ??
-    writingDocumentFromPlainText(fallbackBody)
-  );
+  return parseWritingDocument(document) ?? writingDocumentFromPlainText(fallbackBody);
 }

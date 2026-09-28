@@ -16,27 +16,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('work_with_us_pages.id').onDelete('cascade'),
     )
     .addColumn('locale', 'text', (column) => column.notNull())
-    .addColumn('content', 'jsonb', (column) =>
-      column.notNull().defaultTo(sql`'{}'::jsonb`),
-    )
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('content', 'jsonb', (column) => column.notNull().defaultTo(sql`'{}'::jsonb`))
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('work_with_us_localizations_pkey', [
-      'page_id',
-      'locale',
-    ])
-    .addCheckConstraint(
-      'work_with_us_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('work_with_us_localizations_pkey', ['page_id', 'locale'])
+    .addCheckConstraint('work_with_us_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'work_with_us_localizations_state_check',
       sql`editorial_state in ('draft', 'published')`,

@@ -66,9 +66,7 @@ export interface SystemPublicationSnapshot {
   media: SystemPublicationMedia[];
 }
 
-function isPublicationTechnology(
-  value: unknown,
-): value is SystemPublicationTechnology {
+function isPublicationTechnology(value: unknown): value is SystemPublicationTechnology {
   if (typeof value !== 'object' || value === null) return false;
   const technology = value as Record<string, unknown>;
 
@@ -108,9 +106,7 @@ function isPublicationSnapshot(value: unknown): value is SystemPublicationSnapsh
   );
 }
 
-export function parseSystemPublicationSnapshot(
-  value: unknown,
-): SystemPublicationSnapshot | null {
+export function parseSystemPublicationSnapshot(value: unknown): SystemPublicationSnapshot | null {
   return isPublicationSnapshot(value) ? value : null;
 }
 
@@ -121,11 +117,7 @@ async function publicationSource(
 ): Promise<SystemPublicationSnapshot> {
   const row = await db
     .selectFrom('systems')
-    .innerJoin(
-      'system_localizations',
-      'system_localizations.system_id',
-      'systems.id',
-    )
+    .innerJoin('system_localizations', 'system_localizations.system_id', 'systems.id')
     .select([
       'systems.id',
       'systems.presentation_kind',
@@ -169,26 +161,16 @@ async function publicationSource(
   const [technologies, origin, rawLinks, media] = await Promise.all([
     db
       .selectFrom('system_technologies')
-      .innerJoin(
-        'technologies',
-        'technologies.id',
-        'system_technologies.technology_id',
-      )
-      .leftJoin(
-        'system_technology_localizations',
-        (join) =>
-          join
-            .onRef(
-              'system_technology_localizations.system_id',
-              '=',
-              'system_technologies.system_id',
-            )
-            .onRef(
-              'system_technology_localizations.technology_id',
-              '=',
-              'system_technologies.technology_id',
-            )
-            .on('system_technology_localizations.locale', '=', locale),
+      .innerJoin('technologies', 'technologies.id', 'system_technologies.technology_id')
+      .leftJoin('system_technology_localizations', (join) =>
+        join
+          .onRef('system_technology_localizations.system_id', '=', 'system_technologies.system_id')
+          .onRef(
+            'system_technology_localizations.technology_id',
+            '=',
+            'system_technologies.technology_id',
+          )
+          .on('system_technology_localizations.locale', '=', locale),
       )
       .select([
         'technologies.id',
@@ -225,12 +207,10 @@ async function publicationSource(
     db
       .selectFrom('system_assets')
       .innerJoin('assets', 'assets.id', 'system_assets.asset_id')
-      .leftJoin(
-        'asset_localizations',
-        (join) =>
-          join
-            .onRef('asset_localizations.asset_id', '=', 'assets.id')
-            .on('asset_localizations.locale', '=', locale),
+      .leftJoin('asset_localizations', (join) =>
+        join
+          .onRef('asset_localizations.asset_id', '=', 'assets.id')
+          .on('asset_localizations.locale', '=', locale),
       )
       .select([
         'assets.id',
@@ -302,11 +282,7 @@ export async function publishSystemLocalization(
   const now = input.now ?? new Date();
 
   return db.transaction().execute(async (transaction) => {
-    const snapshot = await publicationSource(
-      transaction,
-      input.systemId,
-      input.locale,
-    );
+    const snapshot = await publicationSource(transaction, input.systemId, input.locale);
 
     await transaction
       .insertInto('system_publications')
@@ -390,7 +366,6 @@ export async function markSystemDraft(
   await query.execute();
 }
 
-
 export async function bootstrapSystemPublications(
   db: Kysely<Database>,
 ): Promise<{ created: number }> {
@@ -414,11 +389,7 @@ export async function bootstrapSystemPublications(
       continue;
     }
 
-    const snapshot = await publicationSource(
-      db,
-      candidate.system_id,
-      candidate.locale,
-    );
+    const snapshot = await publicationSource(db, candidate.system_id, candidate.locale);
     await db
       .insertInto('system_publications')
       .values({

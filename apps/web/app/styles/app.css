@@ -1039,9 +1039,7 @@
 }
 
 /* Returning Home removes the shell; fade its captured state instead of dropping it abruptly. */
-:root:has(.aks-experience-frame[data-home='true'])::view-transition-old(
-    aks-experience-shell
-  ) {
+:root:has(.aks-experience-frame[data-home='true'])::view-transition-old(aks-experience-shell) {
   animation: 120ms var(--aks-transition-route-easing) both aks-route-fade-out;
 }
 

@@ -222,9 +222,7 @@ export async function bootstrapSentinelDossier(
     if (created) {
       const maxPosition = await transaction
         .selectFrom('learning_artifacts')
-        .select(({ fn }) =>
-          fn.max<number>('editorial_position').as('max_position'),
-        )
+        .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
         .executeTakeFirst();
 
       await transaction
@@ -268,17 +266,15 @@ export async function bootstrapSentinelDossier(
         },
       ])
       .onConflict((conflict) =>
-        conflict
-          .columns(['learning_artifact_id', 'locale'])
-          .doUpdateSet((eb) => ({
-            slug: eb.ref('excluded.slug'),
-            title: eb.ref('excluded.title'),
-            summary: eb.ref('excluded.summary'),
-            body: eb.ref('excluded.body'),
-            editorial_state: 'draft',
-            published_at: null,
-            updated_at: new Date(),
-          })),
+        conflict.columns(['learning_artifact_id', 'locale']).doUpdateSet((eb) => ({
+          slug: eb.ref('excluded.slug'),
+          title: eb.ref('excluded.title'),
+          summary: eb.ref('excluded.summary'),
+          body: eb.ref('excluded.body'),
+          editorial_state: 'draft',
+          published_at: null,
+          updated_at: new Date(),
+        })),
       )
       .execute();
   });

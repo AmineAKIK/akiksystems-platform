@@ -1,7 +1,4 @@
-import {
-  getPublishedTag,
-  listPublishedWritingsForTag,
-} from '@akiksystems/db';
+import { getPublishedTag, listPublishedWritingsForTag } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
@@ -22,9 +19,7 @@ function requiredSlug(value: string | undefined): string {
 }
 
 function tagHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/tags/${slug}`
-    : `/en/writings/tags/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/tags/${slug}` : `/en/writings/tags/${slug}`;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -54,9 +49,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       localContext: {
         title: tag.name,
         alternateHref:
-          tag.alternate === null
-            ? null
-            : tagHref(tag.alternate.locale, tag.alternate.slug),
+          tag.alternate === null ? null : tagHref(tag.alternate.locale, tag.alternate.slug),
       },
     },
     {
@@ -67,10 +60,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -110,9 +100,7 @@ export default function WritingTagDetailRoute() {
           <section className="aks-proof-stack" aria-labelledby="tag-writings">
             <div className="aks-section-heading">
               <Heading id="tag-writings" level={2} size="sm">
-                {tag.locale === 'fr'
-                  ? 'Écrits avec ce tag'
-                  : 'Writings with this tag'}
+                {tag.locale === 'fr' ? 'Écrits avec ce tag' : 'Writings with this tag'}
               </Heading>
               <Text size="sm" tone="muted">
                 {tag.locale === 'fr'

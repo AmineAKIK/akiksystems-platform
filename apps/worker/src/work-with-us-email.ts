@@ -17,9 +17,7 @@ interface ResendEmailResponse {
   id?: unknown;
 }
 
-export function createWorkWithUsEmailTransport(
-  env: WorkerEnv,
-): WorkWithUsEmailTransport | null {
+export function createWorkWithUsEmailTransport(env: WorkerEnv): WorkWithUsEmailTransport | null {
   if (
     env.WORK_WITH_US_EMAIL_PROVIDER === undefined ||
     env.RESEND_API_KEY === undefined ||
@@ -61,9 +59,7 @@ export function createWorkWithUsEmailTransport(
 
       const payload = (await response.json()) as ResendEmailResponse;
       if (typeof payload.id !== 'string' || payload.id.trim() === '') {
-        throw new Error(
-          'Resend accepted the request without returning an email identifier.',
-        );
+        throw new Error('Resend accepted the request without returning an email identifier.');
       }
 
       return { messageId: payload.id };

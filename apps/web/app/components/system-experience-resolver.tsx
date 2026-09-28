@@ -3,15 +3,9 @@ import type { ComponentType } from 'react';
 
 import { GuidedDemoSystemRenderer } from './guided-demo-system-renderer';
 import { InteractiveEntrySystemRenderer } from './interactive-entry-system-renderer';
-import {
-  StandardSystemRenderer,
-  type SystemDetailViewProps,
-} from './system-detail-view';
+import { StandardSystemRenderer, type SystemDetailViewProps } from './system-detail-view';
 
-export type SystemExperienceRendererId =
-  | 'standard'
-  | 'guided-demo'
-  | 'interactive-entry';
+export type SystemExperienceRendererId = 'standard' | 'guided-demo' | 'interactive-entry';
 
 export const systemExperienceRendererByKind = {
   standard: 'standard',
@@ -45,15 +39,9 @@ const rendererById = {
   standard: StandardSystemExperience,
   'guided-demo': GuidedDemoSystemExperience,
   'interactive-entry': InteractiveEntrySystemExperience,
-} as const satisfies Record<
-  SystemExperienceRendererId,
-  ComponentType<SystemDetailViewProps>
->;
+} as const satisfies Record<SystemExperienceRendererId, ComponentType<SystemDetailViewProps>>;
 
-export function SystemExperience({
-  presentationKind,
-  ...props
-}: SystemExperienceProps) {
+export function SystemExperience({ presentationKind, ...props }: SystemExperienceProps) {
   const rendererId = resolveSystemExperience(presentationKind);
   const Renderer = rendererById[rendererId];
 

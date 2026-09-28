@@ -58,11 +58,7 @@ try {
     delivery.recipientEmail ?? recipient,
     'qualification',
   );
-  await markWorkWithUsInquiryNotificationFailed(
-    db,
-    inquiryId,
-    'Synthetic provider outage.',
-  );
+  await markWorkWithUsInquiryNotificationFailed(db, inquiryId, 'Synthetic provider outage.');
 
   const notification = await db
     .selectFrom('work_with_us_inquiry_notifications')
@@ -74,23 +70,14 @@ try {
   assert.equal(notification.attempt_count, 1);
   assert.equal(notification.last_error, 'Synthetic provider outage.');
 
-  await markWorkWithUsInquiryNotificationBlocked(
-    db,
-    inquiryId,
-    'Synthetic missing transport.',
-  );
+  await markWorkWithUsInquiryNotificationBlocked(db, inquiryId, 'Synthetic missing transport.');
   await markWorkWithUsInquiryNotificationSending(
     db,
     inquiryId,
     delivery.recipientEmail ?? recipient,
     'qualification',
   );
-  await markWorkWithUsInquiryNotificationSent(
-    db,
-    inquiryId,
-    'qualification',
-    `message-${marker}`,
-  );
+  await markWorkWithUsInquiryNotificationSent(db, inquiryId, 'qualification', `message-${marker}`);
 
   delivery = await getWorkWithUsInquiryNotificationDelivery(db, inquiryId);
   assert.ok(delivery);
@@ -113,10 +100,7 @@ try {
   );
 } finally {
   if (inquiryId !== null) {
-    await db
-      .deleteFrom('work_with_us_inquiries')
-      .where('id', '=', inquiryId)
-      .execute();
+    await db.deleteFrom('work_with_us_inquiries').where('id', '=', inquiryId).execute();
   }
 
   if (previousSettings === undefined) {

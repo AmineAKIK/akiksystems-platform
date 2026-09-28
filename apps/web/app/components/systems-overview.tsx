@@ -20,14 +20,16 @@ export interface SystemsOverviewProps {
 const copy = {
   en: {
     eyebrow: 'Systems · AkikSystems',
-    intro: 'Inspectable software systems, presented with only the context needed to understand what each one is.',
+    intro:
+      'Inspectable software systems, presented with only the context needed to understand what each one is.',
     empty: 'No Systems are published in English yet.',
     inspect: 'Inspect system',
     featured: 'Featured',
   },
   fr: {
     eyebrow: 'Systèmes · AkikSystems',
-    intro: 'Des systèmes logiciels inspectables, présentés avec uniquement le contexte nécessaire pour comprendre chacun d’eux.',
+    intro:
+      'Des systèmes logiciels inspectables, présentés avec uniquement le contexte nécessaire pour comprendre chacun d’eux.',
     empty: 'Aucun système n’est encore publié en français.',
     inspect: 'Inspecter le système',
     featured: 'Mis en avant',

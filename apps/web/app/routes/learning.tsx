@@ -66,8 +66,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function LearningRoute() {
-  const { credentials, learningArtifacts, trainings } =
-    useLoaderData<typeof loader>();
+  const { credentials, learningArtifacts, trainings } = useLoaderData<typeof loader>();
   return (
     <LearningOverview
       credentials={credentials}

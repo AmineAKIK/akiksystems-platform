@@ -52,8 +52,7 @@ try {
       title: 'AKS-105 Tiptap Editor',
       summary: 'Qualification draft for the headless Writing editor.',
       body: 'First Tiptap paragraph.\n\nSecond Tiptap paragraph.',
-      editor_document:
-        editorDocument as unknown as Record<string, unknown>,
+      editor_document: editorDocument as unknown as Record<string, unknown>,
     })
     .execute();
 
@@ -65,10 +64,7 @@ try {
     .executeTakeFirstOrThrow();
 
   assert.deepEqual(draft.editor_document, editorDocument);
-  assert.equal(
-    draft.body,
-    'First Tiptap paragraph.\n\nSecond Tiptap paragraph.',
-  );
+  assert.equal(draft.body, 'First Tiptap paragraph.\n\nSecond Tiptap paragraph.');
 
   await publishWritingLocalization(db, { writingId, locale: 'en' });
 

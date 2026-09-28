@@ -55,10 +55,7 @@ function systemSnapshot(locale: 'en' | 'fr') {
   };
 }
 
-function assertNativeSections(
-  body: string | null,
-  headings: readonly string[],
-): void {
+function assertNativeSections(body: string | null, headings: readonly string[]): void {
   assert.ok(body);
   assert.equal(
     body.match(/^## /gm)?.length,
@@ -186,11 +183,7 @@ try {
     locale: 'en',
     trainingId,
   });
-  assert.ok(
-    connected.some(
-      (artifact) => artifact.learningArtifactId === learningArtifactId,
-    ),
-  );
+  assert.ok(connected.some((artifact) => artifact.learningArtifactId === learningArtifactId));
 
   sourceAssetId = randomUUID();
   await db
@@ -232,18 +225,12 @@ try {
   );
 } finally {
   if (learningArtifactId !== null) {
-    await db
-      .deleteFrom('learning_artifacts')
-      .where('id', '=', learningArtifactId)
-      .execute();
+    await db.deleteFrom('learning_artifacts').where('id', '=', learningArtifactId).execute();
   }
   if (sourceAssetId !== null) {
     await db.deleteFrom('assets').where('id', '=', sourceAssetId).execute();
   }
-  await db
-    .deleteFrom('system_publications')
-    .where('system_id', '=', systemId)
-    .execute();
+  await db.deleteFrom('system_publications').where('system_id', '=', systemId).execute();
   await db.deleteFrom('systems').where('id', '=', systemId).execute();
   if (trainingId !== null) {
     await db.deleteFrom('trainings').where('id', '=', trainingId).execute();

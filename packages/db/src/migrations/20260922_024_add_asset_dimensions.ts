@@ -28,9 +28,5 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     drop constraint if exists assets_dimensions_check
   `.execute(db);
 
-  await db.schema
-    .alterTable('assets')
-    .dropColumn('height')
-    .dropColumn('width')
-    .execute();
+  await db.schema.alterTable('assets').dropColumn('height').dropColumn('width').execute();
 }

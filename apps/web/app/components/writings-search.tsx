@@ -9,10 +9,7 @@ function overviewHref(locale: Locale): string {
   return locale === 'fr' ? '/fr/ecrits' : '/en/writings';
 }
 
-function clearSearchHref(
-  locale: Locale,
-  filterModel: WritingFilterModel,
-): string {
+function clearSearchHref(locale: Locale, filterModel: WritingFilterModel): string {
   const params = new URLSearchParams();
   if (filterModel.selection.kind !== null) {
     params.set('type', filterModel.selection.kind);
@@ -25,9 +22,7 @@ function clearSearchHref(
   }
 
   const query = params.toString();
-  return query === ''
-    ? overviewHref(locale)
-    : `${overviewHref(locale)}?${query}`;
+  return query === '' ? overviewHref(locale) : `${overviewHref(locale)}?${query}`;
 }
 
 export function WritingsSearch({
@@ -70,11 +65,7 @@ export function WritingsSearch({
           <input name="type" type="hidden" value={filterModel.selection.kind} />
         ) : null}
         {filterModel.selection.category !== null ? (
-          <input
-            name="category"
-            type="hidden"
-            value={filterModel.selection.category}
-          />
+          <input name="category" type="hidden" value={filterModel.selection.category} />
         ) : null}
         {filterModel.selection.tag !== null ? (
           <input name="tag" type="hidden" value={filterModel.selection.tag} />
@@ -94,9 +85,7 @@ export function WritingsSearch({
             type="search"
           />
         </label>
-        <Button type="submit">
-          {locale === 'fr' ? 'Rechercher' : 'Search'}
-        </Button>
+        <Button type="submit">{locale === 'fr' ? 'Rechercher' : 'Search'}</Button>
         {query !== '' ? (
           <Link href={clearSearchHref(locale, filterModel)}>
             {locale === 'fr' ? 'Effacer la recherche' : 'Clear search'}

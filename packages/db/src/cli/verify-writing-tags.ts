@@ -152,10 +152,10 @@ try {
   await publishWritingLocalization(db, { writingId: writingB, locale: 'en' });
 
   const englishTags = await listPublishedTags(db, 'en');
-  assert.deepEqual(
-    englishTags.map((tag) => tag.canonicalKey).sort(),
-    ['delivery-practice', 'software-architecture'],
-  );
+  assert.deepEqual(englishTags.map((tag) => tag.canonicalKey).sort(), [
+    'delivery-practice',
+    'software-architecture',
+  ]);
   assert.deepEqual(
     (await listPublishedTags(db, 'fr')).map((tag) => tag.canonicalKey),
     ['software-architecture'],

@@ -24,13 +24,9 @@ runWithObservabilityContext(
       },
     });
 
-    logger.error(
-      'verification.error',
-      new Error(`Database connection failed for ${databaseUrl}`),
-      {
-        token: 'secret-token-field',
-      },
-    );
+    logger.error('verification.error', new Error(`Database connection failed for ${databaseUrl}`), {
+      token: 'secret-token-field',
+    });
   },
 );
 

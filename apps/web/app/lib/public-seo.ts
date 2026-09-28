@@ -38,22 +38,15 @@ export function buildLocalizedPublicMeta({
   description: string;
   locale: PlatformLocale;
   canonicalPath: string;
-  alternate:
-    | {
-        locale: PlatformLocale;
-        path: string;
-      }
-    | null;
+  alternate: {
+    locale: PlatformLocale;
+    path: string;
+  } | null;
 }): MetaDescriptor[] {
   const canonicalUrl = publicCanonicalUrl(canonicalPath);
-  const socialImageUrl = publicUrlForLocale(
-    locale,
-    '/brand/og-akiksystems.png',
-  );
+  const socialImageUrl = publicUrlForLocale(locale, '/brand/og-akiksystems.png');
   const socialImageAlt =
-    locale === 'fr'
-      ? 'AkikSystems — Systemic Scale'
-      : 'AkikSystems — Systemic Scale';
+    locale === 'fr' ? 'AkikSystems — Systemic Scale' : 'AkikSystems — Systemic Scale';
   const descriptors: MetaDescriptor[] = [
     { title: title + ' · AkikSystems' },
     { name: 'description', content: description },

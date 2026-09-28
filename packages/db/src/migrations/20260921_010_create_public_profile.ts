@@ -6,9 +6,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('profiles')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('singleton_key', 'text', (column) =>
-      column.notNull().defaultTo('public'),
-    )
+    .addColumn('singleton_key', 'text', (column) => column.notNull().defaultTo('public'))
     .addColumn('display_name', 'text')
     .addColumn('portrait_asset_id', 'uuid', (column) =>
       column.references('assets.id').onDelete('set null'),
@@ -19,17 +17,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('current_system_id', 'uuid', (column) =>
       column.references('systems.id').onDelete('set null'),
     )
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addUniqueConstraint('profiles_singleton_key_key', ['singleton_key'])
-    .addCheckConstraint(
-      'profiles_singleton_key_check',
-      sql`singleton_key = 'public'`,
-    )
+    .addCheckConstraint('profiles_singleton_key_check', sql`singleton_key = 'public'`)
     .addCheckConstraint(
       'profiles_display_name_check',
       sql`
@@ -53,27 +44,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('profiles.id').onDelete('cascade'),
     )
     .addColumn('locale', 'text', (column) => column.notNull())
-    .addColumn('content', 'jsonb', (column) =>
-      column.notNull().defaultTo(sql`'{}'::jsonb`),
-    )
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('content', 'jsonb', (column) => column.notNull().defaultTo(sql`'{}'::jsonb`))
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('profile_localizations_pkey', [
-      'profile_id',
-      'locale',
-    ])
-    .addCheckConstraint(
-      'profile_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('profile_localizations_pkey', ['profile_id', 'locale'])
+    .addCheckConstraint('profile_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'profile_localizations_state_check',
       sql`editorial_state in ('draft', 'published')`,
@@ -94,17 +71,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('snapshot', 'jsonb', (column) => column.notNull())
-    .addColumn('published_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('published_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('profile_publications_pkey', ['profile_id', 'locale'])
-    .addCheckConstraint(
-      'profile_publications_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addCheckConstraint('profile_publications_locale_check', sql`locale in ('en', 'fr')`)
     .execute();
 
   await db.schema
@@ -115,21 +85,14 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('kind', 'text', (column) => column.notNull())
     .addColumn('value', 'text', (column) => column.notNull())
     .addColumn('visible', 'boolean', (column) => column.notNull().defaultTo(true))
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('profile_contacts_pkey', ['profile_id', 'kind'])
     .addCheckConstraint(
       'profile_contacts_kind_check',
       sql`kind in ('linkedin', 'github', 'email', 'phone')`,
     )
-    .addCheckConstraint(
-      'profile_contacts_value_not_blank_check',
-      sql`length(trim(value)) > 0`,
-    )
+    .addCheckConstraint('profile_contacts_value_not_blank_check', sql`length(trim(value)) > 0`)
     .execute();
 
   await db.schema
@@ -139,17 +102,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .addColumn('language_code', 'text', (column) => column.notNull())
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('profile_languages_pkey', [
-      'profile_id',
-      'language_code',
-    ])
-    .addUniqueConstraint('profile_languages_profile_position_key', [
-      'profile_id',
-      'position',
-    ])
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('profile_languages_pkey', ['profile_id', 'language_code'])
+    .addUniqueConstraint('profile_languages_profile_position_key', ['profile_id', 'position'])
     .addCheckConstraint(
       'profile_languages_language_code_check',
       sql`language_code in ('fr', 'en', 'ar')`,
@@ -162,21 +117,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('profile_id', 'uuid', (column) =>
       column.primaryKey().references('profiles.id').onDelete('cascade'),
     )
-    .addColumn('worldwide', 'boolean', (column) =>
-      column.notNull().defaultTo(false),
-    )
-    .addColumn('remote', 'boolean', (column) =>
-      column.notNull().defaultTo(false),
-    )
-    .addColumn('relocation', 'boolean', (column) =>
-      column.notNull().defaultTo(false),
-    )
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('worldwide', 'boolean', (column) => column.notNull().defaultTo(false))
+    .addColumn('remote', 'boolean', (column) => column.notNull().defaultTo(false))
+    .addColumn('relocation', 'boolean', (column) => column.notNull().defaultTo(false))
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .execute();
 
   await db.schema
@@ -186,42 +131,22 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('profiles.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addUniqueConstraint('profile_stack_groups_profile_position_key', [
-      'profile_id',
-      'position',
-    ])
-    .addCheckConstraint(
-      'profile_stack_groups_position_check',
-      sql`position >= 0`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addUniqueConstraint('profile_stack_groups_profile_position_key', ['profile_id', 'position'])
+    .addCheckConstraint('profile_stack_groups_position_check', sql`position >= 0`)
     .execute();
 
   await db.schema
     .createTable('profile_stack_group_localizations')
     .addColumn('group_id', 'uuid', (column) =>
-      column
-        .notNull()
-        .references('profile_stack_groups.id')
-        .onDelete('cascade'),
+      column.notNull().references('profile_stack_groups.id').onDelete('cascade'),
     )
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('title', 'text', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('profile_stack_group_localizations_pkey', [
-      'group_id',
-      'locale',
-    ])
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('profile_stack_group_localizations_pkey', ['group_id', 'locale'])
     .addCheckConstraint(
       'profile_stack_group_localizations_locale_check',
       sql`locale in ('en', 'fr')`,
@@ -235,30 +160,19 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('profile_stack_group_technologies')
     .addColumn('group_id', 'uuid', (column) =>
-      column
-        .notNull()
-        .references('profile_stack_groups.id')
-        .onDelete('cascade'),
+      column.notNull().references('profile_stack_groups.id').onDelete('cascade'),
     )
     .addColumn('technology_id', 'uuid', (column) =>
       column.notNull().references('technologies.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('profile_stack_group_technologies_pkey', [
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('profile_stack_group_technologies_pkey', ['group_id', 'technology_id'])
+    .addUniqueConstraint('profile_stack_group_technologies_group_position_key', [
       'group_id',
-      'technology_id',
+      'position',
     ])
-    .addUniqueConstraint(
-      'profile_stack_group_technologies_group_position_key',
-      ['group_id', 'position'],
-    )
-    .addCheckConstraint(
-      'profile_stack_group_technologies_position_check',
-      sql`position >= 0`,
-    )
+    .addCheckConstraint('profile_stack_group_technologies_position_check', sql`position >= 0`)
     .execute();
 
   await sql`

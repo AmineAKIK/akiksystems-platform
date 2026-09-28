@@ -17,26 +17,10 @@ async function redirectFor(url: string, locale: 'en' | 'fr') {
 
 describe('locale layout canonical domain redirects', () => {
   it.each([
-    [
-      'https://akiksystems.fr/en?x=1',
-      'en',
-      'https://akiksystems.com/en?x=1',
-    ],
-    [
-      'https://akiksystems.com/fr?x=1',
-      'fr',
-      'https://akiksystems.fr/fr?x=1',
-    ],
-    [
-      'https://www.akiksystems.fr/fr',
-      'fr',
-      'https://akiksystems.fr/fr',
-    ],
-    [
-      'https://www.akiksystems.com/en',
-      'en',
-      'https://akiksystems.com/en',
-    ],
+    ['https://akiksystems.fr/en?x=1', 'en', 'https://akiksystems.com/en?x=1'],
+    ['https://akiksystems.com/fr?x=1', 'fr', 'https://akiksystems.fr/fr?x=1'],
+    ['https://www.akiksystems.fr/fr', 'fr', 'https://akiksystems.fr/fr'],
+    ['https://www.akiksystems.com/en', 'en', 'https://akiksystems.com/en'],
   ] as const)('redirects %s to its canonical public domain', async (url, locale, expected) => {
     const response = await redirectFor(url, locale);
     expect(response).toBeInstanceOf(Response);

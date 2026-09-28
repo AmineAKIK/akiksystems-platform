@@ -41,10 +41,7 @@ try {
       .values({ id: pageId, singleton_key: 'public' })
       .execute();
   } else {
-    await db
-      .deleteFrom('work_with_us_systems')
-      .where('page_id', '=', pageId)
-      .execute();
+    await db.deleteFrom('work_with_us_systems').where('page_id', '=', pageId).execute();
   }
 
   const protoCap = await bootstrapProtoCapDomain(db, {
@@ -187,10 +184,7 @@ try {
     'Work with us System selection qualification passed: selection is data-owned, ordered, capped at four, and locale-unpublished Systems are omitted from public references.\n',
   );
 } finally {
-  await db
-    .deleteFrom('work_with_us_systems')
-    .where('page_id', '=', pageId)
-    .execute();
+  await db.deleteFrom('work_with_us_systems').where('page_id', '=', pageId).execute();
 
   if (previousSelections.length > 0) {
     await db
@@ -206,10 +200,7 @@ try {
   }
 
   if (createdPage) {
-    await db
-      .deleteFrom('work_with_us_pages')
-      .where('id', '=', pageId)
-      .execute();
+    await db.deleteFrom('work_with_us_pages').where('id', '=', pageId).execute();
   }
 
   await db

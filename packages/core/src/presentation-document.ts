@@ -9,8 +9,7 @@ export const presentationEvidenceStatuses = [
   'future_integration',
 ] as const;
 
-export type PresentationEvidenceStatus =
-  (typeof presentationEvidenceStatuses)[number];
+export type PresentationEvidenceStatus = (typeof presentationEvidenceStatuses)[number];
 
 export interface PresentationDocument {
   version: PresentationDocumentVersion;
@@ -107,9 +106,7 @@ function validateBlock(
       if (
         block.evidenceStatus !== undefined &&
         block.evidenceStatus !== null &&
-        !presentationEvidenceStatuses.includes(
-          block.evidenceStatus as PresentationEvidenceStatus,
-        )
+        !presentationEvidenceStatuses.includes(block.evidenceStatus as PresentationEvidenceStatus)
       ) {
         errors.push(
           `blocks[${index}].evidenceStatus must be implemented, boundary, hypothesis, future_integration, or null.`,
@@ -142,18 +139,14 @@ function validateBlock(
         errors.push(`blocks[${index}] list contains unsupported properties.`);
       }
       if (block.style !== 'unordered' && block.style !== 'ordered') {
-        errors.push(
-          `blocks[${index}].style must be "unordered" or "ordered".`,
-        );
+        errors.push(`blocks[${index}].style must be "unordered" or "ordered".`);
       }
       if (
         !Array.isArray(block.items) ||
         block.items.length === 0 ||
         !block.items.every(isNonEmptyText)
       ) {
-        errors.push(
-          `blocks[${index}].items must contain one or more non-empty text items.`,
-        );
+        errors.push(`blocks[${index}].items must contain one or more non-empty text items.`);
       }
       break;
     }
@@ -195,17 +188,13 @@ function validateBlock(
     }
 
     default:
-      errors.push(
-        `blocks[${index}].type must be heading, paragraph, list, code, image, or quote.`,
-      );
+      errors.push(`blocks[${index}].type must be heading, paragraph, list, code, image, or quote.`);
   }
 
   return errors.length === 0;
 }
 
-export function validatePresentationDocument(
-  value: unknown,
-): PresentationDocumentValidationResult {
+export function validatePresentationDocument(value: unknown): PresentationDocumentValidationResult {
   const errors: string[] = [];
 
   if (!isObject(value)) {
@@ -216,15 +205,11 @@ export function validatePresentationDocument(
   }
 
   if (!hasOnlyKeys(value, ['version', 'blocks'])) {
-    errors.push(
-      'presentation_document contains unsupported top-level properties.',
-    );
+    errors.push('presentation_document contains unsupported top-level properties.');
   }
 
   if (value.version !== presentationDocumentVersion) {
-    errors.push(
-      `presentation_document.version must be ${presentationDocumentVersion}.`,
-    );
+    errors.push(`presentation_document.version must be ${presentationDocumentVersion}.`);
   }
 
   if (!Array.isArray(value.blocks)) {
@@ -235,10 +220,8 @@ export function validatePresentationDocument(
       validateBlock(block, index, errors);
 
       if (errors.length === blockErrorsBefore && isObject(block)) {
-        if ('html' in block || 'layout' in block || 'style' in block && block.type !== 'list') {
-          errors.push(
-            `blocks[${index}] contains page-builder or raw HTML semantics.`,
-          );
+        if ('html' in block || 'layout' in block || ('style' in block && block.type !== 'list')) {
+          errors.push(`blocks[${index}] contains page-builder or raw HTML semantics.`);
         }
       }
     });
@@ -254,9 +237,7 @@ export function parsePresentationDocument(value: unknown): PresentationDocument 
   const result = validatePresentationDocument(value);
 
   if (!result.success) {
-    throw new Error(
-      `Invalid presentation document: ${result.errors.join(' ')}`,
-    );
+    throw new Error(`Invalid presentation document: ${result.errors.join(' ')}`);
   }
 
   return value as PresentationDocument;

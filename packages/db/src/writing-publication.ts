@@ -15,14 +15,8 @@ import {
   parseCategoryPublicationSnapshot,
   type CategoryPublicationSnapshot,
 } from './category-publication.js';
-import {
-  parseTagPublicationSnapshot,
-  type TagPublicationSnapshot,
-} from './tag-publication.js';
-import {
-  listPublishedSystemReferences,
-  type PublicSystemReference,
-} from './system-reference.js';
+import { parseTagPublicationSnapshot, type TagPublicationSnapshot } from './tag-publication.js';
+import { listPublishedSystemReferences, type PublicSystemReference } from './system-reference.js';
 import type { Database } from './schema.js';
 
 export interface WritingPublicationAsset {
@@ -87,10 +81,7 @@ export interface PublishedWritingReference {
   href: string;
 }
 
-export function writingReferenceHref(
-  locale: PlatformLocale,
-  slug: string,
-): string {
+export function writingReferenceHref(locale: PlatformLocale, slug: string): string {
   return locale === 'fr' ? `/fr/ecrits/${slug}` : `/en/writings/${slug}`;
 }
 
@@ -106,11 +97,7 @@ function parsePublicationAssets(value: unknown): WritingPublicationAsset[] {
   if (!Array.isArray(value)) return [];
 
   return value.flatMap((candidate) => {
-    if (
-      candidate === null ||
-      typeof candidate !== 'object' ||
-      Array.isArray(candidate)
-    ) {
+    if (candidate === null || typeof candidate !== 'object' || Array.isArray(candidate)) {
       return [];
     }
 
@@ -136,9 +123,7 @@ function parsePublicationAssets(value: unknown): WritingPublicationAsset[] {
   });
 }
 
-export function parseWritingPublicationSnapshot(
-  value: unknown,
-): WritingPublicationSnapshot {
+export function parseWritingPublicationSnapshot(value: unknown): WritingPublicationSnapshot {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Invalid Writing publication snapshot.');
   }
@@ -155,8 +140,7 @@ export function parseWritingPublicationSnapshot(
     assets?: unknown;
   };
   const document =
-    parseWritingDocument(snapshot.document) ??
-    writingDocumentFromPlainText(snapshot.body);
+    parseWritingDocument(snapshot.document) ?? writingDocumentFromPlainText(snapshot.body);
 
   return {
     ...snapshot,
@@ -168,14 +152,10 @@ export function parseWritingPublicationSnapshot(
         )
       : [],
     tagIds: Array.isArray(snapshot.tagIds)
-      ? snapshot.tagIds.filter(
-          (tagId): tagId is string => typeof tagId === 'string',
-        )
+      ? snapshot.tagIds.filter((tagId): tagId is string => typeof tagId === 'string')
       : [],
     systemIds: Array.isArray(snapshot.systemIds)
-      ? snapshot.systemIds.filter(
-          (systemId): systemId is string => typeof systemId === 'string',
-        )
+      ? snapshot.systemIds.filter((systemId): systemId is string => typeof systemId === 'string')
       : [],
     assets: parsePublicationAssets(snapshot.assets),
   };
@@ -196,10 +176,7 @@ async function publishedCategoryMap(
     .execute();
 
   return new Map(
-    rows.map((row) => [
-      row.category_id,
-      parseCategoryPublicationSnapshot(row.snapshot),
-    ]),
+    rows.map((row) => [row.category_id, parseCategoryPublicationSnapshot(row.snapshot)]),
   );
 }
 
@@ -217,9 +194,7 @@ async function publishedTagMap(
     .where('tag_id', 'in', [...new Set(tagIds)])
     .execute();
 
-  return new Map(
-    rows.map((row) => [row.tag_id, parseTagPublicationSnapshot(row.snapshot)]),
-  );
+  return new Map(rows.map((row) => [row.tag_id, parseTagPublicationSnapshot(row.snapshot)]));
 }
 
 function resolveCategories(
@@ -289,11 +264,7 @@ export async function publishWritingLocalization(
   await db.transaction().execute(async (transaction) => {
     const row = await transaction
       .selectFrom('writings')
-      .innerJoin(
-        'writing_localizations',
-        'writing_localizations.writing_id',
-        'writings.id',
-      )
+      .innerJoin('writing_localizations', 'writing_localizations.writing_id', 'writings.id')
       .select([
         'writings.id',
         'writings.kind',
@@ -318,8 +289,7 @@ export async function publishWritingLocalization(
     }
 
     const document =
-      parseWritingDocument(row.editor_document) ??
-      writingDocumentFromPlainText(row.body);
+      parseWritingDocument(row.editor_document) ?? writingDocumentFromPlainText(row.body);
     const documentPlainText = writingDocumentToPlainText(document);
     if (row.kind === 'note') {
       if (documentPlainText === '') {
@@ -381,9 +351,7 @@ export async function publishWritingLocalization(
         );
       }
       if (!asset.mime_type.startsWith('image/')) {
-        throw new Error(
-          `Writing document asset ${assetId} must be an image.`,
-        );
+        throw new Error(`Writing document asset ${assetId} must be an image.`);
       }
 
       return {
@@ -629,9 +597,7 @@ export async function listPublishedWritingsForCategory(
   if (category === undefined) return [];
 
   const writings = await listPublishedWritings(db, input.locale);
-  return writings.filter((writing) =>
-    writing.categoryIds.includes(input.categoryId),
-  );
+  return writings.filter((writing) => writing.categoryIds.includes(input.categoryId));
 }
 
 export async function listPublishedWritingsForTag(
@@ -707,9 +673,6 @@ export async function getPublishedWriting(
     categories: resolveCategories(snapshot.categoryIds, categoriesById),
     tags: resolveTags(snapshot.tagIds, tagsById),
     systems: resolveSystems(snapshot.systemIds, systemsById),
-    alternate:
-      alternate === undefined
-        ? null
-        : { locale: alternate.locale, slug: alternate.slug },
+    alternate: alternate === undefined ? null : { locale: alternate.locale, slug: alternate.slug },
   };
 }

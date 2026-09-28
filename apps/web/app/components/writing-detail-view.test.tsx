@@ -48,12 +48,8 @@ describe('WritingDetailView contextual related content', () => {
     expect(html).toContain('data-contextual-related-writings="true"');
     expect(html).toContain('Continue in this context');
     expect(html).toContain('href="/en/writings/related-article"');
-    expect(html.indexOf('Reader body.')).toBeLessThan(
-      html.indexOf('Continue in this context'),
-    );
-    expect(html.indexOf('Continue in this context')).toBeLessThan(
-      html.indexOf('Back to Writings'),
-    );
+    expect(html.indexOf('Reader body.')).toBeLessThan(html.indexOf('Continue in this context'));
+    expect(html.indexOf('Continue in this context')).toBeLessThan(html.indexOf('Back to Writings'));
   });
 
   it('does not add promotional navigation when there is no contextual match', () => {

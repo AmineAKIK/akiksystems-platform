@@ -55,7 +55,12 @@ export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
     { tagName: 'link', rel: 'canonical', href: canonicalUrl },
     { tagName: 'link', rel: 'alternate', hrefLang: locale, href: canonicalUrl },
     { tagName: 'link', rel: 'alternate', hrefLang: alternateLocale, href: alternateUrl },
-    { tagName: 'link', rel: 'alternate', hrefLang: 'x-default', href: publicCanonicalUrl('/en/systems') },
+    {
+      tagName: 'link',
+      rel: 'alternate',
+      hrefLang: 'x-default',
+      href: publicCanonicalUrl('/en/systems'),
+    },
   ];
 }
 

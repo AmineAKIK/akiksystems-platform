@@ -51,16 +51,7 @@ try {
 
   assert.deepEqual(
     english.technologies.map(({ name }) => name),
-    [
-      'TypeScript',
-      'React',
-      'Vite',
-      'Express',
-      'Node.js',
-      'Playwright',
-      'Vitest',
-      'Tailwind CSS',
-    ],
+    ['TypeScript', 'React', 'Vite', 'Express', 'Node.js', 'Playwright', 'Vitest', 'Tailwind CSS'],
   );
 
   assert.equal(english.origin?.title, "L'Oreal / La Roche-Posay");

@@ -1,24 +1,15 @@
-import type {
-  PublishedWorkWithUsPage,
-  PublicSystemReference,
-} from '@akiksystems/db';
+import type { PublishedWorkWithUsPage, PublicSystemReference } from '@akiksystems/db';
 import { Button, Container, Heading, Link, Text } from '@akiksystems/ui';
 import { Form } from 'react-router';
 
-import {
-  destinationById,
-  destinationHref,
-} from '../i18n/global-destinations';
+import { destinationById, destinationHref } from '../i18n/global-destinations';
 import type { Locale } from '../i18n/locales';
 import {
   workWithUsInquiryLimits,
   type WorkWithUsInquiryActionData,
 } from '../lib/work-with-us-inquiry';
 import { WorkWithUsMessagePlayback } from './work-with-us-message-playback';
-import {
-  WorkWithUsApproachGlyph,
-  WorkWithUsBrandVisual,
-} from './work-with-us-visuals';
+import { WorkWithUsApproachGlyph, WorkWithUsBrandVisual } from './work-with-us-visuals';
 
 export interface WorkWithUsViewProps {
   locale: Locale;
@@ -33,11 +24,7 @@ function hasCopy(...values: Array<string | null>): boolean {
   return values.some((value) => value !== null);
 }
 
-export function WorkWithUsSystemCard({
-  reference,
-}: {
-  reference: PublicSystemReference;
-}) {
+export function WorkWithUsSystemCard({ reference }: { reference: PublicSystemReference }) {
   return (
     <article className="aks-work-with-us-system-card">
       <Link
@@ -77,8 +64,7 @@ export function WorkWithUsView({
   const systems = content?.systems;
 
   const heroTitle = hero?.title ?? destination.label[locale];
-  const heroIntroduction =
-    hero?.introduction ?? destination.description[locale];
+  const heroIntroduction = hero?.introduction ?? destination.description[locale];
 
   const approachVisible =
     approach !== undefined &&
@@ -91,12 +77,7 @@ export function WorkWithUsView({
 
   const contactVisible =
     contact !== undefined &&
-    hasCopy(
-      contact.eyebrow,
-      contact.title,
-      contact.introduction,
-      contact.privacyNote,
-    );
+    hasCopy(contact.eyebrow, contact.title, contact.introduction, contact.privacyNote);
 
   const contactFormVisible =
     contact !== undefined &&
@@ -109,23 +90,16 @@ export function WorkWithUsView({
     contact.submitLabel !== null &&
     contact.successMessage !== null;
 
-  const activeSubmissionToken =
-    inquiryActionData?.submissionToken ?? submissionToken;
+  const activeSubmissionToken = inquiryActionData?.submissionToken ?? submissionToken;
   const inquiryValues = inquiryActionData?.values;
   const inquiryErrors = inquiryActionData?.errors;
 
   const aboutVisible =
-    about !== undefined &&
-    hasCopy(about.eyebrow, about.title, about.body, about.profileLinkLabel);
+    about !== undefined && hasCopy(about.eyebrow, about.title, about.body, about.profileLinkLabel);
 
   const systemsVisible =
     systems !== undefined &&
-    hasCopy(
-      systems.eyebrow,
-      systems.title,
-      systems.introduction,
-      systems.allSystemsLinkLabel,
-    );
+    hasCopy(systems.eyebrow, systems.title, systems.introduction, systems.allSystemsLinkLabel);
 
   return (
     <main className="aks-work-with-us">
@@ -137,11 +111,7 @@ export function WorkWithUsView({
           <div className="aks-work-with-us-hero-layout">
             <div className="aks-work-with-us-hero-copy">
               {hero?.eyebrow === null || hero?.eyebrow === undefined ? null : (
-                <Text
-                  className="aks-work-with-us-eyebrow"
-                  size="sm"
-                  tone="muted"
-                >
+                <Text className="aks-work-with-us-eyebrow" size="sm" tone="muted">
                   {hero.eyebrow}
                 </Text>
               )}
@@ -153,11 +123,7 @@ export function WorkWithUsView({
               >
                 {heroTitle}
               </Heading>
-              <Text
-                className="aks-work-with-us-hero-introduction"
-                size="lg"
-                tone="muted"
-              >
+              <Text className="aks-work-with-us-hero-introduction" size="lg" tone="muted">
                 {heroIntroduction}
               </Text>
             </div>
@@ -168,19 +134,13 @@ export function WorkWithUsView({
 
       {approachVisible && approach !== undefined ? (
         <section
-          aria-labelledby={
-            approach.title === null ? undefined : 'work-with-us-approach-title'
-          }
+          aria-labelledby={approach.title === null ? undefined : 'work-with-us-approach-title'}
           className="aks-work-with-us-approach aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-approach-heading">
               {approach.eyebrow === null ? null : (
-                <Text
-                  className="aks-work-with-us-eyebrow"
-                  size="sm"
-                  tone="muted"
-                >
+                <Text className="aks-work-with-us-eyebrow" size="sm" tone="muted">
                   {approach.eyebrow}
                 </Text>
               )}
@@ -195,10 +155,7 @@ export function WorkWithUsView({
                 </Heading>
               )}
               {approach.introduction === null ? null : (
-                <Text
-                  className="aks-work-with-us-approach-introduction"
-                  tone="muted"
-                >
+                <Text className="aks-work-with-us-approach-introduction" tone="muted">
                   {approach.introduction}
                 </Text>
               )}
@@ -235,46 +192,29 @@ export function WorkWithUsView({
 
       {contactVisible && contact !== undefined ? (
         <section
-          aria-labelledby={
-            contact.title === null ? undefined : 'work-with-us-contact-title'
-          }
+          aria-labelledby={contact.title === null ? undefined : 'work-with-us-contact-title'}
           className="aks-work-with-us-contact aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-contact-layout">
               <div className="aks-work-with-us-contact-copy">
                 {contact.eyebrow === null ? null : (
-                  <Text
-                    className="aks-work-with-us-eyebrow"
-                    size="sm"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-eyebrow" size="sm" tone="muted">
                     {contact.eyebrow}
                   </Text>
                 )}
                 {contact.title === null ? null : (
-                  <Heading
-                    id="work-with-us-contact-title"
-                    level={2}
-                    size="lg"
-                  >
+                  <Heading id="work-with-us-contact-title" level={2} size="lg">
                     {contact.title}
                   </Heading>
                 )}
                 {contact.introduction === null ? null : (
-                  <Text
-                    className="aks-work-with-us-contact-introduction"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-contact-introduction" tone="muted">
                     {contact.introduction}
                   </Text>
                 )}
                 {contact.privacyNote === null ? null : (
-                  <Text
-                    className="aks-work-with-us-contact-privacy"
-                    size="sm"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-contact-privacy" size="sm" tone="muted">
                     {contact.privacyNote}
                   </Text>
                 )}
@@ -288,21 +228,10 @@ export function WorkWithUsView({
                   method="post"
                   noValidate
                 >
-                  <input
-                    name="_intent"
-                    type="hidden"
-                    value="submit-work-with-us-inquiry"
-                  />
-                  <input
-                    name="submissionToken"
-                    type="hidden"
-                    value={activeSubmissionToken}
-                  />
+                  <input name="_intent" type="hidden" value="submit-work-with-us-inquiry" />
+                  <input name="submissionToken" type="hidden" value={activeSubmissionToken} />
 
-                  <div
-                    aria-hidden="true"
-                    className="aks-work-with-us-inquiry-trap"
-                  >
+                  <div aria-hidden="true" className="aks-work-with-us-inquiry-trap">
                     <label htmlFor="work-with-us-fax-number">Fax number</label>
                     <input
                       autoComplete="off"
@@ -319,7 +248,9 @@ export function WorkWithUsView({
                       className="aks-work-with-us-inquiry-feedback aks-work-with-us-inquiry-feedback-error"
                       role="alert"
                     >
-                      <span aria-hidden="true" className="aks-work-with-us-inquiry-feedback-icon">!</span>
+                      <span aria-hidden="true" className="aks-work-with-us-inquiry-feedback-icon">
+                        !
+                      </span>
                       <Text size="sm">{inquiryActionData.message}</Text>
                     </div>
                   )}
@@ -340,13 +271,9 @@ export function WorkWithUsView({
                       <span>{contact.nameLabel}</span>
                       <input
                         aria-describedby={
-                          inquiryErrors?.name === undefined
-                            ? undefined
-                            : 'work-with-us-name-error'
+                          inquiryErrors?.name === undefined ? undefined : 'work-with-us-name-error'
                         }
-                        aria-invalid={
-                          inquiryErrors?.name === undefined ? undefined : true
-                        }
+                        aria-invalid={inquiryErrors?.name === undefined ? undefined : true}
                         autoComplete="name"
                         defaultValue={inquiryValues?.name ?? ''}
                         maxLength={workWithUsInquiryLimits.name}
@@ -372,9 +299,7 @@ export function WorkWithUsView({
                             ? undefined
                             : 'work-with-us-email-error'
                         }
-                        aria-invalid={
-                          inquiryErrors?.email === undefined ? undefined : true
-                        }
+                        aria-invalid={inquiryErrors?.email === undefined ? undefined : true}
                         autoComplete="email"
                         defaultValue={inquiryValues?.email ?? ''}
                         inputMode="email"
@@ -401,11 +326,7 @@ export function WorkWithUsView({
                             ? undefined
                             : 'work-with-us-organization-error'
                         }
-                        aria-invalid={
-                          inquiryErrors?.organization === undefined
-                            ? undefined
-                            : true
-                        }
+                        aria-invalid={inquiryErrors?.organization === undefined ? undefined : true}
                         autoComplete="organization"
                         defaultValue={inquiryValues?.organization ?? ''}
                         maxLength={workWithUsInquiryLimits.organization}
@@ -430,9 +351,7 @@ export function WorkWithUsView({
                             ? undefined
                             : 'work-with-us-message-error'
                         }
-                        aria-invalid={
-                          inquiryErrors?.message === undefined ? undefined : true
-                        }
+                        aria-invalid={inquiryErrors?.message === undefined ? undefined : true}
                         defaultValue={inquiryValues?.message ?? ''}
                         id="work-with-us-message"
                         maxLength={workWithUsInquiryLimits.message}
@@ -478,37 +397,25 @@ export function WorkWithUsView({
 
       {aboutVisible && about !== undefined ? (
         <section
-          aria-labelledby={
-            about.title === null ? undefined : 'work-with-us-about-title'
-          }
+          aria-labelledby={about.title === null ? undefined : 'work-with-us-about-title'}
           className="aks-work-with-us-about aks-section-separator-after"
         >
           <Container width="wide">
             <div className="aks-work-with-us-about-layout">
               <div className="aks-work-with-us-about-heading">
                 {about.eyebrow === null ? null : (
-                  <Text
-                    className="aks-work-with-us-eyebrow"
-                    size="sm"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-eyebrow" size="sm" tone="muted">
                     {about.eyebrow}
                   </Text>
                 )}
                 {about.title === null ? null : (
-                  <Heading
-                    id="work-with-us-about-title"
-                    level={2}
-                    size="md"
-                  >
+                  <Heading id="work-with-us-about-title" level={2} size="md">
                     {about.title}
                   </Heading>
                 )}
               </div>
               <div className="aks-work-with-us-about-body">
-                {about.body === null ? null : (
-                  <Text tone="muted">{about.body}</Text>
-                )}
+                {about.body === null ? null : <Text tone="muted">{about.body}</Text>}
               </div>
               {about.profileLinkLabel === null ? null : (
                 <Link
@@ -526,37 +433,24 @@ export function WorkWithUsView({
 
       {systemsVisible && systems !== undefined ? (
         <section
-          aria-labelledby={
-            systems.title === null ? undefined : 'work-with-us-systems-title'
-          }
+          aria-labelledby={systems.title === null ? undefined : 'work-with-us-systems-title'}
           className="aks-work-with-us-systems"
         >
           <Container width="wide">
             <div className="aks-work-with-us-systems-heading">
               <div>
                 {systems.eyebrow === null ? null : (
-                  <Text
-                    className="aks-work-with-us-eyebrow"
-                    size="sm"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-eyebrow" size="sm" tone="muted">
                     {systems.eyebrow}
                   </Text>
                 )}
                 {systems.title === null ? null : (
-                  <Heading
-                    id="work-with-us-systems-title"
-                    level={2}
-                    size="md"
-                  >
+                  <Heading id="work-with-us-systems-title" level={2} size="md">
                     {systems.title}
                   </Heading>
                 )}
                 {systems.introduction === null ? null : (
-                  <Text
-                    className="aks-work-with-us-systems-introduction"
-                    tone="muted"
-                  >
+                  <Text className="aks-work-with-us-systems-introduction" tone="muted">
                     {systems.introduction}
                   </Text>
                 )}
@@ -575,10 +469,7 @@ export function WorkWithUsView({
             {systemReferences.length === 0 ? null : (
               <div className="aks-work-with-us-system-grid">
                 {systemReferences.map((reference) => (
-                  <WorkWithUsSystemCard
-                    key={reference.id}
-                    reference={reference}
-                  />
+                  <WorkWithUsSystemCard key={reference.id} reference={reference} />
                 ))}
               </div>
             )}

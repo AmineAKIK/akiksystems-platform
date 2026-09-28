@@ -78,19 +78,16 @@ try {
   assert.equal(incomplete.ready, false);
   assert.equal(incomplete.errors.length, 9);
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_publication_readiness_check',
-    () =>
-      db
-        .updateTable('system_localizations')
-        .set({
-          editorial_state: 'published',
-          published_at: new Date(),
-        })
-        .where('system_id', '=', systemId)
-        .where('locale', '=', 'en')
-        .execute(),
+  await expectPostgresError('23514', 'system_localizations_publication_readiness_check', () =>
+    db
+      .updateTable('system_localizations')
+      .set({
+        editorial_state: 'published',
+        published_at: new Date(),
+      })
+      .where('system_id', '=', systemId)
+      .where('locale', '=', 'en')
+      .execute(),
   );
 
   const validDocument = {
@@ -155,11 +152,8 @@ try {
   assert.equal(published.editorial_state, 'published');
   assert.ok(published.published_at instanceof Date);
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_publication_readiness_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_localizations_publication_readiness_check', () =>
+    sql`
         update system_localizations
         set summary = '   '
         where system_id = ${systemId}::uuid

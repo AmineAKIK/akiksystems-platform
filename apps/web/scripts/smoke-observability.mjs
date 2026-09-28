@@ -79,9 +79,7 @@ try {
       'x-correlation-id': 'corr-error-aks-007',
     },
   });
-  const failureBody = /** @type {{ status: string; requestId: string }} */ (
-    await failure.json()
-  );
+  const failureBody = /** @type {{ status: string; requestId: string }} */ (await failure.json());
 
   assert.equal(failure.status, 500);
   assert.equal(failureBody.status, 'error');
@@ -106,9 +104,7 @@ try {
   assert.equal(requestLog.path, '/health');
 
   const errorLog = jsonLogs.find(
-    (entry) =>
-      entry.event === 'http.request.error' &&
-      entry.requestId === 'req-error-aks-007',
+    (entry) => entry.event === 'http.request.error' && entry.requestId === 'req-error-aks-007',
   );
   assert.ok(errorLog);
   assert.equal(errorLog.error.name, 'Error');
@@ -122,8 +118,5 @@ try {
   );
 } finally {
   server.kill('SIGTERM');
-  await Promise.race([
-    new Promise((resolve) => server.once('exit', resolve)),
-    sleep(2_000),
-  ]);
+  await Promise.race([new Promise((resolve) => server.once('exit', resolve)), sleep(2_000)]);
 }

@@ -76,10 +76,7 @@ try {
       .values({ system_id: systemId, technology_id: technologyId, position: 0 })
       .execute();
 
-    await transaction
-      .insertInto('experiences')
-      .values({ id: experienceId })
-      .execute();
+    await transaction.insertInto('experiences').values({ id: experienceId }).execute();
     await transaction
       .insertInto('experience_localizations')
       .values([

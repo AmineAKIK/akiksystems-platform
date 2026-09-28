@@ -19,7 +19,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     .selectFrom('assets')
     .select(['storage_key', 'mime_type'])
     .where('id', '=', assetId)
-    
+
     .executeTakeFirst();
 
   if (asset === undefined) {

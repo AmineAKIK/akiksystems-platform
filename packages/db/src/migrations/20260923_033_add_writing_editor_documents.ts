@@ -28,8 +28,5 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     .dropConstraint('writing_localizations_editor_document_check')
     .execute();
 
-  await db.schema
-    .alterTable('writing_localizations')
-    .dropColumn('editor_document')
-    .execute();
+  await db.schema.alterTable('writing_localizations').dropColumn('editor_document').execute();
 }

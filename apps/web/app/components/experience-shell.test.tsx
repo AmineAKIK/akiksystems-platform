@@ -8,24 +8,22 @@ describe('ExperienceShell', () => {
   it('renders public identity, navigation, context, locale and outlet on a deep System link', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/systems/sentinel']}>
-      <ExperienceShell
-        alternateHref="/fr/systems/sentinelle"
-        currentTitle="Sentinel"
-        locale="en"
-        pathname="/en/systems/sentinel"
-      >
-        <main><h1>Sentinel</h1></main>
-      </ExperienceShell>
+        <ExperienceShell
+          alternateHref="/fr/systems/sentinelle"
+          currentTitle="Sentinel"
+          locale="en"
+          pathname="/en/systems/sentinel"
+        >
+          <main>
+            <h1>Sentinel</h1>
+          </main>
+        </ExperienceShell>
       </MemoryRouter>,
     );
 
     expect(html).toContain('class="aks-skip-link" href="#experience-outlet"');
-    expect(html).toContain(
-      'class="aks-experience-shell aks-section-separator-after"',
-    );
-    expect(html).toContain(
-      'class="aks-experience-footer aks-section-separator-before"',
-    );
+    expect(html).toContain('class="aks-experience-shell aks-section-separator-after"');
+    expect(html).toContain('class="aks-experience-footer aks-section-separator-before"');
     expect(html).toContain('class="aks-brand-signature"');
     expect(html).toContain('class="aks-brand-mark"');
     expect(html).toContain('src="/brand/AKSYS.svg"');
@@ -40,7 +38,9 @@ describe('ExperienceShell', () => {
     expect(html).toContain('class="aks-experience-mobile-menu"');
     expect(html).toContain('class="aks-experience-mobile-menu-trigger"');
     expect(html).toContain('class="aks-experience-mobile-nav"');
-    expect(html).toContain('aria-current="page" class="aks-link" href="/en/systems" data-discover="true">Systems</a>');
+    expect(html).toContain(
+      'aria-current="page" class="aks-link" href="/en/systems" data-discover="true">Systems</a>',
+    );
     expect(html).toContain('aria-label="Current context"');
     expect(html).toContain('class="aks-experience-context-list"');
     expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
@@ -49,9 +49,7 @@ describe('ExperienceShell', () => {
     expect(html).toContain(
       'hrefLang="fr" lang="fr" href="/fr/systems/sentinelle" data-discover="true">Français</a>',
     );
-    expect(html).toContain(
-      'class="aks-experience-outlet" id="experience-outlet" tabindex="-1"',
-    );
+    expect(html).toContain('class="aks-experience-outlet" id="experience-outlet" tabindex="-1"');
     expect(html).toContain('<main><h1>Sentinel</h1></main>');
   });
 
@@ -64,7 +62,9 @@ describe('ExperienceShell', () => {
           mode="reading"
           pathname="/en/writings/long-form"
         >
-          <main><h1>Long form</h1></main>
+          <main>
+            <h1>Long form</h1>
+          </main>
         </ExperienceShell>
       </MemoryRouter>,
     );
@@ -79,7 +79,9 @@ describe('ExperienceShell', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/en/profile']}>
         <ExperienceShell locale="en" pathname="/en/profile">
-          <main><h1>Profile</h1></main>
+          <main>
+            <h1>Profile</h1>
+          </main>
         </ExperienceShell>
       </MemoryRouter>,
     );
@@ -98,7 +100,9 @@ describe('ExperienceShell', () => {
           locale="en"
           pathname="/en/systems/sentinel"
         >
-          <main><h1>Sentinel</h1></main>
+          <main>
+            <h1>Sentinel</h1>
+          </main>
         </ExperienceShell>
       </MemoryRouter>,
     );
@@ -113,7 +117,9 @@ describe('ExperienceShell', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter initialEntries={['/fr/about']}>
         <ExperienceShell locale="fr" pathname="/fr/about">
-          <main><h1>À propos</h1></main>
+          <main>
+            <h1>À propos</h1>
+          </main>
         </ExperienceShell>
       </MemoryRouter>,
     );

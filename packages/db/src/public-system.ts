@@ -136,14 +136,7 @@ export async function listPublishedSystems(
     const snapshot = parseSystemPublicationSnapshot(row.snapshot);
     return snapshot === null
       ? []
-      : [
-          listItemFromSnapshot(
-            snapshot,
-            row.published_at,
-            row.editorial_position,
-            row.featured,
-          ),
-        ];
+      : [listItemFromSnapshot(snapshot, row.published_at, row.editorial_position, row.featured)];
   });
 }
 

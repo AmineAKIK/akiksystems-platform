@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { PublishedWritingListItem } from '@akiksystems/db';
 
-import {
-  resolveWritingFilters,
-  writingFilterVolumeThreshold,
-} from './writing-filters';
+import { resolveWritingFilters, writingFilterVolumeThreshold } from './writing-filters';
 
 function writing(
   index: number,
@@ -75,16 +72,14 @@ function writing(
 
 describe('AKS-115 Writing filters', () => {
   it('stays absent below the publication-volume threshold and ignores crafted query params', () => {
-    const writings = Array.from(
-      { length: writingFilterVolumeThreshold - 1 },
-      (_, index) =>
-        writing(index + 1, {
-          kind: index % 2 === 0 ? 'note' : 'essay',
-          category:
-            index % 2 === 0
-              ? { slug: 'engineering', name: 'Engineering' }
-              : { slug: 'attention', name: 'Attention' },
-        }),
+    const writings = Array.from({ length: writingFilterVolumeThreshold - 1 }, (_, index) =>
+      writing(index + 1, {
+        kind: index % 2 === 0 ? 'note' : 'essay',
+        category:
+          index % 2 === 0
+            ? { slug: 'engineering', name: 'Engineering' }
+            : { slug: 'attention', name: 'Attention' },
+      }),
     );
 
     const resolved = resolveWritingFilters(
@@ -102,9 +97,8 @@ describe('AKS-115 Writing filters', () => {
   });
 
   it('also stays absent when volume is high but no dimension can refine the feed', () => {
-    const writings = Array.from(
-      { length: writingFilterVolumeThreshold },
-      (_, index) => writing(index + 1),
+    const writings = Array.from({ length: writingFilterVolumeThreshold }, (_, index) =>
+      writing(index + 1),
     );
 
     const resolved = resolveWritingFilters(writings, new URLSearchParams());
@@ -157,9 +151,7 @@ describe('AKS-115 Writing filters', () => {
       ['article', 2],
       ['essay', 2],
     ]);
-    expect(
-      resolved.model.categories.map(({ value, count }) => [value, count]),
-    ).toEqual([
+    expect(resolved.model.categories.map(({ value, count }) => [value, count])).toEqual([
       ['attention', 3],
       ['engineering', 3],
     ]);
@@ -205,14 +197,10 @@ describe('AKS-115 Writing filters', () => {
 
     const filtered = resolveWritingFilters(
       writings,
-      new URLSearchParams(
-        'type=note&category=engineering&tag=architecture',
-      ),
+      new URLSearchParams('type=note&category=engineering&tag=architecture'),
     );
     expect(filtered.model.resultCount).toBe(1);
-    expect(filtered.writings.map((item) => item.writingId)).toEqual([
-      writings[0]!.writingId,
-    ]);
+    expect(filtered.writings.map((item) => item.writingId)).toEqual([writings[0]!.writingId]);
 
     const unknown = resolveWritingFilters(
       writings,

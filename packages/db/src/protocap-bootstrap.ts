@@ -195,10 +195,7 @@ async function ensureTechnology(
   }
 
   const id = randomUUID();
-  await db
-    .insertInto('technologies')
-    .values({ id, slug, name })
-    .execute();
+  await db.insertInto('technologies').values({ id, slug, name }).execute();
 
   return id;
 }
@@ -248,17 +245,17 @@ export async function bootstrapProtoCapDomain(
           title: 'ProtoCap',
           summary:
             'Interactive engineering demonstrator for industrial operations, combining browser-local prototypes with a protected guided-work boundary.',
-          proof_role: "Engineering portfolio and industrial-operations demonstrator",
-          proof_maturity: "Inspectable demonstrator with implemented browser and protected server paths",
-          proof_demo_nature: "Isolated public demo plus protected guided-work surfaces",
-          proof_data_nature: "Synthetic demonstration data; no claim of live plant data",
-          proof_limits: "No industrial deployment, measured business impact, shared transactional backend, or fully offline operation is claimed.",
+          proof_role: 'Engineering portfolio and industrial-operations demonstrator',
+          proof_maturity:
+            'Inspectable demonstrator with implemented browser and protected server paths',
+          proof_demo_nature: 'Isolated public demo plus protected guided-work surfaces',
+          proof_data_nature: 'Synthetic demonstration data; no claim of live plant data',
+          proof_limits:
+            'No industrial deployment, measured business impact, shared transactional backend, or fully offline operation is claimed.',
           presentation_document: {
             ...englishPresentation,
             blocks: englishPresentation.blocks.map((block) =>
-              block.type === 'image'
-                ? { ...block, assetId: input.media.id }
-                : block,
+              block.type === 'image' ? { ...block, assetId: input.media.id } : block,
             ),
           },
           editorial_state: 'published',
@@ -271,17 +268,18 @@ export async function bootstrapProtoCapDomain(
           title: 'ProtoCap',
           summary:
             'Demonstrateur d ingenierie interactif pour les operations industrielles, combinant des prototypes locaux au navigateur et un espace de guidage protege.',
-          proof_role: "Portfolio d ingénierie et démonstrateur pour opérations industrielles",
-          proof_maturity: "Démonstrateur inspectable avec parcours navigateur et serveur protégés implémentés",
-          proof_demo_nature: "Démo publique isolée et surfaces de guidage protégées",
-          proof_data_nature: "Données de démonstration synthétiques ; aucune donnée usine temps réel revendiquée",
-          proof_limits: "Aucun déploiement industriel, impact métier mesuré, backend transactionnel partagé ou fonctionnement entièrement hors ligne n est revendiqué.",
+          proof_role: 'Portfolio d ingénierie et démonstrateur pour opérations industrielles',
+          proof_maturity:
+            'Démonstrateur inspectable avec parcours navigateur et serveur protégés implémentés',
+          proof_demo_nature: 'Démo publique isolée et surfaces de guidage protégées',
+          proof_data_nature:
+            'Données de démonstration synthétiques ; aucune donnée usine temps réel revendiquée',
+          proof_limits:
+            'Aucun déploiement industriel, impact métier mesuré, backend transactionnel partagé ou fonctionnement entièrement hors ligne n est revendiqué.',
           presentation_document: {
             ...frenchPresentation,
             blocks: frenchPresentation.blocks.map((block) =>
-              block.type === 'image'
-                ? { ...block, assetId: input.media.id }
-                : block,
+              block.type === 'image' ? { ...block, assetId: input.media.id } : block,
             ),
           },
           editorial_state: 'published',
@@ -306,10 +304,7 @@ export async function bootstrapProtoCapDomain(
       )
       .execute();
 
-    await transaction
-      .insertInto('experiences')
-      .values({ id: experienceId })
-      .execute();
+    await transaction.insertInto('experiences').values({ id: experienceId }).execute();
 
     await transaction
       .insertInto('experience_localizations')

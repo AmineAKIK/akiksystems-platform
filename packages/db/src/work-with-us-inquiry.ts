@@ -84,12 +84,8 @@ export async function createWorkWithUsInquiry(
 
     if (recent.rows.length >= workWithUsInquiryRateLimit.maxAccepted) {
       const oldest = recent.rows[0]?.created_at ?? now;
-      const availableAt =
-        oldest.getTime() + workWithUsInquiryRateLimit.windowMs;
-      const retryAfterSeconds = Math.max(
-        1,
-        Math.ceil((availableAt - now.getTime()) / 1000),
-      );
+      const availableAt = oldest.getTime() + workWithUsInquiryRateLimit.windowMs;
+      const retryAfterSeconds = Math.max(1, Math.ceil((availableAt - now.getTime()) / 1000));
 
       return {
         status: 'rate_limited' as const,

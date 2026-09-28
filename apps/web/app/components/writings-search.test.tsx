@@ -27,12 +27,7 @@ function filterModel(
 describe('WritingsSearch', () => {
   it('renders an accessible GET search on the unified English route', () => {
     const html = renderToStaticMarkup(
-      <WritingsSearch
-        filterModel={filterModel()}
-        locale="en"
-        query=""
-        resultCount={8}
-      />,
+      <WritingsSearch filterModel={filterModel()} locale="en" query="" resultCount={8} />,
     );
 
     expect(html).toContain('role="search"');
@@ -65,8 +60,6 @@ describe('WritingsSearch', () => {
     expect(html).toContain('name="tag"');
     expect(html).toContain('value="systems"');
     expect(html).toContain('2 résultats pour « maîtrise systèmes »');
-    expect(html).toContain(
-      'href="/fr/ecrits?type=essay&amp;category=attention&amp;tag=systems"',
-    );
+    expect(html).toContain('href="/fr/ecrits?type=essay&amp;category=attention&amp;tag=systems"');
   });
 });

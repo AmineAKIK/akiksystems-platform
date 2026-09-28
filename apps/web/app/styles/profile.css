@@ -4,7 +4,7 @@
   --aks-profile-bg-soft: #0a0f13;
   --aks-profile-bg-card: #0d1419;
   --aks-profile-text: #f3f3ef;
-  --aks-profile-text-soft: #dcdfE1;
+  --aks-profile-text-soft: #dcdfe1;
   --aks-profile-text-muted: #aeb4ba;
   --aks-profile-text-faint: #7e868d;
   --aks-profile-line: #1b2228;
@@ -270,7 +270,11 @@
   padding: 1.875rem 1.875rem 1.375rem;
   border: 1px solid #1f272d;
   border-radius: 0.75rem;
-  background: linear-gradient(180deg, var(--aks-profile-bg-card) 0%, var(--aks-profile-bg-soft) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--aks-profile-bg-card) 0%,
+    var(--aks-profile-bg-soft) 100%
+  );
 }
 
 .aks-profile-current-project-topline {

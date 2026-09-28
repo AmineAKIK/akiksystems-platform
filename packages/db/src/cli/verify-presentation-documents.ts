@@ -1,10 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { randomUUID } from 'node:crypto';
 
-import {
-  parsePresentationDocument,
-  validatePresentationDocument,
-} from '@akiksystems/core';
+import { parsePresentationDocument, validatePresentationDocument } from '@akiksystems/core';
 import { sql } from 'kysely';
 
 import { createDatabase } from '../database.js';
@@ -109,11 +106,8 @@ try {
   assert.equal(validation.success, true);
   assert.deepEqual(validation.errors, []);
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_presentation_document_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_localizations_presentation_document_check', () =>
+    sql`
         update system_localizations
         set presentation_document = ${JSON.stringify({
           version: 2,
@@ -124,11 +118,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_presentation_document_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_localizations_presentation_document_check', () =>
+    sql`
         update system_localizations
         set presentation_document = ${JSON.stringify({
           version: 1,

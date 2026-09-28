@@ -15,9 +15,7 @@ try {
     .executeTakeFirst();
 
   if (sentinel === undefined) {
-    throw new Error(
-      'Sentinel must be published before LearningArtifact browser qualification.',
-    );
+    throw new Error('Sentinel must be published before LearningArtifact browser qualification.');
   }
 
   await db
@@ -49,8 +47,7 @@ try {
         slug: 'qualified-learning-artifact',
         title: 'Qualified Learning Artifact',
         summary: 'Published first-class learning evidence.',
-        body:
-          'This evidence remains distinct from its Training context while staying directly inspectable.',
+        body: 'This evidence remains distinct from its Training context while staying directly inspectable.',
         editorial_state: 'draft',
         published_at: null,
       },
@@ -60,24 +57,21 @@ try {
         slug: 'preuve-apprentissage-qualifiee',
         title: 'Preuve d’apprentissage qualifiée',
         summary: 'Preuve d’apprentissage de premier rang publiée.',
-        body:
-          'Cette preuve reste distincte de son contexte de formation tout en restant directement inspectable.',
+        body: 'Cette preuve reste distincte de son contexte de formation tout en restant directement inspectable.',
         editorial_state: 'draft',
         published_at: null,
       },
     ])
     .onConflict((conflict) =>
-      conflict
-        .columns(['learning_artifact_id', 'locale'])
-        .doUpdateSet((eb) => ({
-          slug: eb.ref('excluded.slug'),
-          title: eb.ref('excluded.title'),
-          summary: eb.ref('excluded.summary'),
-          body: eb.ref('excluded.body'),
-          editorial_state: 'draft',
-          published_at: null,
-          updated_at: new Date(),
-        })),
+      conflict.columns(['learning_artifact_id', 'locale']).doUpdateSet((eb) => ({
+        slug: eb.ref('excluded.slug'),
+        title: eb.ref('excluded.title'),
+        summary: eb.ref('excluded.summary'),
+        body: eb.ref('excluded.body'),
+        editorial_state: 'draft',
+        published_at: null,
+        updated_at: new Date(),
+      })),
     )
     .execute();
 

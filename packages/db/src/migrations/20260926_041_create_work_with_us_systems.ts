@@ -10,21 +10,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('systems.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('work_with_us_systems_pkey', [
-      'page_id',
-      'system_id',
-    ])
-    .addUniqueConstraint('work_with_us_systems_page_position_key', [
-      'page_id',
-      'position',
-    ])
-    .addCheckConstraint(
-      'work_with_us_systems_position_check',
-      sql`position >= 0 and position < 4`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('work_with_us_systems_pkey', ['page_id', 'system_id'])
+    .addUniqueConstraint('work_with_us_systems_page_position_key', ['page_id', 'position'])
+    .addCheckConstraint('work_with_us_systems_position_check', sql`position >= 0 and position < 4`)
     .execute();
 
   // Preserve the previous public baseline once, when those Systems already

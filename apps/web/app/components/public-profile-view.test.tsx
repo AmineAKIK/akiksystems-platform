@@ -65,8 +65,7 @@ function profile(overrides: Partial<PublicProfile> = {}): PublicProfile {
   content.systemicScale.steps.read_request.example = 'Shared resources.';
   content.systemicScale.steps.read_request.question = 'What is actually asked?';
   content.systemicScale.steps.read_request.diagramLeadLabel = 'Observed process';
-  content.systemicScale.steps.read_request.diagramAlt =
-    'Eight-step shared-resource process.';
+  content.systemicScale.steps.read_request.diagramAlt = 'Eight-step shared-resource process.';
   content.systemicScale.processLabels.reservation = 'Reservation';
   content.systemicScale.processLabels.assignment = 'Assignment';
   content.systemicScale.processLabels.use = 'Use';

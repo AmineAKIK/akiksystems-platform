@@ -123,18 +123,12 @@ try {
     englishAfterFrenchEdit.presentation_document,
     englishBefore.presentation_document,
   );
-  assert.equal(
-    englishAfterFrenchEdit.editorial_state,
-    englishBefore.editorial_state,
-  );
+  assert.equal(englishAfterFrenchEdit.editorial_state, englishBefore.editorial_state);
   assert.equal(
     englishAfterFrenchEdit.published_at?.getTime(),
     englishBefore.published_at?.getTime(),
   );
-  assert.equal(
-    englishAfterFrenchEdit.updated_at.getTime(),
-    englishBefore.updated_at.getTime(),
-  );
+  assert.equal(englishAfterFrenchEdit.updated_at.getTime(), englishBefore.updated_at.getTime());
 
   await db
     .updateTable('system_localizations')

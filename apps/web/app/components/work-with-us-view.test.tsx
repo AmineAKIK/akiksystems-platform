@@ -1,7 +1,4 @@
-import type {
-  PublishedWorkWithUsPage,
-  PublicSystemReference,
-} from '@akiksystems/db';
+import type { PublishedWorkWithUsPage, PublicSystemReference } from '@akiksystems/db';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
@@ -43,40 +40,27 @@ function content(locale: 'en' | 'fr' = 'en'): PublishedWorkWithUsPage {
         {
           key: 'structure',
           title: locale === 'fr' ? 'Structurer' : 'Structure',
-          body:
-            locale === 'fr'
-              ? 'Les options pertinentes.'
-              : 'The relevant options.',
+          body: locale === 'fr' ? 'Les options pertinentes.' : 'The relevant options.',
         },
         {
           key: 'build',
           title: locale === 'fr' ? 'Construire' : 'Build',
-          body:
-            locale === 'fr'
-              ? 'Des solutions durables.'
-              : 'Durable solutions.',
+          body: locale === 'fr' ? 'Des solutions durables.' : 'Durable solutions.',
         },
       ],
     },
     contact: {
       eyebrow: locale === 'fr' ? 'Échangeons' : 'Start a conversation',
       title: locale === 'fr' ? 'À vous.' : 'Your turn.',
-      introduction:
-        locale === 'fr'
-          ? 'Cet espace est libre.'
-          : 'This space is intentionally open.',
+      introduction: locale === 'fr' ? 'Cet espace est libre.' : 'This space is intentionally open.',
       nameLabel: locale === 'fr' ? 'Nom' : 'Name',
       emailLabel: 'Email',
-      organizationLabel:
-        locale === 'fr' ? 'Organisation (optionnel)' : 'Organization (optional)',
+      organizationLabel: locale === 'fr' ? 'Organisation (optionnel)' : 'Organization (optional)',
       messageLabel: locale === 'fr' ? 'Message' : 'Message',
-      messagePlaceholder:
-        locale === 'fr' ? 'Votre message…' : 'Your message…',
-      listenLabel:
-        locale === 'fr' ? 'Écouter mon message' : 'Listen to my message',
+      messagePlaceholder: locale === 'fr' ? 'Votre message…' : 'Your message…',
+      listenLabel: locale === 'fr' ? 'Écouter mon message' : 'Listen to my message',
       submitLabel: locale === 'fr' ? 'Envoyer' : 'Send',
-      successMessage:
-        locale === 'fr' ? 'Message reçu.' : 'Message received.',
+      successMessage: locale === 'fr' ? 'Message reçu.' : 'Message received.',
       privacyNote:
         locale === 'fr'
           ? 'Les données de contact restent limitées à cet échange.'
@@ -89,15 +73,13 @@ function content(locale: 'en' | 'fr' = 'en'): PublishedWorkWithUsPage {
         locale === 'fr'
           ? 'AkikSystems est fondé et dirigé par moi.'
           : 'AkikSystems is founded and led by me.',
-      profileLinkLabel:
-        locale === 'fr' ? 'Voir le profil' : 'View profile',
+      profileLinkLabel: locale === 'fr' ? 'Voir le profil' : 'View profile',
     },
     systems: {
       eyebrow: locale === 'fr' ? 'Systèmes sélectionnés' : 'Selected Systems',
       title: locale === 'fr' ? 'Quelques systèmes.' : 'A few Systems.',
       introduction: null,
-      allSystemsLinkLabel:
-        locale === 'fr' ? 'Voir tous les systèmes' : 'View all Systems',
+      allSystemsLinkLabel: locale === 'fr' ? 'Voir tous les systèmes' : 'View all Systems',
     },
   };
 }
@@ -125,9 +107,7 @@ function reference(
   };
 }
 
-function renderRoutedView(
-  props: React.ComponentProps<typeof WorkWithUsView>,
-): string {
+function renderRoutedView(props: React.ComponentProps<typeof WorkWithUsView>): string {
   const router = createMemoryRouter(
     [
       {
@@ -257,15 +237,11 @@ describe('WorkWithUsView', () => {
     expect(html).toContain('value="invalid"');
     expect(html).toContain('value="Analytical Systems"');
     expect(html).toContain('A concrete request.');
-    expect(html).toContain(
-      'value="00000000-0000-4000-8000-000000000042"',
-    );
+    expect(html).toContain('value="00000000-0000-4000-8000-000000000042"');
   });
 
   it('keeps a useful localized hero when no Work with us snapshot is published', () => {
-    const html = renderToStaticMarkup(
-      <WorkWithUsView content={null} locale="fr" />,
-    );
+    const html = renderToStaticMarkup(<WorkWithUsView content={null} locale="fr" />);
 
     expect(html).toContain('Travailler ensemble');
     expect(html).toContain(

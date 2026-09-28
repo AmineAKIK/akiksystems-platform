@@ -16,81 +16,79 @@ interface HomeDestinationPresentation {
   description: Record<Locale, string>;
 }
 
-export const homeDestinationPresentation: Record<
-  GlobalDestinationId,
-  HomeDestinationPresentation
-> = {
-  'work-with-us': {
-    label: {
-      en: 'Perspectives',
-      fr: 'Perspectives',
+export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestinationPresentation> =
+  {
+    'work-with-us': {
+      label: {
+        en: 'Perspectives',
+        fr: 'Perspectives',
+      },
+      summary: {
+        en: 'Collaboration · Contact',
+        fr: 'Collaboration · Contact',
+      },
+      description: {
+        en: 'Projects, collaborations, or missions. Let’s build what deserves to exist.',
+        fr: 'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
+      },
     },
-    summary: {
-      en: 'Collaboration · Contact',
-      fr: 'Collaboration · Contact',
+    profile: {
+      label: {
+        en: 'Profile',
+        fr: 'Profil',
+      },
+      summary: {
+        en: 'Journey · Vision',
+        fr: 'Parcours · Vision',
+      },
+      description: {
+        en: 'Journey, convictions, and practice—the foundations of the AkikSystems vision.',
+        fr: 'Parcours, convictions et pratique : les fondations de la vision AkikSystems.',
+      },
     },
-    description: {
-      en: 'Projects, collaborations, or missions. Let’s build what deserves to exist.',
-      fr: 'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
+    systems: {
+      label: {
+        en: 'Systems',
+        fr: 'Systèmes',
+      },
+      summary: {
+        en: 'Products · Projects',
+        fr: 'Produits · Projets',
+      },
+      description: {
+        en: 'Software and products designed as coherent systems, from use to intent.',
+        fr: 'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',
+      },
     },
-  },
-  profile: {
-    label: {
-      en: 'Profile',
-      fr: 'Profil',
+    writings: {
+      label: {
+        en: 'Writings',
+        fr: 'Écrits',
+      },
+      summary: {
+        en: 'Essays · Notes',
+        fr: 'Essais · Notes',
+      },
+      description: {
+        en: 'Essays and notes on the ideas shaping systems and keeping thought in motion.',
+        fr: 'Essais et notes sur les idées qui façonnent les systèmes et la pensée.',
+      },
     },
-    summary: {
-      en: 'Journey · Vision',
-      fr: 'Parcours · Vision',
+    learning: {
+      label: {
+        en: 'Learning',
+        fr: 'Apprentissage',
+      },
+      summary: {
+        en: 'Credentials · Training',
+        fr: 'Dossiers · Formations',
+      },
+      description: {
+        en: 'Training, credentials, and projects shaped through continuous learning.',
+        fr: 'Formations, dossiers professionnels et projets construits par l’apprentissage.',
+      },
     },
-    description: {
-      en: 'Journey, convictions, and practice—the foundations of the AkikSystems vision.',
-      fr: 'Parcours, convictions et pratique : les fondations de la vision AkikSystems.',
-    },
-  },
-  systems: {
-    label: {
-      en: 'Systems',
-      fr: 'Systèmes',
-    },
-    summary: {
-      en: 'Products · Projects',
-      fr: 'Produits · Projets',
-    },
-    description: {
-      en: 'Software and products designed as coherent systems, from use to intent.',
-      fr: 'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',
-    },
-  },
-  writings: {
-    label: {
-      en: 'Writings',
-      fr: 'Écrits',
-    },
-    summary: {
-      en: 'Essays · Notes',
-      fr: 'Essais · Notes',
-    },
-    description: {
-      en: 'Essays and notes on the ideas shaping systems and keeping thought in motion.',
-      fr: 'Essais et notes sur les idées qui façonnent les systèmes et la pensée.',
-    },
-  },
-  learning: {
-    label: {
-      en: 'Learning',
-      fr: 'Apprentissage',
-    },
-    summary: {
-      en: 'Credentials · Training',
-      fr: 'Dossiers · Formations',
-    },
-    description: {
-      en: 'Training, credentials, and projects shaped through continuous learning.',
-      fr: 'Formations, dossiers professionnels et projets construits par l’apprentissage.',
-    },
-  },
-};
+  };
 
 export const homeLegalPresentation: Record<
   LegalPageId,

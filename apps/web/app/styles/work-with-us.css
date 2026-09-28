@@ -107,11 +107,7 @@
 }
 
 .aks-work-with-us-approach-steps {
-  --aks-work-with-us-approach-gap: clamp(
-    var(--aks-space-5),
-    5vw,
-    var(--aks-space-8)
-  );
+  --aks-work-with-us-approach-gap: clamp(var(--aks-space-5), 5vw, var(--aks-space-8));
 
   position: relative;
   display: grid;
@@ -137,9 +133,7 @@
   z-index: 0;
   top: 2.25rem;
   left: calc(50% + 2.25rem);
-  width: calc(
-    100% + var(--aks-work-with-us-approach-gap) - 4.5rem
-  );
+  width: calc(100% + var(--aks-work-with-us-approach-gap) - 4.5rem);
   height: 1px;
   background: rgb(181 233 247 / 26%);
   content: '';
@@ -173,8 +167,7 @@
   vector-effect: non-scaling-stroke;
 }
 
-.aks-work-with-us-approach-glyph
-  .aks-work-with-us-approach-glyph-dot {
+.aks-work-with-us-approach-glyph .aks-work-with-us-approach-glyph-dot {
   fill: currentColor;
   stroke: none;
 }
@@ -504,9 +497,7 @@
 .aks-work-with-us-system-card {
   min-width: 0;
   border: 1px solid rgb(255 255 255 / 12%);
-  background:
-    linear-gradient(145deg, rgb(28 53 62 / 24%), transparent 55%),
-    rgb(255 255 255 / 2%);
+  background: linear-gradient(145deg, rgb(28 53 62 / 24%), transparent 55%), rgb(255 255 255 / 2%);
   transition:
     border-color var(--aks-motion-standard) var(--aks-ease-standard),
     transform var(--aks-motion-standard) var(--aks-ease-standard);
@@ -738,7 +729,6 @@
   }
 }
 
-
 /* Keep one visually continuous fixed canvas while letting sticky chrome occlude scrolled content. */
 body:has(.aks-experience-shell[data-destination='work-with-us']) {
   min-height: 100dvh;
@@ -748,17 +738,14 @@ body:has(.aks-experience-shell[data-destination='work-with-us']) {
   background-size: cover;
 }
 
-body:has(.aks-experience-shell[data-destination='work-with-us'])
-  .aks-experience-frame,
-body:has(.aks-experience-shell[data-destination='work-with-us'])
-  .aks-work-with-us {
+body:has(.aks-experience-shell[data-destination='work-with-us']) .aks-experience-frame,
+body:has(.aks-experience-shell[data-destination='work-with-us']) .aks-work-with-us {
   background: transparent;
 }
 
 body:has(.aks-experience-shell[data-destination='work-with-us'])
   .aks-experience-shell[data-destination='work-with-us'],
-body:has(.aks-experience-shell[data-destination='work-with-us'])
-  .aks-experience-footer {
+body:has(.aks-experience-shell[data-destination='work-with-us']) .aks-experience-footer {
   background: var(--aks-experience-space-background);
   background-attachment: fixed;
   background-repeat: no-repeat;

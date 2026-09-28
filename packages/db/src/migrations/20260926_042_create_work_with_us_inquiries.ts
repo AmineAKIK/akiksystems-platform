@@ -4,21 +4,14 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('work_with_us_inquiries')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('submission_token', 'uuid', (column) =>
-      column.notNull().unique(),
-    )
+    .addColumn('submission_token', 'uuid', (column) => column.notNull().unique())
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('name', 'text', (column) => column.notNull())
     .addColumn('email', 'text', (column) => column.notNull())
     .addColumn('organization', 'text')
     .addColumn('message', 'text', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addCheckConstraint(
-      'work_with_us_inquiries_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addCheckConstraint('work_with_us_inquiries_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'work_with_us_inquiries_name_check',
       sql`char_length(name) <= 120 and name ~ '[^[:space:]]'`,

@@ -95,12 +95,10 @@ try {
   const localized = await db
     .selectFrom('system_assets')
     .innerJoin('assets', 'assets.id', 'system_assets.asset_id')
-    .innerJoin(
-      'asset_localizations',
-      (join) =>
-        join
-          .onRef('asset_localizations.asset_id', '=', 'assets.id')
-          .on('asset_localizations.locale', '=', 'fr'),
+    .innerJoin('asset_localizations', (join) =>
+      join
+        .onRef('asset_localizations.asset_id', '=', 'assets.id')
+        .on('asset_localizations.locale', '=', 'fr'),
     )
     .select([
       'assets.storage_key',
@@ -123,17 +121,12 @@ try {
   assert.equal(localized.alt_text, 'Tableau de bord Sentinel');
   assert.match(localized.storage_key, /^systems\//);
 
-  await expectPostgresError(
-    '23001',
-    'system_assets_asset_id_fkey',
-    () => db.deleteFrom('assets').where('id', '=', assetId).execute(),
+  await expectPostgresError('23001', 'system_assets_asset_id_fkey', () =>
+    db.deleteFrom('assets').where('id', '=', assetId).execute(),
   );
 
-  await expectPostgresError(
-    '23514',
-    'assets_mime_type_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'assets_mime_type_check', () =>
+    sql`
         insert into assets (
           id,
           storage_key,
@@ -150,11 +143,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'assets_byte_size_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'assets_byte_size_check', () =>
+    sql`
         insert into assets (
           id,
           storage_key,
@@ -171,12 +161,8 @@ try {
       `.execute(db),
   );
 
-
-  await expectPostgresError(
-    '23514',
-    'assets_dimensions_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'assets_dimensions_check', () =>
+    sql`
         insert into assets (
           id,
           storage_key,
@@ -197,11 +183,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'asset_localizations_locale_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'asset_localizations_locale_check', () =>
+    sql`
         insert into asset_localizations (
           asset_id,
           locale,

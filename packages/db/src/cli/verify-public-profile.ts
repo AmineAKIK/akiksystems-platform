@@ -35,10 +35,7 @@ const presentationDocument = {
   blocks: [{ type: 'paragraph' as const, text: 'Qualification proof.' }],
 };
 
-function profileContent(
-  professionalTitle: string,
-  introduction: string,
-) {
+function profileContent(professionalTitle: string, introduction: string) {
   const content = emptyProfileContent();
   content.hero.professionalTitle = professionalTitle;
   content.hero.introduction = introduction;
@@ -105,10 +102,7 @@ try {
     /professional title is required/i,
   );
 
-  const englishContent = profileContent(
-    'Systems builder',
-    'Published English introduction.',
-  );
+  const englishContent = profileContent('Systems builder', 'Published English introduction.');
   const frenchContent = profileContent(
     'Constructeur de systèmes',
     'Introduction française publiée.',
@@ -159,10 +153,7 @@ try {
   await publishProfileLocalization(db, { locale: 'en' });
   const publicAfterRepublish = await getPublicProfile(db, 'en');
   assert.ok(publicAfterRepublish);
-  assert.equal(
-    publicAfterRepublish.content.hero.introduction,
-    'Unpublished draft introduction.',
-  );
+  assert.equal(publicAfterRepublish.content.hero.introduction, 'Unpublished draft introduction.');
 
   await db
     .insertInto('assets')
@@ -256,8 +247,7 @@ try {
   const states = await localizationStates(profileId);
   assert.ok(
     states.every(
-      ({ editorial_state, published_at }) =>
-        editorial_state === 'draft' && published_at === null,
+      ({ editorial_state, published_at }) => editorial_state === 'draft' && published_at === null,
     ),
     'A global Profile mutation must mark both locales draft.',
   );
@@ -274,9 +264,7 @@ try {
   assert.equal(publicWithIdentity.portraitAssetId, portraitId);
   assert.equal(publicWithIdentity.portraitAltText, 'Published portrait alt');
   assert.equal(publicWithIdentity.sourceCvAssetId, cvId);
-  assert.deepEqual(publicWithIdentity.contacts, [
-    { kind: 'email', value: 'profile@example.test' },
-  ]);
+  assert.deepEqual(publicWithIdentity.contacts, [{ kind: 'email', value: 'profile@example.test' }]);
   assert.deepEqual(publicWithIdentity.languages, ['fr', 'en', 'ar']);
   assert.deepEqual(publicWithIdentity.mobility, {
     worldwide: true,
@@ -536,10 +524,9 @@ try {
 
   const beforeSystemRepublish = await getPublicProfile(db, 'en');
   assert.ok(beforeSystemRepublish);
-  const beforeEvidence =
-    beforeSystemRepublish.stackGroups[0]?.proofSystems
-      .find(({ id }) => id === firstSystemId)
-      ?.technologies[0]?.evidence;
+  const beforeEvidence = beforeSystemRepublish.stackGroups[0]?.proofSystems.find(
+    ({ id }) => id === firstSystemId,
+  )?.technologies[0]?.evidence;
   assert.equal(
     beforeEvidence,
     'Published React evidence one.',
@@ -549,10 +536,9 @@ try {
   await publishSystemLocalization(db, { systemId: firstSystemId, locale: 'en' });
   const afterSystemRepublish = await getPublicProfile(db, 'en');
   assert.ok(afterSystemRepublish);
-  const afterEvidence =
-    afterSystemRepublish.stackGroups[0]?.proofSystems
-      .find(({ id }) => id === firstSystemId)
-      ?.technologies[0]?.evidence;
+  const afterEvidence = afterSystemRepublish.stackGroups[0]?.proofSystems.find(
+    ({ id }) => id === firstSystemId,
+  )?.technologies[0]?.evidence;
   assert.equal(afterEvidence, 'Unpublished React evidence one.');
 
   await unpublishSystemLocalization(db, {
@@ -604,22 +590,10 @@ try {
     .executeTakeFirst();
 
   if (profile !== undefined) {
-    await db
-      .deleteFrom('profile_publications')
-      .where('profile_id', '=', profile.id)
-      .execute();
-    await db
-      .deleteFrom('profile_stack_groups')
-      .where('profile_id', '=', profile.id)
-      .execute();
-    await db
-      .deleteFrom('profile_contacts')
-      .where('profile_id', '=', profile.id)
-      .execute();
-    await db
-      .deleteFrom('profile_languages')
-      .where('profile_id', '=', profile.id)
-      .execute();
+    await db.deleteFrom('profile_publications').where('profile_id', '=', profile.id).execute();
+    await db.deleteFrom('profile_stack_groups').where('profile_id', '=', profile.id).execute();
+    await db.deleteFrom('profile_contacts').where('profile_id', '=', profile.id).execute();
+    await db.deleteFrom('profile_languages').where('profile_id', '=', profile.id).execute();
     await db
       .updateTable('profile_mobility')
       .set({
@@ -655,10 +629,7 @@ try {
   }
 
   await db.deleteFrom('writings').where('id', '=', writingId).execute();
-  await db
-    .deleteFrom('systems')
-    .where('id', 'in', [firstSystemId, secondSystemId])
-    .execute();
+  await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
   await db.deleteFrom('technologies').where('id', '=', technologyId).execute();
   await db.deleteFrom('assets').where('id', 'in', [portraitId, cvId]).execute();
   await db.destroy();

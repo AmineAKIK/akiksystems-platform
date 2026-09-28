@@ -25,9 +25,7 @@ function requiredText(value: string | null, label: string): string {
   return normalized;
 }
 
-export function parseTagPublicationSnapshot(
-  value: unknown,
-): TagPublicationSnapshot {
+export function parseTagPublicationSnapshot(value: unknown): TagPublicationSnapshot {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Invalid Tag publication snapshot.');
   }
@@ -41,17 +39,8 @@ export async function publishTagLocalization(
   await db.transaction().execute(async (transaction) => {
     const row = await transaction
       .selectFrom('tags')
-      .innerJoin(
-        'tag_localizations',
-        'tag_localizations.tag_id',
-        'tags.id',
-      )
-      .select([
-        'tags.id',
-        'tags.canonical_key',
-        'tag_localizations.slug',
-        'tag_localizations.name',
-      ])
+      .innerJoin('tag_localizations', 'tag_localizations.tag_id', 'tags.id')
+      .select(['tags.id', 'tags.canonical_key', 'tag_localizations.slug', 'tag_localizations.name'])
       .where('tags.id', '=', input.tagId)
       .where('tag_localizations.locale', '=', input.locale)
       .executeTakeFirst();
@@ -145,8 +134,7 @@ export async function listPublishedTags(
     }))
     .sort(
       (left, right) =>
-        left.name.localeCompare(right.name, locale) ||
-        left.tagId.localeCompare(right.tagId),
+        left.name.localeCompare(right.name, locale) || left.tagId.localeCompare(right.tagId),
     );
 }
 
@@ -175,9 +163,6 @@ export async function getPublishedTag(
   return {
     ...snapshot,
     publishedAt: row.published_at,
-    alternate:
-      alternate === undefined
-        ? null
-        : { locale: alternate.locale, slug: alternate.slug },
+    alternate: alternate === undefined ? null : { locale: alternate.locale, slug: alternate.slug },
   };
 }

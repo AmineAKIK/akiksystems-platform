@@ -71,10 +71,7 @@ try {
     english.links.find(({ kind }) => kind === 'repository')?.url,
     'https://github.com/AmineAKIK/orianutrition',
   );
-  assert.equal(
-    english.links.filter(({ kind }) => kind === 'documentation').length,
-    2,
-  );
+  assert.equal(english.links.filter(({ kind }) => kind === 'documentation').length, 2);
 
   assert.deepEqual(
     english.media.map(({ id, mimeType, position }) => ({
