@@ -8,13 +8,13 @@ async function reservePort() {
   const server = createServer();
   await new Promise((resolve, reject) => {
     server.once('error', reject);
-    server.listen(0, '127.0.0.1', resolve);
+    server.listen(0, '127.0.0.1', () => resolve());
   });
   const address = server.address();
   assert.ok(address && typeof address === 'object');
   const port = address.port;
   await new Promise((resolve, reject) =>
-    server.close((error) => (error ? reject(error) : resolve())),
+    server.close((error) => (error ? reject(error) : resolve(undefined))),
   );
   return String(port);
 }
