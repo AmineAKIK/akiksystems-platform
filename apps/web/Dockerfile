@@ -26,6 +26,12 @@ WORKDIR /app
 
 COPY --chown=node:node --from=build /prod/web /app
 
+# Railway Runtime V2 inspects the root package manifest before start. The
+# production bundle already contains its resolved node_modules, so expose only
+# the runtime module contract here and avoid re-resolving workspace:* packages.
+RUN printf '%s\n' '{"name":"akiksystems-web-runtime","private":true,"type":"module"}' > /app/package.json \
+  && chown node:node /app/package.json
+
 USER node
 
 EXPOSE 3000
