@@ -45,7 +45,7 @@ function StatusPill({
 }
 
 function ActionLink({ action }: { action: SystemsAction }) {
-  const className = \`aks-systems-button aks-systems-button--\${action.kind}\`;
+  const className = `aks-systems-button aks-systems-button--${action.kind}`;
 
   if (action.href.startsWith('/')) {
     return (
@@ -292,7 +292,7 @@ function QuickStationRow({
           <p>{station.function}</p>
           <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
           <a
-            aria-label={\`\${station.name}: \${station.note}\`}
+            aria-label={`${station.name}: ${station.note}`}
             className="aks-systems-quick-link"
             href="#workbench"
           >
@@ -410,7 +410,7 @@ export function SystemsPage({
 }) {
   const station = (id: SystemsStation['id']) => {
     const match = content.stations.find((candidate) => candidate.id === id);
-    if (match === undefined) throw new Error(\`Missing Systems station: \${id}\`);
+    if (match === undefined) throw new Error(`Missing Systems station: ${id}`);
     return match;
   };
 
