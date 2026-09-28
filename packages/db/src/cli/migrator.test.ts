@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  historicalCompatibilityMigrationNames,
-  reconcileMigrationHistory,
-} from './migrator.js';
+import { historicalCompatibilityMigrationNames, reconcileMigrationHistory } from './migrator.js';
 
 type MigrationMap = Parameters<typeof reconcileMigrationHistory>[0];
 type Migration = MigrationMap[string];
