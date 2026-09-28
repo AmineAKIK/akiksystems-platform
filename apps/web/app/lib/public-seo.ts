@@ -1,10 +1,11 @@
-import type { PlatformLocale } from '@akiksystems/core';
 import { data, type MetaDescriptor } from 'react-router';
 
+import type { Locale } from '../i18n/locales';
 import { publicCanonicalUrl, publicUrlForLocale } from './public-locales';
+
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
-function openGraphLocale(locale: PlatformLocale): 'en_US' | 'fr_FR' {
+function openGraphLocale(locale: Locale): 'en_US' | 'fr_FR' {
   return locale === 'fr' ? 'fr_FR' : 'en_US';
 }
 
@@ -36,17 +37,16 @@ export function buildLocalizedPublicMeta({
 }: {
   title: string;
   description: string;
-  locale: PlatformLocale;
+  locale: Locale;
   canonicalPath: string;
   alternate: {
-    locale: PlatformLocale;
+    locale: Locale;
     path: string;
   } | null;
 }): MetaDescriptor[] {
   const canonicalUrl = publicCanonicalUrl(canonicalPath);
   const socialImageUrl = publicUrlForLocale(locale, '/brand/og-akiksystems.png');
-  const socialImageAlt =
-    locale === 'fr' ? 'AkikSystems — Systemic Scale' : 'AkikSystems — Systemic Scale';
+  const socialImageAlt = 'AkikSystems — Systemic Scale';
   const descriptors: MetaDescriptor[] = [
     { title: title + ' · AkikSystems' },
     { name: 'description', content: description },

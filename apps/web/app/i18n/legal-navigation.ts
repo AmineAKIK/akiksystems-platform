@@ -16,8 +16,8 @@ export const legalNavigationPages: readonly LegalNavigationPage[] = [
     slug: { en: 'privacy', fr: 'confidentialite' },
     label: { en: 'Privacy', fr: 'Confidentialité' },
     description: {
-      en: 'How AkikSystems handles personal data across public browsing and private administration.',
-      fr: 'Comment AkikSystems traite les données personnelles sur le site et dans l’administration.',
+      en: 'How the public AkikSystems site handles technical and personal data.',
+      fr: 'Comment le site public AkikSystems traite les données techniques et personnelles.',
     },
   },
   {
@@ -34,8 +34,8 @@ export const legalNavigationPages: readonly LegalNavigationPage[] = [
     slug: { en: 'cookies', fr: 'cookies' },
     label: { en: 'Cookies', fr: 'Cookies' },
     description: {
-      en: 'How essential cookies and similar storage are used by AkikSystems.',
-      fr: 'Comment AkikSystems utilise les cookies essentiels et stockages similaires.',
+      en: 'Current browser-storage policy for the public AkikSystems site.',
+      fr: 'Politique actuelle de stockage navigateur du site public AkikSystems.',
     },
   },
 ];

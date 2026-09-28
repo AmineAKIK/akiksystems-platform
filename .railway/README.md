@@ -1,39 +1,18 @@
 # Railway infrastructure
 
-Railway infrastructure for the AkikSystems platform is defined in
-`.railway/railway.ts`.
+AkikSystems now has one application runtime: the public web service.
 
-## Current scope
+The application is code-only. Railway does not need PostgreSQL, a background worker, database migrations, object-storage credentials, or editorial infrastructure for the current site.
 
-The Railway definition is the shared infrastructure contract for both
-`staging` and `production`.
+## Target topology
 
 Each environment contains:
 
 - the `web` service sourced from `AmineAKIK/akiksystems-platform` on `main`;
-- the `worker` service running Graphile Worker from the same repository;
-- one Railway-managed PostgreSQL service;
-- `DATABASE_URL` wired from both application services to PostgreSQL over
-  Railway's internal service reference;
-- `pnpm db:migrate` as the web pre-deploy migration command;
-- `PORT=3000` for the web runtime;
-- one web replica and one worker replica in Railway's Europe region.
+- `NODE_ENV=production`;
+- `PORT=3000`;
+- one web replica in Railway's Europe region.
 
-## Safe workflow
+The web healthcheck is `GET /health` and verifies only that the web process is healthy.
 
-Always target the intended environment explicitly before planning or applying
-infrastructure:
-
-```bash
-railway link --project akiksystems-platform --environment staging
-railway config plan
-railway config apply
-
-railway link --project akiksystems-platform --environment production
-railway config plan
-railway config apply
-```
-
-Staging and production use isolated PostgreSQL, worker and object-storage
-resources. Production changes are allowed from this definition and must be
-reviewed with the same plan/apply discipline as staging.
+Legacy PostgreSQL and worker services can be removed from Railway after this code-only deployment is live. They are not part of the target architecture and the application no longer depends on them.

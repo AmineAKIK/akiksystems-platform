@@ -3,12 +3,6 @@ import { spawn } from 'node:child_process';
 import process from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (databaseUrl === undefined || databaseUrl.trim() === '') {
-  throw new Error('DATABASE_URL is required for the observability smoke test.');
-}
-
 const port = '4174';
 const origin = `http://127.0.0.1:${port}`;
 let stdout = '';
@@ -18,7 +12,6 @@ const server = spawn(process.execPath, ['server.js'], {
   cwd: new URL('..', import.meta.url),
   env: {
     ...process.env,
-    DATABASE_URL: databaseUrl,
     NODE_ENV: 'test',
     PORT: port,
   },
@@ -37,9 +30,7 @@ async function waitForHealth() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
       const response = await globalThis.fetch(`${origin}/health`);
-      if (response.ok) {
-        return;
-      }
+      if (response.ok) return;
     } catch {
       // Server is still starting.
     }
@@ -61,17 +52,12 @@ try {
       'x-correlation-id': correlationId,
     },
   });
-  const healthBody = /** @type {{
-    status: string;
-    checks: { database: { status: string; latencyMs: number } };
-  }} */ (await health.json());
+  const healthBody = /** @type {{ status: string; service: string }} */ (await health.json());
 
   assert.equal(health.status, 200);
   assert.equal(health.headers.get('x-request-id'), requestId);
   assert.equal(health.headers.get('x-correlation-id'), correlationId);
-  assert.equal(healthBody.status, 'ok');
-  assert.equal(healthBody.checks.database.status, 'ok');
-  assert.equal(typeof healthBody.checks.database.latencyMs, 'number');
+  assert.deepEqual(healthBody, { status: 'ok', service: 'web' });
 
   const failure = await globalThis.fetch(`${origin}/__test/server-error`, {
     headers: {
@@ -108,13 +94,13 @@ try {
   );
   assert.ok(errorLog);
   assert.equal(errorLog.error.name, 'Error');
-  assert.match(errorLog.error.message, /\[REDACTED\]/);
+  assert.equal(errorLog.error.message, 'Synthetic server failure');
 
-  assert.equal(stdout.includes(databaseUrl), false);
   assert.equal(stdout.includes('postgresql://'), false);
+  assert.equal(stdout.includes('DATABASE_URL'), false);
 
   process.stdout.write(
-    'Observability smoke passed: structured logs, IDs, DB health, and error redaction verified.\n',
+    'Observability smoke passed: structured logs, request IDs, web health, and error logging verified.\n',
   );
 } finally {
   server.kill('SIGTERM');

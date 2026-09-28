@@ -1,40 +1,22 @@
-import { defineRailway, github, postgres, project, service } from 'railway/iac';
+import { defineRailway, github, project, service } from 'railway/iac';
 
 export default defineRailway((_ctx) => {
-  const database = postgres('Postgres');
-
   const source = github('AmineAKIK/akiksystems-platform', { branch: 'main' });
 
   const web = service('web', {
     source,
-    build:
-      'pnpm --filter @akiksystems/core build && pnpm --filter @akiksystems/db build && pnpm --filter @akiksystems/web build',
+    build: 'pnpm --filter @akiksystems/web build',
     start: 'node server.js',
     replicas: {
       'europe-west4': 1,
     },
     env: {
-      DATABASE_URL: database.env.DATABASE_URL,
       NODE_ENV: 'production',
       PORT: '3000',
     },
   });
 
-  const worker = service('worker', {
-    source,
-    build: 'pnpm --filter @akiksystems/worker build',
-    start: 'pnpm --filter @akiksystems/worker start',
-    preDeploy: 'pnpm deploy:migrate',
-    replicas: {
-      'europe-west4': 1,
-    },
-    env: {
-      DATABASE_URL: database.env.DATABASE_URL,
-      NODE_ENV: 'production',
-    },
-  });
-
   return project('akiksystems-platform', {
-    resources: [database, web, worker],
+    resources: [web],
   });
 });

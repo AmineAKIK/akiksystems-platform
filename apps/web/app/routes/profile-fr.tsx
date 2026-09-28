@@ -1,104 +1,22 @@
-import { getPublicProfile } from '@akiksystems/db';
-import { data, useLoaderData, type MetaDescriptor } from 'react-router';
+import { useLoaderData } from 'react-router';
 
-import { PublicProfileView } from '../components/public-profile-view';
-import { requireExactLocale } from '../i18n/locales';
-import { appDb } from '../lib/db.server';
-import { publicCanonicalUrl } from '../lib/public-locales';
+import {
+  PendingDestinationRoute,
+  pendingDestinationLoader,
+  pendingDestinationMeta,
+} from './pending-destination';
 
 import type { Route } from './+types/profile-fr';
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const locale = requireExactLocale(params.locale, 'fr');
-  const profile = await getPublicProfile(appDb, locale);
-
-  if (profile === null) {
-    throw new Response('Profile not found.', { status: 404 });
-  }
-
-  const alternatePublished = profile.alternateLocale !== null;
-
-  return data(
-    {
-      profile,
-      localContext: {
-        title: null,
-        alternateHref: alternatePublished ? '/en/profile' : null,
-      },
-      alternatePublished,
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
-      },
-    },
-  );
+export function loader({ params }: Route.LoaderArgs) {
+  return pendingDestinationLoader(params.locale, 'fr', 'profile');
 }
 
-export function meta({ loaderData }: Route.MetaArgs): MetaDescriptor[] {
-  if (loaderData === undefined) {
-    return [{ title: 'Profil · AkikSystems' }];
-  }
-
-  const { profile, alternatePublished } = loaderData;
-  const canonicalUrl = publicCanonicalUrl('/fr/profil');
-  const title = profile.displayName;
-  const description =
-    profile.content.hero.introduction.trim() ||
-    profile.content.hero.professionalTitle.trim() ||
-    'Profil professionnel AkikSystems.';
-
-  const descriptors: MetaDescriptor[] = [
-    { title: `${title} · AkikSystems` },
-    { name: 'description', content: description },
-    {
-      name: 'robots',
-      content: 'index, follow, max-image-preview:large, max-snippet:-1',
-    },
-    { property: 'og:type', content: 'profile' },
-    { property: 'og:site_name', content: 'AkikSystems' },
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:url', content: canonicalUrl },
-    { property: 'og:locale', content: 'fr_FR' },
-    { name: 'twitter:card', content: 'summary' },
-    { tagName: 'link', rel: 'canonical', href: canonicalUrl },
-    {
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: 'fr',
-      href: canonicalUrl,
-    },
-  ];
-
-  if (alternatePublished) {
-    descriptors.push(
-      {
-        property: 'og:locale:alternate',
-        content: 'en_US',
-      },
-      {
-        tagName: 'link',
-        rel: 'alternate',
-        hrefLang: 'en',
-        href: publicCanonicalUrl('/en/profile'),
-      },
-    );
-  }
-
-  if (alternatePublished) {
-    descriptors.push({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: 'x-default',
-      href: publicCanonicalUrl('/en/profile'),
-    });
-  }
-
-  return descriptors;
+export function meta() {
+  return pendingDestinationMeta('fr', 'profile');
 }
 
-export default function ProfileRoute() {
-  const { profile } = useLoaderData<typeof loader>();
-  return <PublicProfileView profile={profile} />;
+export default function ProfileFrRoute() {
+  const { locale, destinationId } = useLoaderData<typeof loader>();
+  return <PendingDestinationRoute destinationId={destinationId} locale={locale} />;
 }

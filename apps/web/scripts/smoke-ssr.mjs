@@ -29,8 +29,6 @@ const server = spawn(process.execPath, ['server.js'], {
     ...process.env,
     NODE_ENV: 'production',
     PORT: port,
-    DATABASE_URL:
-      process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5432/akiksystems',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -70,6 +68,10 @@ try {
   assert.equal(root.status, 302);
   assert.equal(root.headers.get('location'), '/en');
 
+  const health = await globalThis.fetch(`${origin}/health`);
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok', service: 'web' });
+
   for (const locale of ['en', 'fr']) {
     const response = await globalThis.fetch(`${origin}/${locale}`);
     const html = await response.text();
@@ -105,7 +107,7 @@ try {
     assert.match(html, /class="aks-experience-footer aks-section-separator-before"/);
   }
 
-  process.stdout.write('Baseline SSR smoke passed.\n');
+  process.stdout.write('Baseline SSR smoke passed without database infrastructure.\n');
 } finally {
   if (!server.killed) server.kill('SIGTERM');
   await Promise.race([new Promise((resolve) => server.once('exit', resolve)), sleep(2_000)]);

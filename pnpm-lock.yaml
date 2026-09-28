@@ -38,12 +38,6 @@ importers:
       '@akiksystems/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@akiksystems/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@akiksystems/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@akiksystems/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -62,15 +56,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
-      graphile-worker:
-        specifier: 0.18.0
-        version: 0.18.0(typescript@5.9.3)
       isbot:
         specifier: ^5.1.36
         version: 5.2.2
-      pg:
-        specifier: 8.23.0
-        version: 8.23.0
       react:
         specifier: ^19.2.8
         version: 19.3.0
@@ -80,9 +68,6 @@ importers:
       react-router:
         specifier: 8.4.0
         version: 8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
     devDependencies:
       '@react-router/dev':
         specifier: 8.4.0
@@ -90,9 +75,6 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
-      '@types/pg':
-        specifier: 8.23.1
-        version: 8.23.1
       '@types/react':
         specifier: ^19.2.18
         version: 19.3.0
@@ -102,58 +84,15 @@ importers:
       cross-env:
         specifier: ^10.0.0
         version: 10.1.0
-      tsx:
-        specifier: 4.23.13
-        version: 4.23.13
       vite:
         specifier: ^8.0.3
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(tsx@4.23.13)
-
-  apps/worker:
-    dependencies:
-      '@akiksystems/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@akiksystems/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      graphile-worker:
-        specifier: 0.18.0
-        version: 0.18.0(typescript@5.9.3)
-    devDependencies:
-      tsx:
-        specifier: 4.23.13
-        version: 4.23.13
 
   packages/config:
     dependencies:
       zod:
         specifier: 4.6.5
         version: 4.6.5
-
-  packages/core: {}
-
-  packages/db:
-    dependencies:
-      '@akiksystems/config':
-        specifier: workspace:*
-        version: link:../config
-      '@akiksystems/core':
-        specifier: workspace:*
-        version: link:../core
-      kysely:
-        specifier: 0.29.6
-        version: 0.29.6
-      pg:
-        specifier: 8.23.0
-        version: 8.23.0
-    devDependencies:
-      '@types/pg':
-        specifier: 8.23.1
-        version: 8.23.1
-      tsx:
-        specifier: 4.23.13
-        version: 4.23.13
 
   packages/ui:
     dependencies:
