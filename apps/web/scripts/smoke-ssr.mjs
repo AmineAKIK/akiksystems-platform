@@ -72,8 +72,26 @@ try {
   for (const locale of ['en', 'fr']) {
     const response = await globalThis.fetch(`${origin}/${locale}`);
     const html = await response.text();
+    const csp = response.headers.get('content-security-policy');
 
     assert.equal(response.status, 200, `/${locale} must return HTTP 200.`);
+    assert.equal(response.headers.get('x-powered-by'), null);
+    assert.ok(csp, `/${locale} must emit a Content-Security-Policy header.`);
+    assert.equal(csp.includes("'unsafe-inline'"), false);
+    const nonceMatch = csp.match(/'nonce-([^']+)'/);
+    assert.ok(nonceMatch, `/${locale} CSP must include a per-response nonce.`);
+    const nonce = nonceMatch[1];
+    const inlineScripts = [...html.matchAll(/<script\\b([^>]*)>/g)]
+      .map((match) => match[1])
+      .filter((attributes) => !/\\bsrc=/.test(attributes));
+    assert.ok(inlineScripts.length > 0, `/${locale} must render framework inline scripts.`);
+    for (const attributes of inlineScripts) {
+      assert.match(
+        attributes,
+        new RegExp('\\\\bnonce="' + nonce + '"'),
+        `/${locale} inline scripts must carry the CSP nonce.`,
+      );
+    }
     assert.match(html, new RegExp(`<html lang="${locale}"`));
     assert.match(html, /class="aks-home-portal"/);
     assert.match(
