@@ -14,7 +14,6 @@ const server = spawn(process.execPath, ['server.js'], {
     ...process.env,
     NODE_ENV: 'production',
     PORT: port,
-    BETTER_AUTH_URL: origin,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
