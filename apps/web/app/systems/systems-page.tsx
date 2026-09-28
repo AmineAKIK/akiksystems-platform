@@ -175,6 +175,33 @@ function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
         </aside>
         <div className="aks-systems-atlas-stage">
           <img alt="" aria-hidden="true" decoding="async" src="/systems/atlas.webp" />
+          <div aria-hidden="true" className="aks-systems-atlas-core">
+            <span>ATLAS</span>
+          </div>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--inputs"
+          >
+            INPUTS
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--signals"
+          >
+            SIGNALS
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--context"
+          >
+            CONTEXT
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--output"
+          >
+            OUTPUT
+          </span>
           <div className="aks-systems-atlas-signal">
             <span>{locale === 'fr' ? 'SIGNAL DE CONTRÔLE' : 'CONTROL SIGNAL'}</span>
             <strong>{locale === 'fr' ? 'VARIATION DÉTECTÉE' : 'VARIATION DETECTED'}</strong>
