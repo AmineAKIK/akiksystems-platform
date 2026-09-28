@@ -2,11 +2,14 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
+const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
 
 const port = '4180';
 const origin = 'http://127.0.0.1:' + port;
+const screenshotDirectory = path.resolve(__dirname, '../../../artifacts/systems');
+fs.mkdirSync(screenshotDirectory, { recursive: true });
 const server = spawn(process.execPath, ['server.js'], {
   cwd: path.resolve(__dirname, '..'),
   env: { ...process.env, NODE_ENV: 'production', PORT: port },
@@ -48,6 +51,10 @@ async function inspectViewport(browser, viewport) {
   );
   await page.locator('.aks-systems-page').waitFor();
   await page.locator('.aks-systems-hero-media').waitFor();
+  await page.screenshot({
+    fullPage: true,
+    path: path.join(screenshotDirectory, `systems-${viewport.width}.png`),
+  });
 
   const measurement = await page.evaluate(() => {
     const naturalImages = [...document.querySelectorAll('.aks-systems-page img')].map(
