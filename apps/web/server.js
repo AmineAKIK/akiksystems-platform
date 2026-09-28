@@ -121,8 +121,6 @@ function sitemapXml(locale) {
   );
 }
 
-
-
 app.use((request, response, next) => {
   const writeHead = response.writeHead;
   response.writeHead = function writeHeadWithRobots(statusCode, ...args) {
