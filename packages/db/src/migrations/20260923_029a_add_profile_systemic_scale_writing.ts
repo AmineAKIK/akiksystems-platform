@@ -1,14 +1,16 @@
-import { type Kysely } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 
 export async function up(db: Kysely<unknown>): Promise<void> {
-  await db.schema
-    .alterTable('profiles')
-    .addColumn('systemic_scale_writing_id', 'uuid', (column) =>
-      column.references('writings.id').onDelete('set null'),
-    )
-    .execute();
+  await sql`
+    alter table profiles
+    add column if not exists systemic_scale_writing_id uuid
+    references writings(id) on delete set null
+  `.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.alterTable('profiles').dropColumn('systemic_scale_writing_id').execute();
+  await sql`
+    alter table profiles
+    drop column if exists systemic_scale_writing_id
+  `.execute(db);
 }
