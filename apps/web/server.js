@@ -34,6 +34,131 @@ app.set('trust proxy', 1);
 
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
+const allowedPublicHostnames = new Set([
+  'akiksystems.com',
+  'www.akiksystems.com',
+  'akiksystems.fr',
+  'www.akiksystems.fr',
+]);
+
+function isAllowedHostname(hostname) {
+  const normalized = hostname.toLowerCase();
+  return (
+    allowedPublicHostnames.has(normalized) ||
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized.endsWith('.up.railway.app') ||
+    normalized.endsWith('.railway.internal')
+  );
+}
+
+app.use((request, response, next) => {
+  if (!isAllowedHostname(request.hostname)) {
+    response.status(421).type('text/plain').send('Misdirected Request');
+    return;
+  }
+
+  next();
+});
+
+const publicSitemapEntries = {
+  en: [
+    ['/en', '/fr'],
+    ['/en/profile', '/fr/profil'],
+    ['/en/systems', '/fr/systems'],
+    ['/en/writings', '/fr/ecrits'],
+    ['/en/learning', '/fr/apprentissage'],
+    ['/en/work-with-us', '/fr/travailler-ensemble'],
+    ['/en/privacy', '/fr/confidentialite'],
+    ['/en/legal-notice', '/fr/mentions-legales'],
+    ['/en/cookies', '/fr/cookies'],
+  ],
+  fr: [
+    ['/fr', '/en'],
+    ['/fr/profil', '/en/profile'],
+    ['/fr/systems', '/en/systems'],
+    ['/fr/ecrits', '/en/writings'],
+    ['/fr/apprentissage', '/en/learning'],
+    ['/fr/travailler-ensemble', '/en/work-with-us'],
+    ['/fr/confidentialite', '/en/privacy'],
+    ['/fr/mentions-legales', '/en/legal-notice'],
+    ['/fr/cookies', '/en/cookies'],
+  ],
+};
+
+function sitemapLocaleForHostname(hostname) {
+  return hostname.toLowerCase().replace(/^www\./, '') === 'akiksystems.fr'
+    ? 'fr'
+    : 'en';
+}
+
+function sitemapXml(locale) {
+  const origin =
+    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
+  const alternateOrigin =
+    locale === 'fr' ? 'https://akiksystems.com' : 'https://akiksystems.fr';
+
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ' +
+    'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+    publicSitemapEntries[locale]
+      .map(
+        ([path, alternatePath]) =>
+          '  <url>\n' +
+          '    <loc>' +
+          origin +
+          path +
+          '</loc>\n' +
+          '    <xhtml:link rel="alternate" hreflang="' +
+          locale +
+          '" href="' +
+          origin +
+          path +
+          '" />\n' +
+          '    <xhtml:link rel="alternate" hreflang="' +
+          (locale === 'fr' ? 'en' : 'fr') +
+          '" href="' +
+          alternateOrigin +
+          alternatePath +
+          '" />\n' +
+          '    <xhtml:link rel="alternate" hreflang="x-default" href="' +
+          (locale === 'en'
+            ? origin + path
+            : alternateOrigin + alternatePath) +
+          '" />\n' +
+          '  </url>',
+      )
+      .join('\n') +
+    '\n</urlset>\n'
+  );
+}
+
+app.get('/robots.txt', (request, response) => {
+  const locale = sitemapLocaleForHostname(request.hostname);
+  const origin =
+    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
+
+  response
+    .type('text/plain')
+    .send(
+      'User-agent: *\n' +
+        'Allow: /\n' +
+        'Disallow: /admin\n' +
+        'Sitemap: ' +
+        origin +
+        '/sitemap.xml\n',
+    );
+});
+
+app.get('/sitemap.xml', (request, response) => {
+  response
+    .type('application/xml')
+    .send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
+});
+
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -42,14 +167,15 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self'",
+  "script-src 'self'",
   "connect-src 'self'",
 ].join('; ');
 
 app.use((request, response, next) => {
   const writeHead = response.writeHead;
   response.writeHead = function writeHeadWithRobots(statusCode, ...args) {
+    response.removeHeader('X-Powered-By');
     if (statusCode === 404 && !response.hasHeader('X-Robots-Tag')) {
       response.setHeader('X-Robots-Tag', noIndexDirective);
     }
