@@ -23,6 +23,7 @@ export function ExperienceFooter({
   const navigate = useNavigate();
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const lastPointerType = useRef<string | null>(null);
+  const navigationTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (!home) return;
@@ -55,6 +56,15 @@ export function ExperienceFooter({
     return () =>
       document.removeEventListener('pointerdown', clearSelectionOutsideLegal);
   }, [home]);
+
+  useEffect(
+    () => () => {
+      if (navigationTimer.current !== null) {
+        window.clearTimeout(navigationTimer.current);
+      }
+    },
+    [],
+  );
 
   const previewFor = (page: (typeof legalPages)[number]) => ({
     description: home
@@ -95,7 +105,13 @@ export function ExperienceFooter({
 
     event.preventDefault();
     setActiveHref(href);
-    window.setTimeout(() => navigate(href), 160);
+    if (navigationTimer.current !== null) {
+      window.clearTimeout(navigationTimer.current);
+    }
+    navigationTimer.current = window.setTimeout(() => {
+      navigationTimer.current = null;
+      navigate(href);
+    }, 160);
   };
 
   return (
