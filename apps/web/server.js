@@ -53,15 +53,6 @@ function isAllowedHostname(hostname) {
   );
 }
 
-app.use((request, response, next) => {
-  if (!isAllowedHostname(request.hostname)) {
-    response.status(421).type('text/plain').send('Misdirected Request');
-    return;
-  }
-
-  next();
-});
-
 const publicSitemapEntries = {
   en: [
     ['/en', '/fr'],
@@ -135,30 +126,6 @@ function sitemapXml(locale) {
   );
 }
 
-app.get('/robots.txt', (request, response) => {
-  const locale = sitemapLocaleForHostname(request.hostname);
-  const origin =
-    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
-
-  response
-    .type('text/plain')
-    .send(
-      'User-agent: *\n' +
-        'Allow: /\n' +
-        'Disallow: /admin\n' +
-        'Sitemap: ' +
-        origin +
-        '/sitemap.xml\n',
-    );
-});
-
-app.get('/sitemap.xml', (request, response) => {
-  response
-    .type('application/xml')
-    .send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
-});
-
-
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -206,6 +173,39 @@ app.use((request, response, next) => {
 
   next();
 });
+
+app.use((request, response, next) => {
+  if (!isAllowedHostname(request.hostname)) {
+    response.status(421).type('text/plain').send('Misdirected Request');
+    return;
+  }
+
+  next();
+});
+
+app.get('/robots.txt', (request, response) => {
+  const locale = sitemapLocaleForHostname(request.hostname);
+  const origin =
+    locale === 'fr' ? 'https://akiksystems.fr' : 'https://akiksystems.com';
+
+  response
+    .type('text/plain')
+    .send(
+      'User-agent: *\n' +
+        'Allow: /\n' +
+        'Disallow: /admin\n' +
+        'Sitemap: ' +
+        origin +
+        '/sitemap.xml\n',
+    );
+});
+
+app.get('/sitemap.xml', (request, response) => {
+  response
+    .type('application/xml')
+    .send(sitemapXml(sitemapLocaleForHostname(request.hostname)));
+});
+
 
 /**
  * @param {unknown} value
