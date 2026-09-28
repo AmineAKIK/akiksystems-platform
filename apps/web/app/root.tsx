@@ -28,14 +28,16 @@ export function Layout({ children }: { children: ReactNode }) {
   const locale = localeFromPathname(location.pathname);
 
   return (
-    <html lang={locale ?? 'und'}>
+    <html lang={locale ?? 'en'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#11110f" />
         <link href="/brand/AKSYS.svg" rel="icon" type="image/svg+xml" />
+        <link href="/favicon.png" rel="icon" type="image/png" />
         <link href="/brand/AKSYS.svg" rel="shortcut icon" type="image/svg+xml" />
         <link href="/brand/AKSYS.svg" rel="mask-icon" color="#11110f" />
+        <link href="/manifest.webmanifest" rel="manifest" />
         <Meta />
         <Links />
       </head>
