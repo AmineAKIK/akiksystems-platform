@@ -5,9 +5,7 @@ import type { WritingFilterModel } from '../lib/writing-filters';
 
 import { WritingsFilters } from './writings-filters';
 
-function model(
-  overrides: Partial<WritingFilterModel> = {},
-): WritingFilterModel {
+function model(overrides: Partial<WritingFilterModel> = {}): WritingFilterModel {
   return {
     enabled: true,
     threshold: 6,
@@ -89,8 +87,6 @@ describe('WritingsFilters', () => {
     expect(html).toContain('2 sur 8 écrits');
     expect(html).toContain('name="q"');
     expect(html).toContain('value="attention systèmes"');
-    expect(html).toContain(
-      'href="/fr/ecrits?q=attention%20syst%C3%A8mes"',
-    );
+    expect(html).toContain('href="/fr/ecrits?q=attention%20syst%C3%A8mes"');
   });
 });

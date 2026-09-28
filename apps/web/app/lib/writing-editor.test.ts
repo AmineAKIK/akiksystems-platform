@@ -10,9 +10,7 @@ import {
 
 describe('Writing editor document boundary', () => {
   it('upgrades legacy paragraph bodies into schema v1', () => {
-    const document = writingEditorDocumentFromPlainText(
-      'First paragraph.\n\nSecond\nline.',
-    );
+    const document = writingEditorDocumentFromPlainText('First paragraph.\n\nSecond\nline.');
 
     expect(document).toEqual({
       version: 1,
@@ -28,9 +26,7 @@ describe('Writing editor document boundary', () => {
         },
       ],
     });
-    expect(writingEditorDocumentToPlainText(document)).toBe(
-      'First paragraph.\n\nSecond line.',
-    );
+    expect(writingEditorDocumentToPlainText(document)).toBe('First paragraph.\n\nSecond line.');
   });
 
   it('accepts controlled rich blocks and rejects page-builder controls', () => {
@@ -91,9 +87,7 @@ describe('Writing editor document boundary', () => {
     expect(parseWritingEditorDocumentJson('{bad-json')).toBeNull();
     expect(parseWritingEditorDocumentJson('x'.repeat(500_001))).toBeNull();
 
-    expect(
-      writingEditorDocumentForDraft(null, 'Legacy body.').content,
-    ).toEqual([
+    expect(writingEditorDocumentForDraft(null, 'Legacy body.').content).toEqual([
       {
         type: 'paragraph',
         content: [{ type: 'text', text: 'Legacy body.' }],

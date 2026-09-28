@@ -19,22 +19,14 @@ export function ExperienceLocalContext({
   currentTitle = null,
 }: ExperienceLocalContextProps) {
   const dictionary = dictionaryFor(locale);
-  const destination =
-    destinationId === null ? null : destinationById(destinationId);
+  const destination = destinationId === null ? null : destinationById(destinationId);
   const sectionLabel =
-    destination === null
-      ? dictionary.shell.homeLabel
-      : destination.label[locale];
+    destination === null ? dictionary.shell.homeLabel : destination.label[locale];
   const hasChildContext =
-    currentTitle !== null &&
-    currentTitle.trim().length > 0 &&
-    currentTitle !== sectionLabel;
+    currentTitle !== null && currentTitle.trim().length > 0 && currentTitle !== sectionLabel;
 
   return (
-    <nav
-      aria-label={dictionary.shell.currentContextLabel}
-      className="aks-experience-context"
-    >
+    <nav aria-label={dictionary.shell.currentContextLabel} className="aks-experience-context">
       <ol className="aks-experience-context-list">
         {hasChildContext && destination !== null ? (
           <>

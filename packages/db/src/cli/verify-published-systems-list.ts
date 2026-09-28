@@ -13,12 +13,7 @@ const firstPublishedId = randomUUID();
 const secondPublishedId = randomUUID();
 const draftId = randomUUID();
 const archivedId = randomUUID();
-const systemIds = [
-  firstPublishedId,
-  secondPublishedId,
-  draftId,
-  archivedId,
-];
+const systemIds = [firstPublishedId, secondPublishedId, draftId, archivedId];
 
 const presentationDocument = {
   version: 1 as const,

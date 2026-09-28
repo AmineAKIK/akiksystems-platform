@@ -1,28 +1,21 @@
 import { Container } from '@akiksystems/ui';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-  type PointerEvent,
-} from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 
-import { legalPageHref, legalPages } from '../i18n/legal-pages';
+import {
+  legalNavigationPages,
+  legalPageHref,
+  type LegalNavigationPage,
+} from '../i18n/legal-navigation';
 import type { Locale } from '../i18n/locales';
 import { announceHomeDescription } from './home-description-events';
 import { homeLegalPresentation } from './home-portal-content';
 
-export function ExperienceFooter({
-  home = false,
-  locale,
-}: {
-  home?: boolean;
-  locale: Locale;
-}) {
+export function ExperienceFooter({ home = false, locale }: { home?: boolean; locale: Locale }) {
   const navigate = useNavigate();
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const lastPointerType = useRef<string | null>(null);
+  const navigationTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (!home) return;
@@ -52,21 +45,29 @@ export function ExperienceFooter({
     };
 
     document.addEventListener('pointerdown', clearSelectionOutsideLegal);
-    return () =>
-      document.removeEventListener('pointerdown', clearSelectionOutsideLegal);
+    return () => document.removeEventListener('pointerdown', clearSelectionOutsideLegal);
   }, [home]);
 
-  const previewFor = (page: (typeof legalPages)[number]) => ({
+  useEffect(
+    () => () => {
+      if (navigationTimer.current !== null) {
+        window.clearTimeout(navigationTimer.current);
+      }
+    },
+    [],
+  );
+
+  const previewFor = (page: LegalNavigationPage) => ({
     description: home
       ? homeLegalPresentation[page.id].description[locale]
-      : page.content[locale].description,
+      : page.description[locale],
     label: page.label[locale],
   });
 
   const followLegalPage = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
-    page: (typeof legalPages)[number],
+    page: LegalNavigationPage,
   ) => {
     if (
       !home ||
@@ -79,9 +80,7 @@ export function ExperienceFooter({
       return;
     }
 
-    const tactile =
-      lastPointerType.current === 'touch' ||
-      lastPointerType.current === 'pen';
+    const tactile = lastPointerType.current === 'touch' || lastPointerType.current === 'pen';
 
     if (tactile && activeHref !== href) {
       event.preventDefault();
@@ -95,7 +94,13 @@ export function ExperienceFooter({
 
     event.preventDefault();
     setActiveHref(href);
-    window.setTimeout(() => navigate(href), 160);
+    if (navigationTimer.current !== null) {
+      window.clearTimeout(navigationTimer.current);
+    }
+    navigationTimer.current = window.setTimeout(() => {
+      navigationTimer.current = null;
+      navigate(href);
+    }, 160);
   };
 
   return (
@@ -106,20 +111,14 @@ export function ExperienceFooter({
       <Container width="wide">
         <div className="aks-experience-footer-inner">
           <p>© {new Date().getUTCFullYear()} AkikSystems</p>
-          <nav
-            aria-label={
-              locale === 'fr' ? 'Informations légales' : 'Legal information'
-            }
-          >
-            {legalPages.map((page) => {
+          <nav aria-label={locale === 'fr' ? 'Informations légales' : 'Legal information'}>
+            {legalNavigationPages.map((page) => {
               const href = legalPageHref(page.id, locale);
               const preview = previewFor(page);
 
               return (
                 <Link
-                  className={
-                    'aks-link' + (activeHref === href ? ' is-active' : '')
-                  }
+                  className={'aks-link' + (activeHref === href ? ' is-active' : '')}
                   data-home-preview-target={home ? 'legal' : undefined}
                   data-preview-copy={preview.description}
                   key={page.id}
@@ -158,10 +157,7 @@ export function ExperienceFooter({
                   onPointerEnter={
                     home
                       ? (event) => {
-                          if (
-                            event.pointerType !== 'touch' &&
-                            event.pointerType !== 'pen'
-                          ) {
+                          if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
                             announceHomeDescription({
                               channel: 'pointer',
                               content: preview,
@@ -173,10 +169,7 @@ export function ExperienceFooter({
                   onPointerLeave={
                     home
                       ? (event) => {
-                          if (
-                            event.pointerType !== 'touch' &&
-                            event.pointerType !== 'pen'
-                          ) {
+                          if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
                             announceHomeDescription({
                               channel: 'pointer',
                               content: null,

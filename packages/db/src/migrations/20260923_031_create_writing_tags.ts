@@ -5,12 +5,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable('tags')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
     .addColumn('canonical_key', 'text', (column) => column.notNull().unique())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addCheckConstraint(
       'tags_canonical_key_check',
       sql`canonical_key ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,
@@ -25,22 +21,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('slug', 'text')
     .addColumn('name', 'text')
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('tag_localizations_pkey', ['tag_id', 'locale'])
     .addUniqueConstraint('tag_localizations_locale_slug_key', ['locale', 'slug'])
-    .addCheckConstraint(
-      'tag_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addCheckConstraint('tag_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'tag_localizations_slug_check',
       sql`slug is null or slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,
@@ -59,22 +46,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('slug', 'text', (column) => column.notNull())
     .addColumn('snapshot', 'jsonb', (column) => column.notNull())
-    .addColumn('published_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('published_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('tag_publications_pkey', ['tag_id', 'locale'])
     .addUniqueConstraint('tag_publications_locale_slug_key', ['locale', 'slug'])
-    .addCheckConstraint(
-      'tag_publications_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
-    .addCheckConstraint(
-      'tag_publications_slug_check',
-      sql`slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,
-    )
+    .addCheckConstraint('tag_publications_locale_check', sql`locale in ('en', 'fr')`)
+    .addCheckConstraint('tag_publications_slug_check', sql`slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`)
     .execute();
 
   await db.schema
@@ -92,14 +69,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('tags.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('writing_tags_pkey', ['writing_id', 'tag_id'])
-    .addUniqueConstraint('writing_tags_writing_position_key', [
-      'writing_id',
-      'position',
-    ])
+    .addUniqueConstraint('writing_tags_writing_position_key', ['writing_id', 'position'])
     .addCheckConstraint('writing_tags_position_check', sql`position >= 0`)
     .execute();
 

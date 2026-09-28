@@ -1,9 +1,6 @@
 import { BrandMark } from '@akiksystems/ui';
 
-export type WorkWithUsApproachKind =
-  | 'understand'
-  | 'structure'
-  | 'build';
+export type WorkWithUsApproachKind = 'understand' | 'structure' | 'build';
 
 export function WorkWithUsBrandVisual() {
   return (
@@ -49,12 +46,7 @@ function UnderstandGlyph() {
 
         <g className="aks-work-with-us-terrain-marker">
           <path d="M12 2.8a3.1 3.1 0 0 0-3.1 3.1c0 2.4 3.1 5.4 3.1 5.4s3.1-3 3.1-5.4A3.1 3.1 0 0 0 12 2.8Z" />
-          <circle
-            className="aks-work-with-us-approach-glyph-dot"
-            cx="12"
-            cy="5.9"
-            r="0.78"
-          />
+          <circle className="aks-work-with-us-approach-glyph-dot" cx="12" cy="5.9" r="0.78" />
         </g>
       </g>
     </>
@@ -83,22 +75,10 @@ function BuildGlyph() {
   );
 }
 
-export function WorkWithUsApproachGlyph({
-  kind,
-}: {
-  kind: WorkWithUsApproachKind;
-}) {
+export function WorkWithUsApproachGlyph({ kind }: { kind: WorkWithUsApproachKind }) {
   return (
-    <span
-      aria-hidden="true"
-      className="aks-work-with-us-approach-glyph"
-      data-kind={kind}
-    >
-      <svg
-        fill="none"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+    <span aria-hidden="true" className="aks-work-with-us-approach-glyph" data-kind={kind}>
+      <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         {kind === 'understand' ? <UnderstandGlyph /> : null}
         {kind === 'structure' ? <StructureGlyph /> : null}
         {kind === 'build' ? <BuildGlyph /> : null}

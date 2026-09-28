@@ -15,9 +15,7 @@ const existing = await appDb
   .executeTakeFirst();
 
 if (existing !== undefined) {
-  process.stdout.write(
-    `Oria bootstrap skipped: System already exists as ${existing.system_id}.\n`,
-  );
+  process.stdout.write(`Oria bootstrap skipped: System already exists as ${existing.system_id}.\n`);
   await appDb.destroy();
   process.exit(0);
 }
@@ -51,9 +49,7 @@ try {
 
   if (!result.created) {
     await deleteAssetObject(storageKey);
-    process.stdout.write(
-      `Oria bootstrap skipped after concurrent creation: ${result.systemId}.\n`,
-    );
+    process.stdout.write(`Oria bootstrap skipped after concurrent creation: ${result.systemId}.\n`);
   } else {
     process.stdout.write(`Oria bootstrap completed: ${result.systemId}.\n`);
   }

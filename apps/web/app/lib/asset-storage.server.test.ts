@@ -14,19 +14,13 @@ describe('asset storage signature validation', () => {
 
   it('accepts a PDF signature', () => {
     expect(() =>
-      validateAssetSignature(
-        'application/pdf',
-        new TextEncoder().encode('%PDF-1.7'),
-      ),
+      validateAssetSignature('application/pdf', new TextEncoder().encode('%PDF-1.7')),
     ).not.toThrow();
   });
 
   it('rejects content that does not match the declared MIME type', () => {
     expect(() =>
-      validateAssetSignature(
-        'image/png',
-        new TextEncoder().encode('<script>alert(1)</script>'),
-      ),
+      validateAssetSignature('image/png', new TextEncoder().encode('<script>alert(1)</script>')),
     ).toThrow(/do not match/i);
   });
 });

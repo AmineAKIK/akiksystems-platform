@@ -26,9 +26,7 @@ function requiredText(value: string | null, label: string): string {
   return normalized;
 }
 
-export function parseCategoryPublicationSnapshot(
-  value: unknown,
-): CategoryPublicationSnapshot {
+export function parseCategoryPublicationSnapshot(value: unknown): CategoryPublicationSnapshot {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Invalid Category publication snapshot.');
   }
@@ -42,11 +40,7 @@ export async function publishCategoryLocalization(
   await db.transaction().execute(async (transaction) => {
     const row = await transaction
       .selectFrom('categories')
-      .innerJoin(
-        'category_localizations',
-        'category_localizations.category_id',
-        'categories.id',
-      )
+      .innerJoin('category_localizations', 'category_localizations.category_id', 'categories.id')
       .select([
         'categories.id',
         'categories.editorial_position',
@@ -178,9 +172,6 @@ export async function getPublishedCategory(
   return {
     ...snapshot,
     publishedAt: row.published_at,
-    alternate:
-      alternate === undefined
-        ? null
-        : { locale: alternate.locale, slug: alternate.slug },
+    alternate: alternate === undefined ? null : { locale: alternate.locale, slug: alternate.slug },
   };
 }

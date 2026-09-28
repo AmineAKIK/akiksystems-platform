@@ -27,8 +27,5 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     drop constraint if exists system_localizations_presentation_document_check
   `.execute(db);
 
-  await db.schema
-    .alterTable('system_localizations')
-    .dropColumn('presentation_document')
-    .execute();
+  await db.schema.alterTable('system_localizations').dropColumn('presentation_document').execute();
 }

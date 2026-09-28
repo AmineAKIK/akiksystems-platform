@@ -1,7 +1,4 @@
-import {
-  getPublishedCategory,
-  listPublishedWritingsForCategory,
-} from '@akiksystems/db';
+import { getPublishedCategory, listPublishedWritingsForCategory } from '@akiksystems/db';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import { data, useLoaderData } from 'react-router';
 
@@ -22,9 +19,7 @@ function requiredSlug(value: string | undefined): string {
 }
 
 function categoryHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/categories/${slug}`
-    : `/en/writings/categories/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/categories/${slug}` : `/en/writings/categories/${slug}`;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -67,10 +62,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -90,8 +82,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function WritingCategoryDetailRoute() {
   const { category, writings } = useLoaderData<typeof loader>();
-  const overviewHref =
-    category.locale === 'fr' ? '/fr/ecrits' : '/en/writings';
+  const overviewHref = category.locale === 'fr' ? '/fr/ecrits' : '/en/writings';
 
   return (
     <main className="aks-proof-page">
@@ -99,9 +90,7 @@ export default function WritingCategoryDetailRoute() {
         <div className="aks-proof-stack">
           <header className="aks-proof-hero">
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-              {category.locale === 'fr'
-                ? 'Catégorie éditoriale'
-                : 'Editorial category'}
+              {category.locale === 'fr' ? 'Catégorie éditoriale' : 'Editorial category'}
             </Text>
             <Heading level={1} size="lg">
               {category.name}
@@ -138,9 +127,7 @@ export default function WritingCategoryDetailRoute() {
           </section>
 
           <Link href={overviewHref}>
-            {category.locale === 'fr'
-              ? 'Retour aux Écrits'
-              : 'Back to Writings'}
+            {category.locale === 'fr' ? 'Retour aux Écrits' : 'Back to Writings'}
           </Link>
         </div>
       </Container>

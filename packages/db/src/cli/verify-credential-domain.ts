@@ -114,10 +114,7 @@ try {
   assert.equal(english.kind, 'certification');
   assert.equal(english.issuer, 'Qualification Authority');
   assert.equal(english.sourceAssetId, assetId);
-  assert.equal(
-    english.verificationUrl,
-    'https://example.com/verify/credential',
-  );
+  assert.equal(english.verificationUrl, 'https://example.com/verify/credential');
   assert.equal(english.training?.slug, 'credential-training');
   assert.equal(english.alternate?.slug, 'justificatif-qualifie');
 

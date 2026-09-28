@@ -60,11 +60,7 @@ export function WritingsOverview({
               resultCount={searchResultCount}
             />
 
-            <WritingsFilters
-              locale={locale}
-              model={filterModel}
-              searchQuery={searchQuery}
-            />
+            <WritingsFilters locale={locale} model={filterModel} searchQuery={searchQuery} />
 
             <WritingsFeed
               emptyMessage={
@@ -84,7 +80,6 @@ export function WritingsOverview({
               writings={writings}
             />
           </section>
-
         </div>
       </Container>
     </main>

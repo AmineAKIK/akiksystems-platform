@@ -104,12 +104,7 @@ try {
 
   const localizations = await db
     .selectFrom('system_localizations')
-    .select([
-      'locale',
-      'slug',
-      'editorial_state',
-      'published_at',
-    ])
+    .select(['locale', 'slug', 'editorial_state', 'published_at'])
     .where('system_id', '=', firstSystemId)
     .orderBy('locale')
     .execute();
@@ -162,45 +157,36 @@ try {
     })
     .executeTakeFirstOrThrow();
 
-  await expectPostgresError(
-    '23505',
-    'system_localizations_locale_slug_key',
-    () =>
-      db
-        .insertInto('system_localizations')
-        .values({
-          system_id: secondSystemId,
-          locale: 'en',
-          slug,
-          proof_role: 'Qualification System',
-          proof_maturity: 'Inspectable qualification fixture',
-          proof_demo_nature: 'No separate public demo',
-          proof_data_nature: 'Synthetic qualification data',
-          proof_limits: 'Qualification fixture only; no deployment or impact claim.',
-          editorial_state: 'draft',
-          published_at: null,
-          title: null,
-          summary: null,
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_localizations_locale_slug_key', () =>
+    db
+      .insertInto('system_localizations')
+      .values({
+        system_id: secondSystemId,
+        locale: 'en',
+        slug,
+        proof_role: 'Qualification System',
+        proof_maturity: 'Inspectable qualification fixture',
+        proof_demo_nature: 'No separate public demo',
+        proof_data_nature: 'Synthetic qualification data',
+        proof_limits: 'Qualification fixture only; no deployment or impact claim.',
+        editorial_state: 'draft',
+        published_at: null,
+        title: null,
+        summary: null,
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23514',
-    'systems_lifecycle_archive_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'systems_lifecycle_archive_check', () =>
+    sql`
         update systems
         set lifecycle = 'deleted'
         where id = ${secondSystemId}::uuid
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_locale_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_localizations_locale_check', () =>
+    sql`
         insert into system_localizations (
           system_id,
           locale,
@@ -213,11 +199,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_localizations_editorial_publication_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_localizations_editorial_publication_check', () =>
+    sql`
         insert into system_localizations (
           system_id,
           locale,
@@ -246,9 +229,6 @@ try {
     'System domain verification passed: shared identity, independent localization publication, locale-scoped unique slugs, lifecycle separation, and database constraints are enforced.\n',
   );
 } finally {
-  await db.deleteFrom('systems').where('id', 'in', [
-    firstSystemId,
-    secondSystemId,
-  ]).execute();
+  await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
   await db.destroy();
 }

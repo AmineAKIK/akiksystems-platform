@@ -44,9 +44,7 @@ export function ExperienceShell({
       : destinationHref(destinationId, alternateLocale);
   const languagePath = alternateHref === null ? null : (alternateHref ?? derivedLanguageHref);
   const languageHref =
-    languagePath === null
-      ? null
-      : publicLanguageHref(alternateLocale, languagePath);
+    languagePath === null ? null : publicLanguageHref(alternateLocale, languagePath);
 
   return (
     <>

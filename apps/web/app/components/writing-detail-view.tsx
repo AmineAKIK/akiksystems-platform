@@ -4,11 +4,7 @@ import type {
   PublicWritingTag,
   WritingPublicationAsset,
 } from '@akiksystems/db';
-import type {
-  PlatformLocale,
-  WritingDocument,
-  WritingKind,
-} from '@akiksystems/core';
+import type { PlatformLocale, WritingDocument, WritingKind } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import { SystemReference } from './system-reference';
@@ -36,15 +32,11 @@ export interface ContextualRelatedWriting {
 }
 
 function categoryHref(locale: PlatformLocale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/categories/${slug}`
-    : `/en/writings/categories/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/categories/${slug}` : `/en/writings/categories/${slug}`;
 }
 
 function tagHref(locale: PlatformLocale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/tags/${slug}`
-    : `/en/writings/tags/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/tags/${slug}` : `/en/writings/tags/${slug}`;
 }
 
 function writingHref(locale: PlatformLocale, slug: string): string {
@@ -73,10 +65,7 @@ export function WritingDetailView({
   writing: WritingDetailViewModel;
 }) {
   return (
-    <main
-      className="aks-writing-detail-page"
-      data-writing-kind={writing.kind}
-    >
+    <main className="aks-writing-detail-page" data-writing-kind={writing.kind}>
       <Container width="wide">
         <div className="aks-writing-detail-layout">
           <article className="aks-writing-article">
@@ -98,9 +87,7 @@ export function WritingDetailView({
                   {writing.categories.length > 0 ? (
                     <nav
                       aria-label={
-                        writing.locale === 'fr'
-                          ? 'Catégories éditoriales'
-                          : 'Editorial categories'
+                        writing.locale === 'fr' ? 'Catégories éditoriales' : 'Editorial categories'
                       }
                       className="aks-writing-taxonomy-group"
                     >
@@ -117,18 +104,11 @@ export function WritingDetailView({
 
                   {writing.tags.length > 0 ? (
                     <nav
-                      aria-label={
-                        writing.locale === 'fr'
-                          ? 'Tags éditoriaux'
-                          : 'Editorial tags'
-                      }
+                      aria-label={writing.locale === 'fr' ? 'Tags éditoriaux' : 'Editorial tags'}
                       className="aks-writing-taxonomy-group"
                     >
                       {writing.tags.map((tag) => (
-                        <Link
-                          href={tagHref(writing.locale, tag.slug)}
-                          key={tag.tagId}
-                        >
+                        <Link href={tagHref(writing.locale, tag.slug)} key={tag.tagId}>
                           {tag.name}
                         </Link>
                       ))}
@@ -207,9 +187,7 @@ export function WritingDetailView({
             >
               <div className="aks-writing-related-heading">
                 <Heading id="writing-related-systems" level={2} size="sm">
-                  {writing.locale === 'fr'
-                    ? 'Systèmes liés'
-                    : 'Related Systems'}
+                  {writing.locale === 'fr' ? 'Systèmes liés' : 'Related Systems'}
                 </Heading>
                 <Text size="sm" tone="muted">
                   {writing.locale === 'fr'

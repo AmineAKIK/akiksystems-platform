@@ -8,16 +8,10 @@ import {
 } from '@akiksystems/core/profile-content';
 import type { PublicProfile } from '@akiksystems/db';
 import { BrandMark, Container } from '@akiksystems/ui';
-import {
-  useState,
-  type KeyboardEvent as ReactKeyboardEvent,
-} from 'react';
+import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import { destinationHref } from '../i18n/global-destinations';
-import {
-  ProfileIcon,
-  type ProfileIconName,
-} from './profile-icons';
+import { ProfileIcon, type ProfileIconName } from './profile-icons';
 
 interface PublicProfileViewProps {
   profile: PublicProfile;
@@ -82,20 +76,14 @@ const contactLabels = {
   },
 } as const;
 
-const guidanceIcons: Record<
-  (typeof profileGuidanceKeys)[number],
-  ProfileIconName
-> = {
+const guidanceIcons: Record<(typeof profileGuidanceKeys)[number], ProfileIconName> = {
   code: 'code',
   management: 'management',
   field: 'field',
   infrastructure: 'infrastructure',
 };
 
-const capabilityIcons: Record<
-  (typeof profileCapabilityStepKeys)[number],
-  ProfileIconName
-> = {
+const capabilityIcons: Record<(typeof profileCapabilityStepKeys)[number], ProfileIconName> = {
   frame: 'frame',
   design: 'design',
   validate: 'validate',
@@ -106,20 +94,14 @@ const capabilityIcons: Record<
   evolve: 'evolve',
 };
 
-const crossCuttingIcons: Record<
-  (typeof profileCrossCuttingKeys)[number],
-  ProfileIconName
-> = {
+const crossCuttingIcons: Record<(typeof profileCrossCuttingKeys)[number], ProfileIconName> = {
   project_management: 'management',
   collaboration: 'collaboration',
   documentation: 'documentation',
   transparency: 'transparency',
 };
 
-const systemicIcons: Record<
-  (typeof profileSystemicScaleStepKeys)[number],
-  ProfileIconName
-> = {
+const systemicIcons: Record<(typeof profileSystemicScaleStepKeys)[number], ProfileIconName> = {
   read_request: 'frame',
   widen_view: 'system',
   act_right_place: 'deploy',
@@ -181,16 +163,12 @@ function tabKeyDown(
 
   event.preventDefault();
   select(nextIndex);
-  const tabs = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-    '[role="tab"]',
-  );
+  const tabs =
+    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
   tabs?.[nextIndex]?.focus();
 }
 
-function proofCountLabel(
-  profile: PublicProfile,
-  count: number,
-): string {
+function proofCountLabel(profile: PublicProfile, count: number): string {
   const label = profile.content.stack.proofCountLabel.trim();
   const unit =
     count === 1
@@ -206,10 +184,7 @@ function proofCountLabel(
   return label + ' ' + count + ' ' + unit;
 }
 
-function capabilityGroupLabel(
-  profile: PublicProfile,
-  index: number,
-): string {
+function capabilityGroupLabel(profile: PublicProfile, index: number): string {
   if (index <= 2) return profile.content.capabilities.beforeCodingLabel;
   if (index <= 5) return profile.content.capabilities.buildDeliverLabel;
   return profile.content.capabilities.runLiveLabel;
@@ -223,11 +198,7 @@ function ProfilePortrait({ profile }: { profile: PublicProfile }) {
         className="aks-profile-portrait"
         height={320}
         loading="eager"
-        src={
-          profile.locale === 'fr'
-            ? '/fr/profil/portrait'
-            : '/en/profile/portrait'
-        }
+        src={profile.locale === 'fr' ? '/fr/profil/portrait' : '/en/profile/portrait'}
         width={320}
       />
     );
@@ -260,12 +231,10 @@ function ProfilePortrait({ profile }: { profile: PublicProfile }) {
 export function PublicProfileView({ profile }: PublicProfileViewProps) {
   const { content } = profile;
   const ui = interfaceCopy[profile.locale];
-  const [activeStackId, setActiveStackId] = useState(
-    profile.stackGroups[0]?.id ?? null,
+  const [activeStackId, setActiveStackId] = useState(profile.stackGroups[0]?.id ?? null);
+  const [activeGuidance, setActiveGuidance] = useState<(typeof profileGuidanceKeys)[number]>(
+    profileGuidanceKeys[0],
   );
-  const [activeGuidance, setActiveGuidance] = useState<
-    (typeof profileGuidanceKeys)[number]
-  >(profileGuidanceKeys[0]);
   const [activeCapability, setActiveCapability] = useState<
     (typeof profileCapabilityStepKeys)[number]
   >(profileCapabilityStepKeys[0]);
@@ -304,16 +273,12 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
       return hasText(symbol.name) || hasText(symbol.description);
     });
 
-  const activeCapabilityIndex =
-    profileCapabilityStepKeys.indexOf(activeCapability);
-  const activeSystemicIndex =
-    profileSystemicScaleStepKeys.indexOf(activeSystemicStep);
+  const activeCapabilityIndex = profileCapabilityStepKeys.indexOf(activeCapability);
+  const activeSystemicIndex = profileSystemicScaleStepKeys.indexOf(activeSystemicStep);
 
   const activeGuidanceContent = content.guidance.looks[activeGuidance];
-  const activeCapabilityContent =
-    content.capabilities.steps[activeCapability];
-  const activeSystemicContent =
-    content.systemicScale.steps[activeSystemicStep];
+  const activeCapabilityContent = content.capabilities.steps[activeCapability];
+  const activeSystemicContent = content.systemicScale.steps[activeSystemicStep];
 
   const mobilityValues: string[] = [];
   if (profile.mobility.worldwide) mobilityValues.push(ui.worldwide);
@@ -389,22 +354,11 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   {profile.sourceCvAssetId !== null ? (
                     <a
                       className="aks-profile-pill aks-profile-cv-link"
-                      href={
-                        profile.locale === 'fr'
-                          ? '/fr/profil/cv'
-                          : '/en/profile/cv'
-                      }
+                      href={profile.locale === 'fr' ? '/fr/profil/cv' : '/en/profile/cv'}
                     >
-                      <ProfileIcon
-                        aria-hidden="true"
-                        height="16"
-                        name="documentation"
-                        width="16"
-                      />
+                      <ProfileIcon aria-hidden="true" height="16" name="documentation" width="16" />
                       <span>
-                        {hasText(content.hero.cvLabel)
-                          ? content.hero.cvLabel
-                          : ui.cvFallback}
+                        {hasText(content.hero.cvLabel) ? content.hero.cvLabel : ui.cvFallback}
                       </span>
                     </a>
                   ) : null}
@@ -418,10 +372,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       <span className="aks-profile-micro-label">{ui.languages}</span>
                       <span>
                         {profile.languages
-                          .map(
-                            (language) =>
-                              languageLabels[profile.locale][language],
-                          )
+                          .map((language) => languageLabels[profile.locale][language])
                           .join(' · ')}
                       </span>
                     </div>
@@ -454,10 +405,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                         : ui.currentProject}
                     </span>
                   </div>
-                  <a
-                    className="aks-profile-pill"
-                    href={profile.currentProject.href}
-                  >
+                  <a className="aks-profile-pill" href={profile.currentProject.href}>
                     {hasText(content.currentProject.ctaLabel)
                       ? content.currentProject.ctaLabel
                       : profile.locale === 'fr'
@@ -468,19 +416,12 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
 
                 <div className="aks-profile-current-project-title">
                   <span className="aks-profile-project-glyph">
-                    <ProfileIcon
-                      aria-hidden="true"
-                      height="28"
-                      name="system"
-                      width="28"
-                    />
+                    <ProfileIcon aria-hidden="true" height="28" name="system" width="28" />
                   </span>
                   <h2>{profile.currentProject.title}</h2>
                 </div>
 
-                <p className="aks-profile-body-copy">
-                  {profile.currentProject.summary}
-                </p>
+                <p className="aks-profile-body-copy">{profile.currentProject.summary}</p>
 
                 {hasText(content.currentProject.role) ? (
                   <div className="aks-profile-current-project-block">
@@ -497,25 +438,21 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
 
                 {profile.currentProject.technologies.length > 0 ? (
                   <div className="aks-profile-current-project-block">
-                    <span className="aks-profile-micro-label">
-                      {ui.projectStack}
-                    </span>
+                    <span className="aks-profile-micro-label">{ui.projectStack}</span>
                     <ul className="aks-profile-project-technologies">
-                      {profile.currentProject.technologies.map(
-                        (technology, index) => (
-                          <li key={technology.id}>
-                            <span className="aks-profile-small-glyph">
-                              <ProfileIcon
-                                aria-hidden="true"
-                                height="15"
-                                name={stackIconAt(index)}
-                                width="15"
-                              />
-                            </span>
-                            <span>{technology.name}</span>
-                          </li>
-                        ),
-                      )}
+                      {profile.currentProject.technologies.map((technology, index) => (
+                        <li key={technology.id}>
+                          <span className="aks-profile-small-glyph">
+                            <ProfileIcon
+                              aria-hidden="true"
+                              height="15"
+                              name={stackIconAt(index)}
+                              width="15"
+                            />
+                          </span>
+                          <span>{technology.name}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : null}
@@ -524,10 +461,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   {hasText(content.currentProject.updatedLabel)
                     ? content.currentProject.updatedLabel
                     : ui.updatedFallback}{' '}
-                  {formatDate(
-                    profile.locale,
-                    profile.currentProject.publishedAt,
-                  )}
+                  {formatDate(profile.locale, profile.currentProject.publishedAt)}
                 </p>
               </article>
             ) : null}
@@ -552,9 +486,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   {hasText(content.stack.title) ? content.stack.title : 'Stack'}
                 </h2>
                 {hasText(content.stack.introduction) ? (
-                  <p className="aks-profile-body-copy">
-                    {content.stack.introduction}
-                  </p>
+                  <p className="aks-profile-body-copy">{content.stack.introduction}</p>
                 ) : null}
               </div>
 
@@ -578,9 +510,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                         aria-expanded={active}
                         className="aks-profile-stack-trigger"
                         id={buttonId}
-                        onClick={() =>
-                          setActiveStackId(active ? null : group.id)
-                        }
+                        onClick={() => setActiveStackId(active ? null : group.id)}
                         type="button"
                       >
                         <span className="aks-profile-stack-icon">
@@ -592,12 +522,8 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                           />
                         </span>
                         <span className="aks-profile-stack-trigger-copy">
-                          <span className="aks-profile-stack-name">
-                            {stackName || group.title}
-                          </span>
-                          <span className="aks-profile-stack-category">
-                            {group.title}
-                          </span>
+                          <span className="aks-profile-stack-name">{stackName || group.title}</span>
+                          <span className="aks-profile-stack-category">{group.title}</span>
                         </span>
                       </button>
 
@@ -617,14 +543,8 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                           ) : (
                             <div className="aks-profile-proof-list">
                               {group.proofSystems.map((system) => (
-                                <article
-                                  className="aks-profile-proof-system"
-                                  key={system.id}
-                                >
-                                  <span
-                                    aria-hidden="true"
-                                    className="aks-profile-proof-initial"
-                                  >
+                                <article className="aks-profile-proof-system" key={system.id}>
+                                  <span aria-hidden="true" className="aks-profile-proof-initial">
                                     {system.title.trim().charAt(0).toUpperCase()}
                                   </span>
                                   <div className="aks-profile-proof-copy">
@@ -640,10 +560,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                                         </p>
                                       ))}
                                     </div>
-                                    <a
-                                      className="aks-profile-pill"
-                                      href={system.href}
-                                    >
+                                    <a className="aks-profile-pill" href={system.href}>
                                       {hasText(content.stack.inspectSystemLabel)
                                         ? content.stack.inspectSystemLabel
                                         : profile.locale === 'fr'
@@ -681,37 +598,26 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           <Container width="wide">
             <div className="aks-profile-guidance-intro">
               {hasText(content.guidance.eyebrow) ? (
-                <p className="aks-profile-eyebrow">
-                  {content.guidance.eyebrow}
-                </p>
+                <p className="aks-profile-eyebrow">{content.guidance.eyebrow}</p>
               ) : null}
               {hasText(content.guidance.title) ? (
                 <h2 id="profile-guidance-title">{content.guidance.title}</h2>
               ) : null}
               {hasText(content.guidance.introduction) ? (
-                <p className="aks-profile-body-copy">
-                  {content.guidance.introduction}
-                </p>
+                <p className="aks-profile-body-copy">{content.guidance.introduction}</p>
               ) : null}
             </div>
 
             <div className="aks-profile-guidance-experience">
               <div
                 aria-label={
-                  hasText(content.guidance.centerLabel)
-                    ? content.guidance.centerLabel
-                    : undefined
+                  hasText(content.guidance.centerLabel) ? content.guidance.centerLabel : undefined
                 }
                 className="aks-profile-guidance-map"
                 role="group"
               >
                 <div className="aks-profile-guidance-center">
-                  <ProfileIcon
-                    aria-hidden="true"
-                    height="30"
-                    name="system"
-                    width="30"
-                  />
+                  <ProfileIcon aria-hidden="true" height="30" name="system" width="30" />
                   {hasText(content.guidance.centerLabel) ? (
                     <strong>{content.guidance.centerLabel}</strong>
                   ) : null}
@@ -743,11 +649,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 })}
               </div>
 
-              <div
-                aria-live="polite"
-                className="aks-profile-guidance-detail"
-                role="region"
-              >
+              <div aria-live="polite" className="aks-profile-guidance-detail" role="region">
                 <div className="aks-profile-guidance-detail-heading">
                   <span className="aks-profile-guidance-detail-icon">
                     <ProfileIcon
@@ -779,9 +681,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
 
                 {hasText(activeGuidanceContent.benefit) ? (
                   <div className="aks-profile-guidance-fact">
-                    <span className="aks-profile-micro-label">
-                      {content.guidance.benefitLabel}
-                    </span>
+                    <span className="aks-profile-micro-label">{content.guidance.benefitLabel}</span>
                     <p>{activeGuidanceContent.benefit}</p>
                   </div>
                 ) : null}
@@ -811,9 +711,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
             </div>
 
             {hasText(content.guidance.conclusion) ? (
-              <p className="aks-profile-guidance-conclusion">
-                {content.guidance.conclusion}
-              </p>
+              <p className="aks-profile-guidance-conclusion">{content.guidance.conclusion}</p>
             ) : null}
           </Container>
         </section>
@@ -829,44 +727,25 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           <Container width="wide">
             <div className="aks-profile-section-heading">
               {hasText(content.capabilities.eyebrow) ? (
-                <p className="aks-profile-eyebrow">
-                  {content.capabilities.eyebrow}
-                </p>
+                <p className="aks-profile-eyebrow">{content.capabilities.eyebrow}</p>
               ) : null}
               {hasText(content.capabilities.title) ? (
-                <h2 id="profile-capabilities-title">
-                  {content.capabilities.title}
-                </h2>
+                <h2 id="profile-capabilities-title">{content.capabilities.title}</h2>
               ) : null}
               {hasText(content.capabilities.introduction) ? (
-                <p className="aks-profile-body-copy">
-                  {content.capabilities.introduction}
-                </p>
+                <p className="aks-profile-body-copy">{content.capabilities.introduction}</p>
               ) : null}
             </div>
 
             <div className="aks-profile-capability-cycle">
-              <div
-                aria-hidden="true"
-                className="aks-profile-capability-group-labels"
-              >
-                <span data-group="before">
-                  {content.capabilities.beforeCodingLabel}
-                </span>
-                <span data-group="build">
-                  {content.capabilities.buildDeliverLabel}
-                </span>
-                <span data-group="run">
-                  {content.capabilities.runLiveLabel}
-                </span>
+              <div aria-hidden="true" className="aks-profile-capability-group-labels">
+                <span data-group="before">{content.capabilities.beforeCodingLabel}</span>
+                <span data-group="build">{content.capabilities.buildDeliverLabel}</span>
+                <span data-group="run">{content.capabilities.runLiveLabel}</span>
               </div>
 
               <div
-                aria-label={
-                  profile.locale === 'fr'
-                    ? 'Étapes du cycle'
-                    : 'Cycle stages'
-                }
+                aria-label={profile.locale === 'fr' ? 'Étapes du cycle' : 'Cycle stages'}
                 className="aks-profile-capability-tabs"
                 role="tablist"
               >
@@ -882,17 +761,12 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       key={key}
                       onClick={() => setActiveCapability(key)}
                       onKeyDown={(event) =>
-                        tabKeyDown(
-                          event,
-                          index,
-                          profileCapabilityStepKeys.length,
-                          (nextIndex) => {
-                            const nextKey = profileCapabilityStepKeys[nextIndex];
-                            if (nextKey !== undefined) {
-                              setActiveCapability(nextKey);
-                            }
-                          },
-                        )
+                        tabKeyDown(event, index, profileCapabilityStepKeys.length, (nextIndex) => {
+                          const nextKey = profileCapabilityStepKeys[nextIndex];
+                          if (nextKey !== undefined) {
+                            setActiveCapability(nextKey);
+                          }
+                        })
                       }
                       role="tab"
                       tabIndex={selected ? 0 : -1}
@@ -956,16 +830,11 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
             </div>
 
             <div className="aks-profile-cross-cutting">
-              <p className="aks-profile-eyebrow">
-                {content.capabilities.crossCuttingLabel}
-              </p>
+              <p className="aks-profile-eyebrow">{content.capabilities.crossCuttingLabel}</p>
               <div className="aks-profile-cross-cutting-grid">
                 {profileCrossCuttingKeys.map((key) => {
                   const capability = content.capabilities.crossCutting[key];
-                  if (
-                    !hasText(capability.title) &&
-                    !hasText(capability.description)
-                  ) {
+                  if (!hasText(capability.title) && !hasText(capability.description)) {
                     return null;
                   }
                   return (
@@ -1001,14 +870,10 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           <Container width="wide">
             <div className="aks-profile-systemic-intro">
               {hasText(content.systemicScale.eyebrow) ? (
-                <p className="aks-profile-eyebrow">
-                  {content.systemicScale.eyebrow}
-                </p>
+                <p className="aks-profile-eyebrow">{content.systemicScale.eyebrow}</p>
               ) : null}
               {hasText(content.systemicScale.title) ? (
-                <h2 id="profile-systemic-scale-title">
-                  {content.systemicScale.title}
-                </h2>
+                <h2 id="profile-systemic-scale-title">{content.systemicScale.title}</h2>
               ) : null}
               {hasText(content.systemicScale.statementPrimary) ||
               hasText(content.systemicScale.statementSecondary) ? (
@@ -1023,9 +888,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 </p>
               ) : null}
               {hasText(content.systemicScale.introduction) ? (
-                <p className="aks-profile-body-copy">
-                  {content.systemicScale.introduction}
-                </p>
+                <p className="aks-profile-body-copy">{content.systemicScale.introduction}</p>
               ) : null}
               {profile.systemicScaleWriting !== null ? (
                 <a
@@ -1035,30 +898,19 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   {hasText(content.systemicScale.reasoningLinkLabel)
                     ? content.systemicScale.reasoningLinkLabel
                     : profile.systemicScaleWriting.title}
-                  <ProfileIcon
-                    aria-hidden="true"
-                    height="14"
-                    name="arrow-up-right"
-                    width="14"
-                  />
+                  <ProfileIcon aria-hidden="true" height="14" name="arrow-up-right" width="14" />
                 </a>
               ) : null}
             </div>
 
             <div className="aks-profile-systemic-method">
               <div className="aks-profile-systemic-method-heading">
-                <span className="aks-profile-micro-label">
-                  {ui.systemicMethod}
-                </span>
+                <span className="aks-profile-micro-label">{ui.systemicMethod}</span>
               </div>
 
               <div className="aks-profile-systemic-tabs-wrap">
                 <div
-                  aria-label={
-                    profile.locale === 'fr'
-                      ? 'Les quatre temps'
-                      : 'The four stages'
-                  }
+                  aria-label={profile.locale === 'fr' ? 'Les quatre temps' : 'The four stages'}
                   className="aks-profile-systemic-tabs"
                   role="tablist"
                 >
@@ -1079,8 +931,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                             index,
                             profileSystemicScaleStepKeys.length,
                             (nextIndex) => {
-                              const nextKey =
-                                profileSystemicScaleStepKeys[nextIndex];
+                              const nextKey = profileSystemicScaleStepKeys[nextIndex];
                               if (nextKey !== undefined) {
                                 setActiveSystemicStep(nextKey);
                               }
@@ -1150,11 +1001,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                   }
                   className="aks-profile-systemic-diagram"
                   data-active-step={activeSystemicStep}
-                  role={
-                    hasText(activeSystemicContent.diagramAlt)
-                      ? 'img'
-                      : undefined
-                  }
+                  role={hasText(activeSystemicContent.diagramAlt) ? 'img' : undefined}
                 >
                   {hasText(activeSystemicContent.diagramLeadLabel) ? (
                     <span className="aks-profile-systemic-diagram-lead">
@@ -1166,8 +1013,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       const label = content.systemicScale.processLabels[key];
                       if (!hasText(label)) return null;
                       const pairStart = activeSystemicIndex * 2;
-                      const highlighted =
-                        index === pairStart || index === pairStart + 1;
+                      const highlighted = index === pairStart || index === pairStart + 1;
                       return (
                         <span
                           className="aks-profile-systemic-process-node"
@@ -1187,28 +1033,18 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
               <div className="aks-profile-emblem">
                 <div className="aks-profile-emblem-heading">
                   {hasText(content.emblem.eyebrow) ? (
-                    <p className="aks-profile-eyebrow">
-                      {content.emblem.eyebrow}
-                    </p>
+                    <p className="aks-profile-eyebrow">{content.emblem.eyebrow}</p>
                   ) : null}
-                  {hasText(content.emblem.title) ? (
-                    <h3>{content.emblem.title}</h3>
-                  ) : null}
+                  {hasText(content.emblem.title) ? <h3>{content.emblem.title}</h3> : null}
                   {hasText(content.emblem.introduction) ? (
-                    <p className="aks-profile-body-copy">
-                      {content.emblem.introduction}
-                    </p>
+                    <p className="aks-profile-body-copy">{content.emblem.introduction}</p>
                   ) : null}
                 </div>
 
                 <div className="aks-profile-emblem-map">
                   <BrandMark
                     className="aks-profile-emblem-mark"
-                    title={
-                      hasText(content.emblem.title)
-                        ? content.emblem.title
-                        : ui.emblemAlt
-                    }
+                    title={hasText(content.emblem.title) ? content.emblem.title : ui.emblemAlt}
                   />
                   {profileEmblemSymbolKeys.map((key) => {
                     const symbol = content.emblem.symbols[key];
@@ -1223,9 +1059,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                       >
                         <h4>{symbol.name}</h4>
                         {hasText(symbol.concept) ? (
-                          <span className="aks-profile-micro-label">
-                            {symbol.concept}
-                          </span>
+                          <span className="aks-profile-micro-label">{symbol.concept}</span>
                         ) : null}
                         <p>{symbol.description}</p>
                       </article>
@@ -1236,28 +1070,19 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 <div className="aks-profile-emblem-mobile">
                   <BrandMark
                     className="aks-profile-emblem-mobile-mark"
-                    title={
-                      hasText(content.emblem.title)
-                        ? content.emblem.title
-                        : ui.emblemAlt
-                    }
+                    title={hasText(content.emblem.title) ? content.emblem.title : ui.emblemAlt}
                   />
                   <ul>
                     {profileEmblemSymbolKeys.map((key) => {
                       const symbol = content.emblem.symbols[key];
-                      if (
-                        !hasText(symbol.name) &&
-                        !hasText(symbol.description)
-                      ) {
+                      if (!hasText(symbol.name) && !hasText(symbol.description)) {
                         return null;
                       }
                       return (
                         <li key={key}>
                           <div>
                             <strong>{symbol.name}</strong>
-                            {hasText(symbol.concept) ? (
-                              <span>{symbol.concept}</span>
-                            ) : null}
+                            {hasText(symbol.concept) ? <span>{symbol.concept}</span> : null}
                           </div>
                           <p>{symbol.description}</p>
                         </li>
@@ -1267,9 +1092,7 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
                 </div>
 
                 {hasText(content.emblem.conclusion) ? (
-                  <p className="aks-profile-emblem-conclusion">
-                    {content.emblem.conclusion}
-                  </p>
+                  <p className="aks-profile-emblem-conclusion">{content.emblem.conclusion}</p>
                 ) : null}
               </div>
             ) : null}
@@ -1286,15 +1109,11 @@ export function PublicProfileView({ profile }: PublicProfileViewProps) {
           <Container width="wide">
             <div className="aks-profile-cta-inner">
               {hasText(content.callToAction.eyebrow) ? (
-                <p className="aks-profile-eyebrow">
-                  {content.callToAction.eyebrow}
-                </p>
+                <p className="aks-profile-eyebrow">{content.callToAction.eyebrow}</p>
               ) : null}
               <h2 id="profile-cta-title">{content.callToAction.title}</h2>
               {hasText(content.callToAction.body) ? (
-                <p className="aks-profile-body-copy">
-                  {content.callToAction.body}
-                </p>
+                <p className="aks-profile-body-copy">{content.callToAction.body}</p>
               ) : null}
               <a
                 className="aks-profile-pill aks-profile-cta-link"

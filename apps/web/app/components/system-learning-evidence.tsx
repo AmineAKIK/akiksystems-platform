@@ -27,9 +27,7 @@ export function SystemLearningEvidence({
           {locale === 'fr' ? 'Apprentissage' : 'Learning'}
         </Text>
         <Heading id="system-learning-evidence-heading" level={2} size="sm">
-          {locale === 'fr'
-            ? 'Preuves d’apprentissage liées'
-            : 'Connected learning evidence'}
+          {locale === 'fr' ? 'Preuves d’apprentissage liées' : 'Connected learning evidence'}
         </Heading>
         <Text tone="muted">
           {locale === 'fr'
@@ -47,9 +45,7 @@ export function SystemLearningEvidence({
               </Heading>
               <Text>{item.summary}</Text>
               <Link href={item.href}>
-                {locale === 'fr'
-                  ? 'Inspecter la preuve'
-                  : 'Inspect learning evidence'}
+                {locale === 'fr' ? 'Inspecter la preuve' : 'Inspect learning evidence'}
               </Link>
             </div>
           </article>

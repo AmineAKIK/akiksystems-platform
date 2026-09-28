@@ -90,25 +90,36 @@ export async function publishTrainingLocalization(
 
     const snapshotJson = snapshot as unknown as Record<string, unknown>;
 
-    await transaction.insertInto('training_publications').values({
-      training_id: input.trainingId,
-      locale: input.locale,
-      slug: snapshot.slug,
-      snapshot: snapshotJson,
-      published_at: now,
-      updated_at: now,
-    }).onConflict((conflict) => conflict.columns(['training_id', 'locale']).doUpdateSet({
-      slug: snapshot.slug,
-      snapshot: snapshotJson,
-      published_at: now,
-      updated_at: now,
-    })).execute();
+    await transaction
+      .insertInto('training_publications')
+      .values({
+        training_id: input.trainingId,
+        locale: input.locale,
+        slug: snapshot.slug,
+        snapshot: snapshotJson,
+        published_at: now,
+        updated_at: now,
+      })
+      .onConflict((conflict) =>
+        conflict.columns(['training_id', 'locale']).doUpdateSet({
+          slug: snapshot.slug,
+          snapshot: snapshotJson,
+          published_at: now,
+          updated_at: now,
+        }),
+      )
+      .execute();
 
-    await transaction.updateTable('training_localizations').set({
-      editorial_state: 'published',
-      published_at: now,
-      updated_at: now,
-    }).where('training_id', '=', input.trainingId).where('locale', '=', input.locale).execute();
+    await transaction
+      .updateTable('training_localizations')
+      .set({
+        editorial_state: 'published',
+        published_at: now,
+        updated_at: now,
+      })
+      .where('training_id', '=', input.trainingId)
+      .where('locale', '=', input.locale)
+      .execute();
   });
 }
 
@@ -117,13 +128,21 @@ export async function unpublishTrainingLocalization(
   input: { trainingId: string; locale: PlatformLocale },
 ): Promise<void> {
   await db.transaction().execute(async (transaction) => {
-    await transaction.deleteFrom('training_publications')
-      .where('training_id', '=', input.trainingId).where('locale', '=', input.locale).execute();
-    await transaction.updateTable('training_localizations').set({
-      editorial_state: 'draft',
-      published_at: null,
-      updated_at: new Date(),
-    }).where('training_id', '=', input.trainingId).where('locale', '=', input.locale).execute();
+    await transaction
+      .deleteFrom('training_publications')
+      .where('training_id', '=', input.trainingId)
+      .where('locale', '=', input.locale)
+      .execute();
+    await transaction
+      .updateTable('training_localizations')
+      .set({
+        editorial_state: 'draft',
+        published_at: null,
+        updated_at: new Date(),
+      })
+      .where('training_id', '=', input.trainingId)
+      .where('locale', '=', input.locale)
+      .execute();
   });
 }
 
@@ -131,7 +150,8 @@ export async function listPublishedTrainings(
   db: Kysely<Database>,
   locale: PlatformLocale,
 ): Promise<PublishedTrainingListItem[]> {
-  const rows = await db.selectFrom('training_publications')
+  const rows = await db
+    .selectFrom('training_publications')
     .innerJoin('trainings', 'trainings.id', 'training_publications.training_id')
     .select(['training_publications.snapshot', 'training_publications.published_at'])
     .where('training_publications.locale', '=', locale)
@@ -146,7 +166,8 @@ export async function getPublishedTraining(
   db: Kysely<Database>,
   input: { locale: PlatformLocale; slug: string },
 ): Promise<PublishedTraining | null> {
-  const row = await db.selectFrom('training_publications')
+  const row = await db
+    .selectFrom('training_publications')
     .select(['training_id', 'snapshot', 'published_at'])
     .where('locale', '=', input.locale)
     .where('slug', '=', input.slug)
@@ -154,7 +175,8 @@ export async function getPublishedTraining(
   if (row === undefined) return null;
 
   const alternateLocale: PlatformLocale = input.locale === 'en' ? 'fr' : 'en';
-  const alternate = await db.selectFrom('training_publications')
+  const alternate = await db
+    .selectFrom('training_publications')
     .select(['locale', 'slug'])
     .where('training_id', '=', row.training_id)
     .where('locale', '=', alternateLocale)

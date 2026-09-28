@@ -5,12 +5,7 @@ export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   width?: 'content' | 'wide';
 }
 
-export function Container({
-  children,
-  className,
-  width = 'content',
-  ...props
-}: ContainerProps) {
+export function Container({ children, className, width = 'content', ...props }: ContainerProps) {
   return (
     <div
       className={['aks-container', className].filter(Boolean).join(' ')}

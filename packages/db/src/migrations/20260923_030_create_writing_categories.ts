@@ -4,19 +4,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('categories')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('editorial_position', 'integer', (column) =>
-      column.notNull().defaultTo(0),
-    )
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addCheckConstraint(
-      'categories_editorial_position_check',
-      sql`editorial_position >= 0`,
-    )
+    .addColumn('editorial_position', 'integer', (column) => column.notNull().defaultTo(0))
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addCheckConstraint('categories_editorial_position_check', sql`editorial_position >= 0`)
     .execute();
 
   await db.schema
@@ -34,28 +25,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('slug', 'text')
     .addColumn('name', 'text')
     .addColumn('description', 'text')
-    .addColumn('editorial_state', 'text', (column) =>
-      column.notNull().defaultTo('draft'),
-    )
+    .addColumn('editorial_state', 'text', (column) => column.notNull().defaultTo('draft'))
     .addColumn('published_at', 'timestamptz')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('category_localizations_pkey', [
-      'category_id',
-      'locale',
-    ])
-    .addUniqueConstraint('category_localizations_locale_slug_key', [
-      'locale',
-      'slug',
-    ])
-    .addCheckConstraint(
-      'category_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('category_localizations_pkey', ['category_id', 'locale'])
+    .addUniqueConstraint('category_localizations_locale_slug_key', ['locale', 'slug'])
+    .addCheckConstraint('category_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'category_localizations_slug_check',
       sql`slug is null or slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,
@@ -74,24 +50,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('slug', 'text', (column) => column.notNull())
     .addColumn('snapshot', 'jsonb', (column) => column.notNull())
-    .addColumn('published_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('category_publications_pkey', [
-      'category_id',
-      'locale',
-    ])
-    .addUniqueConstraint('category_publications_locale_slug_key', [
-      'locale',
-      'slug',
-    ])
-    .addCheckConstraint(
-      'category_publications_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('published_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('category_publications_pkey', ['category_id', 'locale'])
+    .addUniqueConstraint('category_publications_locale_slug_key', ['locale', 'slug'])
+    .addCheckConstraint('category_publications_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'category_publications_slug_check',
       sql`slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,
@@ -113,21 +76,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('categories.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('writing_categories_pkey', [
-      'writing_id',
-      'category_id',
-    ])
-    .addUniqueConstraint('writing_categories_writing_position_key', [
-      'writing_id',
-      'position',
-    ])
-    .addCheckConstraint(
-      'writing_categories_position_check',
-      sql`position >= 0`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('writing_categories_pkey', ['writing_id', 'category_id'])
+    .addUniqueConstraint('writing_categories_writing_position_key', ['writing_id', 'position'])
+    .addCheckConstraint('writing_categories_position_check', sql`position >= 0`)
     .execute();
 
   await db.schema

@@ -8,16 +8,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await db.schema
     .createTable('work_with_us_inquiry_settings')
-    .addColumn('singleton_key', 'text', (column) =>
-      column.primaryKey().defaultTo('public'),
-    )
+    .addColumn('singleton_key', 'text', (column) => column.primaryKey().defaultTo('public'))
     .addColumn('recipient_email', 'text')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addCheckConstraint(
       'work_with_us_inquiry_settings_singleton_check',
       sql`singleton_key = 'public'`,
@@ -35,26 +29,17 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('work_with_us_inquiry_notifications')
     .addColumn('inquiry_id', 'uuid', (column) =>
-      column
-        .primaryKey()
-        .references('work_with_us_inquiries.id')
-        .onDelete('cascade'),
+      column.primaryKey().references('work_with_us_inquiries.id').onDelete('cascade'),
     )
-    .addColumn('state', 'text', (column) =>
-      column.notNull().defaultTo('pending'),
-    )
+    .addColumn('state', 'text', (column) => column.notNull().defaultTo('pending'))
     .addColumn('recipient_email', 'text')
-    .addColumn('attempt_count', 'integer', (column) =>
-      column.notNull().defaultTo(0),
-    )
+    .addColumn('attempt_count', 'integer', (column) => column.notNull().defaultTo(0))
     .addColumn('provider', 'text')
     .addColumn('provider_message_id', 'text')
     .addColumn('last_error', 'text')
     .addColumn('queued_at', 'timestamptz')
     .addColumn('sent_at', 'timestamptz')
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addCheckConstraint(
       'work_with_us_inquiry_notifications_state_check',
       sql`state in ('pending', 'queued', 'sending', 'sent', 'failed', 'blocked')`,
@@ -90,8 +75,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('work_with_us_inquiry_notifications').execute();
   await db.schema.dropTable('work_with_us_inquiry_settings').execute();
-  await db.schema
-    .alterTable('work_with_us_inquiries')
-    .dropColumn('handled_at')
-    .execute();
+  await db.schema.alterTable('work_with_us_inquiries').dropColumn('handled_at').execute();
 }

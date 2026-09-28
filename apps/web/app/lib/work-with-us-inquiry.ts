@@ -20,9 +20,7 @@ export interface WorkWithUsInquiryValues {
 
 export type WorkWithUsInquiryField = keyof WorkWithUsInquiryValues;
 
-export type WorkWithUsInquiryFieldErrors = Partial<
-  Record<WorkWithUsInquiryField, string>
->;
+export type WorkWithUsInquiryFieldErrors = Partial<Record<WorkWithUsInquiryField, string>>;
 
 export interface WorkWithUsInquiryActionData {
   ok: boolean;
@@ -49,8 +47,7 @@ export type WorkWithUsInquiryValidationResult =
       data: WorkWithUsInquiryActionData;
     };
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 
@@ -143,10 +140,7 @@ export function validateWorkWithUsInquiryForm(
   }
 
   if (values.organization.length > workWithUsInquiryLimits.organization) {
-    errors.organization = workWithUsInquiryMessage(
-      locale,
-      'organizationTooLong',
-    );
+    errors.organization = workWithUsInquiryMessage(locale, 'organizationTooLong');
   }
 
   if (values.message === '') {
@@ -174,8 +168,7 @@ export function validateWorkWithUsInquiryForm(
     inquiry: {
       submissionToken,
       values,
-      organization:
-        values.organization === '' ? null : values.organization,
+      organization: values.organization === '' ? null : values.organization,
     },
   };
 }

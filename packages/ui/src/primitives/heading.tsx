@@ -6,13 +6,7 @@ export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function Heading({
-  children,
-  className,
-  level = 2,
-  size = 'md',
-  ...props
-}: HeadingProps) {
+export function Heading({ children, className, level = 2, size = 'md', ...props }: HeadingProps) {
   const Component = level === 1 ? 'h1' : level === 2 ? 'h2' : 'h3';
 
   return (

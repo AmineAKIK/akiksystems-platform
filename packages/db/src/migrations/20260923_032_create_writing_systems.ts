@@ -10,14 +10,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('systems.id').onDelete('cascade'),
     )
     .addColumn('position', 'integer', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('writing_systems_pkey', ['writing_id', 'system_id'])
-    .addUniqueConstraint('writing_systems_writing_position_key', [
-      'writing_id',
-      'position',
-    ])
+    .addUniqueConstraint('writing_systems_writing_position_key', ['writing_id', 'position'])
     .addCheckConstraint('writing_systems_position_check', sql`position >= 0`)
     .execute();
 

@@ -45,16 +45,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10.17.1
           run_install: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: pnpm
@@ -72,6 +72,9 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
 
       - name: Typecheck
         run: pnpm typecheck
@@ -121,11 +124,9 @@ jobs:
       - name: Smoke worker
         run: pnpm smoke:worker
 
-
-
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             /tmp/akiksystems-browser-runtime/node_modules
@@ -143,14 +144,11 @@ jobs:
           npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
           ./node_modules/.bin/playwright install --with-deps chromium
 
-
-
       - name: Smoke public Profile
         env:
           NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web smoke:profile-public
-
 
       - name: Smoke responsive Home
         env:

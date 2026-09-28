@@ -18,7 +18,4 @@ export interface CreateLoggerOptions {
 
 export function createLogger(options: CreateLoggerOptions): StructuredLogger;
 export function currentObservabilityContext(): Readonly<ObservabilityContext>;
-export function runWithObservabilityContext<T>(
-  context: ObservabilityContext,
-  callback: () => T,
-): T;
+export function runWithObservabilityContext<T>(context: ObservabilityContext, callback: () => T): T;

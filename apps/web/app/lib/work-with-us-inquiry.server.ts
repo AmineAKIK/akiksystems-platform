@@ -23,11 +23,7 @@ function contentLength(request: Request): number | null {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
-function actionData(
-  payload: WorkWithUsInquiryActionData,
-  status: number,
-  headers?: HeadersInit,
-) {
+function actionData(payload: WorkWithUsInquiryActionData, status: number, headers?: HeadersInit) {
   return data(payload, {
     status,
     headers: {
@@ -37,10 +33,7 @@ function actionData(
   });
 }
 
-export async function handleWorkWithUsInquirySubmission(
-  request: Request,
-  locale: PlatformLocale,
-) {
+export async function handleWorkWithUsInquirySubmission(request: Request, locale: PlatformLocale) {
   const length = contentLength(request);
   if (length !== null && length > workWithUsInquiryLimits.requestBytes) {
     return actionData(

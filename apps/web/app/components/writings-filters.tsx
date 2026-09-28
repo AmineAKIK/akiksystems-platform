@@ -23,12 +23,8 @@ export function WritingsFilters({
   if (!model.enabled) return null;
 
   const showKinds = model.kinds.length >= 2;
-  const showCategories = model.categories.some(
-    (option) => option.count < model.totalCount,
-  );
-  const showTags = model.tags.some(
-    (option) => option.count < model.totalCount,
-  );
+  const showCategories = model.categories.some((option) => option.count < model.totalCount);
+  const showTags = model.tags.some((option) => option.count < model.totalCount);
   const hasThemeFilters = showCategories || showTags;
   const hasSelection =
     model.selection.kind !== null ||
@@ -36,9 +32,7 @@ export function WritingsFilters({
     model.selection.tag !== null;
   const overviewHref = locale === 'fr' ? '/fr/ecrits' : '/en/writings';
   const clearFiltersHref =
-    searchQuery === ''
-      ? overviewHref
-      : `${overviewHref}?q=${encodeURIComponent(searchQuery)}`;
+    searchQuery === '' ? overviewHref : `${overviewHref}?q=${encodeURIComponent(searchQuery)}`;
 
   return (
     <section
@@ -58,19 +52,12 @@ export function WritingsFilters({
       </div>
 
       <form action={overviewHref} className="aks-writings-filters-form" method="get">
-        {searchQuery !== '' ? (
-          <input name="q" type="hidden" value={searchQuery} />
-        ) : null}
+        {searchQuery !== '' ? <input name="q" type="hidden" value={searchQuery} /> : null}
         {showKinds ? (
           <label className="aks-writings-filter-field">
             <span>{locale === 'fr' ? 'Type' : 'Type'}</span>
-            <select
-              defaultValue={model.selection.kind ?? ''}
-              name="type"
-            >
-              <option value="">
-                {locale === 'fr' ? 'Tous les types' : 'All types'}
-              </option>
+            <select defaultValue={model.selection.kind ?? ''} name="type">
+              <option value="">{locale === 'fr' ? 'Tous les types' : 'All types'}</option>
               {model.kinds.map((option) => (
                 <option key={option.value} value={option.value}>
                   {kindLabel(option.value, locale)} ({option.count})
@@ -87,14 +74,9 @@ export function WritingsFilters({
               {showCategories ? (
                 <label className="aks-writings-filter-field">
                   <span>{locale === 'fr' ? 'Catégorie' : 'Category'}</span>
-                  <select
-                    defaultValue={model.selection.category ?? ''}
-                    name="category"
-                  >
+                  <select defaultValue={model.selection.category ?? ''} name="category">
                     <option value="">
-                      {locale === 'fr'
-                        ? 'Toutes les catégories'
-                        : 'All categories'}
+                      {locale === 'fr' ? 'Toutes les catégories' : 'All categories'}
                     </option>
                     {model.categories.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -109,9 +91,7 @@ export function WritingsFilters({
                 <label className="aks-writings-filter-field">
                   <span>Tag</span>
                   <select defaultValue={model.selection.tag ?? ''} name="tag">
-                    <option value="">
-                      {locale === 'fr' ? 'Tous les tags' : 'All tags'}
-                    </option>
+                    <option value="">{locale === 'fr' ? 'Tous les tags' : 'All tags'}</option>
                     {model.tags.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label} ({option.count})
@@ -125,9 +105,7 @@ export function WritingsFilters({
         ) : null}
 
         <div className="aks-writings-filter-actions">
-          <Button type="submit">
-            {locale === 'fr' ? 'Appliquer' : 'Apply filters'}
-          </Button>
+          <Button type="submit">{locale === 'fr' ? 'Appliquer' : 'Apply filters'}</Button>
           {hasSelection ? (
             <Link href={clearFiltersHref}>
               {locale === 'fr' ? 'Effacer les filtres' : 'Clear filters'}

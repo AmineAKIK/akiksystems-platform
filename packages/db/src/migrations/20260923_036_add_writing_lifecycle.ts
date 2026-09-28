@@ -3,9 +3,7 @@ import { sql, type Kysely } from 'kysely';
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('writings')
-    .addColumn('lifecycle', 'text', (column) =>
-      column.notNull().defaultTo('active'),
-    )
+    .addColumn('lifecycle', 'text', (column) => column.notNull().defaultTo('active'))
     .addColumn('archived_at', 'timestamptz')
     .execute();
 
@@ -22,10 +20,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await db.schema
     .alterTable('writings')
-    .addCheckConstraint(
-      'writings_lifecycle_check',
-      sql`lifecycle in ('active', 'archived')`,
-    )
+    .addCheckConstraint('writings_lifecycle_check', sql`lifecycle in ('active', 'archived')`)
     .execute();
 }
 
@@ -35,10 +30,7 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     .dropConstraint('writings_lifecycle_archive_check')
     .execute();
 
-  await db.schema
-    .alterTable('writings')
-    .dropConstraint('writings_lifecycle_check')
-    .execute();
+  await db.schema.alterTable('writings').dropConstraint('writings_lifecycle_check').execute();
 
   await db.schema
     .alterTable('writings')

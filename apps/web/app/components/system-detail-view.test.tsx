@@ -72,9 +72,7 @@ describe('StandardSystemRenderer', () => {
       />,
     );
 
-    expect(html).toContain(
-      '<main class="aks-system-detail" id="system-content" tabindex="-1">',
-    );
+    expect(html).toContain('<main class="aks-system-detail" id="system-content" tabindex="-1">');
     expect(html).toContain('<article class="aks-system-detail-stack">');
     expect(html).toContain('<h1');
     expect(html).toContain('>Sentinel</h1>');

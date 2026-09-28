@@ -158,17 +158,16 @@ try {
     locale: 'en',
   });
 
-  const [englishAfterRepublish, frenchAfterEnglishRepublish] =
-    await Promise.all([
-      listPublishedLearningArtifactsForSystem(db, {
-        locale: 'en',
-        systemId,
-      }),
-      listPublishedLearningArtifactsForSystem(db, {
-        locale: 'fr',
-        systemId,
-      }),
-    ]);
+  const [englishAfterRepublish, frenchAfterEnglishRepublish] = await Promise.all([
+    listPublishedLearningArtifactsForSystem(db, {
+      locale: 'en',
+      systemId,
+    }),
+    listPublishedLearningArtifactsForSystem(db, {
+      locale: 'fr',
+      systemId,
+    }),
+  ]);
 
   assert.deepEqual(
     englishAfterRepublish,
@@ -186,15 +185,9 @@ try {
   );
 } finally {
   if (learningArtifactId !== null) {
-    await db
-      .deleteFrom('learning_artifacts')
-      .where('id', '=', learningArtifactId)
-      .execute();
+    await db.deleteFrom('learning_artifacts').where('id', '=', learningArtifactId).execute();
   }
-  await db
-    .deleteFrom('system_publications')
-    .where('system_id', '=', systemId)
-    .execute();
+  await db.deleteFrom('system_publications').where('system_id', '=', systemId).execute();
   await db.deleteFrom('systems').where('id', '=', systemId).execute();
   if (trainingId !== null) {
     await db.deleteFrom('trainings').where('id', '=', trainingId).execute();

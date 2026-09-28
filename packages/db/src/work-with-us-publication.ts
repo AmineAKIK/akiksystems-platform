@@ -7,8 +7,7 @@ import type { Kysely } from 'kysely';
 
 import type { Database } from './schema.js';
 
-export interface WorkWithUsPublicationSnapshot
-  extends Omit<WorkWithUsEditableContent, 'hero'> {
+export interface WorkWithUsPublicationSnapshot extends Omit<WorkWithUsEditableContent, 'hero'> {
   version: 2;
   pageId: string;
   locale: PlatformLocale;

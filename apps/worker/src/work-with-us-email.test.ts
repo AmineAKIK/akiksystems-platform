@@ -69,9 +69,7 @@ describe('Work with us email transport', () => {
   it('surfaces provider rejection without pretending delivery succeeded', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(
-        new Response('sender domain is not verified', { status: 422 }),
-      ),
+      vi.fn().mockResolvedValue(new Response('sender domain is not verified', { status: 422 })),
     );
 
     const transport = createWorkWithUsEmailTransport(configuredEnv);

@@ -4,10 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { writingDocumentFromPlainText } from '@akiksystems/core';
 
 import { createDatabase } from '../database.js';
-import {
-  getPublishedWriting,
-  publishWritingLocalization,
-} from '../writing-publication.js';
+import { getPublishedWriting, publishWritingLocalization } from '../writing-publication.js';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required.');
@@ -54,9 +51,7 @@ try {
   assert.equal(published.editorialWeight, 'normal');
   assert.equal(published.summary, body.replace(/\n\n/g, ' '));
   assert.equal(published.document.content.length, 2);
-  assert.ok(
-    published.document.content.every((block) => block.type === 'paragraph'),
-  );
+  assert.ok(published.document.content.every((block) => block.type === 'paragraph'));
 
   await db
     .updateTable('writing_localizations')
@@ -92,9 +87,7 @@ try {
     .updateTable('writing_localizations')
     .set({
       body: null,
-      editor_document: writingDocumentFromPlainText(
-        '',
-      ) as unknown as Record<string, unknown>,
+      editor_document: writingDocumentFromPlainText('') as unknown as Record<string, unknown>,
       updated_at: new Date(),
     })
     .where('writing_id', '=', writingId)

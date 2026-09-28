@@ -21,23 +21,16 @@ function requiredSlug(value: string | undefined): string {
 }
 
 function trainingHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/${locale}/apprentissage/${slug}`
-    : `/${locale}/learning/${slug}`;
+  return locale === 'fr' ? `/${locale}/apprentissage/${slug}` : `/${locale}/learning/${slug}`;
 }
 
-
-function trainingDateRange(
-  training: {
-    locale: 'en' | 'fr';
-    startDate: string | null;
-    endDate: string | null;
-  },
-): string {
+function trainingDateRange(training: {
+  locale: 'en' | 'fr';
+  startDate: string | null;
+  endDate: string | null;
+}): string {
   if (training.startDate === null && training.endDate === null) {
-    return training.locale === 'fr'
-      ? 'Dates non renseignées'
-      : 'Dates not specified';
+    return training.locale === 'fr' ? 'Dates non renseignées' : 'Dates not specified';
   }
 
   if (training.startDate !== null && training.endDate !== null) {
@@ -50,9 +43,7 @@ function trainingDateRange(
       : `Since ${training.startDate}`;
   }
 
-  return training.locale === 'fr'
-    ? `Jusqu’au ${training.endDate}`
-    : `Until ${training.endDate}`;
+  return training.locale === 'fr' ? `Jusqu’au ${training.endDate}` : `Until ${training.endDate}`;
 }
 
 function trainingStateLabel(
@@ -118,11 +109,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -142,19 +129,14 @@ export function meta({ loaderData }: Route.MetaArgs) {
         ? null
         : {
             locale: training.alternate.locale,
-            path: trainingHref(
-              training.alternate.locale,
-              training.alternate.slug,
-            ),
+            path: trainingHref(training.alternate.locale, training.alternate.slug),
           },
   });
 }
 
 export default function LearningDetailRoute() {
-  const { credentials, learningArtifacts, training } =
-    useLoaderData<typeof loader>();
-  const overviewHref =
-    training.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
+  const { credentials, learningArtifacts, training } = useLoaderData<typeof loader>();
+  const overviewHref = training.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
   const paragraphs =
     training.body
       ?.split(/\n\s*\n/)
@@ -174,8 +156,7 @@ export default function LearningDetailRoute() {
             </Heading>
             <Text>{training.summary}</Text>
             <Text size="sm" tone="muted">
-              {trainingDateRange(training)} ·{' '}
-              {trainingStateLabel(training.state, training.locale)}
+              {trainingDateRange(training)} · {trainingStateLabel(training.state, training.locale)}
             </Text>
           </section>
 
@@ -192,9 +173,7 @@ export default function LearningDetailRoute() {
 
           <section className="aks-proof-stack">
             <Heading level={2} size="sm">
-              {training.locale === 'fr'
-                ? 'Preuves liées'
-                : 'Connected evidence'}
+              {training.locale === 'fr' ? 'Preuves liées' : 'Connected evidence'}
             </Heading>
             {credentials.length === 0 && learningArtifacts.length === 0 ? (
               <Text tone="muted">
@@ -233,9 +212,7 @@ export default function LearningDetailRoute() {
                   <article className="aks-admin-asset" key={artifact.learningArtifactId}>
                     <div className="aks-proof-stack">
                       <Text size="sm" tone="muted">
-                        {training.locale === 'fr'
-                          ? 'Preuve d’apprentissage'
-                          : 'Learning artifact'}
+                        {training.locale === 'fr' ? 'Preuve d’apprentissage' : 'Learning artifact'}
                       </Text>
                       <Heading level={3} size="sm">
                         {artifact.title}
@@ -260,9 +237,7 @@ export default function LearningDetailRoute() {
           </section>
 
           <Link href={overviewHref}>
-            {training.locale === 'fr'
-              ? 'Retour à Apprentissage'
-              : 'Back to Learning'}
+            {training.locale === 'fr' ? 'Retour à Apprentissage' : 'Back to Learning'}
           </Link>
         </div>
       </Container>

@@ -27,9 +27,7 @@ function artifactHref(locale: 'en' | 'fr', slug: string): string {
 }
 
 function trainingHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/${locale}/apprentissage/${slug}`
-    : `/${locale}/learning/${slug}`;
+  return locale === 'fr' ? `/${locale}/apprentissage/${slug}` : `/${locale}/learning/${slug}`;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -63,11 +61,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -87,18 +81,14 @@ export function meta({ loaderData }: Route.MetaArgs) {
         ? null
         : {
             locale: artifact.alternate.locale,
-            path: artifactHref(
-              artifact.alternate.locale,
-              artifact.alternate.slug,
-            ),
+            path: artifactHref(artifact.alternate.locale, artifact.alternate.slug),
           },
   });
 }
 
 export default function LearningArtifactDetailRoute() {
   const { artifact } = useLoaderData<typeof loader>();
-  const overviewHref =
-    artifact.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
+  const overviewHref = artifact.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
   const sourceHref = `${artifactHref(artifact.locale, artifact.slug)}/source`;
 
   if (isSentinelDossierArtifact(artifact.locale, artifact.slug)) {
@@ -123,9 +113,7 @@ export default function LearningArtifactDetailRoute() {
         <div className="aks-proof-stack">
           <section className="aks-proof-hero">
             <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-              {artifact.locale === 'fr'
-                ? 'Preuve d’apprentissage'
-                : 'Learning artifact'}
+              {artifact.locale === 'fr' ? 'Preuve d’apprentissage' : 'Learning artifact'}
             </Text>
             <Heading level={1} size="lg">
               {artifact.title}
@@ -153,12 +141,7 @@ export default function LearningArtifactDetailRoute() {
                 <Text size="sm" tone="muted">
                   {artifact.locale === 'fr' ? 'Formation' : 'Training'}
                 </Text>
-                <Link
-                  href={trainingHref(
-                    artifact.locale,
-                    artifact.training.slug,
-                  )}
-                >
+                <Link href={trainingHref(artifact.locale, artifact.training.slug)}>
                   {artifact.training.title}
                 </Link>
               </div>
@@ -190,17 +173,13 @@ export default function LearningArtifactDetailRoute() {
                 {artifact.locale === 'fr' ? 'Source' : 'Source'}
               </Heading>
               <Link href={sourceHref}>
-                {artifact.locale === 'fr'
-                  ? 'Ouvrir le document source'
-                  : 'Open source document'}
+                {artifact.locale === 'fr' ? 'Ouvrir le document source' : 'Open source document'}
               </Link>
             </section>
           ) : null}
 
           <Link href={overviewHref}>
-            {artifact.locale === 'fr'
-              ? 'Retour à Apprentissage'
-              : 'Back to Learning'}
+            {artifact.locale === 'fr' ? 'Retour à Apprentissage' : 'Back to Learning'}
           </Link>
         </div>
       </Container>

@@ -8,12 +8,11 @@ import type { Route } from './+types/home';
 
 export { HomePortal } from '../components/home-portal';
 
-
 export function meta({ params }: Route.MetaArgs) {
   const locale = requireLocale(params.locale);
   const alternateLocale = locale === 'en' ? 'fr' : 'en';
 
-  return buildLocalizedPublicMeta({
+  const descriptors = buildLocalizedPublicMeta({
     title: 'Systemic Scale',
     description: dictionaryFor(locale).home.description,
     locale,
@@ -23,6 +22,18 @@ export function meta({ params }: Route.MetaArgs) {
       path: '/' + alternateLocale,
     },
   });
+
+  descriptors.push({
+    'script:ld+json': {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'AkikSystems',
+      url: locale === 'fr' ? 'https://akiksystems.fr/fr' : 'https://akiksystems.com/en',
+      inLanguage: locale === 'fr' ? 'fr-FR' : 'en',
+    },
+  });
+
+  return descriptors;
 }
 
 export default function Home() {

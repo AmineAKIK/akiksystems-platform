@@ -1,10 +1,4 @@
-import {
-  defineRailway,
-  github,
-  postgres,
-  project,
-  service,
-} from 'railway/iac';
+import { defineRailway, github, postgres, project, service } from 'railway/iac';
 
 export default defineRailway((_ctx) => {
   const database = postgres('Postgres');

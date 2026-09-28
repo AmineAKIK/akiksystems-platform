@@ -2,10 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
-import {
-  resolveSystemExperience,
-  SystemExperience,
-} from './system-experience-resolver';
+import { resolveSystemExperience, SystemExperience } from './system-experience-resolver';
 
 const proofTransparency = {
   role: 'System case study',
@@ -15,11 +12,7 @@ const proofTransparency = {
   limits: 'No deployment or measured impact is claimed.',
 };
 
-const presentationKinds = [
-  'standard',
-  'guided_demo',
-  'interactive_entry',
-] as const;
+const presentationKinds = ['standard', 'guided_demo', 'interactive_entry'] as const;
 
 describe('System Experience Resolver', () => {
   it('maps every supported presentation kind explicitly', () => {
@@ -36,17 +29,17 @@ describe('System Experience Resolver', () => {
       const html = renderToStaticMarkup(
         <MemoryRouter>
           <SystemExperience
-          assets={[]}
-          links={[]}
-          locale="en"
-          originSummary={null}
-          originTitle={null}
-          proofTransparency={proofTransparency}
-          presentationDocument={{ version: 1, blocks: [] }}
-          presentationKind={presentationKind}
-          summary="Inspectable System."
-          technologies={[]}
-          title="Sentinel"
+            assets={[]}
+            links={[]}
+            locale="en"
+            originSummary={null}
+            originTitle={null}
+            proofTransparency={proofTransparency}
+            presentationDocument={{ version: 1, blocks: [] }}
+            presentationKind={presentationKind}
+            summary="Inspectable System."
+            technologies={[]}
+            title="Sentinel"
           />
         </MemoryRouter>,
       );
@@ -69,7 +62,6 @@ describe('System Experience Resolver', () => {
   );
 });
 
-
 describe('Guided demo System experience', () => {
   it('separates implemented behavior, boundaries, hypotheses, and future integrations', () => {
     const html = renderToStaticMarkup(
@@ -87,13 +79,23 @@ describe('Guided demo System experience', () => {
           version: 1,
           blocks: [
             { type: 'paragraph', text: 'ProtoCap introduction.' },
-            { type: 'heading', level: 2, text: 'What is implemented', evidenceStatus: 'implemented' },
+            {
+              type: 'heading',
+              level: 2,
+              text: 'What is implemented',
+              evidenceStatus: 'implemented',
+            },
             { type: 'list', style: 'unordered', items: ['ShiftGuide works.'] },
             { type: 'heading', level: 2, text: 'Evidence boundaries', evidenceStatus: 'boundary' },
             { type: 'list', style: 'unordered', items: ['Demo data is fictitious.'] },
             { type: 'heading', level: 2, text: 'Hypotheses', evidenceStatus: 'hypothesis' },
             { type: 'paragraph', text: 'Productivity gains remain hypotheses.' },
-            { type: 'heading', level: 2, text: 'Future integrations', evidenceStatus: 'future_integration' },
+            {
+              type: 'heading',
+              level: 2,
+              text: 'Future integrations',
+              evidenceStatus: 'future_integration',
+            },
             { type: 'paragraph', text: 'Live plant feeds remain future work.' },
           ],
         }}
@@ -115,37 +117,36 @@ describe('Guided demo System experience', () => {
     expect(html).toContain('Demo data is fictitious.');
     expect(html).toContain('Productivity gains remain hypotheses.');
     expect(html).toContain('Live plant feeds remain future work.');
-    expect(html).toContain("L&#x27;Oreal / La Roche-Posay");
+    expect(html).toContain('L&#x27;Oreal / La Roche-Posay');
     expect(html).toContain('Inspectable technologies');
   });
 });
-
 
 describe('Interactive-entry System experience', () => {
   it('keeps the passage to the live application explicit and reversible', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <SystemExperience
-        assets={[]}
-        links={[
-          { id: 'live', kind: 'live', url: 'https://example.test/live' },
-          { id: 'repository', kind: 'repository', url: 'https://example.test/repo' },
-        ]}
-        locale="en"
-        originSummary={null}
-        originTitle={null}
-        proofTransparency={proofTransparency}
-        presentationDocument={{
-          version: 1,
-          blocks: [
-            { type: 'heading', level: 2, text: 'Evidence boundaries' },
-            { type: 'paragraph', text: 'No real client data is processed.' },
-          ],
-        }}
-        presentationKind="interactive_entry"
-        summary="A fictional portfolio application."
-        technologies={[{ id: 'react', name: 'React' }]}
-        title="Oria Nutrition"
+          assets={[]}
+          links={[
+            { id: 'live', kind: 'live', url: 'https://example.test/live' },
+            { id: 'repository', kind: 'repository', url: 'https://example.test/repo' },
+          ]}
+          locale="en"
+          originSummary={null}
+          originTitle={null}
+          proofTransparency={proofTransparency}
+          presentationDocument={{
+            version: 1,
+            blocks: [
+              { type: 'heading', level: 2, text: 'Evidence boundaries' },
+              { type: 'paragraph', text: 'No real client data is processed.' },
+            ],
+          }}
+          presentationKind="interactive_entry"
+          summary="A fictional portfolio application."
+          technologies={[{ id: 'react', name: 'React' }]}
+          title="Oria Nutrition"
         />
       </MemoryRouter>,
     );

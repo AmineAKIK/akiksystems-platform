@@ -58,9 +58,7 @@ function optionMap(
   }
 
   return [...options.values()].sort(
-    (left, right) =>
-      left.label.localeCompare(right.label) ||
-      left.value.localeCompare(right.value),
+    (left, right) => left.label.localeCompare(right.label) || left.value.localeCompare(right.value),
   );
 }
 
@@ -70,9 +68,7 @@ function selectedValue(
   options: WritingFilterOption[],
 ): string | null {
   const value = params.get(name);
-  return value !== null && options.some((option) => option.value === value)
-    ? value
-    : null;
+  return value !== null && options.some((option) => option.value === value) ? value : null;
 }
 
 export function resolveWritingFilters(
@@ -91,12 +87,7 @@ export function resolveWritingFilters(
       : [
           {
             value: kind,
-            label:
-              kind === 'note'
-                ? 'Note'
-                : kind === 'article'
-                  ? 'Article'
-                  : 'Essay',
+            label: kind === 'note' ? 'Note' : kind === 'article' ? 'Article' : 'Essay',
             count,
           },
         ];
@@ -115,14 +106,10 @@ export function resolveWritingFilters(
     })),
   );
 
-  const hasUsefulCategory = categories.some(
-    (option) => option.count < writings.length,
-  );
+  const hasUsefulCategory = categories.some((option) => option.count < writings.length);
   const hasUsefulTag = tags.some((option) => option.count < writings.length);
-  const hasUsefulDimension =
-    kinds.length >= 2 || hasUsefulCategory || hasUsefulTag;
-  const enabled =
-    writings.length >= writingFilterVolumeThreshold && hasUsefulDimension;
+  const hasUsefulDimension = kinds.length >= 2 || hasUsefulCategory || hasUsefulTag;
+  const enabled = writings.length >= writingFilterVolumeThreshold && hasUsefulDimension;
 
   if (!enabled) {
     return {
@@ -151,8 +138,7 @@ export function resolveWritingFilters(
   const filtered = writings.filter(
     (writing) =>
       (kind === null || writing.kind === kind) &&
-      (category === null ||
-        writing.categories.some((item) => item.slug === category)) &&
+      (category === null || writing.categories.some((item) => item.slug === category)) &&
       (tag === null || writing.tags.some((item) => item.slug === tag)),
   );
 

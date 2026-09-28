@@ -57,9 +57,7 @@ describe('Writing SEO', () => {
       content: 'React',
     });
 
-    const structuredDescriptor = meta.find(
-      (descriptor) => 'script:ld+json' in descriptor,
-    );
+    const structuredDescriptor = meta.find((descriptor) => 'script:ld+json' in descriptor);
     expect(structuredDescriptor).toEqual({
       'script:ld+json': buildWritingStructuredData(frenchWriting),
     });
@@ -73,9 +71,7 @@ describe('Writing SEO', () => {
       });
 
       expect(data['@type']).toBe('Article');
-      expect(data.genre).toBe(
-        kind === 'note' ? 'Note' : kind === 'essay' ? 'Essay' : 'Article',
-      );
+      expect(data.genre).toBe(kind === 'note' ? 'Note' : kind === 'essay' ? 'Essay' : 'Article');
       expect(data.publisher).toEqual({
         '@type': 'Organization',
         name: 'AkikSystems',

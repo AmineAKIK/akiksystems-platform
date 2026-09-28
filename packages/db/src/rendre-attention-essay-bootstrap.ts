@@ -57,8 +57,7 @@ export async function bootstrapRendreAttentionEssay(
           summary:
             'De l’expérience du terrain à ProtoCap et Céline : concevoir des systèmes qui préservent l’attention et développent la capacité d’agir.',
           body: writingDocumentToPlainText(rendreAttentionEssayDocument),
-          editor_document:
-            rendreAttentionEssayDocument as unknown as Record<string, unknown>,
+          editor_document: rendreAttentionEssayDocument as unknown as Record<string, unknown>,
         })
         .execute();
     });

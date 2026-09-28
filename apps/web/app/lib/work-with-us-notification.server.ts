@@ -15,13 +15,8 @@ const logger = createLogger({
   redactValues: [env.DATABASE_URL],
 });
 
-export async function queueWorkWithUsInquiryNotification(
-  inquiryId: string,
-): Promise<boolean> {
-  const delivery = await getWorkWithUsInquiryNotificationDelivery(
-    appDb,
-    inquiryId,
-  );
+export async function queueWorkWithUsInquiryNotification(inquiryId: string): Promise<boolean> {
+  const delivery = await getWorkWithUsInquiryNotificationDelivery(appDb, inquiryId);
 
   if (delivery === null || delivery.state === 'sent') {
     return delivery?.state === 'sent';

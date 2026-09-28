@@ -5,10 +5,7 @@ import { writingDocumentToPlainText } from '@akiksystems/core';
 import { bootstrapRendreAttentionEssay } from '../rendre-attention-essay-bootstrap.js';
 import { rendreAttentionEssayDocument } from '../rendre-attention-essay-document.js';
 import { createDatabase } from '../database.js';
-import {
-  getPublishedWriting,
-  listPublishedWritings,
-} from '../writing-publication.js';
+import { getPublishedWriting, listPublishedWritings } from '../writing-publication.js';
 import { databaseUrlFromEnv } from './env.js';
 
 const db = createDatabase(databaseUrlFromEnv());

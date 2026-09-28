@@ -23,9 +23,7 @@ function credentialHref(locale: 'en' | 'fr', slug: string): string {
 }
 
 function trainingHref(locale: 'en' | 'fr', slug: string): string {
-  return locale === 'fr'
-    ? `/${locale}/apprentissage/${slug}`
-    : `/${locale}/learning/${slug}`;
+  return locale === 'fr' ? `/${locale}/apprentissage/${slug}` : `/${locale}/learning/${slug}`;
 }
 
 function kindLabel(kind: 'diploma' | 'title' | 'certification', locale: 'en' | 'fr') {
@@ -57,10 +55,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         alternateHref:
           credential.alternate === null
             ? null
-            : credentialHref(
-                credential.alternate.locale,
-                credential.alternate.slug,
-              ),
+            : credentialHref(credential.alternate.locale, credential.alternate.slug),
       },
     },
     {
@@ -71,11 +66,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -95,18 +86,14 @@ export function meta({ loaderData }: Route.MetaArgs) {
         ? null
         : {
             locale: credential.alternate.locale,
-            path: credentialHref(
-              credential.alternate.locale,
-              credential.alternate.slug,
-            ),
+            path: credentialHref(credential.alternate.locale, credential.alternate.slug),
           },
   });
 }
 
 export default function CredentialDetailRoute() {
   const { credential } = useLoaderData<typeof loader>();
-  const overviewHref =
-    credential.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
+  const overviewHref = credential.locale === 'fr' ? '/fr/apprentissage' : '/en/learning';
   const paragraphs =
     credential.body
       ?.split(/\n\s*\n/)
@@ -162,8 +149,7 @@ export default function CredentialDetailRoute() {
                 </Link>
               ) : null}
             </div>
-            {credential.sourceAssetId === null &&
-            credential.verificationUrl === null ? (
+            {credential.sourceAssetId === null && credential.verificationUrl === null ? (
               <Text tone="muted">
                 {credential.locale === 'fr'
                   ? 'Aucune preuve externe supplémentaire n’est publiée pour ce justificatif.'
@@ -175,25 +161,16 @@ export default function CredentialDetailRoute() {
           {credential.training !== null ? (
             <section className="aks-proof-stack">
               <Heading level={2} size="sm">
-                {credential.locale === 'fr'
-                  ? 'Contexte de formation'
-                  : 'Training context'}
+                {credential.locale === 'fr' ? 'Contexte de formation' : 'Training context'}
               </Heading>
-              <Link
-                href={trainingHref(
-                  credential.locale,
-                  credential.training.slug,
-                )}
-              >
+              <Link href={trainingHref(credential.locale, credential.training.slug)}>
                 {credential.training.title}
               </Link>
             </section>
           ) : null}
 
           <Link href={overviewHref}>
-            {credential.locale === 'fr'
-              ? 'Retour à Apprentissage'
-              : 'Back to Learning'}
+            {credential.locale === 'fr' ? 'Retour à Apprentissage' : 'Back to Learning'}
           </Link>
         </div>
       </Container>

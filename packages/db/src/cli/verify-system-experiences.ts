@@ -82,16 +82,10 @@ try {
 
   const linked = await db
     .selectFrom('system_experiences')
-    .innerJoin(
-      'experience_localizations',
-      (join) =>
-        join
-          .onRef(
-            'experience_localizations.experience_id',
-            '=',
-            'system_experiences.experience_id',
-          )
-          .on('experience_localizations.locale', '=', 'en'),
+    .innerJoin('experience_localizations', (join) =>
+      join
+        .onRef('experience_localizations.experience_id', '=', 'system_experiences.experience_id')
+        .on('experience_localizations.locale', '=', 'en'),
     )
     .select([
       'system_experiences.relation_kind',
@@ -113,25 +107,19 @@ try {
 
   assert.equal(Number(localizationCount.count), 2);
 
-  await expectPostgresError(
-    '23505',
-    'system_experiences_pkey',
-    () =>
-      db
-        .insertInto('system_experiences')
-        .values({
-          system_id: systemId,
-          experience_id: experienceId,
-          relation_kind: 'origin_context',
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_experiences_pkey', () =>
+    db
+      .insertInto('system_experiences')
+      .values({
+        system_id: systemId,
+        experience_id: experienceId,
+        relation_kind: 'origin_context',
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23514',
-    'experience_localizations_locale_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'experience_localizations_locale_check', () =>
+    sql`
         insert into experience_localizations (
           experience_id,
           locale,
@@ -144,11 +132,8 @@ try {
       `.execute(db),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_experiences_relation_kind_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_experiences_relation_kind_check', () =>
+    sql`
         insert into system_experiences (
           system_id,
           experience_id,

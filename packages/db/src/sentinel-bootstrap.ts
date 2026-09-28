@@ -16,10 +16,7 @@ export async function bootstrapSentinelSystemDraft(
   const existing = await db
     .selectFrom('system_localizations')
     .innerJoin('systems', 'systems.id', 'system_localizations.system_id')
-    .select([
-      'system_localizations.system_id',
-      'systems.editorial_position',
-    ])
+    .select(['system_localizations.system_id', 'systems.editorial_position'])
     .where('system_localizations.locale', '=', 'en')
     .where('system_localizations.slug', '=', 'sentinel')
     .executeTakeFirst();
@@ -37,9 +34,7 @@ export async function bootstrapSentinelSystemDraft(
   return db.transaction().execute(async (transaction) => {
     const maxPosition = await transaction
       .selectFrom('systems')
-      .select(({ fn }) =>
-        fn.max<number>('editorial_position').as('max_position'),
-      )
+      .select(({ fn }) => fn.max<number>('editorial_position').as('max_position'))
       .executeTakeFirst();
 
     const editorialPosition = (maxPosition?.max_position ?? -1) + 1;

@@ -1,7 +1,4 @@
-import type {
-  PresentationBlock,
-  PresentationEvidenceStatus,
-} from '@akiksystems/core';
+import type { PresentationBlock, PresentationEvidenceStatus } from '@akiksystems/core';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 
 import { DeferredDemoLink } from './deferred-demo-link';
@@ -89,9 +86,7 @@ export function GuidedDemoSystemRenderer({
   const media = assetMap(assets);
   const demo = links.find((link) => link.kind === 'demo') ?? null;
   const live = links.find((link) => link.kind === 'live') ?? null;
-  const supportingLinks = links.filter(
-    (link) => link.kind !== 'demo' && link.kind !== 'live',
-  );
+  const supportingLinks = links.filter((link) => link.kind !== 'demo' && link.kind !== 'live');
 
   return (
     <main className="aks-guided-demo" id="system-content" tabIndex={-1}>
@@ -116,9 +111,7 @@ export function GuidedDemoSystemRenderer({
               </Text>
 
               <div className="aks-guided-demo-actions">
-                {demo !== null ? (
-                  <DeferredDemoLink locale={locale} url={demo.url} />
-                ) : null}
+                {demo !== null ? <DeferredDemoLink locale={locale} url={demo.url} /> : null}
                 {live !== null ? (
                   <Link href={live.url}>
                     {locale === 'fr' ? 'Ouvrir le système' : 'Open the system'}
@@ -139,10 +132,7 @@ export function GuidedDemoSystemRenderer({
             </aside>
           </header>
 
-          <SystemProofTransparency
-            locale={locale}
-            transparency={proofTransparency}
-          />
+          <SystemProofTransparency locale={locale} transparency={proofTransparency} />
 
           {originTitle !== null ? (
             <section className="aks-guided-demo-origin">
@@ -157,7 +147,10 @@ export function GuidedDemoSystemRenderer({
           ) : null}
 
           {lead.length > 0 ? (
-            <section className="aks-guided-demo-lead" aria-label={locale === 'fr' ? 'Introduction' : 'Introduction'}>
+            <section
+              className="aks-guided-demo-lead"
+              aria-label={locale === 'fr' ? 'Introduction' : 'Introduction'}
+            >
               {lead.map((block, index) => (
                 <PresentationBlockView
                   assetById={media}
@@ -196,10 +189,7 @@ export function GuidedDemoSystemRenderer({
             ))}
           </div>
 
-          <SystemLearningEvidence
-            items={learningEvidence}
-            locale={locale}
-          />
+          <SystemLearningEvidence items={learningEvidence} locale={locale} />
 
           <SystemRelatedWritings items={relatedWritings} locale={locale} />
 
@@ -209,7 +199,10 @@ export function GuidedDemoSystemRenderer({
                 <Text className="aks-proof-eyebrow" size="sm" tone="muted">
                   {locale === 'fr' ? 'Technologies vérifiables' : 'Inspectable technologies'}
                 </Text>
-                <ul className="aks-system-detail-tags" aria-label={locale === 'fr' ? 'Technologies utilisées' : 'Technologies'}>
+                <ul
+                  className="aks-system-detail-tags"
+                  aria-label={locale === 'fr' ? 'Technologies utilisées' : 'Technologies'}
+                >
                   {technologies.map((technology) => (
                     <li key={technology.id}>{technology.name}</li>
                   ))}
@@ -218,14 +211,17 @@ export function GuidedDemoSystemRenderer({
             ) : null}
 
             {supportingLinks.length > 0 ? (
-              <nav aria-label={locale === 'fr' ? 'Preuves du système' : 'System evidence'} className="aks-proof-actions">
+              <nav
+                aria-label={locale === 'fr' ? 'Preuves du système' : 'System evidence'}
+                className="aks-proof-actions"
+              >
                 {supportingLinks.map((link) => (
                   <Link href={link.url} key={link.id}>
                     {link.kind === 'repository'
                       ? locale === 'fr'
                         ? 'Dépôt'
                         : 'Repository'
-                      : link.label ?? 'Documentation'}
+                      : (link.label ?? 'Documentation')}
                   </Link>
                 ))}
               </nav>

@@ -176,20 +176,14 @@ describe('Writing rich-content schema v1', () => {
     expect(writingDocumentExcerpt(document)).toBe(
       'A short Note keeps attention on the observation itself. It does not need a separate editorial summary.',
     );
-    expect(writingDocumentExcerpt(document, 48)).toBe(
-      'A short Note keeps attention on the…',
-    );
+    expect(writingDocumentExcerpt(document, 48)).toBe('A short Note keeps attention on the…');
   });
 
   it('keeps a plain-text compatibility projection while richer rendering is deferred', () => {
-    const document = writingDocumentFromPlainText(
-      'First paragraph.\n\nSecond\nline.',
-    );
+    const document = writingDocumentFromPlainText('First paragraph.\n\nSecond\nline.');
 
     expect(document.version).toBe(1);
-    expect(writingDocumentToPlainText(document)).toBe(
-      'First paragraph.\n\nSecond line.',
-    );
+    expect(writingDocumentToPlainText(document)).toBe('First paragraph.\n\nSecond line.');
 
     expect(
       writingDocumentToPlainText({

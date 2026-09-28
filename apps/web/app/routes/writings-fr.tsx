@@ -1,7 +1,4 @@
-import {
-  listPublishedWritings,
-  searchPublishedWritings,
-} from '@akiksystems/db';
+import { listPublishedWritings, searchPublishedWritings } from '@akiksystems/db';
 import { type MetaDescriptor, useLoaderData } from 'react-router';
 
 import { WritingsOverview } from '../components/writings-overview';
@@ -26,9 +23,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
           query: searchQuery,
         });
   const searchResultCount = searched.length;
-  const allowedWritingIds = new Set(
-    resolvedFilters.writings.map((writing) => writing.writingId),
-  );
+  const allowedWritingIds = new Set(resolvedFilters.writings.map((writing) => writing.writingId));
   const writings =
     searchQuery === ''
       ? resolvedFilters.writings
@@ -53,8 +48,7 @@ export function meta(): MetaDescriptor[] {
 }
 
 export default function GlobalDestinationRoute() {
-  const { filterModel, searchQuery, searchResultCount, writings } =
-    useLoaderData<typeof loader>();
+  const { filterModel, searchQuery, searchResultCount, writings } = useLoaderData<typeof loader>();
   return (
     <WritingsOverview
       filterModel={filterModel}

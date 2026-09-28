@@ -26,10 +26,7 @@ export interface ListPublishedSystemReferencesInput {
   limit?: number;
 }
 
-export function systemReferenceHref(
-  locale: PlatformLocale,
-  slug: string,
-): string {
+export function systemReferenceHref(locale: PlatformLocale, slug: string): string {
   return `/${locale}/systems/${slug}`;
 }
 
@@ -40,11 +37,7 @@ export async function listPublishedSystemReferences(
   let query = db
     .selectFrom('system_publications')
     .innerJoin('systems', 'systems.id', 'system_publications.system_id')
-    .select([
-      'systems.id',
-      'systems.editorial_position',
-      'system_publications.snapshot',
-    ])
+    .select(['systems.id', 'systems.editorial_position', 'system_publications.snapshot'])
     .where('systems.lifecycle', '=', 'active')
     .where('system_publications.locale', '=', input.locale);
 
@@ -66,15 +59,17 @@ export async function listPublishedSystemReferences(
     const snapshot = parseSystemPublicationSnapshot(row.snapshot);
     if (snapshot === null) return [];
 
-    return [{
-      id: row.id,
-      locale: input.locale,
-      slug: snapshot.slug,
-      title: snapshot.title,
-      summary: snapshot.summary,
-      href: systemReferenceHref(input.locale, snapshot.slug),
-      proofTransparency: snapshot.proofTransparency,
-    }];
+    return [
+      {
+        id: row.id,
+        locale: input.locale,
+        slug: snapshot.slug,
+        title: snapshot.title,
+        summary: snapshot.summary,
+        href: systemReferenceHref(input.locale, snapshot.slug),
+        proofTransparency: snapshot.proofTransparency,
+      },
+    ];
   });
 }
 

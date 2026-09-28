@@ -15,18 +15,11 @@ function textContent(content: WritingTextNode[] | undefined): string {
   return (content ?? []).map((node) => node.text).join('');
 }
 
-function Paragraphs({
-  paragraphs,
-}: {
-  paragraphs: WritingParagraphNode[];
-}) {
+function Paragraphs({ paragraphs }: { paragraphs: WritingParagraphNode[] }) {
   return (
     <>
       {paragraphs.map((paragraph, index) => (
-        <Text
-          data-writing-node="paragraph"
-          key={`${index}-${textContent(paragraph.content)}`}
-        >
+        <Text data-writing-node="paragraph" key={`${index}-${textContent(paragraph.content)}`}>
           {textContent(paragraph.content)}
         </Text>
       ))}
@@ -49,47 +42,31 @@ function WritingImage({
     return (
       <figure className="aks-writing-media aks-writing-media-missing">
         <Text size="sm" tone="muted">
-          {locale === 'fr'
-            ? 'Média indisponible.'
-            : 'Media unavailable.'}
+          {locale === 'fr' ? 'Média indisponible.' : 'Media unavailable.'}
         </Text>
       </figure>
     );
   }
 
-  const widths = imageVariantWidths.filter(
-    (width) => asset.width === null || width < asset.width,
-  );
+  const widths = imageVariantWidths.filter((width) => asset.width === null || width < asset.width);
   const srcSet =
     responsive && widths.length > 0
-      ? widths
-          .map((width) => `${assetHref(asset.id, width)} ${width}w`)
-          .join(', ')
+      ? widths.map((width) => `${assetHref(asset.id, width)} ${width}w`).join(', ')
       : undefined;
 
   return (
-    <figure
-      className="aks-writing-media"
-      data-asset-id={asset.id}
-      data-writing-node="image"
-    >
+    <figure className="aks-writing-media" data-asset-id={asset.id} data-writing-node="image">
       <img
         alt={asset.altText}
         decoding="async"
         height={asset.height ?? undefined}
         loading="lazy"
-        sizes={
-          srcSet === undefined
-            ? undefined
-            : '(max-width: 48rem) calc(100vw - 3rem), 64rem'
-        }
+        sizes={srcSet === undefined ? undefined : '(max-width: 48rem) calc(100vw - 3rem), 64rem'}
         src={assetHref(asset.id)}
         srcSet={srcSet}
         width={asset.width ?? undefined}
       />
-      {asset.caption !== null ? (
-        <figcaption>{asset.caption}</figcaption>
-      ) : null}
+      {asset.caption !== null ? <figcaption>{asset.caption}</figcaption> : null}
     </figure>
   );
 }
@@ -110,10 +87,7 @@ export function WritingEditorialRenderer({
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]));
 
   return (
-    <div
-      className="aks-writing-content"
-      data-writing-document-version={document.version}
-    >
+    <div className="aks-writing-content" data-writing-document-version={document.version}>
       {document.content.map((block, index) => {
         const key = `${index}-${block.type}`;
 
@@ -141,11 +115,7 @@ export function WritingEditorialRenderer({
           case 'orderedList': {
             const List = block.type === 'bulletList' ? 'ul' : 'ol';
             return (
-              <List
-                className="aks-writing-list"
-                data-writing-node={block.type}
-                key={key}
-              >
+              <List className="aks-writing-list" data-writing-node={block.type} key={key}>
                 {block.content.map((item, itemIndex) => (
                   <li key={`${key}-${itemIndex}`}>
                     <Paragraphs paragraphs={item.content} />
@@ -157,11 +127,7 @@ export function WritingEditorialRenderer({
 
           case 'blockquote':
             return (
-              <blockquote
-                className="aks-writing-quote"
-                data-writing-node="blockquote"
-                key={key}
-              >
+              <blockquote className="aks-writing-quote" data-writing-node="blockquote" key={key}>
                 <Paragraphs paragraphs={block.content} />
               </blockquote>
             );

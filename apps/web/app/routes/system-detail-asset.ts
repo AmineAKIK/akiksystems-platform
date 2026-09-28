@@ -3,16 +3,12 @@ import { parseSystemPublicationSnapshot } from '@akiksystems/db';
 import { requireLocale } from '../i18n/locales';
 import { getAssetObject } from '../lib/asset-storage.server';
 import { appDb } from '../lib/db.server';
-import {
-  parsePublicImageWidth,
-  resizePublicImage,
-} from '../lib/image-variant.server';
+import { parsePublicImageWidth, resizePublicImage } from '../lib/image-variant.server';
 
 import type { Route } from './+types/system-detail-asset';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale);
@@ -38,9 +34,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     .executeTakeFirst();
 
   const snapshot =
-    publication === undefined
-      ? null
-      : parseSystemPublicationSnapshot(publication.snapshot);
+    publication === undefined ? null : parseSystemPublicationSnapshot(publication.snapshot);
   const publishedAsset = snapshot?.media.find((asset) => asset.id === assetId);
 
   if (snapshot === null || publishedAsset === undefined) {
@@ -58,9 +52,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const stored = await getAssetObject(asset.storage_key);
-  const requestedWidth = parsePublicImageWidth(
-    new URL(request.url).searchParams.get('width'),
-  );
+  const requestedWidth = parsePublicImageWidth(new URL(request.url).searchParams.get('width'));
   const canResize =
     requestedWidth !== null &&
     asset.mime_type.startsWith('image/') &&

@@ -1,18 +1,10 @@
-import type {
-  AnchorHTMLAttributes,
-  ImgHTMLAttributes,
-} from 'react';
+import type { AnchorHTMLAttributes, ImgHTMLAttributes } from 'react';
 
-export interface BrandMarkProps
-  extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> {
+export interface BrandMarkProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> {
   title?: string;
 }
 
-export function BrandMark({
-  className,
-  title,
-  ...props
-}: BrandMarkProps) {
+export function BrandMark({ className, title, ...props }: BrandMarkProps) {
   const labelled = title !== undefined;
 
   return (
@@ -30,8 +22,10 @@ export function BrandMark({
   );
 }
 
-export interface BrandSignatureProps
-  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'children'> {
+export interface BrandSignatureProps extends Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  'children'
+> {
   label?: string;
   size?: 'sm' | 'md';
 }

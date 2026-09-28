@@ -4,12 +4,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('experiences')
     .addColumn('id', 'uuid', (column) => column.primaryKey())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .execute();
 
   await db.schema
@@ -20,20 +16,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('title', 'text', (column) => column.notNull())
     .addColumn('summary', 'text')
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addPrimaryKeyConstraint('experience_localizations_pkey', [
-      'experience_id',
-      'locale',
-    ])
-    .addCheckConstraint(
-      'experience_localizations_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addPrimaryKeyConstraint('experience_localizations_pkey', ['experience_id', 'locale'])
+    .addCheckConstraint('experience_localizations_locale_check', sql`locale in ('en', 'fr')`)
     .addCheckConstraint(
       'experience_localizations_title_not_blank_check',
       sql`length(trim(title)) > 0`,
@@ -49,9 +35,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       column.notNull().references('experiences.id').onDelete('cascade'),
     )
     .addColumn('relation_kind', 'text', (column) => column.notNull())
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('system_experiences_pkey', [
       'system_id',
       'experience_id',

@@ -1,7 +1,4 @@
-import {
-  createLogger,
-  type StructuredLogger,
-} from '@akiksystems/config/observability';
+import { createLogger, type StructuredLogger } from '@akiksystems/config/observability';
 import { run, type Runner } from 'graphile-worker';
 
 import type { WorkWithUsEmailTransport } from './work-with-us-email.js';

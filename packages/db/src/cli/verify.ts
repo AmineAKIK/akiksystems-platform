@@ -14,17 +14,9 @@ try {
     throw migrationResult.error;
   }
 
-  await db
-    .selectFrom('system_metadata')
-    .select(['key', 'created_at'])
-    .limit(1)
-    .execute();
+  await db.selectFrom('system_metadata').select(['key', 'created_at']).limit(1).execute();
 
-  await db
-    .selectFrom('systems')
-    .select(['id', 'lifecycle', 'created_at'])
-    .limit(1)
-    .execute();
+  await db.selectFrom('systems').select(['id', 'lifecycle', 'created_at']).limit(1).execute();
 
   await db
     .selectFrom('system_localizations')
@@ -32,17 +24,9 @@ try {
     .limit(1)
     .execute();
 
-  await db
-    .selectFrom('profiles')
-    .select(['id', 'singleton_key'])
-    .limit(1)
-    .execute();
+  await db.selectFrom('profiles').select(['id', 'singleton_key']).limit(1).execute();
 
-  await db
-    .selectFrom('profile_localizations')
-    .select(['profile_id', 'locale'])
-    .limit(1)
-    .execute();
+  await db.selectFrom('profile_localizations').select(['profile_id', 'locale']).limit(1).execute();
 
   process.stdout.write('Typed Kysely database verification passed.\n');
 } finally {

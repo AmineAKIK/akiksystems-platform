@@ -6,7 +6,7 @@ import {
   homeDestinationPresentation,
   homeLegalPresentation,
 } from '../components/home-portal-content';
-import { HomePortal } from './home';
+import { HomePortal, meta } from './home';
 
 describe('HomePortal handoff contract', () => {
   it('renders the approved English destination order and brand hierarchy', () => {
@@ -87,10 +87,33 @@ describe('HomePortal handoff contract', () => {
 
     for (const presentation of presentations) {
       for (const locale of ['en', 'fr'] as const) {
-        expect(
-          Array.from(presentation.description[locale]).length,
-        ).toBeLessThanOrEqual(80);
+        expect(Array.from(presentation.description[locale]).length).toBeLessThanOrEqual(80);
       }
     }
+  });
+});
+
+describe('Home meta contract', () => {
+  it.each([
+    ['en', 'https://akiksystems.com/en', 'https://akiksystems.fr/fr'],
+    ['fr', 'https://akiksystems.fr/fr', 'https://akiksystems.com/en'],
+  ] as const)('emits complete localized SEO metadata for %s', (locale, canonical, alternate) => {
+    const descriptors = meta({ params: { locale } } as never);
+
+    expect(descriptors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ tagName: 'link', rel: 'canonical', href: canonical }),
+        expect.objectContaining({ property: 'og:image:width', content: '1200' }),
+        expect.objectContaining({ property: 'og:image:height', content: '630' }),
+        expect.objectContaining({ name: 'twitter:card', content: 'summary_large_image' }),
+        expect.objectContaining({ tagName: 'link', rel: 'alternate', href: alternate }),
+        expect.objectContaining({
+          'script:ld+json': expect.objectContaining({
+            '@type': 'WebSite',
+            name: 'AkikSystems',
+          }),
+        }),
+      ]),
+    );
   });
 });

@@ -1,10 +1,5 @@
 import { Button } from '@akiksystems/ui';
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Locale } from '../i18n/locales';
 

@@ -1,15 +1,6 @@
-import {
-  getPublishedWorkWithUsPage,
-  listWorkWithUsProofReferences,
-} from '@akiksystems/db';
+import { getPublishedWorkWithUsPage, listWorkWithUsProofReferences } from '@akiksystems/db';
 import { randomUUID } from 'node:crypto';
-import {
-  data,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  useParams,
-} from 'react-router';
+import { data, useActionData, useLoaderData, useNavigation, useParams } from 'react-router';
 
 import { WorkWithUsView } from '../components/work-with-us-view';
 import { requireExactLocale } from '../i18n/locales';
@@ -52,8 +43,7 @@ export function meta() {
 export default function WorkWithUsRoute() {
   const params = useParams();
   const locale = requireExactLocale(params.locale, 'en');
-  const { content, systemReferences, submissionToken } =
-    useLoaderData<typeof loader>();
+  const { content, systemReferences, submissionToken } = useLoaderData<typeof loader>();
   const inquiryActionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const inquirySubmitting =

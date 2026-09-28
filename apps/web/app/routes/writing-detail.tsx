@@ -1,7 +1,4 @@
-import {
-  getPublishedWriting,
-  listPublishedWritings,
-} from '@akiksystems/db';
+import { getPublishedWriting, listPublishedWritings } from '@akiksystems/db';
 import { data, useLoaderData } from 'react-router';
 
 import { WritingDetailView } from '../components/writing-detail-view';
@@ -70,10 +67,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   );
 }
 
-export function headers({
-  loaderHeaders,
-  errorHeaders,
-}: Route.HeadersArgs): Headers {
+export function headers({ loaderHeaders, errorHeaders }: Route.HeadersArgs): Headers {
   return errorHeaders ?? loaderHeaders;
 }
 
@@ -99,9 +93,7 @@ export default function WritingDetailRoute() {
         return width === undefined ? base : `${base}?width=${width}`;
       }}
       backHref={overviewHref}
-      backLabel={
-        writing.locale === 'fr' ? 'Retour aux Écrits' : 'Back to Writings'
-      }
+      backLabel={writing.locale === 'fr' ? 'Retour aux Écrits' : 'Back to Writings'}
       relatedWritings={relatedWritings}
       responsiveImages
       writing={writing}

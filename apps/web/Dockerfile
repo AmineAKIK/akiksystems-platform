@@ -15,17 +15,19 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @akiksystems/core build \
   && pnpm --filter @akiksystems/db build \
-  && pnpm --filter @akiksystems/web build
+  && pnpm --filter @akiksystems/web build \
+  && pnpm --filter @akiksystems/web --prod deploy --legacy /prod/web
 
 FROM base AS runtime
 
 ENV NODE_ENV=production
 ENV PORT=3000
+WORKDIR /app
 
-COPY --chown=node:node --from=build /app /app
+COPY --chown=node:node --from=build /prod/web /app
 
 USER node
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@akiksystems/web", "start"]
+CMD ["node", "server.js"]

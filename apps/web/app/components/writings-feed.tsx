@@ -6,27 +6,18 @@ import type { Locale } from '../i18n/locales';
 import './writings-feed.css';
 
 function writingHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/${slug}`
-    : `/en/writings/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/${slug}` : `/en/writings/${slug}`;
 }
 
 function categoryHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/categories/${slug}`
-    : `/en/writings/categories/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/categories/${slug}` : `/en/writings/categories/${slug}`;
 }
 
 function tagHref(locale: Locale, slug: string): string {
-  return locale === 'fr'
-    ? `/fr/ecrits/tags/${slug}`
-    : `/en/writings/tags/${slug}`;
+  return locale === 'fr' ? `/fr/ecrits/tags/${slug}` : `/en/writings/tags/${slug}`;
 }
 
-function kindLabel(
-  kind: PublishedWritingListItem['kind'],
-  locale: Locale,
-): string {
+function kindLabel(kind: PublishedWritingListItem['kind'], locale: Locale): string {
   if (kind === 'note') return 'Note';
   if (kind === 'article') return 'Article';
   return locale === 'fr' ? 'Essai' : 'Essay';
@@ -85,31 +76,20 @@ export function WritingsFeed({
 
             <div className="aks-writings-feed-copy">
               <Heading level={3} size="sm">
-                <Link href={writingHref(locale, writing.slug)}>
-                  {writing.title}
-                </Link>
+                <Link href={writingHref(locale, writing.slug)}>{writing.title}</Link>
               </Heading>
-              <Text className="aks-writings-feed-summary">
-                {writing.summary}
-              </Text>
+              <Text className="aks-writings-feed-summary">{writing.summary}</Text>
             </div>
 
             {writing.categories.length > 0 || writing.tags.length > 0 ? (
               <div className="aks-writings-feed-taxonomy">
                 {writing.categories.map((category) => (
-                  <Link
-                    href={categoryHref(locale, category.slug)}
-                    key={category.categoryId}
-                  >
+                  <Link href={categoryHref(locale, category.slug)} key={category.categoryId}>
                     {category.name}
                   </Link>
                 ))}
                 {writing.tags.map((tag) => (
-                  <Link
-                    aria-label={tag.name}
-                    href={tagHref(locale, tag.slug)}
-                    key={tag.tagId}
-                  >
+                  <Link aria-label={tag.name} href={tagHref(locale, tag.slug)} key={tag.tagId}>
                     <span aria-hidden="true">#</span>
                     {tag.name}
                   </Link>
@@ -117,10 +97,7 @@ export function WritingsFeed({
               </div>
             ) : null}
 
-            <Link
-              className="aks-writings-feed-read"
-              href={writingHref(locale, writing.slug)}
-            >
+            <Link className="aks-writings-feed-read" href={writingHref(locale, writing.slug)}>
               {locale === 'fr' ? 'Lire l’écrit' : 'Read writing'}
             </Link>
           </article>

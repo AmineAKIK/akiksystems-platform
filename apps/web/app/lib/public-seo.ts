@@ -1,7 +1,7 @@
 import type { PlatformLocale } from '@akiksystems/core';
 import { data, type MetaDescriptor } from 'react-router';
 
-import { publicCanonicalUrl } from './public-locales';
+import { publicCanonicalUrl, publicUrlForLocale } from './public-locales';
 const noIndexDirective = 'noindex, nofollow, noarchive, nosnippet';
 
 function openGraphLocale(locale: PlatformLocale): 'en_US' | 'fr_FR' {
@@ -38,14 +38,15 @@ export function buildLocalizedPublicMeta({
   description: string;
   locale: PlatformLocale;
   canonicalPath: string;
-  alternate:
-    | {
-        locale: PlatformLocale;
-        path: string;
-      }
-    | null;
+  alternate: {
+    locale: PlatformLocale;
+    path: string;
+  } | null;
 }): MetaDescriptor[] {
   const canonicalUrl = publicCanonicalUrl(canonicalPath);
+  const socialImageUrl = publicUrlForLocale(locale, '/brand/og-akiksystems.png');
+  const socialImageAlt =
+    locale === 'fr' ? 'AkikSystems — Systemic Scale' : 'AkikSystems — Systemic Scale';
   const descriptors: MetaDescriptor[] = [
     { title: title + ' · AkikSystems' },
     { name: 'description', content: description },
@@ -59,9 +60,16 @@ export function buildLocalizedPublicMeta({
     { property: 'og:description', content: description },
     { property: 'og:url', content: canonicalUrl },
     { property: 'og:locale', content: openGraphLocale(locale) },
-    { name: 'twitter:card', content: 'summary' },
+    { property: 'og:image', content: socialImageUrl },
+    { property: 'og:image:width', content: '1200' },
+    { property: 'og:image:height', content: '630' },
+    { property: 'og:image:type', content: 'image/png' },
+    { property: 'og:image:alt', content: socialImageAlt },
+    { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
+    { name: 'twitter:image', content: socialImageUrl },
+    { name: 'twitter:image:alt', content: socialImageAlt },
     { tagName: 'link', rel: 'canonical', href: canonicalUrl },
     {
       tagName: 'link',

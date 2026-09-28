@@ -32,8 +32,7 @@ export interface PublishedCredential extends CredentialPublicationSnapshot {
   training: PublicCredentialTraining | null;
 }
 
-export interface PublishedCredentialListItem
-  extends CredentialPublicationSnapshot {
+export interface PublishedCredentialListItem extends CredentialPublicationSnapshot {
   publishedAt: Date;
 }
 
@@ -172,15 +171,8 @@ export async function listPublishedCredentials(
 ): Promise<PublishedCredentialListItem[]> {
   const rows = await db
     .selectFrom('credential_publications')
-    .innerJoin(
-      'credentials',
-      'credentials.id',
-      'credential_publications.credential_id',
-    )
-    .select([
-      'credential_publications.snapshot',
-      'credential_publications.published_at',
-    ])
+    .innerJoin('credentials', 'credentials.id', 'credential_publications.credential_id')
+    .select(['credential_publications.snapshot', 'credential_publications.published_at'])
     .where('credential_publications.locale', '=', locale)
     .orderBy('credentials.editorial_position')
     .orderBy('credentials.created_at')
@@ -269,10 +261,7 @@ export async function getPublishedCredential(
   return {
     ...snapshot,
     publishedAt: row.published_at,
-    alternate:
-      alternate === undefined
-        ? null
-        : { locale: alternate.locale, slug: alternate.slug },
+    alternate: alternate === undefined ? null : { locale: alternate.locale, slug: alternate.slug },
     training,
   };
 }

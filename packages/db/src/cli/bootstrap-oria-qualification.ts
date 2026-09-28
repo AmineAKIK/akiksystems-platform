@@ -18,7 +18,10 @@ try {
   }
 
   const fixture = await readFile(
-    new URL('../../../../apps/web/scripts/fixtures/oria-reference-collations.webp', import.meta.url),
+    new URL(
+      '../../../../apps/web/scripts/fixtures/oria-reference-collations.webp',
+      import.meta.url,
+    ),
   );
   const target = path.resolve(testRoot, storageKey);
   await mkdir(path.dirname(target), { recursive: true });

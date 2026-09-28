@@ -2,10 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
 import { createDatabase } from '../database.js';
-import {
-  listPublishedWritings,
-  publishWritingLocalization,
-} from '../writing-publication.js';
+import { listPublishedWritings, publishWritingLocalization } from '../writing-publication.js';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required.');
@@ -43,11 +40,7 @@ try {
         id: writing.id,
         kind: writing.kind,
         editorial_weight:
-          writing.kind === 'essay'
-            ? 'major'
-            : writing.kind === 'article'
-              ? 'featured'
-              : 'normal',
+          writing.kind === 'essay' ? 'major' : writing.kind === 'article' ? 'featured' : 'normal',
         editorial_position: writing.position,
       })
       .execute();

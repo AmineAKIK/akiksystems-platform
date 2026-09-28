@@ -8,12 +8,8 @@ import type {
 
 interface LearningOverviewProps {
   locale: 'en' | 'fr';
-  trainings: Array<
-    Omit<PublishedTrainingListItem, 'publishedAt'> & { publishedAt: string }
-  >;
-  credentials: Array<
-    Omit<PublishedCredentialListItem, 'publishedAt'> & { publishedAt: string }
-  >;
+  trainings: Array<Omit<PublishedTrainingListItem, 'publishedAt'> & { publishedAt: string }>;
+  credentials: Array<Omit<PublishedCredentialListItem, 'publishedAt'> & { publishedAt: string }>;
   learningArtifacts: Array<
     Omit<PublishedLearningArtifactListItem, 'publishedAt'> & {
       publishedAt: string;
@@ -23,10 +19,7 @@ interface LearningOverviewProps {
 
 type Locale = LearningOverviewProps['locale'];
 
-function dateRange(
-  training: LearningOverviewProps['trainings'][number],
-  locale: Locale,
-) {
+function dateRange(training: LearningOverviewProps['trainings'][number], locale: Locale) {
   if (training.startDate === null && training.endDate === null) {
     return locale === 'fr' ? 'Dates non renseignées' : 'Dates not specified';
   }
@@ -37,9 +30,7 @@ function dateRange(
 }
 
 function trainingHref(locale: Locale, slug: string) {
-  return locale === 'fr'
-    ? `/fr/apprentissage/${slug}`
-    : `/en/learning/${slug}`;
+  return locale === 'fr' ? `/fr/apprentissage/${slug}` : `/en/learning/${slug}`;
 }
 
 function credentialHref(locale: Locale, slug: string) {
@@ -49,15 +40,10 @@ function credentialHref(locale: Locale, slug: string) {
 }
 
 function artifactHref(locale: Locale, slug: string) {
-  return locale === 'fr'
-    ? `/fr/apprentissage/preuves/${slug}`
-    : `/en/learning/artifacts/${slug}`;
+  return locale === 'fr' ? `/fr/apprentissage/preuves/${slug}` : `/en/learning/artifacts/${slug}`;
 }
 
-function stateLabel(
-  state: LearningOverviewProps['trainings'][number]['state'],
-  locale: Locale,
-) {
+function stateLabel(state: LearningOverviewProps['trainings'][number]['state'], locale: Locale) {
   const labels = {
     planned: locale === 'fr' ? 'Prévue' : 'Planned',
     in_progress: locale === 'fr' ? 'En cours' : 'In progress',
@@ -111,18 +97,13 @@ export function LearningOverview({
             </Text>
           </section>
 
-          <section
-            className="aks-learning-map"
-            aria-labelledby="learning-map-heading"
-          >
+          <section className="aks-learning-map" aria-labelledby="learning-map-heading">
             <div className="aks-learning-section-heading">
               <Text className="aks-proof-eyebrow" size="sm" tone="muted">
                 {locale === 'fr' ? 'Lecture rapide' : 'At a glance'}
               </Text>
               <Heading id="learning-map-heading" level={2} size="md">
-                {locale === 'fr'
-                  ? 'Deux niveaux, un même parcours'
-                  : 'Two layers, one journey'}
+                {locale === 'fr' ? 'Deux niveaux, un même parcours' : 'Two layers, one journey'}
               </Heading>
             </div>
 
@@ -156,9 +137,7 @@ export function LearningOverview({
                   {locale === 'fr' ? 'Preuves' : 'Evidence'}
                 </Text>
                 <Heading level={3} size="sm">
-                  {locale === 'fr'
-                    ? 'Productions et justificatifs'
-                    : 'Productions and credentials'}
+                  {locale === 'fr' ? 'Productions et justificatifs' : 'Productions and credentials'}
                 </Heading>
                 <Text>
                   {locale === 'fr'
@@ -188,9 +167,7 @@ export function LearningOverview({
                 {locale === 'fr' ? 'Inspection directe' : 'Direct inspection'}
               </Text>
               <Heading id="evidence-heading" level={2} size="md">
-                {locale === 'fr'
-                  ? 'Preuves à inspecter'
-                  : 'Evidence to inspect'}
+                {locale === 'fr' ? 'Preuves à inspecter' : 'Evidence to inspect'}
               </Heading>
               <Text tone="muted">
                 {locale === 'fr'
@@ -221,9 +198,7 @@ export function LearningOverview({
                     >
                       <div className="aks-proof-stack">
                         <Text className="aks-proof-eyebrow" size="sm" tone="muted">
-                          {locale === 'fr'
-                            ? 'Production / preuve'
-                            : 'Production / evidence'}
+                          {locale === 'fr' ? 'Production / preuve' : 'Production / evidence'}
                         </Text>
                         <Heading level={3} size="sm">
                           {artifact.title}
@@ -243,9 +218,7 @@ export function LearningOverview({
                               : `Context · ${training.title}`}
                         </Text>
                         <Link href={artifactHref(locale, artifact.slug)}>
-                          {locale === 'fr'
-                            ? 'Inspecter la preuve'
-                            : 'Inspect evidence'}
+                          {locale === 'fr' ? 'Inspecter la preuve' : 'Inspect evidence'}
                         </Link>
                       </div>
                     </article>
@@ -287,9 +260,7 @@ export function LearningOverview({
                               : ` · Context · ${training.title}`}
                         </Text>
                         <Link href={credentialHref(locale, credential.slug)}>
-                          {locale === 'fr'
-                            ? 'Inspecter le justificatif'
-                            : 'Inspect Credential'}
+                          {locale === 'fr' ? 'Inspecter le justificatif' : 'Inspect Credential'}
                         </Link>
                       </div>
                     </article>
@@ -308,9 +279,7 @@ export function LearningOverview({
                 {locale === 'fr' ? 'Contexte' : 'Context'}
               </Text>
               <Heading id="training-heading" level={2} size="md">
-                {locale === 'fr'
-                  ? 'Parcours de formation'
-                  : 'Training journey'}
+                {locale === 'fr' ? 'Parcours de formation' : 'Training journey'}
               </Heading>
               <Text tone="muted">
                 {locale === 'fr'
@@ -328,10 +297,7 @@ export function LearningOverview({
             ) : (
               <div className="aks-learning-training-list">
                 {trainings.map((training, index) => (
-                  <article
-                    className="aks-learning-training-card"
-                    key={training.trainingId}
-                  >
+                  <article className="aks-learning-training-card" key={training.trainingId}>
                     <Text className="aks-learning-training-index" size="sm" tone="muted">
                       {String(index + 1).padStart(2, '0')}
                     </Text>
@@ -344,8 +310,7 @@ export function LearningOverview({
                       </Heading>
                       <Text>{training.summary}</Text>
                       <Text size="sm" tone="muted">
-                        {locale === 'fr' ? 'État' : 'State'} ·{' '}
-                        {stateLabel(training.state, locale)}
+                        {locale === 'fr' ? 'État' : 'State'} · {stateLabel(training.state, locale)}
                       </Text>
                       <Link href={trainingHref(locale, training.slug)}>
                         {locale === 'fr'

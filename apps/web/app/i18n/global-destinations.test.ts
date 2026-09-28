@@ -17,9 +17,7 @@ describe('global destinations', () => {
       'systems',
       'learning',
     ]);
-    expect(globalDestinations.map((destination) => destination.id)).toEqual(
-      globalDestinationIds,
-    );
+    expect(globalDestinations.map((destination) => destination.id)).toEqual(globalDestinationIds);
   });
 
   it('builds localized hrefs from the code-defined registry', () => {

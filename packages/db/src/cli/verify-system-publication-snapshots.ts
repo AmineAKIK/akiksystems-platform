@@ -15,28 +15,34 @@ const systemId = randomUUID();
 const technologyId = randomUUID();
 
 try {
-  await db.insertInto('systems').values({
-    id: systemId,
-    evidence_policy: 'documented_only',
-    editorial_position: 9000,
-  }).execute();
+  await db
+    .insertInto('systems')
+    .values({
+      id: systemId,
+      evidence_policy: 'documented_only',
+      editorial_position: 9000,
+    })
+    .execute();
 
-  await db.insertInto('system_localizations').values({
-    system_id: systemId,
-    locale: 'en',
-    slug: 'snapshot-qualification',
-    title: 'Published title',
-    summary: 'Snapshot qualification summary.',
-    proof_role: 'Qualification fixture',
-    proof_maturity: 'Implemented test fixture',
-    proof_demo_nature: 'No demo',
-    proof_data_nature: 'Synthetic qualification data',
-    proof_limits: 'Not product evidence.',
-    presentation_document: {
-      version: 1,
-      blocks: [{ type: 'paragraph', text: 'Published body.' }],
-    },
-  }).execute();
+  await db
+    .insertInto('system_localizations')
+    .values({
+      system_id: systemId,
+      locale: 'en',
+      slug: 'snapshot-qualification',
+      title: 'Published title',
+      summary: 'Snapshot qualification summary.',
+      proof_role: 'Qualification fixture',
+      proof_maturity: 'Implemented test fixture',
+      proof_demo_nature: 'No demo',
+      proof_data_nature: 'Synthetic qualification data',
+      proof_limits: 'Not product evidence.',
+      presentation_document: {
+        version: 1,
+        blocks: [{ type: 'paragraph', text: 'Published body.' }],
+      },
+    })
+    .execute();
 
   await db
     .insertInto('technologies')
@@ -66,24 +72,27 @@ try {
     })
     .execute();
 
-  await db.insertInto('system_links').values([
-    {
-      id: randomUUID(),
-      system_id: systemId,
-      kind: 'live',
-      url: 'https://example.invalid/live',
-      position: 0,
-    },
-    {
-      id: randomUUID(),
-      system_id: systemId,
-      kind: 'documentation',
-      url: 'https://example.invalid/docs',
-      label_en: 'Qualification documentation',
-      label_fr: 'Documentation de qualification',
-      position: 1,
-    },
-  ]).execute();
+  await db
+    .insertInto('system_links')
+    .values([
+      {
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'live',
+        url: 'https://example.invalid/live',
+        position: 0,
+      },
+      {
+        id: randomUUID(),
+        system_id: systemId,
+        kind: 'documentation',
+        url: 'https://example.invalid/docs',
+        label_en: 'Qualification documentation',
+        label_fr: 'Documentation de qualification',
+        position: 1,
+      },
+    ])
+    .execute();
 
   await publishSystemLocalization(db, { systemId, locale: 'en' });
 
@@ -100,10 +109,15 @@ try {
     'documented_only must be enforced in the public snapshot',
   );
 
-  await db.updateTable('system_localizations').set({
-    title: 'Unpublished draft title',
-    updated_at: new Date(),
-  }).where('system_id', '=', systemId).where('locale', '=', 'en').execute();
+  await db
+    .updateTable('system_localizations')
+    .set({
+      title: 'Unpublished draft title',
+      updated_at: new Date(),
+    })
+    .where('system_id', '=', systemId)
+    .where('locale', '=', 'en')
+    .execute();
   await db
     .updateTable('system_technology_localizations')
     .set({

@@ -16,9 +16,7 @@ export const assetUploadMaxBytes = 10 * 1024 * 1024;
 
 export function validateAssetUpload(file: File): void {
   if (!allowedMimeTypes.has(file.type)) {
-    throw new Error(
-      'Unsupported asset type. Allowed: JPEG, PNG, WebP, AVIF, and PDF.',
-    );
+    throw new Error('Unsupported asset type. Allowed: JPEG, PNG, WebP, AVIF, and PDF.');
   }
 
   if (file.size <= 0) {
@@ -38,10 +36,7 @@ function ascii(bytes: Uint8Array, start: number, length: number): string {
   return String.fromCharCode(...bytes.slice(start, start + length));
 }
 
-export function validateAssetSignature(
-  mimeType: string,
-  bytes: Uint8Array,
-): void {
+export function validateAssetSignature(mimeType: string, bytes: Uint8Array): void {
   const valid =
     mimeType === 'image/jpeg'
       ? hasPrefix(bytes, [0xff, 0xd8, 0xff])
@@ -50,8 +45,7 @@ export function validateAssetSignature(
         : mimeType === 'image/webp'
           ? ascii(bytes, 0, 4) === 'RIFF' && ascii(bytes, 8, 4) === 'WEBP'
           : mimeType === 'image/avif'
-            ? ascii(bytes, 4, 4) === 'ftyp' &&
-              ['avif', 'avis'].includes(ascii(bytes, 8, 4))
+            ? ascii(bytes, 4, 4) === 'ftyp' && ['avif', 'avis'].includes(ascii(bytes, 8, 4))
             : mimeType === 'application/pdf'
               ? ascii(bytes, 0, 5) === '%PDF-'
               : false;
@@ -112,10 +106,7 @@ function testStoragePath(storageKey: string): string | null {
   const resolvedRoot = path.resolve(root);
   const resolvedPath = path.resolve(resolvedRoot, storageKey);
 
-  if (
-    resolvedPath !== resolvedRoot &&
-    !resolvedPath.startsWith(`${resolvedRoot}${path.sep}`)
-  ) {
+  if (resolvedPath !== resolvedRoot && !resolvedPath.startsWith(`${resolvedRoot}${path.sep}`)) {
     throw new Error('Asset storage key escapes the qualification root.');
   }
 
@@ -129,9 +120,7 @@ function objectUrl(storageKey: string): URL {
     ? `${env.BUCKET}.${endpoint.hostname}:${endpoint.port}`
     : `${env.BUCKET}.${endpoint.hostname}`;
 
-  return new URL(
-    `${endpoint.protocol}//${authority}/${encodedObjectKey(storageKey)}`,
-  );
+  return new URL(`${endpoint.protocol}//${authority}/${encodedObjectKey(storageKey)}`);
 }
 
 async function signedS3Request(
@@ -147,9 +136,7 @@ async function signedS3Request(
   const payloadHash = sha256Hex(payload);
   const { amzDate, dateStamp } = amzDateParts(new Date());
   const canonicalHeaders =
-    `host:${url.host}\n` +
-    `x-amz-content-sha256:${payloadHash}\n` +
-    `x-amz-date:${amzDate}\n`;
+    `host:${url.host}\n` + `x-amz-content-sha256:${payloadHash}\n` + `x-amz-date:${amzDate}\n`;
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
   const canonicalRequest = [
     method,
@@ -171,9 +158,7 @@ async function signedS3Request(
   const regionKey = hmac(dateKey, env.REGION);
   const serviceKey = hmac(regionKey, 's3');
   const signingKey = hmac(serviceKey, 'aws4_request');
-  const signature = createHmac('sha256', signingKey)
-    .update(stringToSign)
-    .digest('hex');
+  const signature = createHmac('sha256', signingKey).update(stringToSign).digest('hex');
 
   const headers = new Headers({
     authorization:
@@ -199,18 +184,13 @@ async function signedS3Request(
 
   if (!response.ok) {
     const details = (await response.text()).slice(0, 500);
-    throw new Error(
-      `Object storage ${method} failed with ${response.status}: ${details}`,
-    );
+    throw new Error(`Object storage ${method} failed with ${response.status}: ${details}`);
   }
 
   return response;
 }
 
-export async function putAssetObject(
-  storageKey: string,
-  file: File,
-): Promise<void> {
+export async function putAssetObject(storageKey: string, file: File): Promise<void> {
   validateAssetUpload(file);
   const bytes = new Uint8Array(await file.arrayBuffer());
   validateAssetSignature(file.type, bytes);

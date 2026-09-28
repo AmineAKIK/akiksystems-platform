@@ -1,10 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { randomUUID } from 'node:crypto';
 
-import {
-  listPublishedSystemReferences,
-  systemReferenceHref,
-} from '../system-reference.js';
+import { listPublishedSystemReferences, systemReferenceHref } from '../system-reference.js';
 import { createDatabase } from '../database.js';
 import { bootstrapSystemPublications } from '../system-publication.js';
 import { databaseUrlFromEnv } from './env.js';
@@ -144,27 +141,15 @@ try {
     'Missing French localization must disappear rather than fall back to English.',
   );
   assert.equal(french[0]?.href, '/fr/systems/reference-publiee');
-  assert.equal(
-    french[0]?.proofTransparency.maturity,
-    'Implémentation inspectable',
-  );
+  assert.equal(french[0]?.proofTransparency.maturity, 'Implémentation inspectable');
 
-  assert.equal(
-    systemReferenceHref('en', 'sentinel'),
-    '/en/systems/sentinel',
-  );
-  assert.equal(
-    systemReferenceHref('fr', 'sentinel'),
-    '/fr/systems/sentinel',
-  );
+  assert.equal(systemReferenceHref('en', 'sentinel'), '/en/systems/sentinel');
+  assert.equal(systemReferenceHref('fr', 'sentinel'), '/fr/systems/sentinel');
 
   process.stdout.write(
     'System reference verification passed: active published localized Systems resolve through one locale-safe contract, while drafts and missing localizations disappear without fallback.\n',
   );
 } finally {
-  await db
-    .deleteFrom('systems')
-    .where('id', 'in', Object.values(ids))
-    .execute();
+  await db.deleteFrom('systems').where('id', 'in', Object.values(ids)).execute();
   await db.destroy();
 }

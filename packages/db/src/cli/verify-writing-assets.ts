@@ -43,8 +43,7 @@ try {
         slug: 'aks-107-contextual-assets',
         title: 'AKS-107 Contextual Assets',
         summary: 'Qualification for contextual Writing media.',
-        editor_document:
-          documentWith(assetId) as unknown as Record<string, unknown>,
+        editor_document: documentWith(assetId) as unknown as Record<string, unknown>,
       },
       {
         writing_id: writingId,
@@ -52,8 +51,7 @@ try {
         slug: 'aks-107-medias-contextuels',
         title: 'AKS-107 Médias contextuels',
         summary: 'Qualification des médias contextuels des Writings.',
-        editor_document:
-          documentWith(assetId) as unknown as Record<string, unknown>,
+        editor_document: documentWith(assetId) as unknown as Record<string, unknown>,
       },
     ])
     .execute();
@@ -138,8 +136,7 @@ try {
     .executeTakeFirstOrThrow();
 
   assert.equal(
-    (unchangedPublication.snapshot.assets as Array<{ altText: string }>)[0]
-      ?.altText,
+    (unchangedPublication.snapshot.assets as Array<{ altText: string }>)[0]?.altText,
     'Contextual Writing image',
     'Published alt text must remain frozen until republishing.',
   );
@@ -170,8 +167,7 @@ try {
   await db
     .updateTable('writing_localizations')
     .set({
-      editor_document:
-        documentWith(unlinkedAssetId) as unknown as Record<string, unknown>,
+      editor_document: documentWith(unlinkedAssetId) as unknown as Record<string, unknown>,
       updated_at: new Date(),
     })
     .where('writing_id', '=', writingId)

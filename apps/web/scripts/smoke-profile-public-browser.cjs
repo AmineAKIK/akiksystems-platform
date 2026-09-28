@@ -233,10 +233,11 @@ async function seedProfile() {
     const profileId = profileResult.rows[0]?.id;
     assert.ok(profileId, 'Profile singleton must exist before browser qualification.');
 
-    await client.query(
-      'insert into technologies (id, slug, name) values ($1, $2, $3)',
-      [technologyId, technologySlug, 'React'],
-    );
+    await client.query('insert into technologies (id, slug, name) values ($1, $2, $3)', [
+      technologyId,
+      technologySlug,
+      'React',
+    ]);
 
     const snapshot = {
       version: 1,
@@ -286,10 +287,9 @@ async function seedProfile() {
 async function cleanup(profileId) {
   const client = await pool.connect();
   try {
-    await client.query(
-      "delete from profile_publications where profile_id = $1 and locale = 'en'",
-      [profileId],
-    );
+    await client.query("delete from profile_publications where profile_id = $1 and locale = 'en'", [
+      profileId,
+    ]);
     await client.query('delete from technologies where id = $1', [technologyId]);
   } finally {
     client.release();
@@ -333,8 +333,7 @@ async function measure(page) {
       const match = document.querySelector(selector);
       return match instanceof HTMLElement ? match : null;
     };
-    const px = (target, property) =>
-      Number.parseFloat(getComputedStyle(target)[property]);
+    const px = (target, property) => Number.parseFloat(getComputedStyle(target)[property]);
 
     const container = element('.aks-profile .aks-container[data-width="wide"]');
     const hero = element('.aks-profile-hero');
@@ -347,9 +346,7 @@ async function measure(page) {
     const stackCategory = element('.aks-profile-stack-category');
     const guidanceMap = element('.aks-profile-guidance-map');
     const guidanceTitle = element('.aks-profile-guidance-intro h2');
-    const guidanceIntroduction = element(
-      '.aks-profile-guidance-intro .aks-profile-body-copy',
-    );
+    const guidanceIntroduction = element('.aks-profile-guidance-intro .aks-profile-body-copy');
     const guidanceConclusion = element('.aks-profile-guidance-conclusion');
     const capabilityTabs = element('.aks-profile-capability-tabs');
     const capabilityTab = element('.aks-profile-capability-tab');
@@ -417,9 +414,7 @@ async function measure(page) {
       guidanceTitleFontSize: px(guidanceTitle, 'fontSize'),
       guidanceIntroductionFontSize: px(guidanceIntroduction, 'fontSize'),
       guidanceConclusionFontSize:
-        guidanceConclusion === null
-          ? null
-          : px(guidanceConclusion, 'fontSize'),
+        guidanceConclusion === null ? null : px(guidanceConclusion, 'fontSize'),
       capabilityColumns: getComputedStyle(capabilityTabs).gridTemplateColumns,
       capabilityTabMinHeight: px(capabilityTab, 'minHeight'),
       capabilityIconWidth: capabilityIcon.getBoundingClientRect().width,
@@ -436,9 +431,7 @@ async function measure(page) {
       emblemMapDisplay: getComputedStyle(emblemMap).display,
       emblemMobileDisplay: getComputedStyle(emblemMobile).display,
       emblemMobileMarkWidth:
-        emblemMobileMark === null
-          ? null
-          : emblemMobileMark.getBoundingClientRect().width,
+        emblemMobileMark === null ? null : emblemMobileMark.getBoundingClientRect().width,
       ctaPaddingTop: px(cta, 'paddingTop'),
       ctaPaddingBottom: px(cta, 'paddingBottom'),
       overflowing: [...document.querySelectorAll('body *')]
@@ -449,17 +442,13 @@ async function measure(page) {
             className:
               element instanceof HTMLElement
                 ? element.className
-                : element.getAttribute('class') ?? '',
+                : (element.getAttribute('class') ?? ''),
             left: rect.left,
             right: rect.right,
             width: rect.width,
           };
         })
-        .filter(
-          (entry) =>
-            entry.width > 0 &&
-            (entry.left < -1 || entry.right > viewportWidth + 1),
-        )
+        .filter((entry) => entry.width > 0 && (entry.left < -1 || entry.right > viewportWidth + 1))
         .slice(0, 12),
     };
   });
@@ -491,9 +480,7 @@ async function assertViewport(browser, viewport, name, mobile) {
     assert.equal(
       metrics.scrollWidth <= metrics.viewportWidth,
       true,
-      name +
-        ' must not overflow horizontally. offenders=' +
-        JSON.stringify(metrics.overflowing),
+      name + ' must not overflow horizontally. offenders=' + JSON.stringify(metrics.overflowing),
     );
 
     assert.equal(
@@ -529,28 +516,35 @@ async function assertViewport(browser, viewport, name, mobile) {
     await stackTrigger.click();
     assert.equal(await stackTrigger.getAttribute('aria-expanded'), 'true');
 
-    const management = page.locator(
-      '.aks-profile-guidance-node[data-guidance-key="management"]',
-    );
+    const management = page.locator('.aks-profile-guidance-node[data-guidance-key="management"]');
     await management.click();
     assert.equal(await management.getAttribute('aria-pressed'), 'true');
-    await page.locator('.aks-profile-guidance-detail').getByRole('heading', {
-      name: 'Management',
-    }).waitFor();
+    await page
+      .locator('.aks-profile-guidance-detail')
+      .getByRole('heading', {
+        name: 'Management',
+      })
+      .waitFor();
 
     const capabilityTabs = page.locator('.aks-profile-capability-tab');
     await capabilityTabs.nth(1).click();
     assert.equal(await capabilityTabs.nth(1).getAttribute('aria-selected'), 'true');
-    await page.locator('#profile-capability-panel').getByRole('heading', {
-      name: 'Design',
-    }).waitFor();
+    await page
+      .locator('#profile-capability-panel')
+      .getByRole('heading', {
+        name: 'Design',
+      })
+      .waitFor();
 
     const systemicTabs = page.locator('.aks-profile-systemic-tab');
     await systemicTabs.nth(1).click();
     assert.equal(await systemicTabs.nth(1).getAttribute('aria-selected'), 'true');
-    await page.locator('#profile-systemic-panel').getByRole('heading', {
-      name: 'Widen the view',
-    }).waitFor();
+    await page
+      .locator('#profile-systemic-panel')
+      .getByRole('heading', {
+        name: 'Widen the view',
+      })
+      .waitFor();
 
     assert.equal(
       metrics.crossCuttingIconDisplay,
@@ -604,9 +598,7 @@ async function assertViewport(browser, viewport, name, mobile) {
       assertClose(metrics.ctaPaddingTop, 56, 0.5, name + ' CTA top padding');
       assertClose(metrics.ctaPaddingBottom, 56, 0.5, name + ' CTA bottom padding');
 
-      const columnCount = metrics.capabilityColumns
-        .split(' ')
-        .filter(Boolean).length;
+      const columnCount = metrics.capabilityColumns.split(' ').filter(Boolean).length;
       assert.equal(columnCount, 4, name + ' capability rail must use four columns.');
     } else {
       assertClose(metrics.containerWidth, 1100, 1, name + ' content width');
@@ -647,9 +639,7 @@ async function assertViewport(browser, viewport, name, mobile) {
       assertClose(metrics.ctaPaddingTop, 120, 0.5, name + ' CTA top padding');
       assertClose(metrics.ctaPaddingBottom, 120, 0.5, name + ' CTA bottom padding');
 
-      const columnCount = metrics.capabilityColumns
-        .split(' ')
-        .filter(Boolean).length;
+      const columnCount = metrics.capabilityColumns.split(' ').filter(Boolean).length;
       assert.equal(columnCount, 8, name + ' capability rail must use eight columns.');
     }
   } finally {
@@ -687,18 +677,8 @@ async function assertReducedMotion(browser) {
     await waitForServer();
 
     browser = await chromium.launch({ headless: true });
-    await assertViewport(
-      browser,
-      { width: 390, height: 844 },
-      '390px Profile',
-      true,
-    );
-    await assertViewport(
-      browser,
-      { width: 1440, height: 1000 },
-      '1440px Profile',
-      false,
-    );
+    await assertViewport(browser, { width: 390, height: 844 }, '390px Profile', true);
+    await assertViewport(browser, { width: 1440, height: 1000 }, '1440px Profile', false);
     await assertReducedMotion(browser);
 
     console.log(
@@ -707,10 +687,7 @@ async function assertReducedMotion(browser) {
   } finally {
     if (browser) await browser.close();
     server.kill('SIGTERM');
-    await Promise.race([
-      new Promise((resolve) => server.once('exit', resolve)),
-      sleep(2000),
-    ]);
+    await Promise.race([new Promise((resolve) => server.once('exit', resolve)), sleep(2000)]);
     if (profileId) await cleanup(profileId);
     await pool.end();
   }

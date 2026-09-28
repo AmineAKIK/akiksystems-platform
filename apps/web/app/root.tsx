@@ -28,14 +28,16 @@ export function Layout({ children }: { children: ReactNode }) {
   const locale = localeFromPathname(location.pathname);
 
   return (
-    <html lang={locale ?? 'und'}>
+    <html lang={locale ?? 'en'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#11110f" />
         <link href="/brand/AKSYS.svg" rel="icon" type="image/svg+xml" />
+        <link href="/favicon.png" rel="icon" type="image/png" />
         <link href="/brand/AKSYS.svg" rel="shortcut icon" type="image/svg+xml" />
         <link href="/brand/AKSYS.svg" rel="mask-icon" color="#11110f" />
+        <link href="/manifest.webmanifest" rel="manifest" />
         <Meta />
         <Links />
       </head>
@@ -58,9 +60,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
   let status = 500;
   let title = locale === 'fr' ? 'Erreur inattendue' : 'Unexpected error';
   let details =
-    locale === 'fr'
-      ? 'La requête n’a pas pu être traitée.'
-      : 'The request could not be completed.';
+    locale === 'fr' ? 'La requête n’a pas pu être traitée.' : 'The request could not be completed.';
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
@@ -72,9 +72,7 @@ export function ErrorBoundary({ error }: { error: unknown }) {
           ? 'La page AkikSystems demandée n’existe pas.'
           : 'The requested AkikSystems page does not exist.';
     } else {
-      title =
-        error.statusText ||
-        (locale === 'fr' ? 'Erreur de requête' : 'Request error');
+      title = error.statusText || (locale === 'fr' ? 'Erreur de requête' : 'Request error');
       details = error.statusText || details;
     }
   } else if (import.meta.env.DEV && error instanceof Error) {

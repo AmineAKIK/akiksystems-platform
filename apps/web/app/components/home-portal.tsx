@@ -1,8 +1,8 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type MouseEvent,
   type PointerEvent,
 } from 'react';
@@ -15,10 +15,7 @@ import {
 } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
-import {
-  homeDestinationOrder,
-  homeDestinationPresentation,
-} from './home-portal-content';
+import { homeDestinationOrder, homeDestinationPresentation } from './home-portal-content';
 import {
   homeDescriptionEvent,
   type HomeDescriptionDetail,
@@ -93,9 +90,7 @@ function ParisContext({ locale }: { locale: Locale }) {
   const localeName = locale === 'fr' ? 'Français' : 'English';
   const alternateName = alternateLocale === 'fr' ? 'français' : 'English';
   const parisContext =
-    now === null
-      ? { context: '--:--:-- · PARIS UTC', date: '—' }
-      : formatParisContext(now, locale);
+    now === null ? { context: '--:--:-- · PARIS UTC', date: '—' } : formatParisContext(now, locale);
 
   return (
     <div className="aks-home-meta">
@@ -104,9 +99,7 @@ function ParisContext({ locale }: { locale: Locale }) {
         className="aks-home-clock"
       >
         <time dateTime={now?.toISOString()}>
-          <span className="aks-home-clock-context">
-            {parisContext.context}
-          </span>
+          <span className="aks-home-clock-context">{parisContext.context}</span>
           <span className="aks-home-clock-date">{parisContext.date}</span>
         </time>
       </p>
@@ -144,11 +137,7 @@ function HomeEmblem() {
       viewBox="0 0 2048 2048"
     >
       {emblemGroups.map((group) => (
-        <use
-          fill="currentColor"
-          href={'/brand/AKSYS.svg#' + group}
-          key={group}
-        />
+        <use fill="currentColor" href={'/brand/AKSYS.svg#' + group} key={group} />
       ))}
     </svg>
   );
@@ -187,9 +176,7 @@ function MatrixWordmark() {
       const elapsed = now - startedAt;
       const animationDuration = 980;
       const characterDuration = 525;
-      const characterDelay =
-        (animationDuration - characterDuration) /
-        (wordmarkTarget.length - 1);
+      const characterDelay = (animationDuration - characterDuration) / (wordmarkTarget.length - 1);
       const complete = elapsed >= animationDuration;
 
       if (now - lastMutationAt >= 34 || complete) {
@@ -220,12 +207,8 @@ function MatrixWordmark() {
         <span aria-hidden="true" className="aks-home-wordmark-matrix">
           {Array.from(wordmarkTarget).map((character, index) => (
             <span className="aks-home-wordmark-slot" key={index}>
-              <span className="aks-home-wordmark-slot-measure">
-                {character}
-              </span>
-              <span className="aks-home-wordmark-glyph">
-                {display[index]}
-              </span>
+              <span className="aks-home-wordmark-slot-measure">{character}</span>
+              <span className="aks-home-wordmark-glyph">{display[index]}</span>
             </span>
           ))}
         </span>
@@ -240,8 +223,8 @@ function MatrixWordmark() {
           <span
             aria-hidden="true"
             className="aks-home-scale-letter"
+            data-scale-index={index}
             key={index}
-            style={{ '--aks-home-scale-index': index } as CSSProperties}
           >
             {character === ' ' ? '\u00a0' : character}
           </span>
@@ -256,47 +239,45 @@ export function HomePortal({ locale }: HomePortalProps) {
   const navigate = useNavigate();
   const [preview, setPreview] = useState<HomeDescriptionDetail | null>(null);
   const [previewActive, setPreviewActive] = useState(false);
-  const [activeDestination, setActiveDestination] =
-    useState<GlobalDestinationId | null>(null);
+  const [activeDestination, setActiveDestination] = useState<GlobalDestinationId | null>(null);
   const focusedPreview = useRef<HomeDescriptionDetail | null>(null);
   const pointedPreview = useRef<HomeDescriptionDetail | null>(null);
   const selectedPreview = useRef<HomeDescriptionDetail | null>(null);
   const lastPointerType = useRef<string | null>(null);
+  const navigationTimer = useRef<number | null>(null);
 
-  const restorePreview = () => {
-    const next =
-      pointedPreview.current ??
-      focusedPreview.current ??
-      selectedPreview.current;
+  const restorePreview = useCallback(() => {
+    const next = pointedPreview.current ?? focusedPreview.current ?? selectedPreview.current;
     setPreview(next);
     setPreviewActive(next !== null);
-  };
+  }, []);
 
-  const updatePreview = (
-    channel: HomeDescriptionEventDetail['channel'],
-    content: HomeDescriptionDetail | null,
-  ) => {
-    if (channel === 'pointer') pointedPreview.current = content;
-    else focusedPreview.current = content;
-    restorePreview();
-  };
+  const updatePreview = useCallback(
+    (channel: HomeDescriptionEventDetail['channel'], content: HomeDescriptionDetail | null) => {
+      if (channel === 'pointer') pointedPreview.current = content;
+      else focusedPreview.current = content;
+      restorePreview();
+    },
+    [restorePreview],
+  );
 
-  const destinationPreview = (id: GlobalDestinationId) => ({
-    description: homeDestinationPresentation[id].description[locale],
-    label: homeDestinationPresentation[id].label[locale],
-  });
+  const destinationPreview = useCallback(
+    (id: GlobalDestinationId) => ({
+      description: homeDestinationPresentation[id].description[locale],
+      label: homeDestinationPresentation[id].label[locale],
+    }),
+    [locale],
+  );
 
-  const clearTouchSelection = () => {
+  const clearTouchSelection = useCallback(() => {
     selectedPreview.current = null;
     setActiveDestination(null);
     restorePreview();
-  };
+  }, [restorePreview]);
 
   useEffect(() => {
     const receiveDescription = (event: Event) => {
-      const { channel, content } = (
-        event as CustomEvent<HomeDescriptionEventDetail>
-      ).detail;
+      const { channel, content } = (event as CustomEvent<HomeDescriptionEventDetail>).detail;
       updatePreview(channel, content);
     };
 
@@ -319,25 +300,23 @@ export function HomePortal({ locale }: HomePortalProps) {
       window.removeEventListener(homeDescriptionEvent, receiveDescription);
       document.removeEventListener('pointerdown', clearSelectionOutsidePrimary);
     };
-  });
+  }, [clearTouchSelection, updatePreview]);
 
-  const followDestination = (
-    event: MouseEvent<HTMLAnchorElement>,
-    id: GlobalDestinationId,
-  ) => {
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
+  useEffect(
+    () => () => {
+      if (navigationTimer.current !== null) {
+        window.clearTimeout(navigationTimer.current);
+      }
+    },
+    [],
+  );
+
+  const followDestination = (event: MouseEvent<HTMLAnchorElement>, id: GlobalDestinationId) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
       return;
     }
 
-    const tactile =
-      lastPointerType.current === 'touch' ||
-      lastPointerType.current === 'pen';
+    const tactile = lastPointerType.current === 'touch' || lastPointerType.current === 'pen';
 
     if (tactile && activeDestination !== id) {
       event.preventDefault();
@@ -351,10 +330,13 @@ export function HomePortal({ locale }: HomePortalProps) {
 
     event.preventDefault();
     setActiveDestination(id);
-    window.setTimeout(
-      () => navigate(destinationHref(id, locale)),
-      160,
-    );
+    if (navigationTimer.current !== null) {
+      window.clearTimeout(navigationTimer.current);
+    }
+    navigationTimer.current = window.setTimeout(() => {
+      navigationTimer.current = null;
+      navigate(destinationHref(id, locale));
+    }, 160);
   };
 
   return (
@@ -362,28 +344,20 @@ export function HomePortal({ locale }: HomePortalProps) {
       <ParisContext locale={locale} />
 
       <section aria-labelledby="aks-home-title" className="aks-home-portal">
-        <nav
-          aria-label={dictionary.home.destinationsLabel}
-          className="aks-home-orbit"
-        >
+        <nav aria-label={dictionary.home.destinationsLabel} className="aks-home-orbit">
           {homeDestinationOrder.map((id, index) => {
             const destination = destinationById(id);
             const presentation = homeDestinationPresentation[id];
 
             return (
               <Link
-                className={
-                  'aks-home-door' +
-                  (activeDestination === id ? ' is-active' : '')
-                }
+                className={'aks-home-door' + (activeDestination === id ? ' is-active' : '')}
                 data-destination={id}
                 data-home-preview-target="primary"
                 data-preview-copy={presentation.description[locale]}
                 key={id}
                 onBlur={() => updatePreview('focus', null)}
-                onFocus={() =>
-                  updatePreview('focus', destinationPreview(id))
-                }
+                onFocus={() => updatePreview('focus', destinationPreview(id))}
                 onClick={(event) => followDestination(event, id)}
                 onKeyDown={() => {
                   lastPointerType.current = null;
@@ -392,31 +366,21 @@ export function HomePortal({ locale }: HomePortalProps) {
                   lastPointerType.current = event.pointerType;
                 }}
                 onPointerEnter={(event) => {
-                  if (
-                    event.pointerType !== 'touch' &&
-                    event.pointerType !== 'pen'
-                  ) {
+                  if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
                     updatePreview('pointer', destinationPreview(id));
                   }
                 }}
                 onPointerLeave={(event) => {
-                  if (
-                    event.pointerType !== 'touch' &&
-                    event.pointerType !== 'pen'
-                  ) {
+                  if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
                     updatePreview('pointer', null);
                   }
                 }}
+                data-home-order={index}
                 prefetch="intent"
-                style={{ '--aks-home-order': index } as CSSProperties}
                 to={destinationHref(destination.id, locale)}
               >
-                <span className="aks-home-door-label">
-                  {presentation.label[locale]}
-                </span>
-                <span className="aks-home-door-summary">
-                  {presentation.summary[locale]}
-                </span>
+                <span className="aks-home-door-label">{presentation.label[locale]}</span>
+                <span className="aks-home-door-summary">{presentation.summary[locale]}</span>
               </Link>
             );
           })}

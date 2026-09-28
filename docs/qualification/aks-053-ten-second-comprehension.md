@@ -40,12 +40,12 @@ For a deep-link exposure, add:
 ## Capture sheet
 
 | Participant | Device/view | “What is AkikSystems?” verbatim | Remembered destinations | Perceived current location | Unclear / misleading cues |
-| --- | --- | --- | --- | --- | --- |
-| P01 |  |  |  |  |  |
-| P02 |  |  |  |  |  |
-| P03 |  |  |  |  |  |
-| P04 |  |  |  |  |  |
-| P05 |  |  |  |  |  |
+| ----------- | ----------- | ------------------------------- | ----------------------- | -------------------------- | ------------------------- |
+| P01         |             |                                 |                         |                            |                           |
+| P02         |             |                                 |                         |                            |                           |
+| P03         |             |                                 |                         |                            |                           |
+| P04         |             |                                 |                         |                            |                           |
+| P05         |             |                                 |                         |                            |                           |
 
 ## Synthesis
 

@@ -1,11 +1,6 @@
-export const workWithUsApproachStepKeys = [
-  'understand',
-  'structure',
-  'build',
-] as const;
+export const workWithUsApproachStepKeys = ['understand', 'structure', 'build'] as const;
 
-export type WorkWithUsApproachStepKey =
-  (typeof workWithUsApproachStepKeys)[number];
+export type WorkWithUsApproachStepKey = (typeof workWithUsApproachStepKeys)[number];
 
 export interface WorkWithUsApproachStepContent {
   key: WorkWithUsApproachStepKey;
@@ -67,10 +62,7 @@ function nullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
-function parseStep(
-  value: unknown,
-  key: WorkWithUsApproachStepKey,
-): WorkWithUsApproachStepContent {
+function parseStep(value: unknown, key: WorkWithUsApproachStepKey): WorkWithUsApproachStepContent {
   const source = record(value);
   return {
     key,
@@ -125,9 +117,7 @@ export function emptyWorkWithUsContent(): WorkWithUsEditableContent {
   };
 }
 
-export function parseWorkWithUsContent(
-  value: unknown,
-): WorkWithUsEditableContent {
+export function parseWorkWithUsContent(value: unknown): WorkWithUsEditableContent {
   const root = record(value);
   const hero = record(root.hero);
   const approach = record(root.approach);
@@ -137,9 +127,7 @@ export function parseWorkWithUsContent(
   const rawSteps = Array.isArray(approach.steps) ? approach.steps : [];
 
   const step = (key: WorkWithUsApproachStepKey) => {
-    const candidate = rawSteps.find(
-      (value) => record(value).key === key,
-    );
+    const candidate = rawSteps.find((value) => record(value).key === key);
     return parseStep(candidate, key);
   };
 

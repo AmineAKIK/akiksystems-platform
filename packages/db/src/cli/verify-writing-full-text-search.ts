@@ -4,10 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 
 import { createDatabase } from '../database.js';
-import {
-  publishWritingLocalization,
-  searchPublishedWritings,
-} from '../writing-publication.js';
+import { publishWritingLocalization, searchPublishedWritings } from '../writing-publication.js';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required.');
@@ -137,9 +134,7 @@ try {
     query: '"publication index"',
   });
   assert.deepEqual(
-    phrase
-      .filter((writing) => ids.includes(writing.writingId))
-      .map((writing) => writing.writingId),
+    phrase.filter((writing) => ids.includes(writing.writingId)).map((writing) => writing.writingId),
     [bodyMatch],
   );
 

@@ -11,20 +11,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('entity_id', 'text', (column) => column.notNull())
     .addColumn('system_id', 'uuid')
     .addColumn('locale', 'text')
-    .addColumn('metadata', 'jsonb', (column) =>
-      column.notNull().defaultTo(sql`'{}'::jsonb`),
-    )
-    .addColumn('created_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('metadata', 'jsonb', (column) => column.notNull().defaultTo(sql`'{}'::jsonb`))
+    .addColumn('created_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addCheckConstraint(
       'admin_audit_events_locale_check',
       sql`locale is null or locale in ('en', 'fr')`,
     )
-    .addCheckConstraint(
-      'admin_audit_events_action_check',
-      sql`length(trim(action)) > 0`,
-    )
+    .addCheckConstraint('admin_audit_events_action_check', sql`length(trim(action)) > 0`)
     .addCheckConstraint(
       'admin_audit_events_entity_check',
       sql`length(trim(entity_type)) > 0 and length(trim(entity_id)) > 0`,
@@ -73,7 +66,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
 export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('admin_audit_events').execute();
-  await sql`drop function if exists prevent_admin_audit_event_mutation()`.execute(
-    db,
-  );
+  await sql`drop function if exists prevent_admin_audit_event_mutation()`.execute(db);
 }

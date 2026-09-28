@@ -27,18 +27,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locale', 'text', (column) => column.notNull())
     .addColumn('slug', 'text', (column) => column.notNull())
     .addColumn('snapshot', 'jsonb', (column) => column.notNull())
-    .addColumn('published_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
-    .addColumn('updated_at', 'timestamptz', (column) =>
-      column.notNull().defaultTo(sql`now()`),
-    )
+    .addColumn('published_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .addPrimaryKeyConstraint('system_publications_pkey', ['system_id', 'locale'])
     .addUniqueConstraint('system_publications_locale_slug_key', ['locale', 'slug'])
-    .addCheckConstraint(
-      'system_publications_locale_check',
-      sql`locale in ('en', 'fr')`,
-    )
+    .addCheckConstraint('system_publications_locale_check', sql`locale in ('en', 'fr')`)
     .execute();
 
   await sql`

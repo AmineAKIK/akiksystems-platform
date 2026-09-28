@@ -14,18 +14,9 @@ import type {
   WritingKind,
   WritingLifecycle,
 } from '@akiksystems/core';
-import type {
-  ColumnType,
-  Insertable,
-  Selectable,
-  Updateable,
-} from 'kysely';
+import type { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 
-export type TimestampColumn = ColumnType<
-  Date,
-  Date | string | undefined,
-  Date | string
->;
+export type TimestampColumn = ColumnType<Date, Date | string | undefined, Date | string>;
 
 export type NullableTimestampColumn = ColumnType<
   Date | null,
@@ -33,11 +24,7 @@ export type NullableTimestampColumn = ColumnType<
   Date | string | null
 >;
 
-export type DefaultedColumn<Value> = ColumnType<
-  Value,
-  Value | undefined,
-  Value
->;
+export type DefaultedColumn<Value> = ColumnType<Value, Value | undefined, Value>;
 
 export type ProfileLanguageCode = 'fr' | 'en' | 'ar';
 export type ProfileContactKind = 'linkedin' | 'github' | 'email' | 'phone';
@@ -199,12 +186,7 @@ export interface WorkWithUsSystemsTable {
 }
 
 export type WorkWithUsInquiryNotificationState =
-  | 'pending'
-  | 'queued'
-  | 'sending'
-  | 'sent'
-  | 'failed'
-  | 'blocked';
+  'pending' | 'queued' | 'sending' | 'sent' | 'failed' | 'blocked';
 
 export interface WorkWithUsInquiriesTable {
   id: string;
@@ -580,19 +562,13 @@ export type ProfileStackGroupRow = Selectable<ProfileStackGroupsTable>;
 export type NewProfileStackGroupRow = Insertable<ProfileStackGroupsTable>;
 export type ProfileStackGroupUpdate = Updateable<ProfileStackGroupsTable>;
 
-export type ProfileStackGroupLocalizationRow =
-  Selectable<ProfileStackGroupLocalizationsTable>;
-export type NewProfileStackGroupLocalizationRow =
-  Insertable<ProfileStackGroupLocalizationsTable>;
-export type ProfileStackGroupLocalizationUpdate =
-  Updateable<ProfileStackGroupLocalizationsTable>;
+export type ProfileStackGroupLocalizationRow = Selectable<ProfileStackGroupLocalizationsTable>;
+export type NewProfileStackGroupLocalizationRow = Insertable<ProfileStackGroupLocalizationsTable>;
+export type ProfileStackGroupLocalizationUpdate = Updateable<ProfileStackGroupLocalizationsTable>;
 
-export type ProfileStackGroupTechnologyRow =
-  Selectable<ProfileStackGroupTechnologiesTable>;
-export type NewProfileStackGroupTechnologyRow =
-  Insertable<ProfileStackGroupTechnologiesTable>;
-export type ProfileStackGroupTechnologyUpdate =
-  Updateable<ProfileStackGroupTechnologiesTable>;
+export type ProfileStackGroupTechnologyRow = Selectable<ProfileStackGroupTechnologiesTable>;
+export type NewProfileStackGroupTechnologyRow = Insertable<ProfileStackGroupTechnologiesTable>;
+export type ProfileStackGroupTechnologyUpdate = Updateable<ProfileStackGroupTechnologiesTable>;
 
 export type WorkWithUsPageRow = Selectable<WorkWithUsPagesTable>;
 export type NewWorkWithUsPageRow = Insertable<WorkWithUsPagesTable>;
@@ -613,15 +589,11 @@ export type WorkWithUsSystemUpdate = Updateable<WorkWithUsSystemsTable>;
 export type WorkWithUsInquiryRow = Selectable<WorkWithUsInquiriesTable>;
 export type NewWorkWithUsInquiryRow = Insertable<WorkWithUsInquiriesTable>;
 
-export type WorkWithUsInquirySettingsRow =
-  Selectable<WorkWithUsInquirySettingsTable>;
-export type NewWorkWithUsInquirySettingsRow =
-  Insertable<WorkWithUsInquirySettingsTable>;
+export type WorkWithUsInquirySettingsRow = Selectable<WorkWithUsInquirySettingsTable>;
+export type NewWorkWithUsInquirySettingsRow = Insertable<WorkWithUsInquirySettingsTable>;
 
-export type WorkWithUsInquiryNotificationRow =
-  Selectable<WorkWithUsInquiryNotificationsTable>;
-export type NewWorkWithUsInquiryNotificationRow =
-  Insertable<WorkWithUsInquiryNotificationsTable>;
+export type WorkWithUsInquiryNotificationRow = Selectable<WorkWithUsInquiryNotificationsTable>;
+export type NewWorkWithUsInquiryNotificationRow = Insertable<WorkWithUsInquiryNotificationsTable>;
 
 export type TechnologyRow = Selectable<TechnologiesTable>;
 export type NewTechnologyRow = Insertable<TechnologiesTable>;
@@ -631,12 +603,9 @@ export type SystemTechnologyRow = Selectable<SystemTechnologiesTable>;
 export type NewSystemTechnologyRow = Insertable<SystemTechnologiesTable>;
 export type SystemTechnologyUpdate = Updateable<SystemTechnologiesTable>;
 
-export type SystemTechnologyLocalizationRow =
-  Selectable<SystemTechnologyLocalizationsTable>;
-export type NewSystemTechnologyLocalizationRow =
-  Insertable<SystemTechnologyLocalizationsTable>;
-export type SystemTechnologyLocalizationUpdate =
-  Updateable<SystemTechnologyLocalizationsTable>;
+export type SystemTechnologyLocalizationRow = Selectable<SystemTechnologyLocalizationsTable>;
+export type NewSystemTechnologyLocalizationRow = Insertable<SystemTechnologyLocalizationsTable>;
+export type SystemTechnologyLocalizationUpdate = Updateable<SystemTechnologyLocalizationsTable>;
 
 export type TrainingRow = Selectable<TrainingsTable>;
 export type NewTrainingRow = Insertable<TrainingsTable>;
@@ -666,19 +635,13 @@ export type LearningArtifactRow = Selectable<LearningArtifactsTable>;
 export type NewLearningArtifactRow = Insertable<LearningArtifactsTable>;
 export type LearningArtifactUpdate = Updateable<LearningArtifactsTable>;
 
-export type LearningArtifactLocalizationRow =
-  Selectable<LearningArtifactLocalizationsTable>;
-export type NewLearningArtifactLocalizationRow =
-  Insertable<LearningArtifactLocalizationsTable>;
-export type LearningArtifactLocalizationUpdate =
-  Updateable<LearningArtifactLocalizationsTable>;
+export type LearningArtifactLocalizationRow = Selectable<LearningArtifactLocalizationsTable>;
+export type NewLearningArtifactLocalizationRow = Insertable<LearningArtifactLocalizationsTable>;
+export type LearningArtifactLocalizationUpdate = Updateable<LearningArtifactLocalizationsTable>;
 
-export type LearningArtifactPublicationRow =
-  Selectable<LearningArtifactPublicationsTable>;
-export type NewLearningArtifactPublicationRow =
-  Insertable<LearningArtifactPublicationsTable>;
-export type LearningArtifactPublicationUpdate =
-  Updateable<LearningArtifactPublicationsTable>;
+export type LearningArtifactPublicationRow = Selectable<LearningArtifactPublicationsTable>;
+export type NewLearningArtifactPublicationRow = Insertable<LearningArtifactPublicationsTable>;
+export type LearningArtifactPublicationUpdate = Updateable<LearningArtifactPublicationsTable>;
 
 export type WritingRow = Selectable<WritingsTable>;
 export type NewWritingRow = Insertable<WritingsTable>;
@@ -736,12 +699,9 @@ export type ExperienceRow = Selectable<ExperiencesTable>;
 export type NewExperienceRow = Insertable<ExperiencesTable>;
 export type ExperienceUpdate = Updateable<ExperiencesTable>;
 
-export type ExperienceLocalizationRow =
-  Selectable<ExperienceLocalizationsTable>;
-export type NewExperienceLocalizationRow =
-  Insertable<ExperienceLocalizationsTable>;
-export type ExperienceLocalizationUpdate =
-  Updateable<ExperienceLocalizationsTable>;
+export type ExperienceLocalizationRow = Selectable<ExperienceLocalizationsTable>;
+export type NewExperienceLocalizationRow = Insertable<ExperienceLocalizationsTable>;
+export type ExperienceLocalizationUpdate = Updateable<ExperienceLocalizationsTable>;
 
 export type SystemExperienceRow = Selectable<SystemExperiencesTable>;
 export type NewSystemExperienceRow = Insertable<SystemExperiencesTable>;

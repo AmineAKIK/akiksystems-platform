@@ -14,12 +14,10 @@ export interface WritingSeoInput {
   categories: Array<{ name: string }>;
   tags: Array<{ name: string }>;
   systems: Array<{ title: string; href: string }>;
-  alternate:
-    | {
-        locale: PlatformLocale;
-        slug: string;
-      }
-    | null;
+  alternate: {
+    locale: PlatformLocale;
+    slug: string;
+  } | null;
 }
 
 export function writingHref(locale: PlatformLocale, slug: string): string {
@@ -61,9 +59,7 @@ export function buildWritingStructuredData(writing: WritingSeoInput) {
     author: {
       '@type': 'Person',
       name: 'Amine AKIK',
-      url: publicCanonicalUrl(
-        writing.locale === 'fr' ? '/fr/profil' : '/en/profile',
-      ),
+      url: publicCanonicalUrl(writing.locale === 'fr' ? '/fr/profil' : '/en/profile'),
     },
     publisher: {
       '@type': 'Organization',
@@ -110,12 +106,10 @@ export function buildWritingMeta(writing: WritingSeoInput): MetaDescriptor[] {
   descriptors.push(
     { property: 'article:published_time', content: writing.publishedAt },
     { property: 'article:section', content: writingKindLabel(writing.kind) },
-    ...writing.tags.map(
-      (tag): MetaDescriptor => ({
-        property: 'article:tag',
-        content: tag.name,
-      }),
-    ),
+    ...writing.tags.map((tag): MetaDescriptor => ({
+      property: 'article:tag',
+      content: tag.name,
+    })),
     { 'script:ld+json': buildWritingStructuredData(writing) },
   );
 

@@ -26,10 +26,7 @@ const assetStorageSchema = z.object({
     .string()
     .trim()
     .url('ENDPOINT must be a valid URL.')
-    .refine(
-      (value) => value.startsWith('https://'),
-      'ENDPOINT must use the https:// scheme.',
-    ),
+    .refine((value) => value.startsWith('https://'), 'ENDPOINT must use the https:// scheme.'),
   ACCESS_KEY_ID: z.string().trim().min(1, 'ACCESS_KEY_ID must not be empty.'),
   SECRET_ACCESS_KEY: z.string().min(1, 'SECRET_ACCESS_KEY must not be empty.'),
 });
@@ -57,9 +54,15 @@ const workerSchema = z
     if (!configured) return;
 
     for (const [key, message] of [
-      ['WORK_WITH_US_EMAIL_PROVIDER', 'WORK_WITH_US_EMAIL_PROVIDER is required when email transport is configured.'],
+      [
+        'WORK_WITH_US_EMAIL_PROVIDER',
+        'WORK_WITH_US_EMAIL_PROVIDER is required when email transport is configured.',
+      ],
       ['RESEND_API_KEY', 'RESEND_API_KEY is required when email transport is configured.'],
-      ['WORK_WITH_US_EMAIL_FROM', 'WORK_WITH_US_EMAIL_FROM is required when email transport is configured.'],
+      [
+        'WORK_WITH_US_EMAIL_FROM',
+        'WORK_WITH_US_EMAIL_FROM is required when email transport is configured.',
+      ],
     ]) {
       if (value[key] === undefined) {
         context.addIssue({ code: 'custom', path: [key], message });

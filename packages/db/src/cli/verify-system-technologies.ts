@@ -132,11 +132,8 @@ try {
     'System ↔ Technology evidence must remain independently localized.',
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_technology_localizations_locale_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_technology_localizations_locale_check', () =>
+    sql`
         insert into system_technology_localizations (
           system_id,
           technology_id,
@@ -172,11 +169,7 @@ try {
 
   const ordered = await db
     .selectFrom('system_technologies')
-    .innerJoin(
-      'technologies',
-      'technologies.id',
-      'system_technologies.technology_id',
-    )
+    .innerJoin('technologies', 'technologies.id', 'system_technologies.technology_id')
     .select(['technologies.slug', 'system_technologies.position'])
     .where('system_technologies.system_id', '=', firstSystemId)
     .orderBy('system_technologies.position')
@@ -190,53 +183,41 @@ try {
     ],
   );
 
-  await expectPostgresError(
-    '23505',
-    'technologies_slug_key',
-    () =>
-      db
-        .insertInto('technologies')
-        .values({
-          id: duplicateSlugId,
-          slug: 'react',
-          name: 'React duplicate',
-        })
-        .execute(),
+  await expectPostgresError('23505', 'technologies_slug_key', () =>
+    db
+      .insertInto('technologies')
+      .values({
+        id: duplicateSlugId,
+        slug: 'react',
+        name: 'React duplicate',
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23505',
-    'system_technologies_pkey',
-    () =>
-      db
-        .insertInto('system_technologies')
-        .values({
-          system_id: firstSystemId,
-          technology_id: reactId,
-          position: 2,
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_technologies_pkey', () =>
+    db
+      .insertInto('system_technologies')
+      .values({
+        system_id: firstSystemId,
+        technology_id: reactId,
+        position: 2,
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23505',
-    'system_technologies_system_position_key',
-    () =>
-      db
-        .insertInto('system_technologies')
-        .values({
-          system_id: firstSystemId,
-          technology_id: nodeId,
-          position: 1,
-        })
-        .execute(),
+  await expectPostgresError('23505', 'system_technologies_system_position_key', () =>
+    db
+      .insertInto('system_technologies')
+      .values({
+        system_id: firstSystemId,
+        technology_id: nodeId,
+        position: 1,
+      })
+      .execute(),
   );
 
-  await expectPostgresError(
-    '23514',
-    'system_technologies_position_check',
-    () =>
-      sql`
+  await expectPostgresError('23514', 'system_technologies_position_check', () =>
+    sql`
         insert into system_technologies (
           system_id,
           technology_id,
@@ -289,10 +270,7 @@ try {
     .deleteFrom('system_technologies')
     .where('system_id', 'in', [firstSystemId, secondSystemId])
     .execute();
-  await db
-    .deleteFrom('systems')
-    .where('id', 'in', [firstSystemId, secondSystemId])
-    .execute();
+  await db.deleteFrom('systems').where('id', 'in', [firstSystemId, secondSystemId]).execute();
   await db
     .deleteFrom('technologies')
     .where('id', 'in', [reactId, typescriptId, nodeId, duplicateSlugId])

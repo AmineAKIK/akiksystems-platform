@@ -5,11 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const clientDirectory = fileURLToPath(new URL('../build/client/', import.meta.url));
 
-const forbiddenMarkers = [
-  'postgres://',
-  'postgresql://',
-  'AKIKSYSTEMS_SECRET_SENTINEL',
-];
+const forbiddenMarkers = ['postgres://', 'postgresql://', 'AKIKSYSTEMS_SECRET_SENTINEL'];
 
 const serverSecretValues = [
   process.env.DATABASE_URL,

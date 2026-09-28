@@ -55,9 +55,7 @@ try {
       `ProtoCap bootstrap skipped after concurrent creation: ${result.systemId}.\n`,
     );
   } else {
-    process.stdout.write(
-      `ProtoCap bootstrap completed: ${result.systemId}.\n`,
-    );
+    process.stdout.write(`ProtoCap bootstrap completed: ${result.systemId}.\n`);
   }
 } catch (error) {
   try {
