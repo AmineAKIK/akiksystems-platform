@@ -85,6 +85,27 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Build web production image
+        run: docker build -f apps/web/Dockerfile -t akiksystems-web-ci .
+
+      - name: Smoke web production image
+        shell: bash
+        run: |
+          docker run --rm --entrypoint node akiksystems-web-ci -e "const p=require('./package.json'); if (p.dependencies || p.devDependencies) process.exit(1)"
+          docker run --rm -d --name akiksystems-web-ci-runtime --network host \
+            -e NODE_ENV=production \
+            -e PORT=4188 \
+            -e DATABASE_URL="$DATABASE_URL" \
+            akiksystems-web-ci
+          trap 'docker logs akiksystems-web-ci-runtime || true; docker rm -f akiksystems-web-ci-runtime >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4188/health >/dev/null; then
+              exit 0
+            fi
+            sleep 0.25
+          done
+          exit 1
+
       - name: Build worker production image
         run: docker build -f apps/worker/Dockerfile -t akiksystems-worker-ci .
 

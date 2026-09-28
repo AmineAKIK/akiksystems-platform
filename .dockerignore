@@ -7,7 +7,7 @@ node_modules
 **/dist
 **/build
 coverage
-*.tsbuildinfo
+**/*.tsbuildinfo
 .env
 .env.*
 !.env.example
