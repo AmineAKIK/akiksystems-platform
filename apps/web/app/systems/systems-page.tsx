@@ -1,11 +1,6 @@
 import { Link as RouterLink } from 'react-router';
 
-import type {
-  SystemsAction,
-  SystemsPageContent,
-  SystemsStation,
-  SystemsStatus,
-} from './content';
+import type { SystemsAction, SystemsPageContent, SystemsStation, SystemsStatus } from './content';
 
 const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
   fr: {
@@ -99,13 +94,7 @@ function SystemsHeroVisual() {
           <stop offset="1" stopColor="#2457ff" stopOpacity="0" />
         </radialGradient>
         <pattern height="28" id="systemsHeroGrid" patternUnits="userSpaceOnUse" width="28">
-          <path
-            d="M28 0H0V28"
-            fill="none"
-            stroke="#88a4c4"
-            strokeOpacity="0.08"
-            strokeWidth="1"
-          />
+          <path d="M28 0H0V28" fill="none" stroke="#88a4c4" strokeOpacity="0.08" strokeWidth="1" />
         </pattern>
       </defs>
       <rect fill="url(#systemsHeroBg)" height="520" width="920" />
@@ -235,12 +224,7 @@ function AtlasVisual({ locale }: { locale: 'en' | 'fr' }) {
             OUTPUT
           </text>
         </g>
-        <path
-          d="M520 250 C620 270 694 280 790 226"
-          fill="none"
-          stroke="#cbff3d"
-          strokeWidth="2"
-        />
+        <path d="M520 250 C620 270 694 280 790 226" fill="none" stroke="#cbff3d" strokeWidth="2" />
         <circle cx="790" cy="226" fill="#cbff3d" r="5" />
       </svg>
       <div className="aks-systems-atlas-note">
@@ -262,11 +246,7 @@ function FlowVisual() {
       </g>
       <g fill="none" stroke="#3c8bd9" strokeWidth="2">
         <path d="M110 114h90v-46h92v92h92v-60h92v84h112" />
-        <path
-          d="M150 188h112v-44h98v84h112v-42h128"
-          stroke="#cbff3d"
-          strokeOpacity="0.65"
-        />
+        <path d="M150 188h112v-44h98v84h112v-42h128" stroke="#cbff3d" strokeOpacity="0.65" />
       </g>
       {[110, 200, 292, 384, 476, 588].map((x, index) => (
         <g key={x} transform={`translate(${x} ${index % 2 === 0 ? 102 : 176})`}>
@@ -333,15 +313,7 @@ function SonarVisual() {
     <svg aria-hidden="true" className="aks-systems-quick-thumb" viewBox="0 0 180 92">
       <rect fill="#071016" height="92" width="180" />
       {[18, 31, 44].map((r) => (
-        <circle
-          cx="86"
-          cy="46"
-          fill="none"
-          key={r}
-          r={r}
-          stroke="#5ed5ff"
-          strokeOpacity="0.75"
-        />
+        <circle cx="86" cy="46" fill="none" key={r} r={r} stroke="#5ed5ff" strokeOpacity="0.75" />
       ))}
       <path d="M20 46h132" stroke="#2457ff" />
       <circle cx="120" cy="46" fill="#cbff3d" r="5" />

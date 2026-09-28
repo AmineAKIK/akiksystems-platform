@@ -136,10 +136,8 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
           note: 'Une surface dense pour croiser plusieurs lectures sans perdre le contexte.',
         },
         'radar-cli': {
-          function:
-            'Explorer relations, alertes et bascules depuis une interface compacte.',
-          note:
-            'Le détail reste accessible sans transformer la station en tableau de bord décoratif.',
+          function: 'Explorer relations, alertes et bascules depuis une interface compacte.',
+          note: 'Le détail reste accessible sans transformer la station en tableau de bord décoratif.',
         },
         sonar: {
           function: 'Écouter les pulsations d’un système avant qu’il ne dévie.',
@@ -155,14 +153,12 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     manifesto: {
       eyebrow: 'MODE DE TRAVAIL',
       lines: ['Construire,', 'observer,', 'ajuster.'],
-      body:
-        'Tous nos systèmes partagent le même geste : faire, regarder ce que le réel répond, puis remettre l’ouvrage en mouvement.',
+      body: 'Tous nos systèmes partagent le même geste : faire, regarder ce que le réel répond, puis remettre l’ouvrage en mouvement.',
     },
     workbench: {
       eyebrow: 'OUTILS / WORKBENCH',
       title: 'ÉTABLI',
-      intro:
-        'Quatre outils compacts pour documenter, relayer, signaler et reprendre le travail.',
+      intro: 'Quatre outils compacts pour documenter, relayer, signaler et reprendre le travail.',
       tools: shared.tools.map((tool) => {
         const copy = {
           TRACE: { function: 'Capturer la décision', environment: 'atelier' },
@@ -179,8 +175,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     perspectives: {
       eyebrow: 'PERSPECTIVES',
       title: 'Les systèmes commencent souvent par une hypothèse.',
-      body:
-        'Avant l’outil, il y a une question. Une tension. Une manière différente de regarder ce qui pourrait fonctionner.',
+      body: 'Avant l’outil, il y a une question. Une tension. Une manière différente de regarder ce qui pourrait fonctionner.',
       primary: {
         label: 'Construire un système ensemble',
         href: '/fr/travailler-ensemble',
@@ -238,14 +233,11 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         },
         mosaique: {
           function: 'Assemble dispersed signals into an actionable view.',
-          note:
-            'A dense surface for crossing multiple readings without losing context.',
+          note: 'A dense surface for crossing multiple readings without losing context.',
         },
         'radar-cli': {
-          function:
-            'Explore relations, alerts, and switches through a compact interface.',
-          note:
-            'Detail remains accessible without turning the station into a decorative dashboard.',
+          function: 'Explore relations, alerts, and switches through a compact interface.',
+          note: 'Detail remains accessible without turning the station into a decorative dashboard.',
         },
         sonar: {
           function: 'Listen to a system’s pulse before it drifts.',
@@ -261,8 +253,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     manifesto: {
       eyebrow: 'WORKING MODE',
       lines: ['Build,', 'observe,', 'adjust.'],
-      body:
-        'Every system shares the same gesture: make something, watch what reality returns, then put the work back in motion.',
+      body: 'Every system shares the same gesture: make something, watch what reality returns, then put the work back in motion.',
     },
     workbench: {
       eyebrow: 'TOOLS / WORKBENCH',
@@ -284,8 +275,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     perspectives: {
       eyebrow: 'PERSPECTIVES',
       title: 'Systems often begin with a hypothesis.',
-      body:
-        'Before the tool comes a question. A tension. A different way of looking at what might work.',
+      body: 'Before the tool comes a question. A tension. A different way of looking at what might work.',
       primary: {
         label: 'Build a system together',
         href: '/en/work-with-us',

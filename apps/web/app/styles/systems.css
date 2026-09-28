@@ -642,7 +642,9 @@
   font-size: 0.88rem;
 }
 
-.aks-systems-tools li > span:not(.aks-systems-status):not(.aks-systems-tool-index):not(.aks-systems-tool-arrow) {
+.aks-systems-tools
+  li
+  > span:not(.aks-systems-status):not(.aks-systems-tool-index):not(.aks-systems-tool-arrow) {
   color: var(--systems-text-muted);
   font-size: 0.78rem;
 }
@@ -753,7 +755,12 @@
 
   .aks-systems-hero-shade {
     background:
-      linear-gradient(180deg, rgb(3 6 10 / 70%) 0%, rgb(3 6 10 / 32%) 52%, var(--systems-canvas) 100%),
+      linear-gradient(
+        180deg,
+        rgb(3 6 10 / 70%) 0%,
+        rgb(3 6 10 / 32%) 52%,
+        var(--systems-canvas) 100%
+      ),
       linear-gradient(90deg, rgb(3 6 10 / 74%) 0%, transparent 72%);
   }
 

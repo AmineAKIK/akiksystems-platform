@@ -72,9 +72,8 @@ async function inspectViewport(browser, viewport) {
         element.getAttribute('data-systems-section'),
       ),
       interactive,
-      atlasWidth: document
-        .querySelector('.aks-systems-atlas-screen')
-        ?.getBoundingClientRect().width,
+      atlasWidth: document.querySelector('.aks-systems-atlas-screen')?.getBoundingClientRect()
+        .width,
       bodyWidth: document.querySelector('.aks-systems-page')?.getBoundingClientRect().width,
     };
   });
