@@ -30,7 +30,7 @@ function contentSecurityPolicy(nonce: string, scriptHashes: readonly string[]) {
     ...scriptHashes.map((hash) => `'sha256-${hash}'`),
   ].join(' ');
   // Vite dev injects CSS as inline <style> tags and uses a websocket for HMR.
-  const isDev = import.meta.env.DEV;
+  const isDev = process.env.NODE_ENV === 'development';
 
   return [
     "default-src 'self'",
