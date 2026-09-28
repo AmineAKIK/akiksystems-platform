@@ -133,11 +133,11 @@ async function inspectViewport(browser, viewport) {
   assert.deepEqual(editorialRequests, [], 'Systems overview must not fetch editorial APIs');
 
   if (viewport.width <= 768) {
-    const tooSmall = result.interactive.filter((item) => item.height < 43.5 && item.width < 43.5);
+    const tooSmall = result.interactive.filter((item) => item.height < 43.5 || item.width < 43.5);
     assert.deepEqual(
       tooSmall,
       [],
-      viewport.width + 'px interactive targets must provide at least one 44px touch dimension',
+      viewport.width + 'px interactive targets must be at least 44×44px',
     );
   }
 
