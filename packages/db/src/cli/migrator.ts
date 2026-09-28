@@ -12,6 +12,7 @@ const migrationFolder = fileURLToPath(new URL('../migrations', import.meta.url))
 export function createMigrator(db: Kysely<Database>): Migrator {
   return new Migrator({
     db,
+    allowUnorderedMigrations: process.env.AKIKSYSTEMS_ALLOW_UNORDERED_MIGRATIONS === 'true',
     provider: new FileMigrationProvider({
       fs,
       path,
