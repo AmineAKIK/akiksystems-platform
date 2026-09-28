@@ -647,6 +647,87 @@ async function assertLargeDesktopStability(browser) {
   }
 }
 
+async function assertHomeContrast(browser) {
+  const { context, page } = await loadViewport(browser, {
+    width: 1440,
+    height: 1024,
+  });
+
+  try {
+    const ratios = await page.evaluate(() => {
+      const background = [17, 17, 15];
+
+      const parseColor = (value) => {
+        const match = value.match(/rgba?\(([^)]+)\)/);
+        if (!match) throw new Error('Unsupported computed color: ' + value);
+        const values = match[1]
+          .split(/[\s,/]+/)
+          .filter(Boolean)
+          .map(Number);
+        return {
+          r: values[0],
+          g: values[1],
+          b: values[2],
+          a: values.length > 3 ? values[3] : 1,
+        };
+      };
+
+      const channel = (value) => {
+        const normalized = value / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      };
+
+      const luminance = ({ r, g, b }) =>
+        0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+
+      const composite = ({ r, g, b, a }) => ({
+        r: r * a + background[0] * (1 - a),
+        g: g * a + background[1] * (1 - a),
+        b: b * a + background[2] * (1 - a),
+      });
+
+      const ratioFor = (selector) => {
+        const element = document.querySelector(selector);
+        if (!(element instanceof HTMLElement)) {
+          throw new Error('Missing contrast target: ' + selector);
+        }
+        const foreground = composite(parseColor(getComputedStyle(element).color));
+        const lighter = Math.max(luminance(foreground), luminance({
+          r: background[0],
+          g: background[1],
+          b: background[2],
+        }));
+        const darker = Math.min(luminance(foreground), luminance({
+          r: background[0],
+          g: background[1],
+          b: background[2],
+        }));
+        return (lighter + 0.05) / (darker + 0.05);
+      };
+
+      return {
+        summary: ratioFor('.aks-home-door-summary'),
+        footer: ratioFor(
+          ".aks-experience-footer[data-home='true'] .aks-experience-footer-inner",
+        ),
+        inactiveLanguage: ratioFor('.aks-home-language-target'),
+        clock: ratioFor('.aks-home-clock'),
+      };
+    });
+
+    for (const [label, ratio] of Object.entries(ratios)) {
+      assert.ok(
+        ratio >= 4.5,
+        label + ' contrast must meet WCAG AA 4.5:1, got ' + ratio.toFixed(2),
+      );
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertTouchSelection(browser) {
   const { context, page } = await loadViewport(
     browser,
@@ -683,6 +764,11 @@ async function assertTouchSelection(browser) {
       '375px touch preview → first destinations',
     );
 
+    await page.locator('.aks-home-center').tap();
+    const cleared = await measure(page);
+    assert.equal(cleared.previewState, 'idle', 'outside tap must clear touch selection');
+
+    await perspective.tap();
     await perspective.tap();
     await page.waitForURL('**/fr/travailler-ensemble');
   } finally {
@@ -784,6 +870,7 @@ async function assertReducedMotion(browser) {
       await assertPreviewCorridor(browser, viewport, name);
     }
 
+    await assertHomeContrast(browser);
     await assertTouchSelection(browser);
     await assertKeyboardOrder(browser);
     await assertReducedMotion(browser);
