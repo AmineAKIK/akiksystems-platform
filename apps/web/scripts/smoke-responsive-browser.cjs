@@ -20,12 +20,21 @@ const server = spawn(process.execPath, ['server.js'], {
 });
 
 let stderr = '';
+let exited = false;
 server.stderr.on('data', (chunk) => {
   stderr += chunk.toString();
+});
+server.once('exit', () => {
+  exited = true;
 });
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
+    if (exited) {
+      throw new Error(
+        'Responsive smoke server exited before readiness. stderr=' + stderr,
+      );
+    }
     try {
       const response = await globalThis.fetch(origin + '/fr');
       if (response.ok) return;
@@ -415,12 +424,12 @@ async function assertGeometry(browser, viewport, name) {
         name + ' premium body must not vertically disperse: ' + bodyHeight,
       );
       assert.ok(
-        m.portal.width <= 1153,
-        name + ' orbital artboard must stay capped at 1152px',
+        m.portal.width <= 1761,
+        name + ' orbital artboard must stay capped at 110rem',
       );
       const minimumDesktopMark = viewport.height < 960 ? 245 : 278;
       assert.ok(
-        m.brand.width >= minimumDesktopMark && m.brand.width <= 290,
+        m.brand.width >= minimumDesktopMark && m.brand.width <= 337,
         name +
           ' emblem must keep a premium scale appropriate to available height: ' +
           m.brand.width,
@@ -613,7 +622,7 @@ async function assertLargeDesktopStability(browser) {
   for (const { viewport, measurement } of wideSamples) {
     assertNear(
       measurement.portal.width,
-      1152,
+      1760,
       1,
       viewport.width + 'px body width cap',
     );
@@ -631,7 +640,7 @@ async function assertLargeDesktopStability(browser) {
     );
 
     assert.ok(
-      profileDistance >= 340 && profileDistance <= 440,
+      profileDistance >= 700 && profileDistance <= 780,
       viewport.width +
         'px side destinations must stay visually attached to the body',
     );
@@ -744,7 +753,11 @@ async function assertReducedMotion(browser) {
       [{ width: 375, height: 812 }, 'mobile 375×812'],
       [{ width: 390, height: 844 }, 'mobile 390×844'],
       [{ width: 430, height: 932 }, 'mobile 430×932'],
+      [{ width: 568, height: 320 }, 'mobile landscape 568×320'],
       [{ width: 844, height: 390 }, 'mobile landscape 844×390'],
+      [{ width: 915, height: 412 }, 'mobile landscape 915×412'],
+      [{ width: 932, height: 430 }, 'mobile landscape 932×430'],
+      [{ width: 960, height: 600 }, 'compact landscape 960×600'],
       [{ width: 820, height: 1180 }, 'tablet portrait 820×1180'],
       [{ width: 1024, height: 768 }, 'tablet landscape 1024×768'],
       [{ width: 1280, height: 720 }, 'laptop 1280×720'],
@@ -759,7 +772,11 @@ async function assertReducedMotion(browser) {
 
     for (const [viewport, name] of [
       [{ width: 375, height: 812 }, '375×812'],
+      [{ width: 568, height: 320 }, '568×320'],
       [{ width: 768, height: 1024 }, '768×1024'],
+      [{ width: 915, height: 412 }, '915×412'],
+      [{ width: 932, height: 430 }, '932×430'],
+      [{ width: 960, height: 600 }, '960×600'],
       [{ width: 1024, height: 768 }, '1024×768'],
       [{ width: 1440, height: 1024 }, '1440×1024'],
       [{ width: 2560, height: 1440 }, '2560×1440'],
