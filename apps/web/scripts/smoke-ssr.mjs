@@ -86,9 +86,8 @@ try {
       .filter((attributes) => !/\bsrc=/.test(attributes));
     assert.ok(inlineScripts.length > 0, `/${locale} must render framework inline scripts.`);
     for (const attributes of inlineScripts) {
-      assert.match(
-        attributes,
-        new RegExp('\\\bnonce="' + nonce + '"'),
+      assert.ok(
+        attributes.includes('nonce="' + nonce + '"'),
         `/${locale} inline scripts must carry the CSP nonce.`,
       );
     }
