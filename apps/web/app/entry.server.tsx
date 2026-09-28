@@ -1,6 +1,6 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { PassThrough } from 'node:stream';
 
-import { createReadableStreamFromReadable } from '@react-router/node';
 import { isbot } from 'isbot';
 import type { RenderToPipeableStreamOptions } from 'react-dom/server';
 import { renderToPipeableStream } from 'react-dom/server';
@@ -8,7 +8,28 @@ import { ServerRouter, type EntryContext } from 'react-router';
 
 export const streamTimeout = 10_000;
 
-function cspForNonce(nonce: string) {
+function inlineScriptHashes(html: string): string[] {
+  const hashes = new Set<string>();
+
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
+    const attributes = match[1] ?? '';
+    const body = match[2] ?? '';
+
+    if (/\bsrc=/.test(attributes)) continue;
+
+    hashes.add(createHash('sha256').update(body, 'utf8').digest('base64'));
+  }
+
+  return [...hashes];
+}
+
+function contentSecurityPolicy(nonce: string, scriptHashes: readonly string[]) {
+  const scriptSources = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    ...scriptHashes.map((hash) => `'sha256-${hash}'`),
+  ].join(' ');
+
   return [
     "default-src 'self'",
     "base-uri 'self'",
@@ -18,7 +39,7 @@ function cspForNonce(nonce: string) {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     "style-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    `script-src ${scriptSources}`,
     "connect-src 'self'",
   ].join('; ');
 }
@@ -36,20 +57,17 @@ export default function handleRequest(
     });
   }
 
-  const nonce = crypto.randomUUID();
-  responseHeaders.set('Content-Type', 'text/html');
-  responseHeaders.set('Content-Security-Policy', cspForNonce(nonce));
+  const nonce = randomUUID();
 
   return new Promise<Response>((resolve, reject) => {
     let shellRendered = false;
     const userAgent = request.headers.get('user-agent');
     const readyOption: keyof RenderToPipeableStreamOptions =
-      (userAgent && isbot(userAgent)) || routerContext.isSpaMode ? 'onAllReady' : 'onShellReady';
+      (userAgent && isbot(userAgent)) || routerContext.isSpaMode
+        ? 'onAllReady'
+        : 'onShellReady';
 
-    let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(
-      () => abort(),
-      streamTimeout + 1_000,
-    );
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const { pipe, abort } = renderToPipeableStream(
       <ServerRouter context={routerContext} nonce={nonce} url={request.url} />,
@@ -57,22 +75,35 @@ export default function handleRequest(
         nonce,
         [readyOption]() {
           shellRendered = true;
-          const body = new PassThrough({
-            final(callback) {
+          const body = new PassThrough();
+          const chunks: Buffer[] = [];
+
+          body.on('data', (chunk: Buffer | string) => {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          });
+          body.once('error', reject);
+          body.once('end', () => {
+            if (timeoutId !== undefined) {
               clearTimeout(timeoutId);
               timeoutId = undefined;
-              callback();
-            },
+            }
+
+            const html = Buffer.concat(chunks).toString('utf8');
+            responseHeaders.set('Content-Type', 'text/html');
+            responseHeaders.set(
+              'Content-Security-Policy',
+              contentSecurityPolicy(nonce, inlineScriptHashes(html)),
+            );
+
+            resolve(
+              new Response(html, {
+                headers: responseHeaders,
+                status: responseStatusCode,
+              }),
+            );
           });
-          const stream = createReadableStreamFromReadable(body);
 
           pipe(body);
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            }),
-          );
         },
         onShellError(error) {
           reject(error);
@@ -83,5 +114,7 @@ export default function handleRequest(
         },
       },
     );
+
+    timeoutId = setTimeout(() => abort(), streamTimeout + 1_000);
   });
 }
