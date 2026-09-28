@@ -41,16 +41,22 @@ async function inspectViewport(browser, viewport) {
   const page = await context.newPage();
   const response = await page.goto(origin + '/fr/systems');
 
-  assert.equal(response?.status(), 200, viewport.width + 'x' + viewport.height + ' route must return 200');
+  assert.equal(
+    response?.status(),
+    200,
+    viewport.width + 'x' + viewport.height + ' route must return 200',
+  );
   await page.locator('.aks-systems-page').waitFor();
   await page.locator('.aks-systems-hero-media').waitFor();
 
   const measurement = await page.evaluate(() => {
-    const naturalImages = [...document.querySelectorAll('.aks-systems-page img')].map((element) => ({
-      src: element.getAttribute('src') ?? '',
-      width: element.naturalWidth,
-      height: element.naturalHeight,
-    }));
+    const naturalImages = [...document.querySelectorAll('.aks-systems-page img')].map(
+      (element) => ({
+        src: element.getAttribute('src') ?? '',
+        width: element.naturalWidth,
+        height: element.naturalHeight,
+      }),
+    );
 
     const touchTargets = [
       ...document.querySelectorAll('.aks-systems-button, .aks-systems-quick-link'),
@@ -61,7 +67,9 @@ async function inspectViewport(browser, viewport) {
 
     const hero = document.querySelector('.aks-systems-hero')?.getBoundingClientRect();
     const atlas = document.querySelector('.aks-systems-atlas-console')?.getBoundingClientRect();
-    const feature = document.querySelector('.aks-systems-station--feature figure')?.getBoundingClientRect();
+    const feature = document
+      .querySelector('.aks-systems-station--feature figure')
+      ?.getBoundingClientRect();
 
     return {
       width: document.documentElement.clientWidth,
@@ -79,19 +87,40 @@ async function inspectViewport(browser, viewport) {
   });
 
   try {
-    assert.ok(measurement.scrollWidth <= measurement.width + 1, viewport.width + 'px Systems must not overflow horizontally');
-    assert.deepEqual(measurement.sectionOrder, ['hero', 'atlas', 'operation', 'manifesto', 'workbench', 'perspectives']);
-    assert.equal(measurement.naturalImages.length, 7, 'Systems must render the seven dossier media assets');
+    assert.ok(
+      measurement.scrollWidth <= measurement.width + 1,
+      viewport.width + 'px Systems must not overflow horizontally',
+    );
+    assert.deepEqual(measurement.sectionOrder, [
+      'hero',
+      'atlas',
+      'operation',
+      'manifesto',
+      'workbench',
+      'perspectives',
+    ]);
+    assert.equal(
+      measurement.naturalImages.length,
+      7,
+      'Systems must render the seven dossier media assets',
+    );
     for (const image of measurement.naturalImages) {
       assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');
     }
-    assert.ok(measurement.heroHeight >= (viewport.width <= 480 ? 900 : viewport.width <= 768 ? 700 : 680));
+    assert.ok(
+      measurement.heroHeight >= (viewport.width <= 480 ? 900 : viewport.width <= 768 ? 700 : 680),
+    );
     assert.ok(measurement.atlasWidth > 0 && measurement.atlasWidth <= measurement.pageWidth + 1);
-    assert.ok(measurement.featureWidth > 0 && measurement.featureWidth <= measurement.pageWidth + 1);
+    assert.ok(
+      measurement.featureWidth > 0 && measurement.featureWidth <= measurement.pageWidth + 1,
+    );
 
     for (const target of measurement.touchTargets) {
       if (viewport.width <= 768) {
-        assert.ok(target.height >= 36, viewport.width + 'px target ' + (target.label || 'unnamed') + ' must stay usable');
+        assert.ok(
+          target.height >= 36,
+          viewport.width + 'px target ' + (target.label || 'unnamed') + ' must stay usable',
+        );
       }
     }
   } finally {
@@ -111,7 +140,9 @@ async function inspectViewport(browser, viewport) {
     ]) {
       await inspectViewport(browser, viewport);
     }
-    console.log('Systems visual smoke passed at 390, 768, 1280 and 1440px with dossier media loaded.');
+    console.log(
+      'Systems visual smoke passed at 390, 768, 1280 and 1440px with dossier media loaded.',
+    );
   } finally {
     await browser.close();
     server.kill('SIGTERM');
