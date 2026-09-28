@@ -67,7 +67,11 @@ function StationImage({
     <img
       alt=""
       aria-hidden="true"
-      className={compact ? 'aks-systems-station-image aks-systems-station-image--compact' : 'aks-systems-station-image'}
+      className={
+        compact
+          ? 'aks-systems-station-image aks-systems-station-image--compact'
+          : 'aks-systems-station-image'
+      }
       decoding="async"
       loading={station.id === 'cirrus' ? 'eager' : 'lazy'}
       src={stationMedia[station.id]}
@@ -98,7 +102,11 @@ export function SystemsHero({
   rail: SystemsPageContent['rail'];
 }) {
   return (
-    <section aria-labelledby="systems-title" className="aks-systems-hero" data-systems-section="hero">
+    <section
+      aria-labelledby="systems-title"
+      className="aks-systems-hero"
+      data-systems-section="hero"
+    >
       <img
         alt=""
         aria-hidden="true"
@@ -124,13 +132,18 @@ export function SystemsHero({
 }
 
 function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
-  const nav = locale === 'fr' ? ['VUE', 'FLUX', 'SIGNAUX', 'SORTIES'] : ['VIEW', 'FLOW', 'SIGNALS', 'OUTPUTS'];
+  const nav =
+    locale === 'fr'
+      ? ['VUE', 'FLUX', 'SIGNAUX', 'SORTIES']
+      : ['VIEW', 'FLOW', 'SIGNALS', 'OUTPUTS'];
 
   return (
     <div className="aks-systems-atlas-console">
       <div className="aks-systems-atlas-toolbar">
         <div className="aks-systems-atlas-brand">
-          <span aria-hidden="true" className="aks-systems-atlas-icon">✦</span>
+          <span aria-hidden="true" className="aks-systems-atlas-icon">
+            ✦
+          </span>
           <strong>ATLAS / OPS</strong>
         </div>
         <span className="aks-systems-atlas-live">LIVE</span>
@@ -150,10 +163,30 @@ function AtlasConsole({ locale }: { locale: 'en' | 'fr' }) {
           <div aria-hidden="true" className="aks-systems-atlas-core">
             <span>ATLAS</span>
           </div>
-          <span aria-hidden="true" className="aks-systems-atlas-label aks-systems-atlas-label--inputs">INPUTS</span>
-          <span aria-hidden="true" className="aks-systems-atlas-label aks-systems-atlas-label--signals">SIGNALS</span>
-          <span aria-hidden="true" className="aks-systems-atlas-label aks-systems-atlas-label--context">CONTEXT</span>
-          <span aria-hidden="true" className="aks-systems-atlas-label aks-systems-atlas-label--output">OUTPUT</span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--inputs"
+          >
+            INPUTS
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--signals"
+          >
+            SIGNALS
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--context"
+          >
+            CONTEXT
+          </span>
+          <span
+            aria-hidden="true"
+            className="aks-systems-atlas-label aks-systems-atlas-label--output"
+          >
+            OUTPUT
+          </span>
           <div className="aks-systems-atlas-signal">
             <span>{locale === 'fr' ? 'signal critique' : 'critical signal'}</span>
             <strong>{locale === 'fr' ? 'variation détectée' : 'variation detected'}</strong>
@@ -172,7 +205,11 @@ export function AtlasWorkspace({
   content: SystemsPageContent['atlas'];
 }) {
   return (
-    <section aria-labelledby="atlas-title" className="aks-systems-section aks-systems-atlas" data-systems-section="atlas">
+    <section
+      aria-labelledby="atlas-title"
+      className="aks-systems-section aks-systems-atlas"
+      data-systems-section="atlas"
+    >
       <div className="aks-systems-wrap">
         <div className="aks-systems-atlas-heading">
           <div>
@@ -198,13 +235,7 @@ export function AtlasWorkspace({
   );
 }
 
-function StationFeature({
-  locale,
-  station,
-}: {
-  locale: 'en' | 'fr';
-  station: SystemsStation;
-}) {
+function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: SystemsStation }) {
   return (
     <article className="aks-systems-station aks-systems-station--feature">
       <figure>
@@ -224,13 +255,7 @@ function StationFeature({
   );
 }
 
-function StationPair({
-  locale,
-  stations,
-}: {
-  locale: 'en' | 'fr';
-  stations: SystemsStation[];
-}) {
+function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: SystemsStation[] }) {
   return (
     <div className="aks-systems-station-pair">
       {stations.map((station) => (
@@ -271,7 +296,11 @@ function QuickStationRow({
           <h3>{station.name}</h3>
           <p>{station.function}</p>
           <StatusPill locale={locale} status={station.status} />
-          <a aria-label={`${station.name}: ${station.note}`} className="aks-systems-quick-link" href="#workbench">
+          <a
+            aria-label={`${station.name}: ${station.note}`}
+            className="aks-systems-quick-link"
+            href="#workbench"
+          >
             {locale === 'fr' ? 'Ouvrir' : 'Open'}
             <span aria-hidden="true">↗</span>
           </a>
@@ -283,7 +312,11 @@ function QuickStationRow({
 
 export function Manifesto({ content }: { content: SystemsPageContent['manifesto'] }) {
   return (
-    <section aria-labelledby="systems-manifesto-title" className="aks-systems-manifesto" data-systems-section="manifesto">
+    <section
+      aria-labelledby="systems-manifesto-title"
+      className="aks-systems-manifesto"
+      data-systems-section="manifesto"
+    >
       <div aria-hidden="true" className="aks-systems-manifesto-orbit" />
       <div className="aks-systems-wrap aks-systems-manifesto-inner">
         <p className="aks-systems-kicker">{content.eyebrow}</p>
@@ -308,7 +341,12 @@ export function Workbench({
   content: SystemsPageContent['workbench'];
 }) {
   return (
-    <section aria-labelledby="workbench-title" className="aks-systems-workbench" data-systems-section="workbench" id="workbench">
+    <section
+      aria-labelledby="workbench-title"
+      className="aks-systems-workbench"
+      data-systems-section="workbench"
+      id="workbench"
+    >
       <div className="aks-systems-wrap">
         <div className="aks-systems-workbench-heading">
           <div>
@@ -325,7 +363,9 @@ export function Workbench({
               <span className="aks-systems-tool-function">{tool.function}</span>
               <span className="aks-systems-tool-env">{tool.environment}</span>
               <StatusPill locale={locale} status={tool.status} />
-              <span aria-hidden="true" className="aks-systems-tool-arrow">↗</span>
+              <span aria-hidden="true" className="aks-systems-tool-arrow">
+                ↗
+              </span>
             </li>
           ))}
         </ol>
@@ -336,7 +376,12 @@ export function Workbench({
 
 export function PerspectivesCTA({ content }: { content: SystemsPageContent['perspectives'] }) {
   return (
-    <section aria-labelledby="perspectives-title" className="aks-systems-perspectives" data-systems-section="perspectives" id="perspectives">
+    <section
+      aria-labelledby="perspectives-title"
+      className="aks-systems-perspectives"
+      data-systems-section="perspectives"
+      id="perspectives"
+    >
       <div className="aks-systems-wrap aks-systems-perspectives-inner">
         <p className="aks-systems-kicker">{content.eyebrow}</p>
         <h2 id="perspectives-title">{content.title}</h2>
@@ -375,7 +420,12 @@ export function SystemsPage({
     <main className="aks-systems-page" data-locale={locale}>
       <SystemsHero content={content.hero} rail={content.rail} />
       <AtlasWorkspace content={content.atlas} locale={locale} />
-      <section aria-labelledby="operation-title" className="aks-systems-section aks-systems-operation" data-systems-section="operation" id="operation">
+      <section
+        aria-labelledby="operation-title"
+        className="aks-systems-section aks-systems-operation"
+        data-systems-section="operation"
+        id="operation"
+      >
         <div className="aks-systems-wrap">
           <div className="aks-systems-operation-heading">
             <div>
