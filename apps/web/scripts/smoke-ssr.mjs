@@ -82,14 +82,16 @@ try {
     const nonceMatch = csp.match(/'nonce-([^']+)'/);
     const nonce = nonceMatch?.[1];
     assert.ok(nonce, `/${locale} CSP must include a per-response nonce.`);
-    const inlineScripts = [...html.matchAll(/<script\b([^>]*)>/g)]
-      .map((match) => match[1] ?? '')
-      .filter((attributes) => !/\bsrc=/.test(attributes));
+    const inlineScripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)]
+      .map((match) => ({ attributes: match[1] ?? '', body: match[2] ?? '' }))
+      .filter(({ attributes }) => !/\bsrc=/.test(attributes));
     assert.ok(inlineScripts.length > 0, `/${locale} must render framework inline scripts.`);
-    for (const attributes of inlineScripts) {
+    for (const { attributes, body } of inlineScripts) {
+      if (attributes.includes('nonce="' + nonce + '"')) continue;
+      const hash = createHash('sha256').update(body, 'utf8').digest('base64');
       assert.ok(
-        attributes.includes('nonce="' + nonce + '"'),
-        `/${locale} inline scripts must carry the CSP nonce.`,
+        csp.includes("'sha256-" + hash + "'"),
+        `/${locale} unnonced inline scripts must be explicitly hashed by CSP.`,
       );
     }
     assert.match(html, new RegExp(`<html lang="${locale}"`));
