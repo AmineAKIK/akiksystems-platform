@@ -52,7 +52,7 @@ try {
       'x-correlation-id': correlationId,
     },
   });
-  const healthBody = await health.json();
+  const healthBody = /** @type {{ status: string; service: string }} */ (await health.json());
 
   assert.equal(health.status, 200);
   assert.equal(health.headers.get('x-request-id'), requestId);
@@ -65,7 +65,7 @@ try {
       'x-correlation-id': 'corr-error-aks-007',
     },
   });
-  const failureBody = await failure.json();
+  const failureBody = /** @type {{ status: string; requestId: string }} */ (await failure.json());
 
   assert.equal(failure.status, 500);
   assert.equal(failureBody.status, 'error');
