@@ -1,17 +1,30 @@
 .aks-systems-page {
-  --systems-canvas: #07090d;
-  --systems-surface: #0c1017;
-  --systems-surface-raised: #121722;
-  --systems-text: #edf1f5;
-  --systems-text-muted: #a9b2c0;
-  --systems-border: #273143;
-  --systems-action: #2457ff;
-  --systems-signal: #cbff3d;
+  --systems-canvas: #05070a;
+  --systems-panel: #0a0f17;
+  --systems-panel-2: #111722;
+  --systems-text: #f4f5f6;
+  --systems-muted: #9da5b1;
+  --systems-border: #202936;
+  --systems-blue: #2d5cff;
+  --systems-lime: #caff39;
   min-width: 0;
   overflow: clip;
   background: var(--systems-canvas);
   color: var(--systems-text);
   font-family: Archivo, system-ui, sans-serif;
+}
+
+.aks-experience-shell[data-destination='systems'] {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  border: 0;
+  background: linear-gradient(180deg, rgb(1 5 9 / 82%), rgb(1 5 9 / 36%) 72%, transparent);
+  backdrop-filter: none;
+}
+
+.aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+  min-height: 3.6rem;
 }
 
 .aks-systems-page *,
@@ -20,21 +33,14 @@
   box-sizing: border-box;
 }
 
-.aks-systems-page h1,
-.aks-systems-page h2,
-.aks-systems-page h3,
-.aks-systems-page p,
-.aks-systems-page figure,
-.aks-systems-page ol {
+.aks-systems-page :is(h1, h2, h3, p, figure, ol) {
   margin: 0;
 }
 
-.aks-systems-page h1,
-.aks-systems-page h2,
-.aks-systems-page h3 {
+.aks-systems-page :is(h1, h2, h3) {
   font-family: 'Archivo Black', Archivo, sans-serif;
-  letter-spacing: -0.045em;
-  line-height: 0.95;
+  letter-spacing: -0.052em;
+  line-height: 0.92;
 }
 
 .aks-systems-page a {
@@ -42,83 +48,99 @@
 }
 
 .aks-systems-wrap {
-  width: min(calc(100% - 3rem), 82rem);
+  width: min(calc(100% - 7rem), 78rem);
   margin-inline: auto;
 }
 
 .aks-systems-kicker {
-  color: var(--systems-signal);
+  color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
 }
 
 .aks-systems-hero {
   position: relative;
-  min-height: min(46rem, calc(100dvh - 4rem));
+  height: clamp(43rem, 70vw, 61rem);
   isolation: isolate;
   overflow: hidden;
-  border-bottom: 1px solid var(--systems-border);
-  background: #08101a;
+  background: #061019;
 }
 
-.aks-systems-hero-visual,
-.aks-systems-hero-shade {
+.aks-systems-hero-media {
   position: absolute;
+  z-index: -3;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: 55% center;
+  filter: saturate(0.92) contrast(1.08) brightness(0.74);
+  transform: scale(1.015);
 }
 
-.aks-systems-hero-visual {
-  z-index: -3;
-}
-
-.aks-systems-hero-shade {
+.aks-systems-hero-overlay {
+  position: absolute;
   z-index: -2;
+  inset: 0;
   background:
-    linear-gradient(90deg, rgb(3 6 10 / 92%) 0%, rgb(3 6 10 / 64%) 38%, rgb(3 6 10 / 14%) 70%),
-    linear-gradient(180deg, rgb(4 6 8 / 10%) 55%, var(--systems-canvas) 100%);
+    linear-gradient(
+      90deg,
+      rgb(2 5 8 / 90%) 0%,
+      rgb(2 5 8 / 70%) 31%,
+      rgb(2 5 8 / 20%) 64%,
+      rgb(2 5 8 / 32%) 100%
+    ),
+    linear-gradient(180deg, rgb(1 5 9 / 5%) 56%, rgb(2 5 8 / 78%) 90%, #05070a 100%);
 }
 
-.aks-systems-network-lines path,
-.aks-systems-node--pulse {
-  animation: systems-signal 2.4s ease-in-out infinite alternate;
-}
-
-.aks-systems-node--pulse:nth-child(2n) {
-  animation-delay: -1.1s;
-}
-
-.aks-systems-hero-inner {
+.aks-systems-hero-copy {
+  position: relative;
+  z-index: 2;
   display: grid;
   align-content: start;
-  gap: 1rem;
-  min-height: inherit;
-  padding-block: clamp(5.5rem, 12vh, 8rem) 4rem;
+  gap: 0.9rem;
+  height: 100%;
+  padding-top: clamp(8.5rem, 15vw, 13.25rem);
 }
 
 .aks-systems-hero h1 {
   display: grid;
-  max-width: 8.5ch;
-  font-size: clamp(3.4rem, 7.4vw, 7.8rem);
+  width: min-content;
+  font-size: clamp(4.6rem, 8.1vw, 7.6rem);
+  line-height: 0.88;
+  text-transform: uppercase;
 }
 
-.aks-systems-hero h1 span {
-  color: var(--systems-action);
+.aks-systems-hero-title {
+  width: 8.4ch;
+}
+
+.aks-systems-hero-state {
+  color: var(--systems-blue);
 }
 
 .aks-systems-hero-intro {
-  max-width: 34rem;
-  font-size: clamp(1rem, 1.3vw, 1.18rem);
-  line-height: 1.55;
+  max-width: 29rem;
+  margin-top: 0.1rem !important;
+  color: rgb(255 255 255 / 88%);
+  font-size: 0.92rem;
+  line-height: 1.48;
+}
+
+.aks-systems-hero-rail {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 .aks-systems-operation-rail {
-  border-bottom: 1px solid var(--systems-border);
-  background: var(--systems-canvas);
+  border-top: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(3 6 10 / 62%);
+  backdrop-filter: blur(0.35rem);
 }
 
 .aks-systems-operation-rail ol {
@@ -130,230 +152,330 @@
 
 .aks-systems-operation-rail li {
   display: grid;
-  gap: 0.25rem;
-  min-width: 0;
-  padding: 1.2rem 1rem;
-  border-inline-start: 1px solid var(--systems-border);
+  gap: 0.22rem;
+  min-height: 5.6rem;
+  align-content: center;
+  padding-inline: 1rem;
+  border-left: 1px solid rgb(255 255 255 / 11%);
 }
 
 .aks-systems-operation-rail li:first-child {
-  border-inline-start: 0;
+  border-left: 0;
 }
 
-.aks-systems-operation-rail span,
-.aks-systems-operation-rail strong {
+.aks-systems-operation-rail :is(span, strong) {
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: 0.58rem;
+  letter-spacing: 0.13em;
 }
 
 .aks-systems-operation-rail span {
-  color: var(--systems-text-muted);
+  color: rgb(255 255 255 / 36%);
 }
 
 .aks-systems-section {
-  padding-block: clamp(4.25rem, 8vw, 7.5rem);
+  padding-block: 7rem;
 }
 
 .aks-systems-atlas {
-  background: #05070a;
+  background: #040609;
 }
 
-.aks-systems-operation {
-  background: var(--systems-canvas);
-}
-
-.aks-systems-section-heading {
+.aks-systems-atlas-heading,
+.aks-systems-operation-heading,
+.aks-systems-workbench-heading {
   display: grid;
-  gap: 1rem;
-  margin-bottom: clamp(2rem, 5vw, 3.5rem);
-}
-
-.aks-systems-section-heading--split {
-  grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.75fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.62fr);
+  gap: 4rem;
   align-items: end;
-  gap: 2.5rem;
+  margin-bottom: 2.75rem;
 }
 
-.aks-systems-section-heading h2,
-.aks-systems-workbench h2 {
-  margin-top: 0.45rem;
-  font-size: clamp(2.6rem, 5vw, 5.6rem);
+.aks-systems-atlas-heading h2,
+.aks-systems-operation-heading h2,
+.aks-systems-workbench-heading h2 {
+  margin-top: 0.42rem;
+  font-size: clamp(3rem, 5.2vw, 5.2rem);
+  text-transform: uppercase;
 }
 
-.aks-systems-section-heading--split > p,
-.aks-systems-workbench .aks-systems-section-heading > p {
-  color: var(--systems-text-muted);
+.aks-systems-atlas-heading > .aks-systems-status {
+  justify-self: end;
+  align-self: center;
+}
+
+.aks-systems-operation-heading > p,
+.aks-systems-workbench-heading > p {
+  max-width: 27rem;
+  color: var(--systems-muted);
+  font-size: 0.82rem;
   line-height: 1.55;
 }
 
 .aks-systems-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.38rem;
   width: fit-content;
-  min-height: 1.9rem;
-  padding: 0.25rem 0.62rem;
-  border: 1px solid var(--systems-border);
+  min-height: 1.55rem;
+  padding: 0.2rem 0.54rem;
+  border: 1px solid #4a5624;
   border-radius: 999px;
-  color: var(--systems-text-muted);
+  color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.6rem;
+  font-size: 0.49rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .aks-systems-status-dot {
-  width: 0.38rem;
-  height: 0.38rem;
+  width: 0.28rem;
+  height: 0.28rem;
   border-radius: 50%;
-  background: var(--systems-text-muted);
+  background: currentColor;
 }
 
-.aks-systems-status[data-status='deployed'],
-.aks-systems-status[data-status='building'] {
-  border-color: var(--systems-signal);
-  color: var(--systems-signal);
-}
-
-.aks-systems-status[data-status='deployed'] .aks-systems-status-dot,
-.aks-systems-status[data-status='building'] .aks-systems-status-dot {
-  background: var(--systems-signal);
+.aks-systems-status[data-status='private'] {
+  border-color: #3a4451;
+  color: #c1c7cf;
 }
 
 .aks-systems-status[data-status='experimental'] {
-  border-color: #6d5a24;
-  color: #f4c957;
+  border-color: #675728;
+  color: #f2c65a;
 }
 
-.aks-systems-status[data-status='experimental'] .aks-systems-status-dot {
-  background: #f4c957;
+.aks-systems-status[data-status='archived'] {
+  border-color: #373b41;
+  color: #777e87;
 }
 
-.aks-systems-atlas .aks-systems-section-heading > .aks-systems-status {
-  justify-self: end;
-}
-
-.aks-systems-atlas-screen {
-  position: relative;
+.aks-systems-atlas-console {
   overflow: hidden;
-  border: 1px solid #26334a;
-  border-radius: 1rem;
-  box-shadow: 0 1.4rem 4rem rgb(0 0 0 / 28%);
-  background: #090e17;
+  border: 1px solid #263244;
+  border-radius: 0.42rem;
+  background: #07101a;
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 32%);
 }
 
 .aks-systems-atlas-toolbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.65rem;
+  display: flex;
+  min-height: 3rem;
   align-items: center;
-  min-height: 3.25rem;
-  padding-inline: 1rem;
-  border-bottom: 1px solid #26334a;
+  justify-content: space-between;
+  padding-inline: 0.9rem;
+  border-bottom: 1px solid #263244;
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   letter-spacing: 0.08em;
 }
 
-.aks-systems-atlas-mark {
+.aks-systems-atlas-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.aks-systems-atlas-icon {
   display: grid;
+  width: 1.35rem;
+  height: 1.35rem;
   place-items: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  border-radius: 0.45rem;
-  background: var(--systems-action);
+  border-radius: 0.3rem;
+  background: var(--systems-blue);
+  color: #fff;
 }
 
 .aks-systems-atlas-live {
-  color: var(--systems-signal);
+  color: var(--systems-lime);
 }
 
-.aks-systems-atlas-map {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 34rem;
-}
-
-.aks-systems-orbit {
-  transform-origin: 450px 240px;
-  animation: systems-orbit 12s linear infinite;
-}
-
-.aks-systems-orbit--delayed {
-  animation-duration: 16s;
-  animation-direction: reverse;
-}
-
-.aks-systems-atlas-note {
-  position: absolute;
-  right: 1.2rem;
-  bottom: 1.2rem;
+.aks-systems-atlas-body {
   display: grid;
-  gap: 0.3rem;
-  min-width: 12rem;
-  padding: 1rem;
-  border: 1px solid #26334a;
-  border-radius: 0.75rem;
-  background: rgb(8 12 19 / 92%);
+  grid-template-columns: 6.8rem minmax(0, 1fr);
+  min-height: 31rem;
+}
+
+.aks-systems-atlas-nav {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.35rem 1rem;
+  border-right: 1px solid #1b2634;
+  background: #07101a;
+  color: #68788c;
   font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.46rem;
+  letter-spacing: 0.11em;
+}
+
+.aks-systems-atlas-nav > span {
+  color: var(--systems-blue);
   font-size: 0.64rem;
+}
+
+.aks-systems-atlas-nav small {
+  font-size: inherit;
+}
+
+.aks-systems-atlas-nav i {
+  height: 0.24rem;
+  margin-top: 0.2rem;
+  background: #162230;
+}
+
+.aks-systems-atlas-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 31rem;
+  background: #07101a;
+}
+
+.aks-systems-atlas-stage > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.92;
+  filter: brightness(0.78) saturate(1.08) contrast(1.09);
+}
+
+.aks-systems-atlas-stage::after {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(7 16 26 / 56%),
+      transparent 27%,
+      transparent 72%,
+      rgb(7 16 26 / 30%)
+    ),
+    linear-gradient(180deg, rgb(7 16 26 / 18%), transparent 68%, rgb(7 16 26 / 60%));
+  content: '';
+  pointer-events: none;
+}
+
+.aks-systems-atlas-core {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 48%;
+  display: grid;
+  width: 7.2rem;
+  height: 7.2rem;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgb(96 132 255 / 82%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.1rem rgb(45 92 255 / 10%),
+    inset 0 0 2rem rgb(45 92 255 / 24%);
+  background: rgb(30 68 198 / 58%);
+  color: #fff;
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.62rem;
+}
+
+.aks-systems-atlas-label {
+  position: absolute;
+  z-index: 2;
+  color: rgb(240 245 250 / 68%);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.aks-systems-atlas-label--inputs {
+  top: 39%;
+  left: 17%;
+}
+.aks-systems-atlas-label--signals {
+  top: 34%;
+  right: 17%;
+}
+.aks-systems-atlas-label--context {
+  bottom: 22%;
+  left: 21%;
+}
+.aks-systems-atlas-label--output {
+  right: 18%;
+  bottom: 22%;
+}
+
+.aks-systems-atlas-signal {
+  position: absolute;
+  z-index: 3;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  min-width: 10rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #243040;
+  border-radius: 0.35rem;
+  background: rgb(6 12 19 / 88%);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.48rem;
   text-transform: uppercase;
 }
 
-.aks-systems-atlas-note span {
-  color: var(--systems-text-muted);
+.aks-systems-atlas-signal span {
+  color: var(--systems-muted);
 }
 
-.aks-systems-atlas-note strong {
-  color: var(--systems-signal);
+.aks-systems-atlas-signal strong {
+  color: var(--systems-lime);
 }
 
 .aks-systems-atlas-footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: center;
-  margin-top: 1.5rem;
+  padding-top: 1.25rem;
 }
 
 .aks-systems-atlas-footer > div:first-child {
   display: grid;
-  gap: 0.625rem;
-  max-width: 42rem;
+  gap: 0.4rem;
+  max-width: 39rem;
 }
 
 .aks-systems-atlas-footer p {
-  font-size: 1.05rem;
-  line-height: 1.55;
+  font-size: 0.83rem;
+  line-height: 1.45;
 }
 
-.aks-systems-atlas-footer span {
-  color: var(--systems-text-muted);
-  font-size: 0.82rem;
+.aks-systems-atlas-footer > div:first-child span {
+  color: var(--systems-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
 }
 
 .aks-systems-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.52rem;
   align-items: center;
 }
 
 .aks-systems-button,
 .aks-systems-quick-link {
   display: inline-flex;
+  min-height: 2.25rem;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
-  border: 1px solid var(--systems-border);
+  gap: 0.48rem;
+  padding: 0.5rem 0.82rem;
+  border: 1px solid #303948;
   border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
+  background: rgb(7 10 14 / 62%);
+  font-size: 0.66rem;
+  font-weight: 650;
   text-decoration: none;
   transition:
     transform 120ms ease,
@@ -365,29 +487,29 @@
 .aks-systems-button:focus-visible,
 .aks-systems-quick-link:hover,
 .aks-systems-quick-link:focus-visible {
-  transform: translateY(-2px);
-  border-color: var(--systems-signal);
-}
-
-.aks-systems-button:active,
-.aks-systems-quick-link:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(-1px);
+  border-color: var(--systems-lime);
 }
 
 .aks-systems-button:focus-visible,
 .aks-systems-quick-link:focus-visible {
-  outline: 2px solid var(--systems-signal);
+  outline: 2px solid var(--systems-lime);
   outline-offset: 3px;
 }
 
 .aks-systems-button--primary {
-  border-color: var(--systems-action);
-  background: var(--systems-action);
-  color: white;
+  border-color: var(--systems-blue);
+  background: var(--systems-blue);
+  color: #fff;
 }
 
-.aks-systems-button--secondary {
-  background: transparent;
+.aks-systems-operation {
+  padding-block: 8.5rem 7.7rem;
+  background: #07090d;
+}
+
+.aks-systems-operation-heading {
+  margin-bottom: 3rem;
 }
 
 .aks-systems-station {
@@ -397,256 +519,230 @@
 .aks-systems-station figure {
   overflow: hidden;
   border: 1px solid var(--systems-border);
-  border-radius: 1rem;
-  background: var(--systems-surface);
+  border-radius: 0.38rem;
+  background: #0b1119;
+}
+
+.aks-systems-station-media {
+  position: relative;
+  overflow: hidden;
+  background: #071019;
+}
+
+.aks-systems-station-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aks-systems-station--feature .aks-systems-station-media {
+  aspect-ratio: 2.03 / 1;
+}
+
+.aks-systems-station--feature .aks-systems-station-image {
+  object-position: center 48%;
 }
 
 .aks-systems-station figcaption {
   display: flex;
-  gap: 1rem;
+  min-height: 6.25rem;
   align-items: end;
   justify-content: space-between;
-  padding: 1rem 1.15rem 1.1rem;
+  gap: 1rem;
+  padding: 0.8rem 0.95rem 0.9rem;
   border-top: 1px solid var(--systems-border);
 }
 
 .aks-systems-station figcaption > div {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.2rem;
 }
 
 .aks-systems-station figcaption p {
-  max-width: 48rem;
-  color: var(--systems-text-muted);
-  font-size: 0.72rem;
+  max-width: 41rem;
+  color: var(--systems-muted);
+  font-size: 0.58rem;
   line-height: 1.4;
 }
 
 .aks-systems-station h3 {
-  font-size: clamp(1.8rem, 4vw, 3.8rem);
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  text-transform: uppercase;
 }
 
 .aks-systems-station-function {
-  margin-top: 0.75rem !important;
-  max-width: 48rem;
-  color: var(--systems-text-muted);
-  font-size: 0.85rem;
-  line-height: 1.55;
+  max-width: 46rem;
+  margin-top: 0.55rem !important;
+  color: var(--systems-muted);
+  font-size: 0.66rem;
+  line-height: 1.5;
 }
 
 .aks-systems-station--feature {
-  margin-bottom: 1.5rem;
-}
-
-.aks-systems-station-svg {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 8.1;
+  margin-bottom: 2rem;
 }
 
 .aks-systems-station-pair {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: 1fr 1.08fr;
+  gap: 1.1rem;
+  margin-block: 1.9rem 2.55rem;
 }
 
-.aks-systems-station--pair figure > :first-child {
-  min-height: 20rem;
+.aks-systems-station--pair .aks-systems-station-media {
+  aspect-ratio: 1.26 / 1;
 }
 
-.aks-systems-mosaic {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
-  align-content: center;
-  min-height: 22rem;
-  padding: 1.25rem;
-  background:
-    linear-gradient(rgb(5 8 12 / 46%), rgb(5 8 12 / 72%)),
-    radial-gradient(circle at 50% 30%, #1c2b3d, #080b10 65%);
-  perspective: 38rem;
+.aks-systems-station--pair .aks-systems-station-image {
+  object-position: center;
 }
 
-.aks-systems-mosaic-tile {
-  display: grid;
-  align-content: end;
-  gap: 0.35rem;
-  min-height: 7rem;
-  padding: 0.55rem;
-  border: 1px solid #26354a;
-  background: linear-gradient(135deg, #152130, #080c12);
-  transform: rotateY(-7deg) rotateX(3deg);
-}
-
-.aks-systems-mosaic-tile[data-accent='true'] {
-  border-color: #397cff;
-  box-shadow: inset 0 0 1.2rem rgb(36 87 255 / 24%);
-}
-
-.aks-systems-mosaic-tile span {
-  display: block;
-  height: 0.22rem;
-  background: #6e8299;
-  opacity: 0.65;
-}
-
-.aks-systems-mosaic-tile span:first-child {
-  width: 76%;
-  background: #2457ff;
-}
-
-.aks-systems-radar {
-  display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  min-height: 22rem;
-  background: linear-gradient(145deg, #f4f5f5 0 48%, #d6d8da 48% 100%);
-  color: #07090d;
-}
-
-.aks-systems-radar-copy {
-  display: grid;
-  align-content: center;
-  gap: 0.55rem;
-  padding: 1.25rem;
-  font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.68rem;
-}
-
-.aks-systems-radar-copy strong {
-  color: #2457ff;
-}
-
-.aks-systems-radar svg {
-  width: 100%;
-  align-self: center;
+.aks-systems-station--pair:nth-child(2) .aks-systems-station-image {
+  object-position: center;
 }
 
 .aks-systems-quick-list {
-  display: grid;
   border-top: 1px solid var(--systems-border);
 }
 
 .aks-systems-quick {
   display: grid;
-  grid-template-columns: 7rem minmax(8rem, 0.55fr) minmax(0, 1fr) auto auto;
-  gap: 1rem;
+  grid-template-columns: 6.3rem minmax(7rem, 0.55fr) minmax(0, 1fr) auto auto;
+  gap: 0.9rem;
+  min-height: 5.75rem;
   align-items: center;
-  min-width: 0;
-  padding-block: 0.85rem;
   border-bottom: 1px solid var(--systems-border);
 }
 
-.aks-systems-quick-thumb {
+.aks-systems-quick-media {
+  width: 5.75rem;
+  height: 3.2rem;
+  overflow: hidden;
+  border-radius: 0.22rem;
+  background: #08101a;
+}
+
+.aks-systems-station-image--compact {
   display: block;
   width: 100%;
-  height: 4.25rem;
-  border-radius: 0.4rem;
+  height: 100%;
+  object-fit: cover;
 }
 
 .aks-systems-quick h3 {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
 }
 
 .aks-systems-quick p {
-  color: var(--systems-text-muted);
-  font-size: 0.8rem;
-  line-height: 1.45;
+  color: var(--systems-muted);
+  font-size: 0.64rem;
+  line-height: 1.42;
 }
 
 .aks-systems-quick-link {
-  min-width: 5.25rem;
+  min-width: 4.35rem;
+  min-height: 44px;
 }
 
 .aks-systems-manifesto {
   position: relative;
   overflow: hidden;
-  background: var(--systems-action);
-  color: white;
+  background: #2d5cff;
+  color: #fff;
 }
 
 .aks-systems-manifesto::after {
-  content: '';
   position: absolute;
-  top: -18%;
-  right: 12%;
+  top: -35%;
+  right: 11%;
   width: 1px;
-  height: 145%;
-  transform: rotate(-27deg);
-  background: rgb(255 255 255 / 38%);
+  height: 180%;
+  transform: rotate(-28deg);
+  background: rgb(255 255 255 / 28%);
+  content: '';
+}
+
+.aks-systems-manifesto-orbit {
+  position: absolute;
+  top: 15%;
+  right: -4rem;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 50%;
 }
 
 .aks-systems-manifesto-inner {
-  position: relative;
-  z-index: 1;
-  width: min(calc(100% - 3rem), 82rem);
-  margin-inline: auto;
-  padding-block: clamp(3.75rem, 7vw, 6.5rem);
-}
-
-.aks-systems-manifesto .aks-systems-kicker {
-  color: var(--systems-signal);
+  padding-block: 5.8rem 6.1rem;
 }
 
 .aks-systems-manifesto-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.6fr);
-  gap: 2.5rem;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.55fr);
+  gap: 4rem;
   align-items: end;
-  margin-top: 1rem;
+  margin-top: 0.8rem;
 }
 
 .aks-systems-manifesto h2 {
   display: grid;
-  font-size: clamp(3.8rem, 8vw, 8.2rem);
+  font-size: clamp(4.5rem, 8.1vw, 7.7rem);
+  line-height: 0.86;
 }
 
 .aks-systems-manifesto h2 span:last-child {
-  color: var(--systems-signal);
+  color: var(--systems-lime);
 }
 
 .aks-systems-manifesto-grid > p {
-  max-width: 34rem;
-  font-size: 0.94rem;
-  line-height: 1.6;
+  max-width: 31rem;
+  padding-bottom: 0.7rem;
+  font-size: 0.73rem;
+  line-height: 1.55;
 }
 
 .aks-systems-workbench {
-  padding-block: clamp(3.75rem, 7vw, 6rem);
-  border-bottom: 1px solid var(--systems-border);
-  background: var(--systems-surface-raised);
+  padding-block: 5.3rem 6.3rem;
+  background: #141923;
+}
+
+.aks-systems-workbench-heading {
+  margin-bottom: 2.8rem;
 }
 
 .aks-systems-tools {
   padding: 0;
-  border-top: 1px solid var(--systems-signal);
+  border-top: 1px solid #84923b;
   list-style: none;
 }
 
 .aks-systems-tools li {
   display: grid;
-  grid-template-columns: 2.5rem minmax(7rem, 0.5fr) minmax(0, 1.2fr) minmax(5rem, 0.5fr) auto 1.5rem;
-  gap: 1rem;
+  grid-template-columns:
+    2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(5rem, 0.48fr)
+    auto 1.2rem;
+  gap: 0.9rem;
+  min-height: 4.15rem;
   align-items: center;
-  min-height: 4.4rem;
-  border-bottom: 1px solid var(--systems-border);
+  border-bottom: 1px solid #27303e;
 }
 
 .aks-systems-tool-index {
-  color: var(--systems-signal);
+  color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.65rem;
+  font-size: 0.5rem;
 }
 
 .aks-systems-tools strong {
-  font-size: 0.88rem;
+  font-size: 0.7rem;
 }
 
-.aks-systems-tools
-  li
-  > span:not(.aks-systems-status):not(.aks-systems-tool-index):not(.aks-systems-tool-arrow) {
-  color: var(--systems-text-muted);
-  font-size: 0.78rem;
+.aks-systems-tool-function,
+.aks-systems-tool-env {
+  color: var(--systems-muted);
+  font-size: 0.62rem;
 }
 
 .aks-systems-tool-env {
@@ -656,91 +752,841 @@
 
 .aks-systems-tool-arrow {
   justify-self: end;
+  color: #777f8a;
 }
 
 .aks-systems-perspectives {
-  padding-block: clamp(5rem, 10vw, 9rem) 3rem;
-  background: radial-gradient(circle at 20% 0%, #11172a 0, var(--systems-canvas) 34%);
+  min-height: 44rem;
+  padding-block: 7.6rem 3rem;
+  background: radial-gradient(circle at 27% 8%, rgb(24 37 67 / 58%), transparent 32rem), #05070a;
 }
 
 .aks-systems-perspectives-inner {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
 .aks-systems-perspectives h2 {
-  max-width: 13ch;
-  font-size: clamp(3.4rem, 7vw, 7.2rem);
-  line-height: 0.98;
+  max-width: 11.8ch;
+  font-size: clamp(4.25rem, 7.4vw, 7rem);
+  line-height: 0.94;
 }
 
 .aks-systems-perspectives-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: end;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--systems-border);
+  margin-top: auto;
+  padding-top: 3.1rem;
+  border-top: 1px solid #202733;
 }
 
 .aks-systems-perspectives-bottom > p {
-  max-width: 38rem;
-  color: var(--systems-text-muted);
-  line-height: 1.6;
+  max-width: 36rem;
+  color: var(--systems-muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
 }
 
-@keyframes systems-signal {
-  from {
-    opacity: 0.42;
-  }
-
-  to {
-    opacity: 1;
-  }
+.aks-experience-footer:not([data-home]) {
+  background: #05070a;
 }
 
-@keyframes systems-orbit {
-  to {
-    transform: rotate(360deg);
+@media (max-width: 80rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 4.5rem), 71rem);
+  }
+
+  .aks-systems-hero {
+    height: 53rem;
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(4.2rem, 8.6vw, 6.8rem);
+  }
+
+  .aks-systems-section {
+    padding-block: 6.25rem;
+  }
+
+  .aks-systems-operation {
+    padding-block: 7rem 6.6rem;
+  }
+
+  .aks-systems-atlas-body {
+    min-height: 28rem;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 28rem;
   }
 }
 
 @media (max-width: 64rem) {
-  .aks-systems-wrap,
-  .aks-systems-manifesto-inner {
-    width: min(calc(100% - 2rem), 82rem);
+  .aks-systems-wrap {
+    width: min(calc(100% - 3rem), 61rem);
   }
 
-  .aks-systems-section-heading--split,
+  .aks-systems-hero {
+    height: 46rem;
+  }
+
+  .aks-systems-hero-copy {
+    padding-top: 8.4rem;
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(3.9rem, 9.7vw, 6rem);
+  }
+
+  .aks-systems-atlas-heading,
+  .aks-systems-operation-heading,
+  .aks-systems-workbench-heading,
   .aks-systems-manifesto-grid,
   .aks-systems-atlas-footer,
   .aks-systems-perspectives-bottom {
     grid-template-columns: minmax(0, 1fr);
+    gap: 1.6rem;
   }
 
-  .aks-systems-atlas .aks-systems-section-heading > .aks-systems-status {
+  .aks-systems-atlas-heading > .aks-systems-status {
     justify-self: start;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: 5.25rem minmax(0, 1fr);
+  }
+
+  .aks-systems-station-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .aks-systems-manifesto h2 {
+    font-size: clamp(4rem, 10.5vw, 6.2rem);
+  }
+
+  .aks-systems-perspectives {
+    min-height: 40rem;
+  }
+}
+
+@media (max-width: 48rem) {
+  .aks-experience-shell[data-destination='systems'] {
+    position: absolute;
+    background: linear-gradient(180deg, rgb(1 5 9 / 94%), rgb(1 5 9 / 58%) 82%, transparent);
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+    min-height: 0;
+  }
+
+  .aks-systems-wrap {
+    width: min(calc(100% - 2rem), 44rem);
+  }
+
+  .aks-systems-hero {
+    height: 54rem;
+  }
+
+  .aks-systems-hero-media {
+    object-position: 58% center;
+  }
+
+  .aks-systems-hero-overlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgb(2 5 8 / 62%) 0%,
+        rgb(2 5 8 / 24%) 45%,
+        rgb(2 5 8 / 70%) 86%,
+        #05070a 100%
+      ),
+      linear-gradient(90deg, rgb(2 5 8 / 75%), transparent 74%);
+  }
+
+  .aks-systems-hero-copy {
+    padding-top: 10.5rem;
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(3.6rem, 12.5vw, 5.5rem);
+  }
+
+  .aks-systems-hero-intro {
+    max-width: 26rem;
+  }
+
+  .aks-systems-hero-rail {
+    width: 100%;
+  }
+
+  .aks-systems-operation-rail ol {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .aks-systems-operation-rail li {
+    min-height: 4.75rem;
+    padding-inline: 0.55rem;
+  }
+
+  .aks-systems-operation-rail :is(span, strong) {
+    font-size: 0.47rem;
+  }
+
+  .aks-systems-section,
+  .aks-systems-operation {
+    padding-block: 5rem;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    min-height: 24rem;
+  }
+
+  .aks-systems-atlas-nav {
+    gap: 0.75rem;
+    padding: 1rem 0.55rem;
+  }
+
+  .aks-systems-atlas-nav small {
+    display: none;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 24rem;
+  }
+
+  .aks-systems-atlas-core {
+    width: 5.25rem;
+    height: 5.25rem;
+  }
+
+  .aks-systems-atlas-label {
+    font-size: 0.42rem;
+  }
+
+  .aks-systems-atlas-signal {
+    min-width: 8.5rem;
+  }
+
+  .aks-systems-station--feature .aks-systems-station-media {
+    aspect-ratio: 1.38 / 1;
   }
 
   .aks-systems-station-pair {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .aks-systems-station--pair figure > :first-child {
-    min-height: 18rem;
+  .aks-systems-station--pair .aks-systems-station-media {
+    aspect-ratio: 1.42 / 1;
   }
 
   .aks-systems-quick {
-    grid-template-columns: 6rem minmax(7rem, 0.55fr) minmax(0, 1fr) auto;
+    grid-template-columns: 5rem minmax(0, 0.65fr) minmax(0, 1fr) auto;
   }
 
   .aks-systems-quick .aks-systems-status {
     display: none;
   }
 
+  .aks-systems-manifesto-inner {
+    padding-block: 4.7rem;
+  }
+
+  .aks-systems-manifesto-grid {
+    margin-top: 0.6rem;
+  }
+
   .aks-systems-tools li {
-    grid-template-columns: 2rem minmax(6rem, 0.45fr) minmax(0, 1fr) auto 1.5rem;
+    grid-template-columns: 1.6rem minmax(4.8rem, 0.55fr) minmax(0, 1fr) auto 1rem;
+  }
+
+  .aks-systems-tool-env {
+    display: none;
+  }
+
+  .aks-systems-perspectives {
+    min-height: 44rem;
+    padding-top: 6rem;
+  }
+
+  .aks-systems-perspectives h2 {
+    max-width: 10.4ch;
+    font-size: clamp(3.7rem, 11vw, 5.5rem);
+  }
+
+  .aks-systems-perspectives-bottom {
+    margin-top: 4rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  .aks-systems-wrap {
+    width: calc(100% - 1.5rem);
+  }
+
+  .aks-systems-hero {
+    height: 61rem;
+  }
+
+  .aks-systems-hero-media {
+    object-position: 61% center;
+  }
+
+  .aks-systems-hero-copy {
+    padding-top: 11.5rem;
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(3.25rem, 14.8vw, 4.2rem);
+  }
+
+  .aks-systems-hero-title {
+    width: 7.5ch;
+  }
+
+  .aks-systems-hero-intro {
+    max-width: 19rem;
+    font-size: 0.78rem;
+  }
+
+  .aks-systems-operation-rail ol {
+    grid-template-columns: 1fr;
+  }
+
+  .aks-systems-operation-rail {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .aks-systems-operation-rail li {
+    grid-template-columns: 2rem 1fr;
+    gap: 0.5rem;
+    min-height: 2.6rem;
+    align-items: center;
+    padding-inline: 0.65rem;
+    border-top: 1px solid rgb(255 255 255 / 8%);
+    border-left: 0;
+  }
+
+  .aks-systems-operation-rail li:first-child {
+    border-top: 0;
+  }
+
+  .aks-systems-atlas-heading h2,
+  .aks-systems-operation-heading h2,
+  .aks-systems-workbench-heading h2 {
+    font-size: 2.75rem;
+  }
+
+  .aks-systems-atlas-console {
+    border-radius: 0.25rem;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 18rem;
+  }
+
+  .aks-systems-atlas-nav {
+    display: none;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 18rem;
+  }
+
+  .aks-systems-atlas-core {
+    width: 4.2rem;
+    height: 4.2rem;
+    font-size: 0.48rem;
+  }
+
+  .aks-systems-atlas-label {
+    display: none;
+  }
+
+  .aks-systems-atlas-signal {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    min-width: 7rem;
+    padding: 0.55rem;
+    font-size: 0.4rem;
+  }
+
+  .aks-systems-atlas-footer {
+    padding-top: 1rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .aks-systems-button {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .aks-systems-station figcaption {
+    display: grid;
+    min-height: 0;
+  }
+
+  .aks-systems-station h3 {
+    font-size: 2.45rem;
+  }
+
+  .aks-systems-quick {
+    grid-template-columns: 4.2rem minmax(0, 1fr) auto;
+    min-height: 5rem;
+  }
+
+  .aks-systems-quick-media {
+    width: 3.8rem;
+    height: 2.6rem;
+  }
+
+  .aks-systems-quick p,
+  .aks-systems-quick .aks-systems-status {
+    display: none;
+  }
+
+  .aks-systems-quick h3 {
+    font-size: 1rem;
+  }
+
+  .aks-systems-quick-link {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    flex: 0 0 44px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .aks-systems-quick-link span {
+    font-size: 0.85rem;
+  }
+
+  .aks-systems-manifesto h2 {
+    font-size: clamp(3.45rem, 17vw, 4.5rem);
+  }
+
+  .aks-systems-manifesto-grid > p {
+    max-width: 18rem;
+  }
+
+  .aks-systems-tools li {
+    grid-template-columns: 1.4rem minmax(4.2rem, 0.65fr) minmax(0, 1fr) 1rem;
+    gap: 0.55rem;
+    min-height: 4.1rem;
+  }
+
+  .aks-systems-tools .aks-systems-status,
+  .aks-systems-tool-env {
+    display: none;
+  }
+
+  .aks-systems-tool-function {
+    font-size: 0.55rem;
+  }
+
+  .aks-systems-perspectives {
+    min-height: 49rem;
+    padding-top: 5.5rem;
+  }
+
+  .aks-systems-perspectives h2 {
+    max-width: 9.2ch;
+    font-size: clamp(3.3rem, 15.2vw, 4.15rem);
+  }
+
+  .aks-systems-perspectives-bottom {
+    margin-top: 5rem;
+  }
+
+  .aks-systems-perspectives-bottom .aks-systems-actions {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-systems-button,
+  .aks-systems-quick-link {
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Systems V1.1 dossier fidelity pass. The supplied 1440 / 1280 / 768 / 390 boards
+ * are the visual source of truth for these final layout corrections. */
+.aks-systems-wrap {
+  width: min(calc(100% - 7rem), 82rem);
+}
+
+.aks-systems-hero-overlay {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(2 5 8 / 46%) 0%,
+      rgb(2 5 8 / 29%) 28%,
+      rgb(2 5 8 / 9%) 58%,
+      rgb(2 5 8 / 20%) 100%
+    ),
+    linear-gradient(180deg, rgb(1 5 9 / 2%) 54%, rgb(2 5 8 / 37%) 86%, #05070a 100%);
+}
+
+.aks-systems-hero-media {
+  object-position: 50% 52%;
+  filter: saturate(0.98) contrast(1.05) brightness(0.9);
+}
+
+.aks-systems-hero-copy {
+  padding-top: clamp(6.75rem, 8.5vw, 8.5rem);
+}
+
+.aks-systems-hero h1 {
+  font-size: clamp(4rem, 6.7vw, 6rem);
+}
+
+.aks-systems-hero-title {
+  width: 9.2ch;
+}
+
+.aks-systems-atlas-meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+  color: var(--systems-muted);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+}
+
+.aks-systems-atlas-toolbar {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 1rem;
+}
+
+.aks-systems-atlas-brand,
+.aks-systems-atlas-indicators {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.aks-systems-atlas-icon {
+  display: grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border-radius: 0.38rem;
+  background: var(--systems-blue);
+  color: white;
+}
+
+.aks-systems-atlas-crumb {
+  overflow: hidden;
+  color: rgb(255 255 255 / 32%);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aks-systems-atlas-indicators i {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  background: #889cff;
+}
+
+.aks-systems-atlas-indicators i:nth-child(2) {
+  background: var(--systems-lime);
+}
+
+.aks-systems-atlas-indicators b {
+  min-height: 1.8rem;
+  padding: 0.43rem 0.7rem;
+  border-radius: 999px;
+  background: #f3f3ef;
+  color: #0a0d12;
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+}
+
+.aks-systems-atlas-body {
+  grid-template-columns: 8rem minmax(0, 1fr);
+  min-height: 36.5rem;
+}
+
+.aks-systems-atlas-nav {
+  padding: 1.3rem 0.85rem;
+}
+
+.aks-systems-atlas-nav small {
+  padding: 0.48rem 0.55rem;
+  border-radius: 0.22rem;
+}
+
+.aks-systems-atlas-nav small.is-active {
+  background: rgb(45 92 255 / 31%);
+  color: white;
+}
+
+.aks-systems-atlas-stage {
+  min-height: 36.5rem;
+  background:
+    linear-gradient(rgb(4 8 14 / 6%), rgb(4 8 14 / 6%)),
+    radial-gradient(circle at 50% 48%, rgb(29 59 140 / 22%), transparent 48%);
+}
+
+.aks-systems-atlas-stage > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.98;
+}
+
+.aks-systems-atlas-signal {
+  right: 1.2rem;
+  bottom: 1.2rem;
+}
+
+.aks-systems-atlas-footer {
+  grid-template-columns: minmax(17rem, 0.8fr) minmax(14rem, 0.58fr) auto;
+  gap: 2rem;
+  align-items: start;
+}
+
+.aks-systems-atlas-summary {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.aks-systems-atlas-summary span {
+  color: var(--systems-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.aks-systems-atlas-bullets {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  color: var(--systems-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.aks-systems-atlas-bullets li::before {
+  margin-right: 0.6rem;
+  color: var(--systems-text);
+  content: '—';
+}
+
+.aks-systems-atlas-footer .aks-systems-actions {
+  justify-content: flex-end;
+}
+
+.aks-systems-station-media {
+  position: relative;
+  overflow: hidden;
+  background: #080d14;
+}
+
+.aks-systems-station-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aks-systems-station--feature .aks-systems-station-media {
+  aspect-ratio: 2.08 / 1;
+}
+
+.aks-systems-station--feature .aks-systems-station-image {
+  object-position: 50% 50%;
+}
+
+.aks-systems-station--pair .aks-systems-station-media {
+  aspect-ratio: 1.08 / 1;
+}
+
+.aks-systems-station--pair .aks-systems-station-image {
+  object-position: center;
+}
+
+.aks-systems-media-label {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.95rem;
+  padding: 0.24rem 0.42rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(2 6 10 / 58%);
+  color: rgb(255 255 255 / 62%);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.aks-systems-station figcaption {
+  padding: 0.86rem 1rem 0.95rem;
+}
+
+.aks-systems-station--pair figcaption {
+  align-items: end;
+}
+
+.aks-systems-station--pair h3 {
+  font-size: clamp(2rem, 3.6vw, 3.7rem);
+}
+
+.aks-systems-quick-media {
+  overflow: hidden;
+  height: 4.35rem;
+  border-radius: 0.28rem;
+  background: #0a0f17;
+}
+
+.aks-systems-station-image--compact {
+  object-fit: cover;
+  object-position: center;
+}
+
+.aks-systems-manifesto-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.aks-systems-manifesto-meta > span {
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+}
+
+.aks-systems-workbench-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.aks-systems-workbench-mark {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--systems-lime);
+  border-radius: 50%;
+  color: var(--systems-lime);
+  font-size: 1.15rem;
+}
+
+.aks-systems-tools li {
+  grid-template-columns:
+    2.25rem minmax(7rem, 0.48fr) minmax(12rem, 1.1fr) minmax(6rem, 0.42fr)
+    minmax(5.5rem, 0.4fr) 1rem;
+}
+
+.aks-systems-tool-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: var(--systems-text) !important;
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 0.58rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.aks-systems-tool-action i {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--systems-lime);
+}
+
+.aks-systems-perspectives {
+  min-height: 40rem;
+}
+
+@media (max-width: 80rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 6rem), 73rem);
+  }
+
+  .aks-systems-atlas-body,
+  .aks-systems-atlas-stage {
+    min-height: 32rem;
+  }
+
+  .aks-systems-atlas-footer {
+    grid-template-columns: minmax(15rem, 0.78fr) minmax(12rem, 0.55fr) auto;
+    gap: 1.4rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-actions {
+    max-width: 18rem;
+  }
+}
+
+@media (max-width: 64rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 3rem), 61rem);
+  }
+
+  .aks-systems-hero h1 {
+    font-size: clamp(3rem, 7.2vw, 4.25rem);
+  }
+
+  .aks-systems-atlas-meta {
+    justify-items: start;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    min-height: 25rem;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 25rem;
+  }
+
+  .aks-systems-atlas-footer {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-actions {
+    max-width: none;
+    justify-content: flex-start;
+  }
+
+  .aks-systems-operation {
+    padding-block: 6.4rem 5.6rem;
+  }
+
+  .aks-systems-manifesto-meta {
+    align-items: flex-start;
+  }
+
+  .aks-systems-tools li {
+    grid-template-columns: 2rem minmax(6rem, 0.5fr) minmax(0, 1fr) minmax(5rem, 0.45fr) 1rem;
   }
 
   .aks-systems-tool-env {
@@ -749,148 +1595,295 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-systems-hero {
-    min-height: 34rem;
+  .aks-systems-button,
+  .aks-systems-quick-link {
+    min-height: 44px;
   }
 
-  .aks-systems-hero-shade {
-    background:
-      linear-gradient(
-        180deg,
-        rgb(3 6 10 / 70%) 0%,
-        rgb(3 6 10 / 32%) 52%,
-        var(--systems-canvas) 100%
-      ),
-      linear-gradient(90deg, rgb(3 6 10 / 74%) 0%, transparent 72%);
+  .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    min-height: 3.15rem;
+    padding-block: 0.35rem;
   }
 
-  .aks-systems-hero-inner {
-    padding-block: 4.5rem 2.5rem;
+  .aks-experience-shell[data-destination='systems'] .aks-brand-signature {
+    grid-row: 1;
   }
 
-  .aks-systems-hero h1 {
-    font-size: clamp(3.2rem, 13vw, 5.8rem);
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu {
+    display: block;
+    grid-row: 1;
+    grid-column: 3;
+    justify-self: end;
   }
 
-  .aks-systems-operation-rail ol {
-    grid-template-columns: repeat(5, minmax(6.2rem, 1fr));
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-
-  .aks-systems-operation-rail li {
-    min-height: 4.25rem;
-  }
-
-  .aks-systems-section {
-    padding-block: 3.5rem;
-  }
-
-  .aks-systems-atlas-note {
-    position: static;
-    border-width: 1px 0 0;
-    border-radius: 0;
-  }
-
-  .aks-systems-atlas-footer .aks-systems-actions,
-  .aks-systems-perspectives-bottom .aks-systems-actions {
-    width: 100%;
-  }
-
-  .aks-systems-button {
-    flex: 1 1 10rem;
-  }
-
-  .aks-systems-radar {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .aks-systems-radar svg {
-    padding: 0 1rem 1rem;
-  }
-
-  .aks-systems-quick {
-    grid-template-columns: 5.25rem minmax(0, 1fr) auto;
-    gap: 0.75rem;
-  }
-
-  .aks-systems-quick p,
-  .aks-systems-quick .aks-systems-status {
+  .aks-experience-shell[data-destination='systems'] .aks-experience-meta {
     display: none;
   }
 
-  .aks-systems-quick-link {
-    min-width: 4.6rem;
-    padding-inline: 0.75rem;
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-trigger {
+    width: 2.35rem;
+    min-height: 2.35rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgb(4 8 13 / 52%);
+    font-size: 0;
   }
 
-  .aks-systems-manifesto h2 {
-    font-size: clamp(3.8rem, 15vw, 6.3rem);
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-icon {
+    font-size: 1rem;
+  }
+
+  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-nav {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 1rem;
+    width: min(18rem, calc(100vw - 2rem));
+    padding: 0.6rem;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 0.35rem;
+    background: rgb(5 8 12 / 96%);
+    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 38%);
+  }
+
+  .aks-systems-hero-media {
+    object-position: 54% 54%;
+  }
+
+  .aks-systems-atlas-toolbar {
+    min-height: 3rem;
+  }
+
+  .aks-systems-atlas-crumb {
+    display: none;
+  }
+
+  .aks-systems-atlas-body {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 21rem;
+  }
+
+  .aks-systems-atlas-nav {
+    display: none;
+  }
+
+  .aks-systems-atlas-stage {
+    min-height: 21rem;
+  }
+
+  .aks-systems-atlas-signal {
+    right: 0.7rem;
+    bottom: 0.7rem;
+  }
+
+  .aks-systems-manifesto-meta > span {
+    max-width: 12rem;
+    text-align: right;
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.75rem minmax(5.25rem, 0.55fr) minmax(0, 1fr) 1rem;
-    gap: 0.75rem;
-    min-height: 4.75rem;
+    grid-template-columns: 1.6rem minmax(6rem, 0.48fr) minmax(0, 1fr) auto 1rem;
   }
 
-  .aks-systems-tools .aks-systems-status,
-  .aks-systems-tool-env {
-    display: none;
-  }
-
-  .aks-systems-perspectives h2 {
-    font-size: clamp(3rem, 12vw, 5rem);
+  .aks-systems-tool-action {
+    font-size: 0.52rem !important;
   }
 }
 
-@media (max-width: 28rem) {
-  .aks-systems-wrap,
-  .aks-systems-manifesto-inner {
-    width: min(calc(100% - 1.5rem), 82rem);
+@media (max-width: 30rem) {
+  .aks-systems-wrap {
+    width: min(calc(100% - 1.5rem), 27rem);
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(2.9rem, 14vw, 4.7rem);
+    font-size: clamp(2.25rem, 10vw, 2.7rem);
+    line-height: 0.9;
   }
 
-  .aks-systems-station figcaption {
-    display: grid;
+  .aks-systems-hero-copy {
+    padding-top: 5.25rem;
+  }
+
+  .aks-systems-hero-media {
+    object-position: 58% 50%;
+  }
+
+  .aks-systems-hero-overlay {
+    background:
+      linear-gradient(180deg, rgb(2 5 8 / 16%), rgb(2 5 8 / 31%) 58%, #05070a 92%),
+      linear-gradient(90deg, rgb(2 5 8 / 48%), transparent 82%);
+  }
+
+  .aks-systems-atlas-body,
+  .aks-systems-atlas-stage {
+    min-height: 18.5rem;
+  }
+
+  .aks-systems-atlas-indicators i {
+    display: none;
+  }
+
+  .aks-systems-atlas-indicators b {
+    font-size: 0.44rem;
+  }
+
+  .aks-systems-atlas-bullets {
+    font-size: 0.62rem;
+  }
+
+  .aks-systems-station--feature .aks-systems-station-media,
+  .aks-systems-station--pair .aks-systems-station-media {
+    aspect-ratio: 1.65 / 1;
   }
 
   .aks-systems-quick {
-    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem 0.75rem;
+    padding-block: 0.85rem 1rem;
+  }
+
+  .aks-systems-quick-media {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3.1 / 1;
   }
 
   .aks-systems-quick h3 {
-    font-size: 1.15rem;
+    grid-column: 1;
+    font-size: 1.45rem;
+  }
+
+  .aks-systems-quick p {
+    display: block;
+    grid-column: 1 / -1;
+    font-size: 0.68rem;
+  }
+
+  .aks-systems-quick .aks-systems-status {
+    display: inline-flex;
+    grid-column: 1;
   }
 
   .aks-systems-quick-link {
-    width: 2.75rem;
-    min-width: 2.75rem;
+    grid-row: 2;
+    grid-column: 2;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
     font-size: 0;
   }
 
   .aks-systems-quick-link span {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+  }
+
+  .aks-systems-manifesto-meta {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .aks-systems-manifesto-meta > span {
+    justify-self: end;
+  }
+
+  .aks-systems-manifesto h2 {
+    font-size: clamp(2.8rem, 13.5vw, 3.35rem);
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.5rem minmax(4.5rem, 0.5fr) minmax(0, 1fr) 1rem;
-    font-size: 0.72rem;
+    grid-template-columns: 1.3rem minmax(0, 1fr) auto;
+    gap: 0.25rem 0.55rem;
+    min-height: 4.5rem;
+    padding-block: 0.65rem;
+  }
+
+  .aks-systems-tool-index {
+    grid-row: 1 / 3;
+  }
+
+  .aks-systems-tool-function {
+    grid-column: 2;
+    font-size: 0.62rem !important;
+  }
+
+  .aks-systems-tool-env {
+    display: none;
+  }
+
+  .aks-systems-tool-action {
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  .aks-systems-tool-arrow {
+    grid-row: 2;
+    grid-column: 3;
+  }
+
+  .aks-systems-perspectives h2 {
+    font-size: clamp(2.35rem, 11vw, 2.8rem);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aks-systems-network-lines path,
-  .aks-systems-node--pulse,
-  .aks-systems-orbit,
-  .aks-systems-button,
-  .aks-systems-quick-link {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
+/* Final dossier alignment: preserve the photographic hero stacking and the exact
+ * mobile section rhythm from the supplied 390px board. */
+.aks-systems-hero-media {
+  z-index: 0;
+}
+
+.aks-systems-hero-overlay {
+  z-index: 1;
+}
+
+.aks-systems-hero-copy {
+  z-index: 2;
+}
+
+.aks-systems-hero-rail {
+  z-index: 3;
+}
+
+@media (max-width: 30rem) {
+  .aks-systems-atlas-footer .aks-systems-actions {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-columns: none;
+    gap: 0.45rem;
+  }
+
+  .aks-systems-atlas-footer .aks-systems-button {
+    width: auto;
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding-inline: 0.8rem;
+  }
+
+  .aks-systems-operation {
+    padding-bottom: 13rem;
+  }
+
+  .aks-systems-manifesto {
+    min-height: 610px;
+  }
+
+  .aks-systems-manifesto-grid {
+    margin-top: 4.5rem;
+  }
+
+  .aks-systems-workbench {
+    min-height: 840px;
+  }
+
+  .aks-systems-tools li {
+    min-height: 5.75rem;
+  }
+
+  .aks-systems-perspectives {
+    min-height: 44rem;
   }
 }
