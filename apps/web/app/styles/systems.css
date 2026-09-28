@@ -1222,7 +1222,6 @@
   }
 }
 
-
 /* Systems V1.1 dossier fidelity pass. The supplied 1440 / 1280 / 768 / 390 boards
  * are the visual source of truth for these final layout corrections. */
 .aks-systems-wrap {
@@ -1766,9 +1765,10 @@
   .aks-systems-quick-link {
     grid-row: 2;
     grid-column: 2;
-    width: 2rem;
-    min-width: 2rem;
-    min-height: 2rem;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
     font-size: 0;
   }
