@@ -362,6 +362,18 @@ function mount(root, startTab) {
   }
 
   /* ---------- chrome : en-tête, onglets, bouton parcours ---------- */
+  // The scene heading and its status reserve this column for the fullscreen control.
+  el(
+    'foreignObject',
+    {
+      x: W - 56,
+      y: compact ? 76 : 4,
+      width: 44,
+      height: 44,
+      'data-map-fullscreen-slot': '',
+    },
+    chrome,
+  );
   if (!compact) {
     el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
     el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
@@ -437,7 +449,7 @@ function mount(root, startTab) {
   var btnIco = el('path', { class: 'btn-ico', d: '' }, btn);
   var btnTxt = el('text', { x: BX + 32, y: BTN_Y + 18.5, class: 'btn-txt' }, btn, 'PARCOURIR');
   if (!compact)
-    el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
+    el('text', { x: SIDE / 2, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
   function paintBtn(on) {
     btn.classList.toggle('is-on', on);
     btnTxt.textContent = trc(on ? 'ARRÊTER' : 'PARCOURIR');
@@ -548,7 +560,7 @@ function mount(root, startTab) {
       el('line', { x1: x, y1: HEAD, x2: x, y2: H, class: 'grid-l' }, g);
     });
     el('line', { x1: SIDE, y1: cy + 176, x2: W, y2: cy + 176, class: 'grid-l' }, g);
-    el('text', { x: W - 24, y: HEAD + 22, class: 'hint' }, g, 'INTERACTIF');
+    el('text', { x: W - 72, y: HEAD + 30, class: 'hint' }, g, 'INTERACTIF');
   }
 
   function orb(g, x, y, r, tone) {
@@ -3946,7 +3958,7 @@ function mount(root, startTab) {
     if (sc.q) {
       if (compact) {
         el('text', { x: 12, y: 92, class: 'q-k' }, g, 'QUESTION');
-        wrap(g, sc.q, 12, 112, 336, 19, 'q-t');
+        wrap(g, sc.q, 12, 112, 276, 19, 'q-t');
       } else {
         el('text', { x: SIDE + 24, y: HEAD + 32, class: 'q-k' }, g, 'QUESTION');
         el('text', { x: SIDE + 24, y: HEAD + 51, class: 'q-t' }, g, sc.q);

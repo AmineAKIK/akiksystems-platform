@@ -417,6 +417,19 @@ function mount(root, startTab) {
   el('tspan', null, ttl, 'SENTINEL / INCIDENTS');
   var crumb = el('tspan', { dx: 12, class: 'h-crumb' }, ttl, '');
 
+  // One reserved header slot, in the same coordinate system as the animation controls.
+  el(
+    'foreignObject',
+    {
+      x: W - (compact ? 48 : 56),
+      y: compact ? 0 : 6,
+      width: 44,
+      height: 44,
+      'data-map-fullscreen-slot': '',
+    },
+    chrome,
+  );
+
   var pill = el(
     'g',
     {
@@ -430,7 +443,7 @@ function mount(root, startTab) {
     chrome,
   );
   var pillW = compact ? 164 : 132,
-    PX = compact ? 184 : W - 16 - pillW,
+    PX = compact ? 184 : W - 16 - pillW - 52,
     PY = compact ? H - 42 : 13,
     PH = 30;
   el(
@@ -471,12 +484,12 @@ function mount(root, startTab) {
   });
   el(
     'circle',
-    { cx: compact ? W - 34 : W - 16 - pillW - 34, cy: compact ? 22 : 28, r: 5, fill: '#7d99ff' },
+    { cx: compact ? W - 82 : PX - 34, cy: compact ? 22 : 28, r: 5, fill: '#7d99ff' },
     chrome,
   );
   el(
     'circle',
-    { cx: compact ? W - 14 : W - 16 - pillW - 14, cy: compact ? 22 : 28, r: 5, fill: '#c8ff2e' },
+    { cx: compact ? W - 62 : PX - 14, cy: compact ? 22 : 28, r: 5, fill: '#c8ff2e' },
     chrome,
   );
 
@@ -575,7 +588,7 @@ function mount(root, startTab) {
   var btnIco = el('path', { class: 'btn-ico', d: '' }, btn);
   var btnTxt = el('text', { x: BX + 32, y: BTN_Y + 18.5, class: 'btn-txt' }, btn, 'PARCOURIR');
   if (!compact)
-    el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
+    el('text', { x: SIDE / 2, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
   function paintBtn(on) {
     btn.classList.toggle('is-on', on);
     btnTxt.textContent = trc(on ? 'ARRÊTER' : 'PARCOURIR');

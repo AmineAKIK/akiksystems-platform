@@ -475,6 +475,181 @@
   container-type: inline-size;
 }
 
+/* Shared, state-driven fullscreen shell for the two interactive maps. */
+.aks-map-fullscreen-frame {
+  position: relative;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.aks-map-fullscreen-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.aks-map-fullscreen-control {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #aeb9ca;
+  font:
+    700 0.68rem/1 Archivo,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+/* Both the button and its reserved slot scale with the SVG, never with viewport offsets. */
+.aks-map-fullscreen-control::before {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgb(139 151 179 / 28%);
+  border-radius: 5px;
+  pointer-events: none;
+  content: '';
+}
+
+.aks-map-fullscreen-frame .aks-map-fullscreen-control > svg {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.4;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='false'] .aks-map-fullscreen-control span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.aks-map-fullscreen-control:hover {
+  background: #0b1322;
+  color: #fff;
+}
+
+.aks-map-fullscreen-control:hover::before,
+.aks-map-fullscreen-control:focus-visible::before {
+  border-color: rgb(200 255 46 / 72%);
+}
+
+.aks-map-fullscreen-control:focus-visible {
+  outline: 2px solid var(--systems-lime);
+  outline-offset: -3px;
+}
+
+.aks-map-fullscreen-control:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.aks-map-fullscreen-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 42%, rgb(35 51 75 / 42%), transparent 58%), #030711;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-mode='fallback'] {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-toolbar {
+  position: static;
+  min-height: 3rem;
+  pointer-events: none;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control {
+  width: auto;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  gap: 0.55rem;
+  color: #dce3ef;
+  border: 1px solid rgb(139 151 179 / 32%);
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control::before {
+  content: none;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] > :is(.sn-map, .pc-map) {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] .sn-scroll {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.aks-map-fullscreen-frame[data-fullscreen-active='true'] .sn-scroll > svg {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: 100%;
+  margin: auto;
+}
+
+@media (max-width: 32rem) {
+  .aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control span {
+    font-size: 0.625rem;
+  }
+}
+
 /* Reserves the map's own height before it mounts (see the Sentinel map below). */
 .aks-systems-protocap-map {
   width: 100%;
