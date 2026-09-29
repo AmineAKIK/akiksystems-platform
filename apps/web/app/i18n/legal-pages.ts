@@ -27,7 +27,7 @@ export interface LegalPageDefinition {
   content: Record<Locale, LegalPageContent>;
 }
 
-const updatedAtIso = '2026-09-28';
+const updatedAtIso = '2026-09-29';
 
 export const legalPages: readonly LegalPageDefinition[] = [
   {
@@ -41,7 +41,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'How the code-only AkikSystems public site handles technical and personal data.',
         updatedLabel: 'Last updated',
-        updatedAt: '28 September 2026',
+        updatedAt: '29 September 2026',
         updatedAtIso,
         sections: [
           {
@@ -77,7 +77,8 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'hosting',
             title: 'Hosting and recipients',
             paragraphs: [
-              'The application is hosted using Railway infrastructure. Technical data is limited to what is required to deliver, secure, observe, and troubleshoot the public service. AkikSystems does not sell personal data and does not disclose it to advertisers.',
+              'The application runs on a self-managed virtual private server provided in France by OVHcloud (OVH SAS). Technical data is limited to what is required to deliver, secure, observe, and troubleshoot the public service. AkikSystems does not sell personal data and does not disclose it to advertisers.',
+              'Nginx access logs are rotated daily and kept for about fourteen days. The application container logs are rotated and limited to three files of ten megabytes; how long they are kept therefore depends on traffic volume.',
             ],
           },
           {
@@ -95,7 +96,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Comment le site public AkikSystems, désormais code-only, traite les données techniques et personnelles.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: '28 septembre 2026',
+        updatedAt: '29 septembre 2026',
         updatedAtIso,
         sections: [
           {
@@ -131,7 +132,8 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'hebergement',
             title: 'Hébergement et destinataires',
             paragraphs: [
-              'L’application est hébergée au moyen de l’infrastructure Railway. Les données techniques sont limitées à ce qui est nécessaire pour fournir, sécuriser, observer et dépanner le service public. AkikSystems ne vend aucune donnée personnelle et ne la communique pas à des annonceurs.',
+              'L’application fonctionne sur un serveur privé virtuel autogéré, fourni en France par OVHcloud (OVH SAS). Les données techniques sont limitées à ce qui est nécessaire pour fournir, sécuriser, observer et dépanner le service public. AkikSystems ne vend aucune donnée personnelle et ne la communique pas à des annonceurs.',
+              'Les journaux d’accès Nginx sont soumis à une rotation quotidienne et conservés pendant environ quatorze jours. Les journaux applicatifs du conteneur sont soumis à une rotation limitée à trois fichiers de dix mégaoctets ; leur durée de conservation varie selon le volume d’activité.',
             ],
           },
           {
@@ -156,7 +158,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Publisher, hosting, responsibility, and intellectual-property information for AkikSystems.',
         updatedLabel: 'Last updated',
-        updatedAt: '28 September 2026',
+        updatedAt: '29 September 2026',
         updatedAtIso,
         sections: [
           {
@@ -170,7 +172,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'hosting',
             title: 'Hosting',
             paragraphs: [
-              'The application is hosted by Railway Corporation, United States. Current corporate, contractual, and service information is available from railway.com and its legal documentation.',
+              'The application runs on a self-managed virtual private server provided in France by OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France.',
             ],
           },
           {
@@ -203,7 +205,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Informations relatives à l’éditeur, à l’hébergement, à la responsabilité et à la propriété intellectuelle d’AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: '28 septembre 2026',
+        updatedAt: '29 septembre 2026',
         updatedAtIso,
         sections: [
           {
@@ -217,7 +219,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
             id: 'hebergement',
             title: 'Hébergement',
             paragraphs: [
-              'L’application est hébergée par Railway Corporation, aux États-Unis. Les informations sociales, contractuelles et techniques à jour sont accessibles sur railway.com et dans sa documentation juridique.',
+              'L’application fonctionne sur un serveur privé virtuel autogéré, fourni en France par OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France.',
             ],
           },
           {
@@ -256,7 +258,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         title: 'Cookie policy',
         description: 'Current cookie and browser-storage policy for the public AkikSystems site.',
         updatedLabel: 'Last updated',
-        updatedAt: '28 September 2026',
+        updatedAt: '29 September 2026',
         updatedAtIso,
         sections: [
           {
@@ -289,7 +291,7 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Politique actuelle relative aux cookies et au stockage navigateur du site public AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: '28 septembre 2026',
+        updatedAt: '29 septembre 2026',
         updatedAtIso,
         sections: [
           {

@@ -1,6 +1,5 @@
 .git
 .github
-.railway
 node_modules
 .pnpm-store
 **/node_modules
@@ -14,3 +13,4 @@ coverage
 .DS_Store
 .idea
 .vscode
+deploy

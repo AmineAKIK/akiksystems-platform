@@ -68,19 +68,27 @@ jobs:
         shell: bash
         run: |
           docker run --rm --entrypoint node akiksystems-web-ci -e "const p=require('./package.json'); if (p.dependencies || p.devDependencies) process.exit(1)"
+          # Same hardening as deploy/vps/compose.yml.
           docker run --rm -d --name akiksystems-web-ci-runtime --network host \
+            --read-only --tmpfs /tmp \
+            --cap-drop ALL --security-opt no-new-privileges:true \
             -e NODE_ENV=production \
             -e PORT=4188 \
             akiksystems-web-ci
           trap 'docker logs akiksystems-web-ci-runtime || true; docker rm -f akiksystems-web-ci-runtime >/dev/null 2>&1 || true' EXIT
           for attempt in $(seq 1 40); do
-            if curl --fail --silent -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null; then
+            if curl --fail --silent -H 'Host: healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null; then
               break
             fi
             sleep 0.25
           done
-          curl --fail --silent -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null
-          test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: railway-healthcheck.invalid' http://127.0.0.1:4188/en)" = "421"
+          curl --fail --silent -H 'Host: healthcheck.invalid' http://127.0.0.1:4188/health >/dev/null
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: healthcheck.invalid' http://127.0.0.1:4188/en)" = "421"
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: akiksystems.fr' http://127.0.0.1:4188/fr/profil)" = "200"
+          docker exec akiksystems-web-ci-runtime node -e "fetch('http://127.0.0.1:4188/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+
+      - name: Validate VPS Compose file
+        run: GIT_SHA="$GITHUB_SHA" docker compose -f deploy/vps/compose.yml config --quiet
 
       - name: Verify client/server boundary
         run: pnpm --filter @akiksystems/web check:client-secrets

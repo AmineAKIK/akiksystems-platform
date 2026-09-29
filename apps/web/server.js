@@ -8,7 +8,6 @@ import express from 'express';
 const BUILD_PATH = './build/server/index.js';
 const env = parseWebServerEnv(process.env);
 const DEVELOPMENT = env.NODE_ENV === 'development';
-const STAGING = process.env.RAILWAY_ENVIRONMENT_NAME === 'staging';
 const PORT = env.PORT;
 const logger = createLogger({ service: 'web' });
 
@@ -33,9 +32,7 @@ function isAllowedHostname(hostname) {
     allowedPublicHostnames.has(normalized) ||
     normalized === 'localhost' ||
     normalized === '127.0.0.1' ||
-    normalized === '::1' ||
-    normalized.endsWith('.up.railway.app') ||
-    normalized.endsWith('.railway.internal')
+    normalized === '::1'
   );
 }
 
@@ -125,10 +122,6 @@ app.use((request, response, next) => {
 
   if (env.NODE_ENV === 'production') {
     response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-
-  if (STAGING) {
-    response.setHeader('X-Robots-Tag', noIndexDirective);
   }
 
   next();

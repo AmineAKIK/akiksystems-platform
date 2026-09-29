@@ -52,6 +52,13 @@ The CI workflow also runs Chromium qualification for the Home and Systems pages 
 
 ## Deployment
 
-Railway's target topology is a single web service. The application healthcheck is `GET /health` and does not depend on any external database.
+Production is a single web container on the AkikSystems VPS (OVHcloud):
+
+- built from an exact Git commit with `apps/web/Dockerfile`;
+- published only on `127.0.0.1` on the server (port 3100), behind Nginx, which terminates HTTPS;
+- served for `akiksystems.com`, `www.akiksystems.com`, `akiksystems.fr` and `www.akiksystems.fr` (`www` redirects to the bare domain);
+- monitored through `GET /health`, which does not depend on any external service.
+
+The procedure, Compose file and Nginx reference are in [`deploy/vps/`](deploy/vps/README.md).
 
 Content changes are code changes.

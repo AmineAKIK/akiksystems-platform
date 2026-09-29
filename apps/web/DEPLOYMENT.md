@@ -1,15 +1,23 @@
 # Web deployment notes
 
-Railway uses `GET /health` as the web service healthcheck.
+Production runs on the AkikSystems VPS (OVHcloud) as a single container. The
+full procedure, Compose file and Nginx reference live in
+[`deploy/vps/`](../../deploy/vps/README.md).
 
-The endpoint only reports that the web process is running. It has no external
-dependency: the application ships its content in code and uses no database,
-worker, or object storage.
+## Contract
 
-## Production
+- The image is built from an exact Git commit SHA with `apps/web/Dockerfile`
+  and tagged `akiksystems-web:<sha>`.
+- The container starts with `node server.js`. The only runtime configuration is
+  `NODE_ENV=production` and `PORT=3000`.
+- The container port is never published publicly: Compose binds it to
+  `127.0.0.1:3100` on the host.
+- Nginx terminates HTTPS for the four public domains and forwards `Host`,
+  `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
+  `X-Request-ID`. The app trusts exactly one proxy hop.
+- `GET /health` is the healthcheck. It only reports that the web process is
+  running and accepts any `Host`; every other path answers `421` for hostnames
+  outside the four public domains and localhost.
 
-Staging and production deploy the `web` service from `main`. The build is
-`pnpm --filter @akiksystems/web build` and the start command is
-`node server.js`. The only runtime configuration is `NODE_ENV` and `PORT`.
-
-There is no migration, bootstrap, or administrator step.
+There is no database, migration, bootstrap, worker or administrator step: the
+content ships in the code.
