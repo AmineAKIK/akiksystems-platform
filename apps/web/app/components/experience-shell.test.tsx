@@ -41,11 +41,7 @@ describe('ExperienceShell', () => {
     expect(html).toContain(
       'aria-current="page" class="aks-link" href="/en/systems" data-discover="true">Systems</a>',
     );
-    expect(html).toContain('aria-label="Current context"');
-    expect(html).toContain('class="aks-experience-context-list"');
-    expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
-    expect(html).toContain('aria-hidden="true" class="aks-experience-context-separator">/</li>');
-    expect(html).toContain('<span aria-current="page">Sentinel</span>');
+    expect(html).not.toContain('class="aks-experience-context');
     expect(html).toContain(
       'aria-label="English active. View in français." class="aks-home-language aks-experience-language" hrefLang="fr" href="/fr/systems/sentinelle"',
     );
@@ -126,8 +122,7 @@ describe('ExperienceShell', () => {
 
     expect(html).toContain('aria-label="Navigation principale"');
     expect(html).toContain('href="/fr/profil" data-discover="true">Profil</a>');
-    expect(html).toContain('aria-label="Contexte actuel"');
-    expect(html).toContain('<span aria-current="page">Accueil</span>');
+    expect(html).not.toContain('class="aks-experience-context');
     expect(html).toContain('aria-current="page" class="aks-link"');
     expect(html).toContain(
       'aria-label="Français actif. Afficher en English." class="aks-home-language aks-experience-language" hrefLang="en" href="/en"',
@@ -151,7 +146,6 @@ describe('ExperienceShell', () => {
 
     expect(html).toContain('data-destination="page"');
     expect(html).not.toContain('data-home="true"');
-    expect(html).toContain('<span aria-current="page">Mentions légales</span>');
     expect(html).not.toContain('aria-current="page" class="aks-link"');
   });
 });

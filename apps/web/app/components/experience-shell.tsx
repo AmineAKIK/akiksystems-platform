@@ -8,7 +8,6 @@ import {
   globalDestinations,
 } from '../i18n/global-destinations';
 import { ExperienceFooter } from './experience-footer';
-import { ExperienceLocalContext } from './experience-local-context';
 import { LanguageSwitch } from './language-switch';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
@@ -26,7 +25,6 @@ export function ExperienceShell({
   locale,
   pathname,
   alternateHref,
-  currentTitle = null,
   mode = 'default',
   children,
 }: ExperienceShellProps) {
@@ -35,6 +33,20 @@ export function ExperienceShell({
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const previousRootOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = previousRootOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [mobileMenuOpen]);
 
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
@@ -68,7 +80,6 @@ export function ExperienceShell({
               className="aks-brand-signature"
               prefetch="intent"
               to={`/${locale}`}
-              viewTransition
             >
               <BrandMark />
               <span className="aks-brand-wordmark">AkikSystems</span>
@@ -80,7 +91,6 @@ export function ExperienceShell({
                 className="aks-link"
                 prefetch="intent"
                 to={`/${locale}`}
-                viewTransition
               >
                 {dictionary.shell.homeLabel}
               </RouterLink>
@@ -91,7 +101,6 @@ export function ExperienceShell({
                   key={destination.id}
                   prefetch="intent"
                   to={destinationHref(destination.id, locale)}
-                  viewTransition
                 >
                   {destination.label[locale]}
                 </RouterLink>
@@ -107,7 +116,9 @@ export function ExperienceShell({
               <summary className="aks-experience-mobile-menu-trigger">
                 <span>{dictionary.shell.menuLabel}</span>
                 <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
-                  +
+                  <span />
+                  <span />
+                  <span />
                 </span>
               </summary>
               <nav
@@ -120,7 +131,6 @@ export function ExperienceShell({
                   onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
                   to={`/${locale}`}
-                  viewTransition
                 >
                   {dictionary.shell.homeLabel}
                 </RouterLink>
@@ -132,21 +142,27 @@ export function ExperienceShell({
                     onClick={() => setMobileMenuOpen(false)}
                     prefetch="intent"
                     to={destinationHref(destination.id, locale)}
-                    viewTransition
                   >
                     {destination.label[locale]}
                   </RouterLink>
                 ))}
+                <div className="aks-experience-mobile-language">
+                  {languageHref === null ? (
+                    <span aria-disabled="true" className="aks-language-unavailable">
+                      {dictionary.shell.languageUnavailableLabel}
+                    </span>
+                  ) : (
+                    <LanguageSwitch
+                      className="aks-experience-language"
+                      locale={locale}
+                      to={languageHref}
+                    />
+                  )}
+                </div>
               </nav>
             </details>
 
             <div className="aks-experience-meta">
-              <ExperienceLocalContext
-                currentTitle={currentTitle}
-                destinationId={destinationId}
-                home={isHome}
-                locale={locale}
-              />
               {languageHref === null ? (
                 <span aria-disabled="true" className="aks-language-unavailable">
                   {dictionary.shell.languageUnavailableLabel}

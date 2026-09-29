@@ -6,6 +6,7 @@ export interface SystemsAction {
   label: string;
   href: string;
   kind: 'primary' | 'secondary';
+  disabled?: boolean;
 }
 
 export interface SystemsStation {
@@ -75,7 +76,6 @@ export interface SystemsPageContent {
     title: string;
     body: string;
     primary: SystemsAction;
-    secondary: SystemsAction;
   };
 }
 
@@ -112,15 +112,14 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       note: 'Parcourez la carte : chaque orbe, lien et pastille est inspectable.',
       bullets: ['Signaler vite et juste', 'Résoudre et documenter', 'Capitaliser pour apprendre'],
       actions: [
-        { label: 'Voir les stations', href: '#operation', kind: 'primary' },
-        { label: 'Inspecter l’établi', href: '#workbench', kind: 'secondary' },
-        { label: 'Demander un accès', href: '#perspectives', kind: 'secondary' },
+        { label: 'Ouvrir l’application', href: 'https://sentinel.akiksystems.fr', kind: 'primary' },
+        { label: 'Demander un accès', href: '#', kind: 'secondary', disabled: true },
       ],
     },
     operation: {
       eyebrow: 'STATIONS OPÉRATIONNELLES',
       title: 'EN OPÉRATION',
-      intro: 'Des outils vivants, au travail dans leur environnement réel.',
+      intro: 'ProtoCap rend l’attention au réel.',
     },
     stations: [
       {
@@ -162,15 +161,15 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     ],
     manifesto: {
       eyebrow: 'NOTRE MOUVEMENT',
-      lines: ['Construire,', 'observer,', 'ajuster.'],
-      body: 'Tous nos systèmes partagent le même geste : faire, regarder ce que le réel répond, puis remettre l’ouvrage en mouvement.',
+      lines: ['Concevoir,', 'mesurer,', 'améliorer.'],
+      body: 'Chaque système suit une même discipline : formuler une hypothèse, mesurer ses effets dans le réel et ajuster avec précision.',
       signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
     },
     workbench: {
       eyebrow: 'OUTILS / WORKBENCH',
       title: 'ÉTABLI',
       intro:
-        'Les outils que j’ai construits pour livrer mes systèmes. Ils tournent en production, pas en vitrine.',
+        'Un ensemble d’outils d’ingénierie conçu pour fiabiliser la livraison et l’exploitation de nos systèmes.',
       tools: [
         {
           name: 'DÉPLOIEMENT PAR SHA',
@@ -203,14 +202,10 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       title: 'Les systèmes commencent souvent par une hypothèse.',
       body: 'Avant l’outil, il y a une question. Une tension. Une manière différente de regarder ce qui pourrait fonctionner.',
       primary: {
-        label: 'Construire un système ensemble',
+        label: 'Construisons votre système',
         href: '/fr/travailler-ensemble',
-        kind: 'primary',
-      },
-      secondary: {
-        label: 'Lire nos perspectives',
-        href: '/fr/ecrits',
         kind: 'secondary',
+        disabled: true,
       },
     },
   },
@@ -246,15 +241,14 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       note: 'Explore the map: every orb, link and chip can be inspected. Map content is in French.',
       bullets: ['Report fast and right', 'Resolve and document', 'Capitalise to learn'],
       actions: [
-        { label: 'See the stations', href: '#operation', kind: 'primary' },
-        { label: 'Inspect the workbench', href: '#workbench', kind: 'secondary' },
-        { label: 'Request access', href: '#perspectives', kind: 'secondary' },
+        { label: 'Open application', href: 'https://sentinel.akiksystems.fr', kind: 'primary' },
+        { label: 'Request access', href: '#', kind: 'secondary', disabled: true },
       ],
     },
     operation: {
       eyebrow: 'OPERATIONAL STATIONS',
       title: 'IN OPERATION',
-      intro: 'Living tools, at work in their real environment.',
+      intro: 'ProtoCap returns attention to reality.',
     },
     stations: [
       {
@@ -297,14 +291,15 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     ],
     manifesto: {
       eyebrow: 'OUR MOVEMENT',
-      lines: ['Build,', 'observe,', 'adjust.'],
-      body: 'Every system shares the same gesture: make something, watch what reality returns, then put the work back in motion.',
+      lines: ['Design,', 'measure,', 'improve.'],
+      body: 'Every system follows the same discipline: frame a hypothesis, measure its real-world effects, and refine it with precision.',
       signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
     },
     workbench: {
       eyebrow: 'TOOLS / WORKBENCH',
       title: 'WORKBENCH',
-      intro: 'The tools I built to ship my systems. They run in production, not in a showcase.',
+      intro:
+        'An engineering toolset designed to make the delivery and operation of our systems more reliable.',
       tools: [
         {
           name: 'SHA DEPLOYMENT',
@@ -337,14 +332,10 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       title: 'Systems often begin with a hypothesis.',
       body: 'Before the tool comes a question. A tension. A different way of looking at what might work.',
       primary: {
-        label: 'Build a system together',
+        label: 'Let’s build your system',
         href: '/en/work-with-us',
-        kind: 'primary',
-      },
-      secondary: {
-        label: 'Read our perspectives',
-        href: '/en/writings',
         kind: 'secondary',
+        disabled: true,
       },
     },
   },

@@ -54,9 +54,17 @@ function StatusPill({
 function ActionLink({ action }: { action: SystemsAction }) {
   const className = `aks-systems-button aks-systems-button--${action.kind}`;
 
+  if (action.disabled) {
+    return (
+      <span aria-disabled="true" className={className + ' aks-systems-button--disabled'}>
+        {action.label}
+      </span>
+    );
+  }
+
   if (action.href.startsWith('/')) {
     return (
-      <RouterLink className={className} prefetch="intent" to={action.href} viewTransition>
+      <RouterLink className={className} prefetch="intent" to={action.href}>
         {action.label}
         <span aria-hidden="true">↗</span>
       </RouterLink>
@@ -229,7 +237,6 @@ export function SentinelWorkspace({
           </div>
           <div className="aks-systems-sentinel-meta">
             <StatusPill locale={locale} status={content.status} label={content.statusLabel} />
-            <span>{content.updated}</span>
           </div>
         </div>
         <SentinelMap label={content.mapLabel} />
@@ -339,7 +346,6 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
       className="aks-systems-manifesto"
       data-systems-section="manifesto"
     >
-      <div aria-hidden="true" className="aks-systems-manifesto-orbit" />
       <div className="aks-systems-wrap aks-systems-manifesto-inner">
         <div className="aks-systems-manifesto-meta">
           <p className="aks-systems-kicker">{content.eyebrow}</p>
@@ -416,7 +422,6 @@ export function PerspectivesCTA({ content }: { content: SystemsPageContent['pers
         <div className="aks-systems-perspectives-bottom">
           <p>{content.body}</p>
           <div className="aks-systems-actions">
-            <ActionLink action={content.secondary} />
             <ActionLink action={content.primary} />
           </div>
         </div>

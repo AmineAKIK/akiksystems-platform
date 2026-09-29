@@ -38,15 +38,20 @@ describe('SystemsPage code-only contract', () => {
     },
   );
 
-  it('keeps every public action as a real link and the main action touch-target class', () => {
+  it('links to Sentinel while keeping access requests disabled', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <SystemsPage locale="fr" content={systemsPageContent.fr} />
       </MemoryRouter>,
     );
 
-    expect(html).toContain('href="#operation"');
-    expect(html).toContain('href="/fr/travailler-ensemble"');
+    expect(html).toContain('href="https://sentinel.akiksystems.fr"');
+    expect(html).toContain(
+      'aria-disabled="true" class="aks-systems-button aks-systems-button--secondary aks-systems-button--disabled"',
+    );
+    expect(html).not.toContain('href="#operation"');
+    expect(html).toContain('>Construisons votre système<');
+    expect(html).not.toContain('href="/fr/travailler-ensemble"');
     expect(html).toContain('aks-systems-button--primary');
   });
 });

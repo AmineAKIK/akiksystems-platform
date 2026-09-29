@@ -389,6 +389,26 @@ function mount(root, startTab) {
       });
       tabEls.push(g);
     });
+
+    var appLink = el(
+      'a',
+      {
+        class: 'tab pc-ptr external-tab',
+        href: 'https://protocap.akiksystems.com',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        'aria-label': 'Ouvrir l’application ProtoCap',
+      },
+      tabList,
+    );
+    if (compact) {
+      el('rect', { x: 12, y: 74, width: 336, height: 26, rx: 4, class: 'tab-bg' }, appLink);
+      el('text', { x: 180, y: 91, class: 'tab-txt' }, appLink, 'APPLICATION ↗');
+    } else {
+      var appY = TAB_Y0 + SCENES.length * TAB_STEP;
+      el('rect', { x: 10, y: appY, width: 108, height: 30, rx: 4, class: 'tab-bg' }, appLink);
+      el('text', { x: 20, y: appY + 19, class: 'tab-txt' }, appLink, 'APPLICATION ↗');
+    }
   }
 
   var btn = el(
@@ -3906,8 +3926,8 @@ function mount(root, startTab) {
     var g = el('g', null, canvas);
     if (sc.q) {
       if (compact) {
-        el('text', { x: 12, y: 92, class: 'q-k' }, g, 'QUESTION');
-        wrap(g, sc.q, 12, 112, 336, 19, 'q-t');
+        el('text', { x: 12, y: 128, class: 'q-k' }, g, 'QUESTION');
+        wrap(g, sc.q, 12, 148, 336, 19, 'q-t');
       } else {
         el('text', { x: SIDE + 24, y: HEAD + 32, class: 'q-k' }, g, 'QUESTION');
         el('text', { x: SIDE + 24, y: HEAD + 51, class: 'q-t' }, g, sc.q);
