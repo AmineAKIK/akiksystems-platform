@@ -509,11 +509,11 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
   const loop = useRef<HTMLDivElement>(null);
   const turn = useRef(loopAngles[2]);
 
-  // A short arc travels the ring to the chosen lens, by the shorter way round. Set through the
-  // CSSOM, which the CSP allows, so the angle can keep accumulating without jumping back at 360°.
+  // A short arc travels the ring to the chosen lens, always clockwise like the ring's arrows. Set
+  // through the CSSOM, which the CSP allows, so the angle keeps accumulating past 360°.
   useEffect(() => {
     const target = loopAngles[selected] ?? 0;
-    const delta = ((((target - turn.current) % 360) + 540) % 360) - 180;
+    const delta = (((target - turn.current) % 360) + 360) % 360;
     turn.current += delta;
     loop.current?.style.setProperty('--loop-turn', `${turn.current}deg`);
   }, [selected]);
