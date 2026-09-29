@@ -468,6 +468,7 @@
 
 .aks-systems-station--feature {
   margin-bottom: calc(2 * var(--r));
+  scroll-margin-top: calc(1.5 * var(--r));
 }
 
 .aks-systems-station--feature figure {

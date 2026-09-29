@@ -217,7 +217,11 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           context: 'Suivi des incidents d’atelier',
           href: '/fr/systems#sentinel',
         },
-        protocap: { name: 'ProtoCap', context: 'Outils pour la ligne de production', href: null },
+        protocap: {
+          name: 'ProtoCap',
+          context: 'Outils pour la ligne de production',
+          href: '/fr/systems#protocap',
+        },
         tugeres: {
           name: 'Tugères',
           context: 'Commandes et facturation pour traiteurs',
@@ -728,7 +732,11 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           context: 'Workshop incident tracking',
           href: '/en/systems#sentinel',
         },
-        protocap: { name: 'ProtoCap', context: 'Tools for the production line', href: null },
+        protocap: {
+          name: 'ProtoCap',
+          context: 'Tools for the production line',
+          href: '/en/systems#protocap',
+        },
         tugeres: { name: 'Tugères', context: 'Orders and invoicing for caterers', href: null },
       },
       rows: [

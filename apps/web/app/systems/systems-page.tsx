@@ -257,7 +257,7 @@ export function SentinelWorkspace({
 
 function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: SystemsStation }) {
   return (
-    <article className="aks-systems-station aks-systems-station--feature">
+    <article className="aks-systems-station aks-systems-station--feature" id={station.id}>
       <figure>
         <ProtocapMap label={station.mapLabel ?? station.name} />
         <figcaption>
