@@ -2,11 +2,15 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
+const fs = require('node:fs');
+const http = require('node:http');
 const path = require('node:path');
 const { chromium } = require('playwright');
 
 const port = '4178';
 const origin = 'http://127.0.0.1:' + port;
+const screenshotDirectory = path.resolve(__dirname, '../../../artifacts/home');
+fs.mkdirSync(screenshotDirectory, { recursive: true });
 
 const server = spawn(process.execPath, ['server.js'], {
   cwd: path.resolve(__dirname, '..'),
@@ -183,13 +187,13 @@ function assertGap(upper, lower, minimum, maximum, label) {
   );
 }
 
-async function loadViewport(browser, viewport, options = {}) {
+async function loadViewport(browser, viewport, options = {}, locale = 'fr') {
   const context = await browser.newContext({
     viewport,
     ...options,
   });
   const page = await context.newPage();
-  const response = await page.goto(origin + '/fr');
+  const response = await page.goto(origin + '/' + locale);
 
   assert.equal(
     response?.status(),
@@ -203,11 +207,17 @@ async function loadViewport(browser, viewport, options = {}) {
   return { context, page };
 }
 
-async function assertGeometry(browser, viewport, name) {
-  const { context, page } = await loadViewport(browser, viewport);
+async function assertGeometry(browser, viewport, name, locale = 'fr') {
+  const { context, page } = await loadViewport(browser, viewport, {}, locale);
 
   try {
     const m = await measure(page);
+    await page.screenshot({
+      path: path.join(
+        screenshotDirectory,
+        `home-${locale}-${viewport.width}x${viewport.height}.png`,
+      ),
+    });
 
     assert.ok(m.scrollWidth <= m.viewportWidth + 1, name + ' must not overflow horizontally');
     assert.ok(
@@ -701,6 +711,147 @@ async function assertReducedMotion(browser) {
   }
 }
 
+/** The intro scramble runs frame by frame, and nothing on the portal glows. */
+async function assertIntroBudget(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    window.__glyphUpdates = [];
+    document.addEventListener('DOMContentLoaded', () => {
+      const matrix = document.querySelector('.aks-home-wordmark-matrix');
+      new MutationObserver(() => window.__glyphUpdates.push(performance.now())).observe(matrix, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+      });
+    });
+  });
+
+  try {
+    await page.goto(origin + '/fr');
+    await page.waitForTimeout(2600);
+    const intro = await page.evaluate(() => {
+      const times = window.__glyphUpdates;
+      const gaps = times.slice(1).map((time, index) => time - times[index]);
+      const glow = [
+        '.aks-home-wordmark',
+        '.aks-home-wordmark-matrix',
+        '.aks-home-scale-letter',
+        '.aks-home-door-label',
+      ].filter((selector) => {
+        const element = document.querySelector(selector);
+        return element !== null && getComputedStyle(element).textShadow !== 'none';
+      });
+      return {
+        updates: times.length,
+        maxGap: gaps.length === 0 ? Infinity : Math.max(...gaps),
+        glow,
+        wordmark: [...document.querySelectorAll('.aks-home-wordmark-glyph')]
+          .map((glyph) => glyph.textContent)
+          .join(''),
+      };
+    });
+
+    assert.ok(
+      intro.updates >= 40,
+      'the wordmark scramble must update every frame: ' + intro.updates,
+    );
+    assert.ok(intro.maxGap <= 40, 'the wordmark scramble must not stall: ' + intro.maxGap);
+    assert.equal(intro.wordmark, 'AkikSystems', 'the scramble must settle on the wordmark');
+    assert.deepEqual(intro.glow, [], 'no halo on the portal text');
+  } finally {
+    await context.close();
+  }
+}
+
+/** Serves the public domains from the local production server, Host header included. */
+function servePublicDomain(route) {
+  const request = route.request();
+  const url = new URL(request.url());
+  const headers = { ...request.headers(), host: url.host };
+  delete headers['accept-encoding'];
+
+  return new Promise((resolve, reject) => {
+    const upstream = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: url.pathname + url.search,
+        method: request.method(),
+        headers,
+      },
+      (response) => {
+        const chunks = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          route
+            .fulfill({
+              status: response.statusCode,
+              headers: response.headers,
+              body: Buffer.concat(chunks),
+            })
+            .then(resolve, reject);
+        });
+      },
+    );
+    upstream.on('error', reject);
+    upstream.end();
+  });
+}
+
+/** A real click on FR / EN: akiksystems.fr/fr → akiksystems.com/en, no redirect, lang follows. */
+async function assertLanguageJourney(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.route(/^https:\/\/akiksystems\.(fr|com)\//, servePublicDomain);
+  const page = await context.newPage();
+  const documents = [];
+  page.on('response', (response) => {
+    if (response.request().resourceType() === 'document') {
+      documents.push(response.status() + ' ' + response.url());
+    }
+  });
+
+  try {
+    await page.goto('https://akiksystems.fr/fr');
+    await page.locator('.aks-home').waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'fr');
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: path.join(screenshotDirectory, 'journey-1-fr.png') });
+
+    const switcher = page.locator('.aks-home-meta .aks-home-language');
+    assert.equal((await switcher.innerText()).replace(/\s+/g, ''), 'FR/EN');
+    // A production build links straight to the other domain; a build under another NODE_ENV
+    // (as in CI) links relatively, and the client follows the server's canonical redirect.
+    const href = await switcher.getAttribute('href');
+    assert.ok(
+      href === 'https://akiksystems.com/en' || href === '/en',
+      'unexpected switch link ' + href,
+    );
+
+    documents.length = 0;
+    await switcher.click();
+    await page.waitForURL('https://akiksystems.com/en');
+    await page.locator('.aks-home').waitFor();
+
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'en');
+    assert.equal(
+      (await page.locator('.aks-home-meta .aks-home-language').innerText()).replace(/\s+/g, ''),
+      'FR/EN',
+      'the switch keeps its order in English',
+    );
+    // Either way one document loads: the page itself, never loader data or a redirect chain.
+    assert.deepEqual(
+      documents,
+      ['200 https://akiksystems.com/en'],
+      'the switch must land on akiksystems.com/en in one document',
+    );
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: path.join(screenshotDirectory, 'journey-2-en.png') });
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
@@ -722,7 +873,9 @@ async function assertReducedMotion(browser) {
       [{ width: 1280, height: 720 }, 'laptop 1280×720'],
       [{ width: 1366, height: 768 }, 'laptop 1366×768'],
     ]) {
-      await assertGeometry(browser, viewport, name);
+      for (const locale of ['fr', 'en']) {
+        await assertGeometry(browser, viewport, locale + ' ' + name, locale);
+      }
     }
 
     await assertMetadataRegimes(browser);
@@ -747,9 +900,11 @@ async function assertReducedMotion(browser) {
     await assertTouchSelection(browser);
     await assertKeyboardOrder(browser);
     await assertReducedMotion(browser);
+    await assertIntroBudget(browser);
+    await assertLanguageJourney(browser);
 
     console.log(
-      'Responsive browser smoke passed: centered metadata, compact body, symmetric orbital grid, 320 two-line clock, breakpoint continuity, touch selection and reduced motion are qualified.',
+      'Responsive browser smoke passed in French and English: centered metadata, compact body, orbital geometry, 320 two-line clock, breakpoint continuity, touch selection, reduced motion, a smooth intro without halos and a real FR → EN switch across domains.',
     );
   } finally {
     await browser.close();

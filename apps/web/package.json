@@ -9,6 +9,7 @@
     "check:client-secrets": "node scripts/check-client-secrets.mjs",
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
     "smoke:observability": "node scripts/smoke-observability.mjs",
+    "smoke:responsive": "node scripts/smoke-responsive-browser.cjs",
     "smoke:ssr": "node scripts/smoke-ssr.mjs",
     "smoke:systems-public": "node scripts/smoke-systems-browser.cjs",
     "start": "node server.js",

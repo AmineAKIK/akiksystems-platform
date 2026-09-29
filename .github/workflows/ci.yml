@@ -116,20 +116,22 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web exec playwright install --with-deps chromium
 
-      - name: Smoke responsive Home
+      - name: Smoke responsive Home (French and English)
         env:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: node apps/web/scripts/smoke-responsive-browser.cjs
+        run: pnpm --filter @akiksystems/web smoke:responsive
 
       - name: Smoke public Systems (French and English)
         env:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web smoke:systems-public
 
-      - name: Upload Systems visual snapshots
+      - name: Upload visual snapshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: systems-visual-snapshots
-          path: artifacts/systems
+          name: visual-snapshots
+          path: |
+            artifacts/systems
+            artifacts/home
           if-no-files-found: error
