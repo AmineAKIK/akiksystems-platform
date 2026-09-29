@@ -43,6 +43,7 @@ function isAllowedHostname(hostname) {
 const publicSitemapEntries = {
   en: [
     ['/en', '/fr'],
+    ['/en/profile', '/fr/profil'],
     ['/en/systems', '/fr/systems'],
     ['/en/privacy', '/fr/confidentialite'],
     ['/en/legal-notice', '/fr/mentions-legales'],
@@ -50,6 +51,7 @@ const publicSitemapEntries = {
   ],
   fr: [
     ['/fr', '/en'],
+    ['/fr/profil', '/en/profile'],
     ['/fr/systems', '/en/systems'],
     ['/fr/confidentialite', '/en/privacy'],
     ['/fr/mentions-legales', '/en/legal-notice'],

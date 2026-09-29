@@ -1,4 +1,4 @@
-export { BrandMark, BrandSignature } from './primitives/brand.js';
+export { BrandMark, BrandSignature, brandEmblemGroups } from './primitives/brand.js';
 export type { BrandMarkProps, BrandSignatureProps } from './primitives/brand.js';
 export { Button } from './primitives/button.js';
 export type { ButtonProps } from './primitives/button.js';

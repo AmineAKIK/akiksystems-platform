@@ -1,12 +1,15 @@
 import '@fontsource/archivo/latin-400.css';
 import '@fontsource/archivo/latin-500.css';
 import '@fontsource/archivo/latin-600.css';
+import '@fontsource/archivo/latin-700.css';
 import '@fontsource/archivo-black/latin-400.css';
 import '@akiksystems/ui/styles.css';
 import './styles/app.css';
 import './styles/home-portal.css';
 import './styles/legal.css';
 import './styles/systems.css';
+import './styles/sentinel-map.css';
+import './styles/profile.css';
 
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import type { ReactNode } from 'react';

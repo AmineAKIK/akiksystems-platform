@@ -1,22 +1,15 @@
-import { useLoaderData } from 'react-router';
-
-import {
-  PendingDestinationRoute,
-  pendingDestinationLoader,
-  pendingDestinationMeta,
-} from './pending-destination';
+import { profileLoader, profileMeta, ProfileView } from '../profile/profile-route';
 
 import type { Route } from './+types/profile-fr';
 
 export function loader({ params }: Route.LoaderArgs) {
-  return pendingDestinationLoader(params.locale, 'fr', 'profile');
+  return profileLoader(params.locale, 'fr');
 }
 
 export function meta() {
-  return pendingDestinationMeta('fr', 'profile');
+  return profileMeta('fr');
 }
 
 export default function ProfileFrRoute() {
-  const { locale, destinationId } = useLoaderData<typeof loader>();
-  return <PendingDestinationRoute destinationId={destinationId} locale={locale} />;
+  return <ProfileView />;
 }

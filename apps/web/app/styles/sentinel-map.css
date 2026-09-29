@@ -1,0 +1,690 @@
+/* Sentinel — interactive map (mounted by app/systems/sentinel-map.ts). */
+
+.sn-map {
+  --sn-font: Archivo, 'Helvetica Neue', Arial, sans-serif;
+  --sn-card: #070c16;
+  --sn-head: #08101d;
+  --sn-side: #0a111f;
+  --sn-line: rgba(140, 165, 220, 0.16);
+  --sn-blue: #2d55ff;
+  --sn-blue-soft: #8aa5ff;
+  --sn-lime: #c8ff2e;
+  --sn-text: #f3f6ff;
+  --sn-mute: #8b97b3;
+  --sn-dim: #55617c;
+  --sn-amber: #f5b942;
+  --sn-red: #ff5d62;
+  font-family: var(--sn-font);
+  color: var(--sn-text);
+}
+.sn-map .sn-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.sn-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 780px;
+  font-family: var(--sn-font);
+}
+.sn-map text {
+  text-rendering: geometricPrecision;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.sn-map .sn-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.sn-map .sn-ptr {
+  cursor: pointer;
+}
+.sn-map [tabindex]:focus {
+  outline: none;
+}
+
+/* cadre */
+.sn-map .card-bg {
+  fill: var(--sn-card);
+}
+.sn-map .card-edge {
+  fill: none;
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+.sn-map .head-bg {
+  fill: var(--sn-head);
+}
+.sn-map .side-bg {
+  fill: var(--sn-side);
+}
+.sn-map .rule {
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+
+/* en-tête */
+.sn-map .h-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  fill: var(--sn-text);
+}
+.sn-map .h-crumb {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  fill: var(--sn-dim);
+}
+.sn-map .pill-bg {
+  fill: #f3f4f7;
+}
+.sn-map .pill-txt {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  fill: #0b1020;
+  text-anchor: middle;
+}
+.sn-map .pill:hover .pill-bg,
+.sn-map .pill:focus-visible .pill-bg {
+  fill: #fff;
+}
+
+/* onglets */
+.sn-map .tab-bg {
+  fill: transparent;
+  transition: fill 0.2s;
+}
+.sn-map .tab-txt {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  fill: var(--sn-dim);
+  transition: fill 0.2s;
+}
+.sn-map .tab:hover .tab-txt {
+  fill: #b8c3de;
+}
+.sn-map .tab.is-on .tab-bg {
+  fill: #14286b;
+}
+.sn-map .tab.is-on .tab-txt {
+  fill: #fff;
+}
+.sn-map .tab:focus-visible .tab-bg {
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.sn-map .tab-num {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  fill: var(--sn-blue);
+}
+.sn-map .side-hint {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  fill: var(--sn-dim);
+}
+.sn-map .btn-bg {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.sn-map .btn-txt {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  fill: var(--sn-text);
+}
+.sn-map .btn-ico {
+  fill: var(--sn-lime);
+}
+.sn-map .btn:hover .btn-bg,
+.sn-map .btn:focus-visible .btn-bg {
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.55);
+}
+.sn-map .btn.is-on .btn-bg {
+  stroke: var(--sn-lime);
+}
+
+/* scène */
+.sn-map .canvas {
+  transition: opacity 0.35s ease;
+}
+.sn-map .canvas.is-out {
+  opacity: 0;
+}
+.sn-map .grid-l {
+  stroke: rgba(140, 165, 220, 0.07);
+  stroke-width: 1;
+}
+.sn-map .hint {
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  fill: var(--sn-dim);
+  text-anchor: end;
+}
+.sn-map .orbit-line {
+  fill: none;
+  stroke: rgba(150, 175, 235, 0.3);
+  stroke-width: 1.1;
+}
+.sn-map .orbit-line.faint {
+  stroke: rgba(150, 175, 235, 0.13);
+}
+.sn-map .orbit-line.hot {
+  stroke: rgba(200, 255, 46, 0.6);
+}
+
+/* orbes */
+.sn-map .orb-halo {
+  fill: rgba(45, 85, 255, 0.07);
+  stroke: rgba(125, 155, 255, 0.2);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.sn-map .orb-ring {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.34);
+  stroke-width: 1;
+}
+.sn-map .orb-core {
+  fill: #0a1330;
+  stroke: var(--tone, #4368ff);
+  stroke-width: 1.5;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.sn-map .orb-dot {
+  fill: var(--tone-soft, #9db4ff);
+}
+.sn-map .orb-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.sn-map .tone-amber {
+  --tone: #f5b942;
+  --tone-soft: #ffd98a;
+}
+.sn-map .tone-lime {
+  --tone: #c8ff2e;
+  --tone-soft: #e3ff8f;
+}
+.sn-map .tone-grey {
+  --tone: #7f8aa6;
+  --tone-soft: #aab4cc;
+}
+.sn-map .tone-red {
+  --tone: #ff5d62;
+  --tone-soft: #ff9da0;
+}
+.sn-map .tone-dim {
+  --tone: #34406a;
+  --tone-soft: #55648f;
+}
+.sn-map .orb.is-active .orb-core {
+  stroke: var(--sn-lime);
+  fill: #12245a;
+}
+.sn-map .orb.is-active .orb-halo {
+  stroke: rgba(200, 255, 46, 0.6);
+  fill: rgba(200, 255, 46, 0.07);
+}
+.sn-map .orb:focus-visible .orb-halo {
+  stroke: #fff;
+}
+.sn-map .orb.is-dim {
+  opacity: 0.35;
+}
+.sn-map .t-name {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+  transition: fill 0.2s;
+}
+.sn-map .t-sub {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  fill: var(--sn-dim);
+  text-anchor: middle;
+}
+.sn-map .orb.is-active .t-name {
+  fill: #fff;
+}
+
+/* cœur */
+.sn-map .core-halo {
+  fill: url(#sn-glow-core);
+}
+.sn-map .core-mid {
+  fill: rgba(45, 85, 255, 0.16);
+  stroke: rgba(120, 150, 255, 0.28);
+  stroke-width: 1;
+}
+.sn-map .core-disc {
+  fill: url(#sn-core);
+  stroke: #6b88ff;
+  stroke-width: 1.4;
+}
+.sn-map .core-txt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: #fff;
+  text-anchor: middle;
+}
+.sn-map .core.is-active .core-disc {
+  stroke: var(--sn-lime);
+}
+.sn-map .core.is-active .core-mid {
+  stroke: rgba(200, 255, 46, 0.55);
+}
+.sn-map .core:focus-visible .core-mid {
+  stroke: #fff;
+}
+
+/* étiquettes de coin */
+.sn-map .corner .t-num {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  fill: var(--sn-blue);
+}
+.sn-map .corner .t-corner {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  fill: #8d99b6;
+  transition: fill 0.2s;
+}
+.sn-map .corner .c-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.sn-map .corner.is-active .t-corner {
+  fill: var(--sn-lime);
+}
+.sn-map .corner:hover .t-corner {
+  fill: #fff;
+}
+.sn-map .corner.is-active:hover .t-corner {
+  fill: var(--sn-lime);
+}
+
+/* liens */
+.sn-map .edge-line {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.42);
+  stroke-width: 1.3;
+  marker-end: url(#sn-arr);
+}
+.sn-map .edge-line.plain {
+  marker-end: none;
+}
+.sn-map .edge-line.soft {
+  stroke: rgba(125, 155, 255, 0.22);
+}
+.sn-map .edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  cursor: pointer;
+}
+.sn-map .t-edge {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  fill: #7684a6;
+  transition: fill 0.2s;
+}
+.sn-map .edge.is-active .edge-line {
+  stroke: var(--sn-lime);
+  stroke-dasharray: 5 5;
+  animation: sn-flow 1s linear infinite;
+  marker-end: url(#sn-arr-hot);
+}
+.sn-map .edge.is-active .t-edge {
+  fill: var(--sn-lime);
+}
+.sn-map .edge:focus-visible .t-edge {
+  fill: #fff;
+}
+.sn-map.no-anim .edge.is-active .edge-line {
+  animation: none;
+}
+@keyframes sn-flow {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* pastilles */
+.sn-map .chip-bg {
+  fill: rgba(20, 40, 110, 0.22);
+  stroke: rgba(125, 155, 255, 0.28);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+  cursor: pointer;
+}
+.sn-map .chip-txt {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+  pointer-events: none;
+  transition: fill 0.2s;
+}
+.sn-map .chip:hover .chip-bg {
+  stroke: rgba(180, 200, 255, 0.6);
+}
+.sn-map .chip.is-active .chip-bg {
+  fill: rgba(200, 255, 46, 0.09);
+  stroke: var(--sn-lime);
+}
+.sn-map .chip.is-active .chip-txt {
+  fill: #fff;
+}
+.sn-map .chip:focus-visible .chip-bg {
+  stroke: #fff;
+}
+
+/* matrice rôles */
+.sn-map .m-row-bg {
+  fill: transparent;
+  transition: fill 0.15s;
+}
+.sn-map .m-row.is-active .m-row-bg {
+  fill: rgba(45, 85, 255, 0.13);
+}
+.sn-map .m-row .m-txt {
+  font-size: 11px;
+  fill: #b2bdd8;
+  transition: fill 0.15s;
+}
+.sn-map .m-row.is-active .m-txt {
+  fill: #fff;
+}
+.sn-map .m-row:focus-visible .m-row-bg {
+  stroke: var(--sn-blue-soft);
+}
+.sn-map .m-sep {
+  stroke: rgba(140, 165, 220, 0.09);
+}
+.sn-map .m-no {
+  fill: #2a3556;
+}
+.sn-map .m-yes {
+  fill: var(--sn-blue);
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.sn-map .m-cond-ring {
+  fill: none;
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1.3;
+}
+.sn-map .m-cond-dot {
+  fill: var(--sn-blue-soft);
+}
+.sn-map .m-col-bg {
+  fill: rgba(200, 255, 46, 0.045);
+  stroke: rgba(200, 255, 46, 0.28);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.sn-map .m-col-bg.on {
+  opacity: 1;
+}
+.sn-map .m-legend {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  fill: var(--sn-dim);
+}
+.sn-map .m-yes-l {
+  fill: var(--sn-blue);
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.sn-map .role.is-active .orb-core {
+  stroke: var(--sn-lime);
+}
+
+/* sécurité */
+.sn-map .lnk {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.1);
+  stroke-width: 1.1;
+}
+.sn-map .lnk.ok {
+  stroke: var(--sn-lime);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 6;
+  animation: sn-flow 1s linear infinite;
+}
+.sn-map .lnk.no {
+  stroke: rgba(255, 93, 98, 0.55);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 5;
+}
+.sn-map.no-anim .lnk.ok {
+  animation: none;
+}
+.sn-map .xmark {
+  stroke: var(--sn-red);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sn-map .xmark.on {
+  opacity: 1;
+}
+.sn-map .orb.ok .orb-core {
+  stroke: var(--sn-lime);
+}
+.sn-map .orb.no .orb-core {
+  stroke: rgba(255, 93, 98, 0.7);
+}
+.sn-map .gate-txt {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: #dfe6fa;
+  text-anchor: middle;
+}
+.sn-map .gate-disc {
+  fill: #0d1838;
+  stroke: rgba(125, 155, 255, 0.45);
+  stroke-width: 1.2;
+}
+.sn-map .gate.is-active .gate-disc {
+  stroke: var(--sn-lime);
+}
+
+/* niveaux d'attention + curseur */
+.sn-map .lv-sw {
+  stroke-width: 1.2;
+}
+.sn-map .lv-txt {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  transition: fill 0.2s;
+}
+.sn-map .lv.is-active .lv-txt {
+  fill: #fff;
+}
+.sn-map .lv.is-active .lv-box {
+  stroke: #fff;
+}
+.sn-map .lv-box {
+  fill: rgba(255, 255, 255, 0.02);
+  stroke: transparent;
+  stroke-width: 1;
+  cursor: pointer;
+}
+.sn-map .sl-track {
+  stroke: rgba(140, 165, 220, 0.22);
+  stroke-width: 2;
+}
+.sn-map .sl-hit {
+  fill: transparent;
+  cursor: ew-resize;
+}
+.sn-map .sl-handle {
+  fill: #fff;
+  stroke: var(--sn-blue);
+  stroke-width: 2;
+  cursor: grab;
+}
+.sn-map .sl-handle:focus-visible {
+  stroke: var(--sn-lime);
+}
+.sn-map .sl-txt {
+  font-size: 8px;
+  letter-spacing: 0.13em;
+  fill: var(--sn-dim);
+}
+.sn-map .sl-ttl {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  fill: #a9b4d0;
+}
+.sn-map .sl-val {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  fill: #fff;
+}
+
+/* panneau de détail */
+.sn-map .panel-bg {
+  fill: rgba(9, 15, 30, 0.92);
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+.sn-map .p-kick {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: var(--sn-lime);
+}
+.sn-map .p-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  fill: #fff;
+}
+.sn-map .p-body {
+  font-size: 12px;
+  fill: #a3aecb;
+}
+.sn-map .p-test {
+  font-size: 11.5px;
+  fill: #dfe6fa;
+  font-style: italic;
+}
+.sn-map .p-test-k {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: var(--sn-lime);
+}
+.sn-map .tag-bg {
+  fill: transparent;
+  stroke: rgba(125, 155, 255, 0.38);
+  stroke-width: 1;
+}
+.sn-map .tag-txt {
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+}
+.sn-map .tag.ok .tag-bg {
+  stroke: rgba(200, 255, 46, 0.7);
+}
+.sn-map .tag.ok .tag-txt {
+  fill: var(--sn-lime);
+}
+.sn-map .tag.no .tag-bg {
+  stroke: rgba(255, 93, 98, 0.55);
+}
+.sn-map .tag.no .tag-txt {
+  fill: #ff9da0;
+}
+.sn-map .sig-bg {
+  fill: rgba(9, 15, 30, 0.92);
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+.sn-map .sig-lab {
+  font-size: 7.5px;
+  letter-spacing: 0.13em;
+  fill: var(--sn-mute);
+}
+.sn-map .sig-val {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--sn-lime);
+}
+.sn-map .q-k {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  fill: var(--sn-blue);
+}
+.sn-map .q-t {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  fill: #eef2ff;
+}
+.sn-map .note {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  fill: var(--sn-dim);
+}
+.sn-map .note-k {
+  fill: var(--sn-lime);
+  font-weight: 700;
+}
+
+.sn-map.no-anim .canvas {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sn-map .canvas {
+    transition: none;
+  }
+  .sn-map .edge.is-active .edge-line,
+  .sn-map .lnk.ok {
+    animation: none;
+  }
+}
