@@ -49,11 +49,25 @@ export function MapFullscreenFrame({
   const fallbackActiveRef = useRef(false);
   const pendingRef = useRef(false);
   const scrollLockRef = useRef<ScrollLock | null>(null);
+  const nativeScrollRef = useRef<number | null>(null);
   const [active, setActive] = useState(false);
   const [pending, setPending] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [controlSlot, setControlSlot] = useState<Element | null>(null);
   const statusId = useId();
+  const focusUntilRef = useRef(0);
+
+  // Entering or leaving fullscreen resizes the map, which rebuilds its SVG and with it the slot
+  // holding the control: focus follows the control for a moment, onto its new node.
+  const focusControl = useCallback(() => {
+    focusUntilRef.current = performance.now() + 1500;
+    requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+  }, []);
+
+  useEffect(() => {
+    if (controlSlot === null || performance.now() > focusUntilRef.current) return;
+    requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+  }, [controlSlot]);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -66,13 +80,33 @@ export function MapFullscreenFrame({
       slot = next;
       setControlSlot(next);
     };
-    // Maps mount lazily and rebuild their SVG when crossing the responsive breakpoint.
-    // The control follows the reserved SVG slot, including the SVG's own scaling.
+    // Maps mount lazily and rebuild their SVG on resize, in and out of fullscreen. The control
+    // follows the slot reserved in the map's own header, in both modes: no extra toolbar row.
     const observer = new MutationObserver(syncSlot);
     observer.observe(frame, { childList: true, subtree: true });
     syncSlot();
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!active || !frameRef.current) return;
+    const previous = new Map<HTMLElement, boolean>();
+    let branch: HTMLElement = frameRef.current;
+    while (branch.parentElement) {
+      for (const sibling of branch.parentElement.children) {
+        if (sibling instanceof HTMLElement && sibling !== branch) {
+          previous.set(sibling, sibling.inert);
+          sibling.inert = true;
+        }
+      }
+      branch = branch.parentElement;
+      if (branch === document.body) break;
+    }
+    return () =>
+      previous.forEach((inert, node) => {
+        node.inert = inert;
+      });
+  }, [active]);
 
   const copy = useMemo(
     () =>
@@ -117,15 +151,16 @@ export function MapFullscreenFrame({
       const frame = frameRef.current;
       if (!fallbackActiveRef.current || frame === null) return;
       fallbackActiveRef.current = false;
+      if (frame.hasAttribute('popover')) frame.hidePopover();
+      frame.removeAttribute('popover');
       delete frame.dataset.fullscreenMode;
       frame.dataset.fullscreenActive = 'false';
       restoreScroll();
       setActive(false);
       setAnnouncement(copy.exited);
-      if (restoreFocus)
-        requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+      if (restoreFocus) focusControl();
     },
-    [copy.exited, restoreScroll],
+    [copy.exited, focusControl, restoreScroll],
   );
 
   const openFallback = useCallback(() => {
@@ -155,12 +190,17 @@ export function MapFullscreenFrame({
     });
     document.documentElement.style.overflow = 'hidden';
     fallbackActiveRef.current = true;
+    // Escape transformed/contained ancestors without remounting the map.
+    if (frame.showPopover) {
+      frame.setAttribute('popover', 'manual');
+      frame.showPopover();
+    }
     frame.dataset.fullscreenMode = 'fallback';
     frame.dataset.fullscreenActive = 'true';
     setActive(true);
     setAnnouncement(copy.entered);
-    requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
-  }, [copy.entered]);
+    focusControl();
+  }, [copy.entered, focusControl]);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -174,10 +214,15 @@ export function MapFullscreenFrame({
       setActive((wasActive) => {
         if (wasActive && !isActive) {
           setAnnouncement(copy.exited);
-          requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+          const scrollY = nativeScrollRef.current;
+          nativeScrollRef.current = null;
+          requestAnimationFrame(() => {
+            if (scrollY !== null) window.scrollTo({ top: scrollY, behavior: 'instant' });
+          });
+          focusControl();
         } else if (!wasActive && isActive) {
           setAnnouncement(copy.entered);
-          requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+          focusControl();
         }
         return isActive;
       });
@@ -189,12 +234,34 @@ export function MapFullscreenFrame({
       event.preventDefault();
       closeFallback();
     };
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !fallbackActiveRef.current) return;
+      const controls = Array.from(
+        frame.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], [tabindex="0"]'),
+      ).filter((node) => node.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || !frame.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        last?.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || !frame.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
 
     document.addEventListener('fullscreenchange', syncNativeState);
     document.addEventListener('fullscreenerror', reportNativeError);
     document.addEventListener('webkitfullscreenchange', syncNativeState);
     document.addEventListener('webkitfullscreenerror', reportNativeError);
     document.addEventListener('keydown', closeOnEscape, true);
+    document.addEventListener('keydown', containFocus, true);
     syncNativeState();
 
     return () => {
@@ -203,9 +270,10 @@ export function MapFullscreenFrame({
       document.removeEventListener('webkitfullscreenchange', syncNativeState);
       document.removeEventListener('webkitfullscreenerror', reportNativeError);
       document.removeEventListener('keydown', closeOnEscape, true);
+      document.removeEventListener('keydown', containFocus, true);
       closeFallback(false);
     };
-  }, [closeFallback, copy.entered, copy.exited, copy.failed]);
+  }, [closeFallback, copy.entered, copy.exited, copy.failed, focusControl]);
 
   const toggleFullscreen = async () => {
     const frame = frameRef.current as FullscreenElement | null;
@@ -234,9 +302,11 @@ export function MapFullscreenFrame({
       }
 
       if (current !== null) await exitNativeFullscreen(documentNode);
+      nativeScrollRef.current = window.scrollY;
       await requestNativeFullscreen(frame);
     } catch {
-      setAnnouncement(copy.failed);
+      if (fullscreenElement(document as FullscreenDocument) !== frame) openFallback();
+      else setAnnouncement(copy.failed);
     } finally {
       pendingRef.current = false;
       setPending(false);
@@ -271,10 +341,12 @@ export function MapFullscreenFrame({
       className="aks-map-fullscreen-frame"
       data-fullscreen-active={String(active)}
       data-map={name.toLowerCase()}
+      aria-label={`${name} — ${locale === 'fr' ? 'carte interactive' : 'interactive map'}`}
+      aria-modal={active ? true : undefined}
+      role={active ? 'dialog' : 'group'}
       ref={frameRef}
     >
-      {active ? <div className="aks-map-fullscreen-toolbar">{control}</div> : null}
-      {!active && controlSlot !== null ? createPortal(control, controlSlot) : null}
+      {controlSlot === null ? null : createPortal(control, controlSlot)}
       {children}
       <p aria-live="polite" className="aks-map-fullscreen-status" id={statusId}>
         {announcement}
