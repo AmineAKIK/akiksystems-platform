@@ -87,6 +87,9 @@ jobs:
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Host: akiksystems.fr' http://127.0.0.1:4188/fr/profil)" = "200"
           docker exec akiksystems-web-ci-runtime node -e "fetch('http://127.0.0.1:4188/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
+      - name: Lint VPS deployment scripts
+        run: shellcheck deploy/vps/deploy.sh deploy/vps/deploy-ssh.sh
+
       - name: Validate VPS Compose file
         run: GIT_SHA="$GITHUB_SHA" docker compose -f deploy/vps/compose.yml config --quiet
 
