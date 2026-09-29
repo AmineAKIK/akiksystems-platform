@@ -204,7 +204,8 @@ async function assertGeometry(browser, viewport, name) {
     );
     assert.deepEqual(m.doorOrder, ['work-with-us', 'profile', 'systems', 'writings', 'learning']);
     assert.equal(m.legalCount, 3);
-    assert.equal(m.footerSeparator, 'none');
+    // Home carries the shared footer, separator included.
+    assert.equal(m.footerSeparator, 'block');
     assert.match(m.background, /^radial-gradient\(/);
     assert.equal(m.clockFits, true, name + ' clock must never truncate');
 
