@@ -309,9 +309,11 @@ async function inspectEnglish(browser) {
         ?.getAttribute('href')
         ?.endsWith('#workbench'),
     );
-    assert.equal(
+    // The link is absolute to akiksystems.fr in a production build and relative when the build
+    // runs under another NODE_ENV (as in CI); the domain mapping itself is unit-tested.
+    assert.match(
       await switcher.getAttribute('href'),
-      'https://akiksystems.fr/fr/systems#workbench',
+      /^(https:\/\/akiksystems\.fr)?\/fr\/systems#workbench$/,
       'the language switch must keep the section across domains',
     );
   } finally {
