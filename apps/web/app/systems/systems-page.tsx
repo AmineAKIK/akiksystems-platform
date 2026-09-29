@@ -156,6 +156,7 @@ export function SentinelWorkspace({
       aria-labelledby="sentinel-title"
       className="aks-systems-section aks-systems-sentinel"
       data-systems-section="sentinel"
+      id="sentinel"
     >
       <div className="aks-systems-wrap">
         <div className="aks-systems-sentinel-heading">

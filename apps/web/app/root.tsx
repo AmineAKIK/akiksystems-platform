@@ -9,6 +9,7 @@ import './styles/home-portal.css';
 import './styles/legal.css';
 import './styles/systems.css';
 import './styles/sentinel-map.css';
+import './styles/profile.css';
 
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import type { ReactNode } from 'react';

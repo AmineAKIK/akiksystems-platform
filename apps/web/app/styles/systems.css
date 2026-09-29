@@ -14,7 +14,7 @@
   font-family: Archivo, system-ui, sans-serif;
 }
 
-.aks-experience-shell[data-destination='systems'] {
+.aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
   position: absolute;
   inset: 0 0 auto;
   width: 100%;
@@ -23,7 +23,8 @@
   backdrop-filter: none;
 }
 
-.aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+.aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+  .aks-experience-shell-inner {
   min-height: 3.6rem;
 }
 
@@ -708,12 +709,13 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-experience-shell[data-destination='systems'] {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
     position: absolute;
     background: linear-gradient(180deg, rgb(1 5 9 / 94%), rgb(1 5 9 / 58%) 82%, transparent);
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-shell-inner {
     min-height: 0;
   }
 
@@ -1242,29 +1244,34 @@
     min-height: 44px;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-shell-inner {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-shell-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.7rem;
     min-height: 3.15rem;
     padding-block: 0.35rem;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-brand-signature {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-brand-signature {
     grid-row: 1;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-mobile-menu {
     display: block;
     grid-row: 1;
     grid-column: 3;
     justify-self: end;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-meta {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-meta {
     display: none;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-trigger {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-mobile-menu-trigger {
     width: 2.35rem;
     min-height: 2.35rem;
     padding: 0;
@@ -1274,11 +1281,13 @@
     font-size: 0;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-menu-icon {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-mobile-menu-icon {
     font-size: 1rem;
   }
 
-  .aks-experience-shell[data-destination='systems'] .aks-experience-mobile-nav {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
+    .aks-experience-mobile-nav {
     position: absolute;
     top: calc(100% + 0.25rem);
     right: 1rem;
