@@ -667,7 +667,10 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     cta: {
       eyebrow: 'Travailler ensemble',
       title: ['Un logiciel métier à concevoir,', 'reprendre ou fiabiliser ?'],
-      action: { label: 'Commencer une conversation', href: '/fr/travailler-ensemble' },
+      action: {
+        label: 'Commencer une conversation',
+        href: 'mailto:contact@akiksystems.com?subject=Premier%20%C3%A9change',
+      },
     },
   },
   en: {
@@ -1165,7 +1168,10 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     cta: {
       eyebrow: 'Work together',
       title: ['Business software to design,', 'take over or make reliable?'],
-      action: { label: 'Start a conversation', href: '/en/work-with-us' },
+      action: {
+        label: 'Start a conversation',
+        href: 'mailto:contact@akiksystems.com?subject=First%20conversation',
+      },
     },
   },
 };

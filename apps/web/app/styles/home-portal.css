@@ -64,7 +64,7 @@
   margin: 0;
   color: inherit;
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.04375rem;
   line-height: 1.2;
@@ -86,10 +86,15 @@
 
 .aks-home-language {
   position: relative;
-  min-height: 1.75rem;
+  /* A real 44×44 target on the link itself; negative margins keep the visual spacing. */
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: -0.5rem -0.5rem;
+  padding: 0 0.5rem;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
+  justify-content: center;
   color: var(--aks-home-silver);
   font-family: var(--aks-font-sans);
   font-size: 0.75rem;
@@ -97,12 +102,6 @@
   letter-spacing: 0.04375rem;
   line-height: 1;
   text-decoration: none;
-}
-
-.aks-home-language::before {
-  position: absolute;
-  inset: -0.5rem;
-  content: '';
 }
 
 .aks-home-language-display {
@@ -126,9 +125,7 @@
 
 .aks-home-language-target {
   color: var(--aks-home-silver);
-  transition:
-    color 160ms var(--aks-home-ease),
-    text-shadow 160ms var(--aks-home-ease);
+  transition: color 160ms var(--aks-home-ease);
 }
 
 .aks-home-language:hover,
@@ -139,15 +136,10 @@
 .aks-home-language:hover .aks-home-language-target,
 .aks-home-language:focus-visible .aks-home-language-target {
   color: var(--aks-home-starlight);
-  text-shadow: 0 0 0.375rem rgb(100 135 222 / 32%);
 }
 
 .aks-home-language:focus-visible,
 .aks-home-door:focus-visible,
-.aks-experience-footer[data-home='true'] .aks-link:focus-visible {
-  outline: 2px solid var(--aks-home-orbital);
-  outline-offset: 4px;
-}
 
 /*
  * Portrait is a single centered body, not a stack anchored to viewport edges.
@@ -176,6 +168,8 @@
 }
 
 .aks-home-center {
+  /* Positions the construction plan; desktop layouts make it absolute further down. */
+  position: relative;
   grid-area: identity;
   display: grid;
   justify-items: center;
@@ -212,7 +206,6 @@
   align-items: center;
   justify-content: center;
   color: var(--aks-home-starlight);
-  text-shadow: 0 0 0.625rem rgb(100 135 222 / 22%);
 }
 
 .aks-home-wordmark-slot {
@@ -235,7 +228,7 @@
   margin: 0.625rem 0 0;
   color: var(--aks-home-mauve);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.31rem;
   line-height: 1.2;
@@ -246,9 +239,7 @@
   display: inline-block;
   color: var(--aks-home-mauve);
   opacity: 0;
-  text-shadow: 0 0 0 transparent;
   animation: none;
-  will-change: color, opacity, text-shadow;
 }
 
 .aks-home-scale-letter[data-scale-index='0'] {
@@ -299,23 +290,16 @@
     calc(var(--aks-home-scale-index) * 35ms) both;
 }
 
+/* Compositor-only: opacity and a small lift, no colour or shadow repaint. */
 @keyframes aks-home-scale-ignite {
-  0% {
-    color: rgb(147 135 158 / 24%);
-    opacity: 0.18;
-    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+  from {
+    opacity: 0;
+    transform: translateY(0.25em);
   }
 
-  46% {
-    color: var(--aks-home-starlight);
+  to {
     opacity: 1;
-    text-shadow: 0 0 0.5rem rgb(100 135 222 / 58%);
-  }
-
-  100% {
-    color: var(--aks-home-mauve);
-    opacity: 1;
-    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+    transform: none;
   }
 }
 
@@ -348,7 +332,7 @@
 .aks-home-active-description > span {
   color: var(--aks-home-orbital);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.22rem;
   line-height: 1.2;
@@ -424,11 +408,33 @@
 .aks-home-door-summary {
   color: rgb(170 179 193 / 72%);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.021875rem;
   line-height: 1.2;
   transition: color 160ms var(--aks-home-ease);
+}
+
+/* A door not open yet: same place and type, a quiet status line, no pointer promise. */
+.aks-home-door[data-state='soon'] {
+  cursor: default;
+}
+
+.aks-home-door-status {
+  /* Out of flow: the status never changes a door's box, so no layout moves. */
+  position: absolute;
+  inset-block-start: calc(100% + 0.3rem);
+  left: 50%;
+  translate: -50% 0;
+  color: var(--aks-home-mauve);
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--aks-font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08rem;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .aks-home-door:hover,
@@ -524,89 +530,59 @@
   }
 }
 
-/* Footer is independently anchored; it never participates in body centering. */
+/* The shared footer (see systems.css and legal.css), anchored to the bottom of the portal:
+ * it never participates in body centering. */
 .aks-experience-footer[data-home='true'] {
   position: absolute;
   z-index: 8;
   inset-inline: 0;
-  inset-block-end: 1.5rem;
+  inset-block-end: 0;
+  /* On the portal the footer has no band and no separator: the plan runs through. */
   background: transparent;
-  color: var(--aks-home-lunar);
-  pointer-events: none;
 }
 
 .aks-experience-footer[data-home='true']::before {
   display: none;
 }
 
-.aks-experience-footer[data-home='true'] > .aks-container {
-  width: 100%;
-  max-width: none;
-  padding-inline: var(--aks-home-gutter);
+/* Same footer, tighter when stacked: the portal is one screen, so this gives the doors room. */
+@media (max-width: 80rem) {
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    min-height: 0;
+    gap: 0.5rem;
+    padding-block: 0.7rem 0.8rem;
+  }
 }
 
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-  min-height: 0;
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0;
-  color: rgb(170 179 193 / 72%);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.021875rem;
-  pointer-events: auto;
-}
+/* Short landscape screens: the footer's desktop row, which fits and stays low. */
+@media (orientation: landscape) and (max-height: 37.5rem) {
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    justify-items: start;
+    padding-block: 0.45rem;
+    text-align: start;
+  }
 
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
-  margin: 0;
-}
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
+    grid-column: 1;
+    justify-self: start;
+  }
 
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: clamp(0.875rem, 4.5vw, 1.75rem);
-}
-
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link {
-  display: inline-flex;
-  align-items: center;
-  color: rgb(170 179 193 / 72%);
-  font-size: 0.6875rem;
-  white-space: nowrap;
-  transition: color 160ms var(--aks-home-ease);
-}
-
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link:hover,
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link:focus-visible,
-.aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav .aks-link.is-active {
-  color: var(--aks-home-starlight);
+  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
+    grid-column: 2;
+    justify-self: center;
+  }
 }
 
 /* 320–345px: stack the language control below the centered two-line clock. */
 @media (min-width: 20rem) and (max-width: 21.5625rem) {
   .aks-home-meta {
     inset-block-start: 0.875rem;
-    width: calc(100% - 1.5rem);
-    max-width: none;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    place-items: center;
-    row-gap: 0.375rem;
     padding-inline: 0;
   }
 
   .aks-home-clock {
     text-align: center;
-  }
-
-  .aks-home-language {
-    position: relative;
-    inset-inline-end: auto;
-    min-height: 1rem;
-    justify-self: center;
   }
 
   .aks-home-clock time {
@@ -645,24 +621,12 @@
   }
 
   .aks-home-active-description > span {
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
   }
 
   .aks-home-active-description p {
     font-size: 0.75rem;
     line-height: 1.35;
-  }
-
-  .aks-experience-footer[data-home='true'] {
-    inset-block-end: 0.75rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-    gap: 0.75rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    gap: 0.75rem;
   }
 }
 
@@ -686,28 +650,6 @@
     inset-block-start: clamp(5.5rem, 9dvh, 7rem);
     inset-block-end: 5.5rem;
     max-width: 56rem;
-  }
-
-  .aks-experience-footer[data-home='true'] {
-    inset-block-end: 1.5rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 1rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    grid-column: 2;
-    justify-self: center;
-    gap: 1.75rem;
   }
 }
 
@@ -815,42 +757,15 @@
   }
 
   .aks-home-door-summary {
-    font-size: clamp(0.625rem, min(0.7vw, 1.1dvh), 0.75rem);
+    font-size: clamp(0.6875rem, min(0.7vw, 1.1dvh), 0.75rem);
   }
 
   .aks-home-active-description > span {
-    font-size: clamp(0.625rem, min(0.7vw, 1.1dvh), 0.75rem);
+    font-size: clamp(0.6875rem, min(0.7vw, 1.1dvh), 0.75rem);
   }
 
   .aks-home-active-description p {
     font-size: clamp(0.875rem, min(0.9vw, 1.45dvh), 1rem);
-  }
-
-  .aks-experience-footer[data-home='true'] {
-    inset-block-end: clamp(1.25rem, 2.5dvh, 2rem);
-  }
-
-  .aks-experience-footer[data-home='true'] > .aks-container {
-    width: min(calc(100% - 4rem), 110rem);
-    padding-inline: 0;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 1rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    grid-column: 2;
-    justify-self: center;
-    gap: 1.75rem;
   }
 }
 
@@ -970,38 +885,13 @@
   .aks-home-door-summary {
     font-size: 0.6875rem;
   }
-
-  .aks-experience-footer[data-home='true'] {
-    inset-block-end: 0.375rem;
-  }
-
-  .aks-experience-footer[data-home='true'] > .aks-container {
-    width: 100%;
-    padding-inline: 1rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 0.75rem;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner p {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .aks-experience-footer[data-home='true'] .aks-experience-footer-inner nav {
-    grid-column: 2;
-    justify-self: center;
-    gap: 1rem;
-  }
 }
 
 /* Extreme short landscapes keep every label in dedicated vertical bands. */
 @media (orientation: landscape) and (max-height: 22.5rem) {
+  /* A smaller emblem, lower: it clears Perspectives and still leaves the preview its row. */
   .aks-home {
+    --aks-home-mark-size: clamp(3.5rem, 18dvh, 9rem);
     --aks-home-preview-top: 66.5%;
   }
 
@@ -1010,16 +900,12 @@
   }
 
   .aks-home-center {
-    top: 37%;
+    top: 40%;
   }
 
   .aks-home-door[data-destination='profile'],
   .aks-home-door[data-destination='systems'] {
     top: 43%;
-  }
-
-  .aks-experience-footer[data-home='true'] {
-    inset-block-end: 0.25rem;
   }
 }
 
@@ -1035,9 +921,7 @@
   .aks-home-scale-letter {
     color: var(--aks-home-mauve);
     opacity: 1;
-    text-shadow: none;
     animation: none;
-    will-change: auto;
   }
 
   .aks-home-door {
@@ -1064,9 +948,7 @@ html[data-motion='reduced'] .aks-home-wordmark-matrix {
 html[data-motion='reduced'] .aks-home-scale-letter {
   color: var(--aks-home-mauve);
   opacity: 1;
-  text-shadow: none;
   animation: none;
-  will-change: auto;
 }
 
 html[data-motion='reduced'] .aks-home-door {
@@ -1079,4 +961,212 @@ html[data-motion='reduced'] .aks-home-door-summary,
 html[data-motion='reduced'] .aks-home-active-description,
 html[data-motion='reduced'] .aks-experience-footer[data-home='true'] .aks-link {
   transition-duration: 1ms;
+}
+
+/*
+ * Construction plan: fine rings and axes centred on the emblem, 1px, no blur or glow. The
+ * orbit radius is the single measure shared by the drawing and the doors placed on it.
+ */
+.aks-home {
+  --aks-home-orbit-r: calc(var(--aks-home-mark-size) * 1.2);
+}
+
+.aks-home-brand-mark,
+.aks-home-wordmark,
+.aks-home-scale {
+  position: relative;
+  z-index: 1;
+}
+
+.aks-home-plan {
+  position: absolute;
+  z-index: 0;
+  top: calc(var(--aks-home-mark-size) / 2);
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.aks-home-plan > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -50% -50%;
+}
+
+.aks-home-plan-ring {
+  border: 1px solid rgb(170 179 193 / 8%);
+  border-radius: 50%;
+}
+
+.aks-home-plan-ring--inner {
+  width: calc(var(--aks-home-mark-size) * 1.24);
+  height: calc(var(--aks-home-mark-size) * 1.24);
+  border-style: dashed;
+  border-color: rgb(170 179 193 / 14%);
+}
+
+.aks-home-plan-ring--orbit {
+  width: calc(var(--aks-home-orbit-r) * 2);
+  height: calc(var(--aks-home-orbit-r) * 2);
+  border-color: rgb(100 135 222 / 20%);
+}
+
+.aks-home-plan-ring--outer {
+  width: calc(var(--aks-home-orbit-r) * 2.64);
+  height: calc(var(--aks-home-orbit-r) * 2.64);
+  border-color: rgb(170 179 193 / 6%);
+}
+
+/* Graduations just outside the orbit: one composited layer turning very slowly. */
+.aks-home-plan-ticks {
+  width: calc(var(--aks-home-orbit-r) * 2 + 0.875rem);
+  height: calc(var(--aks-home-orbit-r) * 2 + 0.875rem);
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(170 179 193 / 28%) 0 0.35deg, transparent 0.35deg 6deg);
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - 0.4375rem),
+    #000 calc(100% - 0.375rem)
+  );
+  animation: aks-home-plan-turn 240s linear infinite;
+}
+
+@keyframes aks-home-plan-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.aks-home-plan-axis {
+  background: rgb(170 179 193 / 10%);
+}
+
+/* The horizontal axis stops at the emblem so no line shows through it. */
+.aks-home-plan-axis--horizontal {
+  width: calc(var(--aks-home-orbit-r) * 2.64);
+  height: 1px;
+  mask: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 calc(50% - var(--aks-home-mark-size) * 0.62),
+    transparent calc(50% - var(--aks-home-mark-size) * 0.62),
+    transparent calc(50% + var(--aks-home-mark-size) * 0.62),
+    #000 calc(50% + var(--aks-home-mark-size) * 0.62),
+    #000 88%,
+    transparent
+  );
+}
+
+/* The vertical axis rises from the emblem towards Perspectives only, never across the text. */
+.aks-home-plan > .aks-home-plan-axis--vertical {
+  top: calc(var(--aks-home-orbit-r) * -1.32);
+  width: 1px;
+  height: calc(var(--aks-home-orbit-r) * 1.32 - var(--aks-home-mark-size) * 0.62);
+  translate: -50% 0;
+  mask: linear-gradient(transparent, #000 30%);
+}
+
+.aks-home-plan-node {
+  display: none;
+  width: 0.6875rem;
+  height: 0.6875rem;
+  border: 1px solid rgb(100 135 222 / 60%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--aks-home-starlight) 0 1.5px, transparent 2px);
+}
+
+/* Portrait: the 2×2 cross reaches its four doors instead of floating between them. */
+.aks-home-nav-separator {
+  width: min(100%, 40rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-home-plan-ticks {
+    animation: none;
+  }
+}
+
+html[data-motion='reduced'] .aks-home-plan-ticks {
+  animation: none;
+}
+
+/*
+ * Desktop: the doors sit on the orbit. Profile and Systems on the emblem's horizontal axis,
+ * Writings and Learning 35° below it, each hanging under its node like a map label. The
+ * preview narrows to two lines so it runs between the lower doors, never under them.
+ */
+@media (min-width: 56.25rem) and (orientation: landscape) and (min-height: 37.5625rem) {
+  .aks-home {
+    --aks-home-orbit-r: min(calc(var(--aks-home-mark-size) * 1.8), calc(50vw - 9rem), 48rem);
+    --aks-home-emblem-y: calc(
+      46% - var(--aks-home-center-half-height) + var(--aks-home-mark-size) / 2
+    );
+    --aks-home-node-gap: 0.875rem;
+  }
+
+  .aks-home-plan-node {
+    display: block;
+  }
+
+  .aks-home-active-description {
+    width: min(100%, 26rem);
+  }
+
+  .aks-home-active-description p {
+    max-width: 26rem;
+  }
+
+  .aks-home-plan > [data-node='profile'] {
+    left: calc(var(--aks-home-orbit-r) * -1);
+  }
+
+  .aks-home-plan > [data-node='systems'] {
+    left: var(--aks-home-orbit-r);
+  }
+
+  .aks-home-plan > [data-node='writings'] {
+    top: calc(var(--aks-home-orbit-r) * 0.574);
+    left: calc(var(--aks-home-orbit-r) * -0.819);
+  }
+
+  .aks-home-plan > [data-node='learning'] {
+    top: calc(var(--aks-home-orbit-r) * 0.574);
+    left: calc(var(--aks-home-orbit-r) * 0.819);
+  }
+
+  .aks-home-door:is(
+    [data-destination='profile'],
+    [data-destination='systems'],
+    [data-destination='writings'],
+    [data-destination='learning']
+  ) {
+    transform: translate(-50%, 0);
+  }
+
+  .aks-home-door[data-destination='profile'] {
+    top: calc(var(--aks-home-emblem-y) + var(--aks-home-node-gap));
+    left: calc(50% - var(--aks-home-orbit-r));
+  }
+
+  .aks-home-door[data-destination='systems'] {
+    top: calc(var(--aks-home-emblem-y) + var(--aks-home-node-gap));
+    left: calc(50% + var(--aks-home-orbit-r));
+  }
+
+  .aks-home-door[data-destination='writings'] {
+    top: calc(
+      var(--aks-home-emblem-y) + var(--aks-home-orbit-r) * 0.574 + var(--aks-home-node-gap)
+    );
+    left: calc(50% - var(--aks-home-orbit-r) * 0.819);
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    top: calc(
+      var(--aks-home-emblem-y) + var(--aks-home-orbit-r) * 0.574 + var(--aks-home-node-gap)
+    );
+    left: calc(50% + var(--aks-home-orbit-r) * 0.819);
+  }
 }

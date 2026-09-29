@@ -682,7 +682,8 @@
   line-height: 1.5;
 }
 
-.aks-experience-footer:not([data-home]) {
+/* One footer on every page, Home included. */
+.aks-experience-footer {
   background: #05070a;
 }
 

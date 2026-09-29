@@ -2,11 +2,15 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { setTimeout: sleep } = require('node:timers/promises');
+const fs = require('node:fs');
+const http = require('node:http');
 const path = require('node:path');
 const { chromium } = require('playwright');
 
 const port = '4178';
 const origin = 'http://127.0.0.1:' + port;
+const screenshotDirectory = path.resolve(__dirname, '../../../artifacts/home');
+fs.mkdirSync(screenshotDirectory, { recursive: true });
 
 const server = spawn(process.execPath, ['server.js'], {
   cwd: path.resolve(__dirname, '..'),
@@ -107,6 +111,18 @@ async function measure(page) {
           rect('.aks-home-door[data-destination="' + id + '"] .aks-home-door-label'),
         ]),
       ),
+      // Orbit nodes the desktop doors hang from (hidden in other layouts).
+      nodes: Object.fromEntries(
+        ['profile', 'systems', 'writings', 'learning'].map((id) => {
+          const node = document.querySelector('.aks-home-plan-node[data-node="' + id + '"]');
+          if (!(node instanceof HTMLElement) || getComputedStyle(node).display === 'none') {
+            return [id, null];
+          }
+          const box = node.getBoundingClientRect();
+          return [id, { x: box.left + box.width / 2, y: box.top + box.height / 2 }];
+        }),
+      ),
+      previewText: rect('.aks-home-active-description p'),
       doorOrder: [...document.querySelectorAll('.aks-home-door')].map(
         (door) => door.dataset.destination,
       ),
@@ -171,13 +187,13 @@ function assertGap(upper, lower, minimum, maximum, label) {
   );
 }
 
-async function loadViewport(browser, viewport, options = {}) {
+async function loadViewport(browser, viewport, options = {}, locale = 'fr') {
   const context = await browser.newContext({
     viewport,
     ...options,
   });
   const page = await context.newPage();
-  const response = await page.goto(origin + '/fr');
+  const response = await page.goto(origin + '/' + locale);
 
   assert.equal(
     response?.status(),
@@ -191,11 +207,17 @@ async function loadViewport(browser, viewport, options = {}) {
   return { context, page };
 }
 
-async function assertGeometry(browser, viewport, name) {
-  const { context, page } = await loadViewport(browser, viewport);
+async function assertGeometry(browser, viewport, name, locale = 'fr') {
+  const { context, page } = await loadViewport(browser, viewport, {}, locale);
 
   try {
     const m = await measure(page);
+    await page.screenshot({
+      path: path.join(
+        screenshotDirectory,
+        `home-${locale}-${viewport.width}x${viewport.height}.png`,
+      ),
+    });
 
     assert.ok(m.scrollWidth <= m.viewportWidth + 1, name + ' must not overflow horizontally');
     assert.ok(
@@ -204,6 +226,7 @@ async function assertGeometry(browser, viewport, name) {
     );
     assert.deepEqual(m.doorOrder, ['work-with-us', 'profile', 'systems', 'writings', 'learning']);
     assert.equal(m.legalCount, 3);
+    // On the portal the footer has no separator.
     assert.equal(m.footerSeparator, 'none');
     assert.match(m.background, /^radial-gradient\(/);
     assert.equal(m.clockFits, true, name + ' clock must never truncate');
@@ -271,6 +294,39 @@ async function assertGeometry(browser, viewport, name) {
         80,
         name + ' portrait navigation row spacing',
       );
+    } else if (m.nodes.profile !== null) {
+      // Desktop: the doors sit on one orbit around the emblem, each centred under its node.
+      const emblem = {
+        x: m.brand.left + m.brand.width / 2,
+        y: m.brand.top + m.brand.height / 2,
+      };
+      const radii = [];
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const node = m.nodes[id];
+        const door = m.doors[id];
+        assertNear(door.left + door.width / 2, node.x, 1.5, name + ' ' + id + ' under its node');
+        assert.ok(
+          door.top - node.y >= 8 && door.top - node.y <= 24,
+          name + ' ' + id + ' hangs just below its node: ' + (door.top - node.y),
+        );
+        radii.push(Math.hypot(node.x - emblem.x, node.y - emblem.y));
+      }
+      for (const radius of radii) {
+        assertNear(radius, radii[0], 2, name + ' every door node on the same orbit');
+      }
+      assertNear(m.nodes.profile.y, emblem.y, 3, name + ' Profile on the emblem axis');
+      assertNear(m.nodes.systems.y, emblem.y, 3, name + ' Systems on the emblem axis');
+      assertGap(m.scale, m.preview, 4, 24, name + ' slogan → preview');
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const door = m.doors[id];
+        const preview = m.previewText;
+        const overlaps =
+          door.left < preview.right &&
+          preview.left < door.right &&
+          door.top < preview.bottom &&
+          preview.top < door.bottom;
+        assert.ok(!overlaps, name + ' ' + id + ' must stay clear of the preview');
+      }
     } else {
       assertNear(m.labels.profile.top, m.labels.systems.top, 2, name + ' orbital side row');
       assertNear(m.labels.writings.top, m.labels.learning.top, 2, name + ' orbital lower row');
@@ -388,7 +444,18 @@ async function assertPreviewCorridor(browser, viewport, name) {
       viewport.width > viewport.height && viewport.width < 900 && viewport.height <= 600;
     const desktopLandscape = viewport.width >= 900 && viewport.width > viewport.height;
 
-    if (compactLandscape || desktopLandscape) {
+    if (desktopLandscape && m.nodes.profile !== null) {
+      // On the orbit the lower doors flank the preview: it must run between them, untouched.
+      assertGap(m.scale, m.preview, 4, 24, name + ' active slogan → preview');
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const door = m.doors[id];
+        const preview = m.previewText;
+        assert.ok(
+          door.right < preview.left || door.left > preview.right || door.top > preview.bottom,
+          name + ' active preview must not touch ' + id,
+        );
+      }
+    } else if (compactLandscape || desktopLandscape) {
       assertGap(m.scale, m.preview, 4, 24, name + ' active slogan → preview');
       assertGap(m.preview, m.doors.writings, 8, 48, name + ' active preview → lower destinations');
     } else {
@@ -457,9 +524,11 @@ async function assertLargeDesktopStability(browser) {
 
     assertNear(profileDistance, systemsDistance, 2, viewport.width + 'px side orbital symmetry');
 
+    // The side doors sit on the orbit: 1.8 emblems from the centre, attached to the body.
+    const orbitRatio = profileDistance / measurement.brand.width;
     assert.ok(
-      profileDistance >= 700 && profileDistance <= 780,
-      viewport.width + 'px side destinations must stay visually attached to the body',
+      orbitRatio >= 1.75 && orbitRatio <= 1.85,
+      viewport.width + 'px side destinations must stay on the orbit: ' + orbitRatio.toFixed(3),
     );
   }
 }
@@ -576,9 +645,17 @@ async function assertTouchSelection(browser) {
     const cleared = await measure(page);
     assert.equal(cleared.previewState, 'idle', 'outside tap must clear touch selection');
 
+    // A door not open yet shows its preview on tap and never navigates.
+    const writings = page.locator('.aks-home-door[data-destination="writings"]');
+    await writings.tap();
+    await writings.tap();
+    const soon = await measure(page);
+    assert.equal(soon.previewState, 'active', 'a door in preparation must show its preview');
+    assert.equal(new URL(page.url()).pathname, '/fr', 'a door in preparation must not navigate');
+
     await perspective.tap();
     await perspective.tap();
-    await page.waitForURL('**/fr/travailler-ensemble');
+    await page.waitForURL('**/fr/profil#contact');
   } finally {
     await context.close();
   }
@@ -606,8 +683,6 @@ async function assertKeyboardOrder(browser) {
       'Perspectives',
       'Profil',
       'Systèmes',
-      'Écrits',
-      'Apprentissage',
       'Confidentialité',
       'Mentions légales',
       'Cookies',
@@ -636,6 +711,147 @@ async function assertReducedMotion(browser) {
   }
 }
 
+/** The intro scramble runs frame by frame, and nothing on the portal glows. */
+async function assertIntroBudget(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    window.__glyphUpdates = [];
+    document.addEventListener('DOMContentLoaded', () => {
+      const matrix = document.querySelector('.aks-home-wordmark-matrix');
+      new MutationObserver(() => window.__glyphUpdates.push(performance.now())).observe(matrix, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+      });
+    });
+  });
+
+  try {
+    await page.goto(origin + '/fr');
+    await page.waitForTimeout(2600);
+    const intro = await page.evaluate(() => {
+      const times = window.__glyphUpdates;
+      const gaps = times.slice(1).map((time, index) => time - times[index]);
+      const glow = [
+        '.aks-home-wordmark',
+        '.aks-home-wordmark-matrix',
+        '.aks-home-scale-letter',
+        '.aks-home-door-label',
+      ].filter((selector) => {
+        const element = document.querySelector(selector);
+        return element !== null && getComputedStyle(element).textShadow !== 'none';
+      });
+      return {
+        updates: times.length,
+        maxGap: gaps.length === 0 ? Infinity : Math.max(...gaps),
+        glow,
+        wordmark: [...document.querySelectorAll('.aks-home-wordmark-glyph')]
+          .map((glyph) => glyph.textContent)
+          .join(''),
+      };
+    });
+
+    assert.ok(
+      intro.updates >= 40,
+      'the wordmark scramble must update every frame: ' + intro.updates,
+    );
+    assert.ok(intro.maxGap <= 40, 'the wordmark scramble must not stall: ' + intro.maxGap);
+    assert.equal(intro.wordmark, 'AkikSystems', 'the scramble must settle on the wordmark');
+    assert.deepEqual(intro.glow, [], 'no halo on the portal text');
+  } finally {
+    await context.close();
+  }
+}
+
+/** Serves the public domains from the local production server, Host header included. */
+function servePublicDomain(route) {
+  const request = route.request();
+  const url = new URL(request.url());
+  const headers = { ...request.headers(), host: url.host };
+  delete headers['accept-encoding'];
+
+  return new Promise((resolve, reject) => {
+    const upstream = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: url.pathname + url.search,
+        method: request.method(),
+        headers,
+      },
+      (response) => {
+        const chunks = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          route
+            .fulfill({
+              status: response.statusCode,
+              headers: response.headers,
+              body: Buffer.concat(chunks),
+            })
+            .then(resolve, reject);
+        });
+      },
+    );
+    upstream.on('error', reject);
+    upstream.end();
+  });
+}
+
+/** A real click on FR / EN: akiksystems.fr/fr → akiksystems.com/en, no redirect, lang follows. */
+async function assertLanguageJourney(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.route(/^https:\/\/akiksystems\.(fr|com)\//, servePublicDomain);
+  const page = await context.newPage();
+  const documents = [];
+  page.on('response', (response) => {
+    if (response.request().resourceType() === 'document') {
+      documents.push(response.status() + ' ' + response.url());
+    }
+  });
+
+  try {
+    await page.goto('https://akiksystems.fr/fr');
+    await page.locator('.aks-home').waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'fr');
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: path.join(screenshotDirectory, 'journey-1-fr.png') });
+
+    const switcher = page.locator('.aks-home-meta .aks-home-language');
+    assert.equal((await switcher.innerText()).replace(/\s+/g, ''), 'FR/EN');
+    // A production build links straight to the other domain; a build under another NODE_ENV
+    // (as in CI) links relatively, and the client follows the server's canonical redirect.
+    const href = await switcher.getAttribute('href');
+    assert.ok(
+      href === 'https://akiksystems.com/en' || href === '/en',
+      'unexpected switch link ' + href,
+    );
+
+    documents.length = 0;
+    await switcher.click();
+    await page.waitForURL('https://akiksystems.com/en');
+    await page.locator('.aks-home').waitFor();
+
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'en');
+    assert.equal(
+      (await page.locator('.aks-home-meta .aks-home-language').innerText()).replace(/\s+/g, ''),
+      'FR/EN',
+      'the switch keeps its order in English',
+    );
+    // Either way one document loads: the page itself, never loader data or a redirect chain.
+    assert.deepEqual(
+      documents,
+      ['200 https://akiksystems.com/en'],
+      'the switch must land on akiksystems.com/en in one document',
+    );
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: path.join(screenshotDirectory, 'journey-2-en.png') });
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
@@ -657,7 +873,9 @@ async function assertReducedMotion(browser) {
       [{ width: 1280, height: 720 }, 'laptop 1280×720'],
       [{ width: 1366, height: 768 }, 'laptop 1366×768'],
     ]) {
-      await assertGeometry(browser, viewport, name);
+      for (const locale of ['fr', 'en']) {
+        await assertGeometry(browser, viewport, locale + ' ' + name, locale);
+      }
     }
 
     await assertMetadataRegimes(browser);
@@ -682,9 +900,11 @@ async function assertReducedMotion(browser) {
     await assertTouchSelection(browser);
     await assertKeyboardOrder(browser);
     await assertReducedMotion(browser);
+    await assertIntroBudget(browser);
+    await assertLanguageJourney(browser);
 
     console.log(
-      'Responsive browser smoke passed: centered metadata, compact body, symmetric orbital grid, 320 two-line clock, breakpoint continuity, touch selection and reduced motion are qualified.',
+      'Responsive browser smoke passed in French and English: centered metadata, compact body, orbital geometry, 320 two-line clock, breakpoint continuity, touch selection, reduced motion, a smooth intro without halos and a real FR → EN switch across domains.',
     );
   } finally {
     await browser.close();

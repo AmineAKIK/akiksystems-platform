@@ -6,17 +6,17 @@ import {
   type MouseEvent,
   type PointerEvent,
 } from 'react';
-import { brandEmblemGroups } from '@akiksystems/ui';
 import { Link, useNavigate } from 'react-router';
 
-import {
-  destinationById,
-  destinationHref,
-  type GlobalDestinationId,
-} from '../i18n/global-destinations';
+import { destinationHref, type GlobalDestinationId } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
-import { homeDestinationOrder, homeDestinationPresentation } from './home-portal-content';
+import { emblemParts } from '../systems/hero-emblem';
+import {
+  homeDestinationOrder,
+  homeDestinationPresentation,
+  homeSoonLabel,
+} from './home-portal-content';
 import { LanguageSwitch } from './language-switch';
 import {
   homeDescriptionEvent,
@@ -97,6 +97,7 @@ function ParisContext({ locale }: { locale: Locale }) {
   );
 }
 
+/** The emblem inlined from the vector master: no extra request, no late appearance. */
 function HomeEmblem() {
   return (
     <svg
@@ -105,8 +106,8 @@ function HomeEmblem() {
       focusable="false"
       viewBox="0 0 2048 2048"
     >
-      {brandEmblemGroups.map((group) => (
-        <use fill="currentColor" href={'/brand/AKSYS.svg#' + group} key={group} />
+      {emblemParts.map((part) => (
+        <path d={part.d} fill="currentColor" fillRule="evenodd" key={part.id} />
       ))}
     </svg>
   );
@@ -114,56 +115,92 @@ function HomeEmblem() {
 
 const wordmarkTarget = 'AkikSystems';
 const matrixGlyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/{}[]%*+=?';
-const initialWordmarkScramble = '\u00a0'.repeat(wordmarkTarget.length);
+
+/**
+ * The construction plan behind the emblem: fine rings and axes centred on it, and the nodes
+ * the doors hang from. Pure decoration, drawn with CSS from the same orbit radius the doors use.
+ */
+function HomePlan() {
+  return (
+    <span aria-hidden="true" className="aks-home-plan">
+      <span className="aks-home-plan-ring aks-home-plan-ring--inner" />
+      <span className="aks-home-plan-ring aks-home-plan-ring--orbit" />
+      <span className="aks-home-plan-ring aks-home-plan-ring--outer" />
+      <span className="aks-home-plan-ticks" />
+      <span className="aks-home-plan-axis aks-home-plan-axis--horizontal" />
+      <span className="aks-home-plan-axis aks-home-plan-axis--vertical" />
+      <span className="aks-home-plan-node" data-node="profile" />
+      <span className="aks-home-plan-node" data-node="systems" />
+      <span className="aks-home-plan-node" data-node="writings" />
+      <span className="aks-home-plan-node" data-node="learning" />
+    </span>
+  );
+}
+
+/** Starts after the fonts and the page settle, so the intro never competes with hydration. */
+function whenSettled(start: () => void) {
+  let cancelled = false;
+  let handle = 0;
+  // Safari has no requestIdleCallback: a short timeout stands in for it.
+  const hasIdle = typeof window.requestIdleCallback === 'function';
+  const run = () => {
+    if (!cancelled) start();
+  };
+  void document.fonts.ready.then(() => {
+    if (cancelled) return;
+    handle = hasIdle
+      ? window.requestIdleCallback(run, { timeout: 400 })
+      : window.setTimeout(run, 60);
+  });
+  return () => {
+    cancelled = true;
+    if (hasIdle) window.cancelIdleCallback(handle);
+    else window.clearTimeout(handle);
+  };
+}
 
 function MatrixWordmark() {
-  const [display, setDisplay] = useState(initialWordmarkScramble);
   const [animationStarted, setAnimationStarted] = useState(false);
-  const activationFrame = useRef(0);
+  const glyphs = useRef<Array<HTMLSpanElement | null>>([]);
   const matrixFrame = useRef(0);
   const matrixStarted = useRef(false);
 
   useEffect(() => {
-    activationFrame.current = window.requestAnimationFrame(() => {
-      setAnimationStarted(true);
-    });
-
+    const stop = whenSettled(() => setAnimationStarted(true));
     return () => {
-      window.cancelAnimationFrame(activationFrame.current);
+      stop();
       window.cancelAnimationFrame(matrixFrame.current);
     };
   }, []);
 
+  // The scramble writes the glyphs straight into the DOM, once per frame: no React render.
   const startMatrixAnimation = () => {
     if (matrixStarted.current) return;
     matrixStarted.current = true;
 
     const startedAt = performance.now();
-    let lastMutationAt = startedAt - 50;
+    const animationDuration = 980;
+    const characterDuration = 525;
+    const characterDelay = (animationDuration - characterDuration) / (wordmarkTarget.length - 1);
 
     const animate = (now: number) => {
       const elapsed = now - startedAt;
-      const animationDuration = 980;
-      const characterDuration = 525;
-      const characterDelay = (animationDuration - characterDuration) / (wordmarkTarget.length - 1);
       const complete = elapsed >= animationDuration;
 
-      if (now - lastMutationAt >= 34 || complete) {
-        const next = Array.from(wordmarkTarget, (character, index) => {
-          const characterElapsed = elapsed - index * characterDelay;
+      Array.from(wordmarkTarget).forEach((character, index) => {
+        const glyph = glyphs.current[index];
+        if (!glyph) return;
+        const characterElapsed = elapsed - index * characterDelay;
+        const next =
+          characterElapsed < 0
+            ? '\u00a0'
+            : characterElapsed >= characterDuration || complete
+              ? character
+              : (matrixGlyphs[Math.floor(Math.random() * matrixGlyphs.length)] ?? character);
+        if (glyph.textContent !== next) glyph.textContent = next;
+      });
 
-          if (characterElapsed < 0) return '\u00a0';
-          if (characterElapsed >= characterDuration) return character;
-          return matrixGlyphs[Math.floor(Math.random() * matrixGlyphs.length)];
-        }).join('');
-
-        setDisplay(next);
-        lastMutationAt = now;
-      }
-
-      if (!complete) {
-        matrixFrame.current = window.requestAnimationFrame(animate);
-      }
+      if (!complete) matrixFrame.current = window.requestAnimationFrame(animate);
     };
 
     matrixFrame.current = window.requestAnimationFrame(animate);
@@ -177,17 +214,25 @@ function MatrixWordmark() {
           {Array.from(wordmarkTarget).map((character, index) => (
             <span className="aks-home-wordmark-slot" key={index}>
               <span className="aks-home-wordmark-slot-measure">{character}</span>
-              <span className="aks-home-wordmark-glyph">{display[index]}</span>
+              <span
+                className="aks-home-wordmark-glyph"
+                ref={(node) => {
+                  glyphs.current[index] = node;
+                }}
+              >
+                {'\u00a0'}
+              </span>
             </span>
           ))}
         </span>
       </h1>
       <p
-        aria-label="Systemic Scale"
         className="aks-home-scale"
         data-animation={animationStarted ? 'running' : 'idle'}
+        lang="en"
         onAnimationStart={startMatrixAnimation}
       >
+        <span className="aks-visually-hidden">Systemic Scale</span>
         {Array.from('Systemic Scale').map((character, index) => (
           <span
             aria-hidden="true"
@@ -231,12 +276,20 @@ export function HomePortal({ locale }: HomePortalProps) {
   );
 
   const destinationPreview = useCallback(
-    (id: GlobalDestinationId) => ({
-      description: homeDestinationPresentation[id].description[locale],
-      label: homeDestinationPresentation[id].label[locale],
-    }),
+    (id: GlobalDestinationId) => {
+      const presentation = homeDestinationPresentation[id];
+      return {
+        description: presentation.description[locale],
+        label: presentation.soon
+          ? presentation.label[locale] + ' · ' + homeSoonLabel[locale]
+          : presentation.label[locale],
+      };
+    },
     [locale],
   );
+
+  const destinationTarget = (id: GlobalDestinationId) =>
+    homeDestinationPresentation[id].href?.[locale] ?? destinationHref(id, locale);
 
   const clearTouchSelection = useCallback(() => {
     selectedPreview.current = null;
@@ -304,7 +357,7 @@ export function HomePortal({ locale }: HomePortalProps) {
     }
     navigationTimer.current = window.setTimeout(() => {
       navigationTimer.current = null;
-      navigate(destinationHref(id, locale));
+      navigate(destinationTarget(id));
     }, 160);
   };
 
@@ -315,8 +368,43 @@ export function HomePortal({ locale }: HomePortalProps) {
       <section aria-labelledby="aks-home-title" className="aks-home-portal">
         <nav aria-label={dictionary.home.destinationsLabel} className="aks-home-orbit">
           {homeDestinationOrder.map((id, index) => {
-            const destination = destinationById(id);
             const presentation = homeDestinationPresentation[id];
+
+            if (presentation.soon) {
+              // Not open yet: described on hover and tap, but never a dead-end link.
+              return (
+                <span
+                  className={'aks-home-door' + (activeDestination === id ? ' is-active' : '')}
+                  data-destination={id}
+                  data-home-order={index}
+                  data-home-preview-target="primary"
+                  data-state="soon"
+                  key={id}
+                  onPointerDown={(event: PointerEvent<HTMLSpanElement>) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+                    const content = destinationPreview(id);
+                    selectedPreview.current = content;
+                    setActiveDestination(id);
+                    setPreview(content);
+                    setPreviewActive(true);
+                  }}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
+                      updatePreview('pointer', destinationPreview(id));
+                    }
+                  }}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
+                      updatePreview('pointer', null);
+                    }
+                  }}
+                >
+                  <span className="aks-home-door-label">{presentation.label[locale]}</span>
+                  <span className="aks-home-door-summary">{presentation.summary[locale]}</span>
+                  <span className="aks-home-door-status">{homeSoonLabel[locale]}</span>
+                </span>
+              );
+            }
 
             return (
               <Link
@@ -346,7 +434,7 @@ export function HomePortal({ locale }: HomePortalProps) {
                 }}
                 data-home-order={index}
                 prefetch="intent"
-                to={destinationHref(destination.id, locale)}
+                to={destinationTarget(id)}
               >
                 <span className="aks-home-door-label">{presentation.label[locale]}</span>
                 <span className="aks-home-door-summary">{presentation.summary[locale]}</span>
@@ -358,6 +446,7 @@ export function HomePortal({ locale }: HomePortalProps) {
         <span aria-hidden="true" className="aks-home-nav-separator" />
 
         <div className="aks-home-center">
+          <HomePlan />
           <HomeEmblem />
           <MatrixWordmark />
         </div>
