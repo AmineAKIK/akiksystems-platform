@@ -89,11 +89,11 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       intro: ['La machine prend la charge.', 'L’humain prend de la hauteur.'],
     },
     rail: [
-      { index: '01', label: 'CONCEVOIR' },
-      { index: '02', label: 'ASSEMBLER' },
-      { index: '03', label: 'TESTER' },
-      { index: '04', label: 'DÉPLOYER' },
-      { index: '05', label: 'OBSERVER' },
+      { index: '01', label: 'ANALYSER' },
+      { index: '02', label: 'MODÉLISER' },
+      { index: '03', label: 'IMPLÉMENTER' },
+      { index: '04', label: 'MESURER' },
+      { index: '05', label: 'ITÉRER' },
     ],
     sentinel: {
       eyebrow: 'SYSTÈME EN CONSTRUCTION',
@@ -226,11 +226,11 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       intro: ['Machines take the grind.', 'People keep the growth.'],
     },
     rail: [
-      { index: '01', label: 'DESIGN' },
-      { index: '02', label: 'ASSEMBLE' },
-      { index: '03', label: 'TEST' },
-      { index: '04', label: 'DEPLOY' },
-      { index: '05', label: 'OBSERVE' },
+      { index: '01', label: 'ANALYZE' },
+      { index: '02', label: 'MODEL' },
+      { index: '03', label: 'IMPLEMENT' },
+      { index: '04', label: 'MEASURE' },
+      { index: '05', label: 'ITERATE' },
     ],
     sentinel: {
       eyebrow: 'SYSTEM UNDER CONSTRUCTION',

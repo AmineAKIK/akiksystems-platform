@@ -179,10 +179,10 @@
 }
 
 .aks-systems-operation-rail li {
-  display: grid;
-  gap: 0.22rem;
+  display: flex;
   min-height: 5.6rem;
-  align-content: center;
+  align-items: center;
+  justify-content: center;
   padding-inline: 1rem;
   border-left: 1px solid rgb(255 255 255 / 11%);
 }
@@ -191,13 +191,19 @@
   border-left: 0;
 }
 
+/* The word is centred in its cell; its number sits above its first letter. */
+.aks-systems-rail-step {
+  display: grid;
+  justify-items: start;
+  gap: 0.22rem;
+}
 .aks-systems-operation-rail :is(span, strong) {
   font-family: var(--aks-font-mono, ui-monospace, monospace);
   font-size: 0.58rem;
   letter-spacing: 0.13em;
 }
 
-.aks-systems-operation-rail span {
+.aks-systems-rail-step > span {
   color: rgb(255 255 255 / 36%);
 }
 
@@ -862,10 +868,8 @@
   }
 
   .aks-systems-operation-rail li {
-    grid-template-columns: 2rem 1fr;
-    gap: 0.5rem;
     min-height: 2.6rem;
-    align-items: center;
+    padding-block: 0.35rem;
     padding-inline: 0.65rem;
     border-top: 1px solid rgb(255 255 255 / 8%);
     border-left: 0;
