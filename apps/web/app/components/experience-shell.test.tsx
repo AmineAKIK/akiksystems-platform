@@ -43,7 +43,7 @@ describe('ExperienceShell', () => {
     );
     expect(html).not.toContain('class="aks-experience-context');
     expect(html).toContain(
-      'aria-label="English active. View in français." class="aks-home-language aks-experience-language" hrefLang="fr" href="/fr/systems/sentinelle"',
+      'aria-label="English active. View in French." class="aks-home-language aks-experience-language" hrefLang="fr" href="/fr/systems/sentinelle"',
     );
     expect(html).toContain('class="aks-home-language-current" lang="en">EN</span>');
     expect(html).toContain('class="aks-home-language-target" lang="fr">FR</span>');
@@ -125,7 +125,7 @@ describe('ExperienceShell', () => {
     expect(html).not.toContain('class="aks-experience-context');
     expect(html).toContain('aria-current="page" class="aks-link"');
     expect(html).toContain(
-      'aria-label="Français actif. Afficher en English." class="aks-home-language aks-experience-language" hrefLang="en" href="/en"',
+      'aria-label="Français actif. Afficher en anglais." class="aks-home-language aks-experience-language" hrefLang="en" href="/en"',
     );
   });
 

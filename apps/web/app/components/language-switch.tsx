@@ -1,8 +1,58 @@
-import { Link } from 'react-router';
+import { Fragment, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router';
 
 import type { Locale } from '../i18n/locales';
 
-/** The "EN / FR" switch shared by the Home and the experience shell. */
+/** Always shown in this order, whatever the active language. */
+const switchOrder: Locale[] = ['fr', 'en'];
+
+const labels: Record<Locale, string> = {
+  fr: 'Français actif. Afficher en anglais.',
+  en: 'English active. View in French.',
+};
+
+/**
+ * The section the reader is in, so switching language lands on the same place. Sections and
+ * cards share their ids across languages (#sentinel, #protocap, #workbench…).
+ */
+export function useCurrentSectionHash(): string {
+  const { pathname } = useLocation();
+  const [hash, setHash] = useState('');
+
+  useEffect(() => {
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.35;
+      let current = '';
+      for (const anchor of document.querySelectorAll<HTMLElement>(
+        '#experience-outlet section[id], #experience-outlet article[id]',
+      )) {
+        if (anchor.getBoundingClientRect().top <= line) current = anchor.id;
+      }
+      setHash(current);
+    };
+
+    const schedule = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+
+    return () => {
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, [pathname]);
+
+  return hash;
+}
+
+/** The "FR / EN" switch shared by the Home and the experience shell. */
 export function LanguageSwitch({
   className,
   locale,
@@ -13,29 +63,28 @@ export function LanguageSwitch({
   to: string;
 }) {
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
-  const localeName = locale === 'fr' ? 'Français' : 'English';
-  const alternateName = alternateLocale === 'fr' ? 'français' : 'English';
+  const hash = useCurrentSectionHash();
 
   return (
     <Link
-      aria-label={
-        locale === 'fr'
-          ? localeName + ' actif. Afficher en ' + alternateName + '.'
-          : localeName + ' active. View in ' + alternateName + '.'
-      }
+      aria-label={labels[locale]}
       className={['aks-home-language', className].filter(Boolean).join(' ')}
       hrefLang={alternateLocale}
       prefetch="intent"
-      to={to}
+      to={hash === '' ? to : `${to}#${hash}`}
     >
       <span aria-hidden="true" className="aks-home-language-display">
-        <span className="aks-home-language-current" lang={locale}>
-          {locale.toUpperCase()}
-        </span>
-        <span className="aks-home-language-separator">/</span>
-        <span className="aks-home-language-target" lang={alternateLocale}>
-          {alternateLocale.toUpperCase()}
-        </span>
+        {switchOrder.map((code, index) => (
+          <Fragment key={code}>
+            {index > 0 ? <span className="aks-home-language-separator">/</span> : null}
+            <span
+              className={code === locale ? 'aks-home-language-current' : 'aks-home-language-target'}
+              lang={code}
+            >
+              {code.toUpperCase()}
+            </span>
+          </Fragment>
+        ))}
       </span>
     </Link>
   );
