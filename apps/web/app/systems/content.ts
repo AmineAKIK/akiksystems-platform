@@ -6,7 +6,6 @@ export interface SystemsAction {
   label: string;
   href: string;
   kind: 'primary' | 'secondary';
-  disabled?: boolean;
 }
 
 export interface SystemsStation {
@@ -40,11 +39,11 @@ export interface SystemsPageContent {
     state: string;
     intro: [string, string];
   };
+  railLabel: string;
   rail: Array<{ index: string; label: string }>;
   sentinel: {
     eyebrow: string;
     name: string;
-    updated: string;
     mapLabel: string;
     summary: string;
     status: SystemsStatus;
@@ -87,11 +86,12 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         'Atelier AkikSystems : systèmes, outils et expériences logicielles présentés comme une chaîne d’opérations inspectable.',
     },
     hero: {
-      eyebrow: 'SYSTÈMES / SYSTEMIC SCALE',
+      eyebrow: 'SYSTÈMES',
       title: ['LIBRES', 'PAR LA'],
       state: 'MAÎTRISE',
       intro: ['La machine prend la charge.', 'L’humain prend de la hauteur.'],
     },
+    railLabel: 'Séquence d’opération d’un système',
     rail: [
       { index: '01', label: 'ANALYSER' },
       { index: '02', label: 'MODÉLISER' },
@@ -102,7 +102,6 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     sentinel: {
       eyebrow: 'SYSTÈME EN CONSTRUCTION',
       name: 'SENTINEL',
-      updated: 'Mis à jour aujourd’hui',
       mapLabel:
         'Carte interactive de Sentinel : cycle des incidents, rôles, architecture, sécurité, design et livraison',
       summary:
@@ -113,13 +112,17 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       bullets: ['Signaler vite et juste', 'Résoudre et documenter', 'Capitaliser pour apprendre'],
       actions: [
         { label: 'Ouvrir l’application', href: 'https://sentinel.akiksystems.fr', kind: 'primary' },
-        { label: 'Demander un accès', href: '#', kind: 'secondary', disabled: true },
+        {
+          label: 'Demander un accès',
+          href: 'mailto:contact@akiksystems.com?subject=Acc%C3%A8s%20%C3%A0%20Sentinel',
+          kind: 'secondary',
+        },
       ],
     },
     operation: {
       eyebrow: 'STATIONS OPÉRATIONNELLES',
       title: 'EN OPÉRATION',
-      intro: 'ProtoCap rend l’attention au réel.',
+      intro: 'Des outils au travail, dans leur environnement réel.',
     },
     stations: [
       {
@@ -129,6 +132,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         status: 'deployed',
         statusLabel: 'EN LIGNE',
         note: 'Démonstrateur d’ingénierie pour la ligne de production.',
+        href: 'https://protocap.akiksystems.com',
         mapLabel: 'Carte interactive de ProtoCap',
       },
       {
@@ -143,7 +147,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       {
         id: 'oria',
         name: 'ORIA',
-        function: 'Manger, dormir et récupérer selon son rythme, même en horaires atypiques.',
+        function: 'Manger, dormir et récupérer selon son rythme, même en horaires décalés.',
         status: 'deployed',
         statusLabel: 'EN LIGNE',
         note: 'Étude de cas.',
@@ -160,20 +164,20 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       },
     ],
     manifesto: {
-      eyebrow: 'NOTRE MOUVEMENT',
+      eyebrow: 'MA MÉTHODE',
       lines: ['Concevoir,', 'mesurer,', 'améliorer.'],
-      body: 'Chaque système suit une même discipline : formuler une hypothèse, mesurer ses effets dans le réel et ajuster avec précision.',
-      signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
+      body: 'Chaque système suit la même discipline : formuler une hypothèse, mesurer ses effets dans le réel, puis ajuster avec précision.',
+      signature: 'SYSTÈMES EN MOUVEMENT · AKIKSYSTEMS',
     },
     workbench: {
-      eyebrow: 'OUTILS / WORKBENCH',
+      eyebrow: 'OUTILS',
       title: 'ÉTABLI',
       intro:
-        'Un ensemble d’outils d’ingénierie conçu pour fiabiliser la livraison et l’exploitation de nos systèmes.',
+        'Les outils d’ingénierie que j’ai construits pour livrer et exploiter mes systèmes de façon fiable.',
       tools: [
         {
           name: 'DÉPLOIEMENT PAR SHA',
-          function: 'Livrer un commit précis, revenir en arrière si la santé échoue',
+          function: 'Livrer un commit précis, et revenir en arrière si le contrôle de santé échoue',
           environment: 'SSH · DOCKER',
           action: 'EN PRODUCTION',
         },
@@ -203,9 +207,8 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       body: 'Avant l’outil, il y a une question. Une tension. Une manière différente de regarder ce qui pourrait fonctionner.',
       primary: {
         label: 'Construisons votre système',
-        href: '/fr/travailler-ensemble',
-        kind: 'secondary',
-        disabled: true,
+        href: 'mailto:contact@akiksystems.com?subject=Projet%20de%20syst%C3%A8me',
+        kind: 'primary',
       },
     },
   },
@@ -216,11 +219,12 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         'The AkikSystems workshop: systems, tools and software experiments presented as an inspectable chain of operations.',
     },
     hero: {
-      eyebrow: 'SYSTEMS / SYSTEMIC SCALE',
+      eyebrow: 'SYSTEMS',
       title: ['FREE', 'THROUGH'],
       state: 'MASTERY',
-      intro: ['Machines take the grind.', 'People keep the growth.'],
+      intro: ['Machines carry the load.', 'People rise above it.'],
     },
+    railLabel: 'System operation sequence',
     rail: [
       { index: '01', label: 'ANALYZE' },
       { index: '02', label: 'MODEL' },
@@ -231,34 +235,41 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     sentinel: {
       eyebrow: 'SYSTEM UNDER CONSTRUCTION',
       name: 'SENTINEL',
-      updated: 'Updated today',
       mapLabel:
         'Interactive map of Sentinel: incident cycle, roles, architecture, security, design and delivery',
       summary:
         'Follow a production anomaly from report to shared knowledge, without ever losing the trail of decisions.',
       status: 'building',
       statusLabel: 'BUILDING',
-      note: 'Explore the map: every orb, link and chip can be inspected. Map content is in French.',
-      bullets: ['Report fast and right', 'Resolve and document', 'Capitalise to learn'],
+      note: 'Explore the map: every orb, link and chip can be inspected.',
+      bullets: [
+        'Report quickly and accurately',
+        'Resolve and document',
+        'Turn incidents into knowledge',
+      ],
       actions: [
-        { label: 'Open application', href: 'https://sentinel.akiksystems.fr', kind: 'primary' },
-        { label: 'Request access', href: '#', kind: 'secondary', disabled: true },
+        { label: 'Open the app', href: 'https://sentinel.akiksystems.fr', kind: 'primary' },
+        {
+          label: 'Request access',
+          href: 'mailto:contact@akiksystems.com?subject=Sentinel%20access',
+          kind: 'secondary',
+        },
       ],
     },
     operation: {
       eyebrow: 'OPERATIONAL STATIONS',
       title: 'IN OPERATION',
-      intro: 'ProtoCap returns attention to reality.',
+      intro: 'Tools at work, in their real environment.',
     },
     stations: [
       {
         id: 'protocap',
         name: 'PROTOCAP',
-        function:
-          'Eight shop-floor tools that state honestly what they prove. Map content is in French.',
+        function: 'Eight shop-floor tools that state plainly what they prove.',
         status: 'deployed',
         statusLabel: 'ONLINE',
         note: 'Engineering demonstrator for the production line.',
+        href: 'https://protocap.akiksystems.com',
         mapLabel: 'ProtoCap interactive map',
       },
       {
@@ -273,7 +284,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       {
         id: 'oria',
         name: 'ORIA',
-        function: 'Eat, sleep and recover at your own pace, even on irregular hours.',
+        function: 'Eat, sleep and recover at your own pace, even on night or rotating shifts.',
         status: 'deployed',
         statusLabel: 'ONLINE',
         note: 'Case study.',
@@ -290,20 +301,19 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       },
     ],
     manifesto: {
-      eyebrow: 'OUR MOVEMENT',
+      eyebrow: 'HOW I WORK',
       lines: ['Design,', 'measure,', 'improve.'],
-      body: 'Every system follows the same discipline: frame a hypothesis, measure its real-world effects, and refine it with precision.',
+      body: 'Every system follows the same discipline: state a hypothesis, measure its real-world effects, then refine it with precision.',
       signature: 'SYSTEMS IN MOTION · AKIKSYSTEMS',
     },
     workbench: {
-      eyebrow: 'TOOLS / WORKBENCH',
+      eyebrow: 'TOOLS',
       title: 'WORKBENCH',
-      intro:
-        'An engineering toolset designed to make the delivery and operation of our systems more reliable.',
+      intro: 'The engineering tools I built to ship and run my systems reliably.',
       tools: [
         {
           name: 'SHA DEPLOYMENT',
-          function: 'Ship an exact commit, roll back if the health check fails',
+          function: 'Ship an exact commit, and roll back if the health check fails',
           environment: 'SSH · DOCKER',
           action: 'IN PRODUCTION',
         },
@@ -333,9 +343,8 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       body: 'Before the tool comes a question. A tension. A different way of looking at what might work.',
       primary: {
         label: 'Let’s build your system',
-        href: '/en/work-with-us',
-        kind: 'secondary',
-        disabled: true,
+        href: 'mailto:contact@akiksystems.com?subject=System%20project',
+        kind: 'primary',
       },
     },
   },

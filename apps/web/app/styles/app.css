@@ -428,3 +428,13 @@
 /* AKS-094: Sentinel dossier is an autonomous native Web reading, not a PDF-shaped page. */
 
 /* AKS-096: public System -> Learning evidence navigation without content duplication. */
+
+/* Text for assistive technology only. */
+.aks-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

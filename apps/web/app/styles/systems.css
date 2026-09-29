@@ -392,15 +392,6 @@
   outline-offset: 3px;
 }
 
-.aks-systems-button--disabled,
-.aks-systems-button--disabled:hover {
-  transform: none;
-  border-color: #303948;
-  background: rgb(29 34 42 / 48%);
-  color: rgb(255 255 255 / 34%);
-  cursor: not-allowed;
-}
-
 .aks-systems-button--primary {
   border-color: var(--systems-blue);
   background: var(--systems-blue);
@@ -1679,5 +1670,20 @@
   .aks-systems-tool-action {
     grid-row: 1;
     grid-column: 3;
+  }
+}
+
+/* The ProtoCap card carries its state and the link to its application. */
+.aks-systems-feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(0.6 * var(--r));
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (max-width: 48rem) {
+  .aks-systems-feature-actions {
+    justify-content: flex-start;
   }
 }

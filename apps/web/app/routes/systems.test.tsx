@@ -25,11 +25,8 @@ describe('SystemsPage code-only contract', () => {
       expect(html).toContain('data-systems-section="perspectives"');
 
       for (const station of systemsPageContent[locale].stations) {
-        if (station.href === undefined) {
-          expect(html).toContain(`>${station.name}</h3>`);
-        } else {
-          expect(html).toContain(`href="${station.href}" target="_blank">${station.name}<span`);
-        }
+        expect(html).toMatch(new RegExp(`<h3>(<a [^>]*>)?${station.name}`));
+        if (station.href !== undefined) expect(html).toContain(`href="${station.href}"`);
       }
 
       for (const tool of systemsPageContent[locale].workbench.tools) {
@@ -38,21 +35,19 @@ describe('SystemsPage code-only contract', () => {
     },
   );
 
-  it('links to Sentinel while keeping access requests disabled', () => {
+  it.each(['fr', 'en'] as const)('offers only working actions in %s', (locale) => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
-        <SystemsPage locale="fr" content={systemsPageContent.fr} />
+        <SystemsPage locale={locale} content={systemsPageContent[locale]} />
       </MemoryRouter>,
     );
 
     expect(html).toContain('href="https://sentinel.akiksystems.fr"');
-    expect(html).toContain(
-      'aria-disabled="true" class="aks-systems-button aks-systems-button--secondary aks-systems-button--disabled"',
-    );
-    expect(html).not.toContain('href="#operation"');
-    expect(html).toContain('>Construisons votre système<');
-    expect(html).not.toContain('href="/fr/travailler-ensemble"');
-    expect(html).toContain('aks-systems-button--primary');
+    expect(html).toContain('href="https://protocap.akiksystems.com"');
+    expect(html).toContain('href="mailto:contact@akiksystems.com?subject=');
+    expect(html).not.toContain('aria-disabled');
+    expect(html).not.toContain('href="#"');
+    expect(html).toContain(`aria-label="${systemsPageContent[locale].railLabel}"`);
   });
 });
 
