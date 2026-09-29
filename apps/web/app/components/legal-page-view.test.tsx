@@ -16,11 +16,37 @@ describe('legal pages', () => {
     expect(legalPageHref('cookies', 'fr')).toBe('/fr/cookies');
   });
 
-  it('keeps the legal pages unindexed while they are in preparation', () => {
+  it('keeps the legal pages in preparation unindexed', () => {
     const metadata = legalPageMeta('privacy', 'fr');
     expect(metadata).toContainEqual({ title: 'Confidentialité · AkikSystems' });
     expect(metadata).toContainEqual(expect.objectContaining({ name: 'robots' }));
     expect(metadata).not.toContainEqual(expect.objectContaining({ rel: 'canonical' }));
+  });
+
+  it('publishes the legal notice with canonical and reciprocal locale metadata', () => {
+    const metadata = legalPageMeta('legal', 'fr');
+    expect(metadata).toContainEqual({
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://akiksystems.fr/fr/mentions-legales',
+    });
+    expect(metadata).toContainEqual({
+      tagName: 'link',
+      rel: 'alternate',
+      hrefLang: 'en',
+      href: 'https://akiksystems.com/en/legal-notice',
+    });
+    const robots = metadata.find((tag) => 'name' in tag && tag.name === 'robots');
+    expect(robots).not.toMatchObject({ content: expect.stringContaining('noindex') });
+  });
+
+  it('identifies the publisher as the LCEN requires', () => {
+    const notice = JSON.stringify(legalPageById('legal').content.fr);
+    expect(notice).toContain('entrepreneur individuel (EI)');
+    expect(notice).toContain('RCS de Poitiers sous le numéro 106 993 181');
+    expect(notice).toContain('contact@akiksystems.com');
+    expect(notice).toContain('06 68 53 98 71');
+    expect(notice).toContain('OVH SAS');
   });
 
   it('documents the code-only privacy contract in both locales', () => {
@@ -83,6 +109,6 @@ describe('legal pages', () => {
     expect(html).toContain('aria-label="Sommaire"');
     expect(html).toContain('<time dateTime="2026-09-29">29 septembre 2026</time>');
     expect(html).not.toContain('HttpOnly');
-    expect(html).toContain('href="/fr/confidentialite"');
+    expect(html).toContain('href="mailto:contact@akiksystems.com"');
   });
 });

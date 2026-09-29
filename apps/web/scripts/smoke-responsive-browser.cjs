@@ -226,7 +226,7 @@ async function assertGeometry(browser, viewport, name, locale = 'fr') {
       name + ' must remain a one-screen composition',
     );
     assert.deepEqual(m.doorOrder, ['work-with-us', 'profile', 'systems', 'writings', 'learning']);
-    assert.equal(m.legalCount, 3);
+    assert.equal(m.legalCount, 2);
     // On the portal the footer has no separator.
     assert.equal(m.footerSeparator, 'none');
     assert.match(m.background, /^radial-gradient\(/);
@@ -687,7 +687,7 @@ async function assertKeyboardOrder(browser) {
     );
 
     // Doors and legal pages in preparation are not links, so they are not in the tab order.
-    assert.deepEqual(order, ['Profil', 'Systèmes']);
+    assert.deepEqual(order, ['Profil', 'Systèmes', 'Mentions légales']);
   } finally {
     await context.close();
   }

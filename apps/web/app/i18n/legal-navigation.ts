@@ -8,9 +8,21 @@ export interface LegalNavigationPage {
   slug: Record<Locale, string>;
   label: Record<Locale, string>;
   description: Record<Locale, string>;
+  /** Published; the others are in preparation: named, never linked, unindexed. */
+  open?: boolean;
 }
 
 export const legalNavigationPages: readonly LegalNavigationPage[] = [
+  {
+    id: 'legal',
+    slug: { en: 'legal-notice', fr: 'mentions-legales' },
+    label: { en: 'Legal notice', fr: 'Mentions légales' },
+    open: true,
+    description: {
+      en: 'Publisher, hosting, intellectual property, and service responsibility information.',
+      fr: 'Informations sur l’éditeur, l’hébergement, la propriété intellectuelle et la responsabilité.',
+    },
+  },
   {
     id: 'privacy',
     slug: { en: 'privacy', fr: 'confidentialite' },
@@ -18,15 +30,6 @@ export const legalNavigationPages: readonly LegalNavigationPage[] = [
     description: {
       en: 'How the public AkikSystems site handles technical and personal data.',
       fr: 'Comment le site public AkikSystems traite les données techniques et personnelles.',
-    },
-  },
-  {
-    id: 'legal',
-    slug: { en: 'legal-notice', fr: 'mentions-legales' },
-    label: { en: 'Legal notice', fr: 'Mentions légales' },
-    description: {
-      en: 'Publisher, hosting, intellectual property, and service responsibility information.',
-      fr: 'Informations sur l’éditeur, l’hébergement, la propriété intellectuelle et la responsabilité.',
     },
   },
   {
@@ -44,4 +47,8 @@ export function legalPageHref(id: LegalPageId, locale: Locale): string {
   const page = legalNavigationPages.find((candidate) => candidate.id === id);
   if (page === undefined) throw new Error(`Unknown legal page: ${id}`);
   return `/${locale}/${page.slug[locale]}`;
+}
+
+export function isLegalPageOpen(id: LegalPageId): boolean {
+  return legalNavigationPages.some((page) => page.id === id && page.open === true);
 }

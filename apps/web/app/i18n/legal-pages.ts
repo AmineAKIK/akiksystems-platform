@@ -28,6 +28,7 @@ export interface LegalPageDefinition {
 }
 
 const updatedAtIso = '2026-09-29';
+const legalNoticeUpdatedAtIso = '2026-09-30';
 
 export const legalPages: readonly LegalPageDefinition[] = [
   {
@@ -158,21 +159,27 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Publisher, hosting, responsibility, and intellectual-property information for AkikSystems.',
         updatedLabel: 'Last updated',
-        updatedAt: '29 September 2026',
-        updatedAtIso,
+        updatedAt: '30 September 2026',
+        updatedAtIso: legalNoticeUpdatedAtIso,
         sections: [
           {
             id: 'publisher',
             title: 'Publisher',
             paragraphs: [
-              'This website is published by Amine AKIK under the AkikSystems name as an independent software and editorial activity. The publication director is Amine AKIK.',
+              'This website is published by Mohamed Amine Akik, sole trader (entrepreneur individuel, EI), trading as AkikSystems. The publication director is Mohamed Amine Akik.',
+            ],
+            items: [
+              'Registered with the Poitiers Trade and Companies Register (RCS) under number 106 993 181',
+              'Business address: 10 rue de Madame, 86100 Châtellerault, France',
+              'Email: contact@akiksystems.com',
+              'Phone: +33 6 68 53 98 71',
             ],
           },
           {
             id: 'hosting',
             title: 'Hosting',
             paragraphs: [
-              'The application runs on a self-managed virtual private server provided in France by OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France.',
+              'The application runs on a self-managed virtual private server provided in France by OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France. Phone: +33 9 72 10 10 07. Website: ovhcloud.com.',
             ],
           },
           {
@@ -205,21 +212,27 @@ export const legalPages: readonly LegalPageDefinition[] = [
         description:
           'Informations relatives à l’éditeur, à l’hébergement, à la responsabilité et à la propriété intellectuelle d’AkikSystems.',
         updatedLabel: 'Dernière mise à jour',
-        updatedAt: '29 septembre 2026',
-        updatedAtIso,
+        updatedAt: '30 septembre 2026',
+        updatedAtIso: legalNoticeUpdatedAtIso,
         sections: [
           {
             id: 'editeur',
             title: 'Éditeur',
             paragraphs: [
-              'Ce site est édité par Amine AKIK sous le nom AkikSystems, dans le cadre d’une activité indépendante de création logicielle et éditoriale. Le directeur de la publication est Amine AKIK.',
+              'Ce site est édité par Mohamed Amine Akik, entrepreneur individuel (EI), sous le nom commercial AkikSystems. Le directeur de la publication est Mohamed Amine Akik.',
+            ],
+            items: [
+              'Immatriculé au RCS de Poitiers sous le numéro 106 993 181',
+              'Adresse de l’établissement : 10 rue de Madame, 86100 Châtellerault, France',
+              'E-mail : contact@akiksystems.com',
+              'Téléphone : 06 68 53 98 71',
             ],
           },
           {
             id: 'hebergement',
             title: 'Hébergement',
             paragraphs: [
-              'L’application fonctionne sur un serveur privé virtuel autogéré, fourni en France par OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France.',
+              'L’application fonctionne sur un serveur privé virtuel autogéré, fourni en France par OVHcloud (OVH SAS), 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 09 72 10 10 07. Site : ovhcloud.com.',
             ],
           },
           {

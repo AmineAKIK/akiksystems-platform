@@ -1,14 +1,19 @@
 import { Container } from '@akiksystems/ui';
 import { useEffect, useState, type PointerEvent } from 'react';
+import { Link } from 'react-router';
 
-import { legalNavigationPages, type LegalNavigationPage } from '../i18n/legal-navigation';
+import {
+  legalNavigationPages,
+  legalPageHref,
+  type LegalNavigationPage,
+} from '../i18n/legal-navigation';
 import type { Locale } from '../i18n/locales';
 import { announceHomeDescription } from './home-description-events';
 import { homeLegalPresentation, homeSoonLabel } from './home-portal-content';
 
 /**
- * The legal pages are in preparation, like the Writings and Learning doors: named, described on
- * the portal, never a link.
+ * Open legal pages are links; the others are in preparation, like the Writings and Learning doors:
+ * named, described on the portal, never a link.
  */
 export function ExperienceFooter({ home = false, locale }: { home?: boolean; locale: Locale }) {
   const [activeId, setActiveId] = useState<LegalNavigationPage['id'] | null>(null);
@@ -39,7 +44,7 @@ export function ExperienceFooter({ home = false, locale }: { home?: boolean; loc
     label: page.label[locale],
   });
 
-  const tactile = (event: PointerEvent<HTMLSpanElement>) =>
+  const tactile = (event: PointerEvent<HTMLElement>) =>
     event.pointerType === 'touch' || event.pointerType === 'pen';
 
   return (
@@ -51,42 +56,85 @@ export function ExperienceFooter({ home = false, locale }: { home?: boolean; loc
         <div className="aks-experience-footer-inner">
           <p>© {new Date().getUTCFullYear()} AkikSystems</p>
           <nav aria-label={locale === 'fr' ? 'Informations légales' : 'Legal information'}>
-            {legalNavigationPages.map((page) => (
-              <span
-                className={'aks-link' + (activeId === page.id ? ' is-active' : '')}
-                data-home-preview-target={home ? 'legal' : undefined}
-                data-state="soon"
-                key={page.id}
-                onPointerDown={
-                  home
-                    ? (event) => {
-                        if (!tactile(event)) return;
-                        setActiveId(page.id);
-                        announceHomeDescription({ channel: 'pointer', content: previewFor(page) });
-                      }
-                    : undefined
-                }
-                onPointerEnter={
-                  home
-                    ? (event) => {
-                        if (tactile(event)) return;
-                        announceHomeDescription({ channel: 'pointer', content: previewFor(page) });
-                      }
-                    : undefined
-                }
-                onPointerLeave={
-                  home
-                    ? (event) => {
-                        if (tactile(event)) return;
-                        announceHomeDescription({ channel: 'pointer', content: null });
-                      }
-                    : undefined
-                }
-              >
-                {page.label[locale]}
-              </span>
-            ))}
-            <span className="aks-experience-footer-status">{homeSoonLabel[locale]}</span>
+            {legalNavigationPages
+              .filter((page) => page.open === true)
+              .map((page) => (
+                <Link
+                  className="aks-link"
+                  data-home-preview-target={home ? 'legal' : undefined}
+                  key={page.id}
+                  onPointerEnter={
+                    home
+                      ? (event) => {
+                          if (tactile(event)) return;
+                          announceHomeDescription({
+                            channel: 'pointer',
+                            content: previewFor(page),
+                          });
+                        }
+                      : undefined
+                  }
+                  onPointerLeave={
+                    home
+                      ? (event) => {
+                          if (tactile(event)) return;
+                          announceHomeDescription({ channel: 'pointer', content: null });
+                        }
+                      : undefined
+                  }
+                  prefetch="intent"
+                  to={legalPageHref(page.id, locale)}
+                >
+                  {page.label[locale]}
+                </Link>
+              ))}
+            {/* The pages in preparation, grouped with their one status. */}
+            <span className="aks-experience-footer-soon">
+              {legalNavigationPages
+                .filter((page) => page.open !== true)
+                .map((page) => (
+                  <span
+                    className={'aks-link' + (activeId === page.id ? ' is-active' : '')}
+                    data-home-preview-target={home ? 'legal' : undefined}
+                    data-state="soon"
+                    key={page.id}
+                    onPointerDown={
+                      home
+                        ? (event) => {
+                            if (!tactile(event)) return;
+                            setActiveId(page.id);
+                            announceHomeDescription({
+                              channel: 'pointer',
+                              content: previewFor(page),
+                            });
+                          }
+                        : undefined
+                    }
+                    onPointerEnter={
+                      home
+                        ? (event) => {
+                            if (tactile(event)) return;
+                            announceHomeDescription({
+                              channel: 'pointer',
+                              content: previewFor(page),
+                            });
+                          }
+                        : undefined
+                    }
+                    onPointerLeave={
+                      home
+                        ? (event) => {
+                            if (tactile(event)) return;
+                            announceHomeDescription({ channel: 'pointer', content: null });
+                          }
+                        : undefined
+                    }
+                  >
+                    {page.label[locale]}
+                  </span>
+                ))}
+              <span className="aks-experience-footer-status">{homeSoonLabel[locale]}</span>
+            </span>
           </nav>
         </div>
       </Container>
