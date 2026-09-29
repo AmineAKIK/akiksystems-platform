@@ -241,12 +241,12 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             place: 'Titre professionnel d’État inscrit au RNCP · préparé avec Studi',
           },
           {
-            period: '2010 — 2012',
+            period: '2009 — 2010',
             title: 'Baccalauréat programmation et technologies',
             place: 'Tunisie',
           },
           {
-            period: '2010 — 2011',
+            period: '2010 — 2012',
             title: 'Technicien réseaux et télécoms, stage chez Tunisie Telecom',
             place: 'Sousse, Tunisie',
           },
@@ -767,12 +767,12 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             place: 'French state professional title, listed in the RNCP · prepared with Studi',
           },
           {
-            period: '2010 — 2012',
+            period: '2009 — 2010',
             title: 'Baccalaureate in programming and technology',
             place: 'Tunisia',
           },
           {
-            period: '2010 — 2011',
+            period: '2010 — 2012',
             title: 'Network and telecoms technician, internship at Tunisie Telecom',
             place: 'Sousse, Tunisia',
           },
