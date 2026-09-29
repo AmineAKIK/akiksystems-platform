@@ -1682,8 +1682,26 @@
   justify-content: flex-end;
 }
 
+/* Below tablets the state sits above the app button, which spans the card on phones,
+ * exactly like Sentinel's buttons. */
 @media (max-width: 48rem) {
+  .aks-systems-station--feature figcaption {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .aks-systems-feature-actions {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(0.75 * var(--r));
+    justify-items: start;
+  }
+}
+
+@media (max-width: 30rem) {
+  .aks-systems-feature-actions .aks-systems-button {
+    justify-self: stretch;
+    width: 100%;
+    min-height: calc(3 * var(--r));
   }
 }

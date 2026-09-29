@@ -301,7 +301,7 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
             <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
             {station.href === undefined ? null : (
               <a
-                className="aks-systems-button aks-systems-button--secondary"
+                className="aks-systems-button aks-systems-button--primary"
                 href={station.href}
                 rel="noopener"
                 target="_blank"
