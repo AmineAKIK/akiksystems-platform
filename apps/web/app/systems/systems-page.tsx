@@ -34,6 +34,13 @@ const stationPortraits: Partial<Record<SystemsStation['id'], string>> = {
   oria: '/systems/oria-portrait.svg',
 };
 
+const coversWithEnglish = new Set([
+  '/systems/alkhawarizmi.svg',
+  '/systems/alkhawarizmi-portrait.svg',
+  '/systems/oria.svg',
+  '/systems/oria-portrait.svg',
+]);
+
 function StatusPill({
   locale,
   status,
@@ -71,11 +78,18 @@ function ActionLink({ action }: { action: SystemsAction }) {
   );
 }
 
+/** The covers drawn with text carry an English edition next to the French one. */
+function localizedCover(path: string, locale: 'en' | 'fr') {
+  return locale === 'en' && coversWithEnglish.has(path) ? path.replace(/\.svg$/, '-en.svg') : path;
+}
+
 function StationImage({
   station,
+  locale,
   compact = false,
 }: {
   station: SystemsStation;
+  locale: 'en' | 'fr';
   compact?: boolean;
 }) {
   if (station.id === 'protocap') return null;
@@ -84,14 +98,14 @@ function StationImage({
   if (portrait !== undefined && !compact) {
     return (
       <picture>
-        <source media="(max-width: 30rem)" srcSet={portrait} />
+        <source media="(max-width: 30rem)" srcSet={localizedCover(portrait, locale)} />
         <img
           alt=""
           aria-hidden="true"
           className="aks-systems-station-image"
           decoding="async"
           loading="lazy"
-          src={stationMedia[station.id]}
+          src={localizedCover(stationMedia[station.id], locale)}
         />
       </picture>
     );
@@ -306,7 +320,7 @@ function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: Syst
         >
           <figure>
             <div className="aks-systems-station-media">
-              <StationImage station={station} />
+              <StationImage locale={locale} station={station} />
               <p className="aks-systems-media-label">{station.note}</p>
             </div>
             <figcaption>
@@ -355,7 +369,7 @@ function QuickStationRow({
       {stations.map((station) => (
         <article className="aks-systems-quick" key={station.id}>
           <div className="aks-systems-quick-media">
-            <StationImage compact station={station} />
+            <StationImage compact locale={locale} station={station} />
           </div>
           <h3>{station.name}</h3>
           <p>{station.function}</p>
