@@ -1,0 +1,100 @@
+# AkikSystems vhost for /etc/nginx/sites-available/akiksystems.conf
+#
+# - One SAN certificate (certbot, nginx authenticator/installer) covers the four names.
+# - www redirects to the bare domain; .com and .fr are served by the container on 127.0.0.1:3100.
+# - HSTS is set once here; the application's own HSTS header is hidden to avoid duplicates.
+#   Declaring add_header in each server block also stops global add_header directives from
+#   being inherited, so the app's other security headers and nonce CSP are sent exactly once.
+# - Keep the listen/http2 syntax consistent with the Nginx version on the VPS
+#   (`http2 on;` needs Nginx >= 1.25.1; older versions use `listen 443 ssl http2;`).
+#
+# Always run `nginx -t` before `systemctl reload nginx`.
+
+# HTTP: send everything to HTTPS, www straight to the bare domain.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name akiksystems.com akiksystems.fr;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.akiksystems.com;
+
+    return 301 https://akiksystems.com$request_uri;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.akiksystems.fr;
+
+    return 301 https://akiksystems.fr$request_uri;
+}
+
+# HTTPS www: redirect only. These responses never reach the app, so they carry HSTS themselves.
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.akiksystems.com;
+
+    ssl_certificate /etc/letsencrypt/live/akiksystems.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/akiksystems.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    return 301 https://akiksystems.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.akiksystems.fr;
+
+    ssl_certificate /etc/letsencrypt/live/akiksystems.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/akiksystems.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    return 301 https://akiksystems.fr$request_uri;
+}
+
+# HTTPS application: the Host header selects the locale (.com = en, .fr = fr).
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name akiksystems.com akiksystems.fr;
+
+    ssl_certificate /etc/letsencrypt/live/akiksystems.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/akiksystems.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    location / {
+        proxy_pass http://127.0.0.1:3100;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Generated here; a client-supplied identifier is never forwarded.
+        proxy_set_header X-Request-ID $request_id;
+
+        proxy_hide_header Strict-Transport-Security;
+
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 30s;
+    }
+}

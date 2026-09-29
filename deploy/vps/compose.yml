@@ -1,0 +1,47 @@
+# AkikSystems production web container on the VPS.
+# Build and run from a checkout of the exact commit being deployed:
+#   GIT_SHA="$(git rev-parse HEAD)" docker compose -f deploy/vps/compose.yml build --pull web
+# The container is only reachable from the host (127.0.0.1:3100); Nginx terminates HTTPS.
+
+name: akiksystems-platform
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      labels:
+        org.opencontainers.image.revision: '${GIT_SHA:?GIT_SHA must contain the full Git commit SHA}'
+    image: 'akiksystems-web:${GIT_SHA:?GIT_SHA must contain the full Git commit SHA}'
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+    ports:
+      - '127.0.0.1:3100:3000'
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cpus: '1.0'
+    mem_limit: 512m
+    pids_limit: 200
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    healthcheck:
+      # The image intentionally ships without curl or wget.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
