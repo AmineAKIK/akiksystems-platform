@@ -47,8 +47,10 @@ describe('ExperienceShell', () => {
     expect(html).toContain('aria-hidden="true" class="aks-experience-context-separator">/</li>');
     expect(html).toContain('<span aria-current="page">Sentinel</span>');
     expect(html).toContain(
-      'hrefLang="fr" lang="fr" href="/fr/systems/sentinelle" data-discover="true">Français</a>',
+      'aria-label="English active. View in français." class="aks-home-language aks-experience-language" hrefLang="fr" href="/fr/systems/sentinelle"',
     );
+    expect(html).toContain('class="aks-home-language-current" lang="en">EN</span>');
+    expect(html).toContain('class="aks-home-language-target" lang="fr">FR</span>');
     expect(html).toContain('class="aks-experience-outlet" id="experience-outlet" tabindex="-1"');
     expect(html).toContain('<main><h1>Sentinel</h1></main>');
   });
@@ -86,9 +88,7 @@ describe('ExperienceShell', () => {
       </MemoryRouter>,
     );
 
-    expect(html).toContain(
-      'hrefLang="fr" lang="fr" href="/fr/profil" data-discover="true">Français</a>',
-    );
+    expect(html).toContain('hrefLang="fr" href="/fr/profil"');
   });
 
   it('renders an explicit non-link state when a deep translation is unavailable', () => {
@@ -128,6 +128,8 @@ describe('ExperienceShell', () => {
     expect(html).toContain('href="/fr/profil" data-discover="true">Profil</a>');
     expect(html).toContain('aria-label="Contexte actuel"');
     expect(html).toContain('<span aria-current="page">Accueil</span>');
-    expect(html).toContain('hrefLang="en" lang="en" href="/en" data-discover="true">English</a>');
+    expect(html).toContain(
+      'aria-label="Français actif. Afficher en English." class="aks-home-language aks-experience-language" hrefLang="en" href="/en"',
+    );
   });
 });

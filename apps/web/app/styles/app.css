@@ -175,6 +175,18 @@
   color: rgb(255 255 255 / 56%);
 }
 
+/* The Home "EN / FR" switch, reused in the shell with the Home palette. */
+.aks-experience-shell {
+  --aks-home-starlight: #e8edf4;
+  --aks-home-silver: #b7bfcc;
+  --aks-home-orbital: #6487de;
+  --aks-home-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.aks-experience-meta .aks-experience-language {
+  font-size: inherit;
+}
+
 .aks-experience-meta .aks-link {
   color: rgb(255 255 255 / 68%);
   text-decoration: none;

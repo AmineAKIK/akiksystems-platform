@@ -9,6 +9,7 @@ import {
 } from '../i18n/global-destinations';
 import { ExperienceFooter } from './experience-footer';
 import { ExperienceLocalContext } from './experience-local-context';
+import { LanguageSwitch } from './language-switch';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
 
@@ -147,16 +148,11 @@ export function ExperienceShell({
                   {dictionary.shell.languageUnavailableLabel}
                 </span>
               ) : (
-                <RouterLink
-                  className="aks-link"
-                  hrefLang={alternateLocale}
-                  lang={alternateLocale}
-                  prefetch="intent"
+                <LanguageSwitch
+                  className="aks-experience-language"
+                  locale={locale}
                   to={languageHref}
-                  viewTransition
-                >
-                  {alternateLocale === 'fr' ? 'Français' : 'English'}
-                </RouterLink>
+                />
               )}
             </div>
           </div>
