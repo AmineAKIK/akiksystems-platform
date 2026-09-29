@@ -24,7 +24,7 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
 
 const stationMedia: Record<Exclude<SystemsStation['id'], 'protocap'>, string> = {
   mosaique: '/systems/mosaique.webp',
-  'radar-cli': '/systems/radar-cli.webp',
+  oria: '/systems/oria.svg',
   sonar: '/systems/sonar.webp',
   detour: '/systems/detour.webp',
 };
@@ -254,7 +254,11 @@ function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: Syst
   return (
     <div className="aks-systems-station-pair">
       {stations.map((station) => (
-        <article className="aks-systems-station aks-systems-station--pair" key={station.id}>
+        <article
+          className="aks-systems-station aks-systems-station--pair"
+          data-station={station.id}
+          key={station.id}
+        >
           <figure>
             <div className="aks-systems-station-media">
               <StationImage station={station} />
@@ -414,7 +418,7 @@ export function SystemsPage({
 
   const protocap = station('protocap');
   const mosaique = station('mosaique');
-  const radar = station('radar-cli');
+  const oria = station('oria');
   const sonar = station('sonar');
   const detour = station('detour');
 
@@ -437,7 +441,7 @@ export function SystemsPage({
             <p>{content.operation.intro}</p>
           </div>
           <StationFeature locale={locale} station={protocap} />
-          <StationPair locale={locale} stations={[mosaique, radar]} />
+          <StationPair locale={locale} stations={[mosaique, oria]} />
           <QuickStationRow locale={locale} stations={[sonar, detour]} />
         </div>
       </section>

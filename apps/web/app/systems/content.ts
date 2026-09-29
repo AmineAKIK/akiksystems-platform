@@ -9,7 +9,7 @@ export interface SystemsAction {
 }
 
 export interface SystemsStation {
-  id: 'protocap' | 'mosaique' | 'radar-cli' | 'sonar' | 'detour';
+  id: 'protocap' | 'mosaique' | 'oria' | 'sonar' | 'detour';
   name: string;
   function: string;
   status: SystemsStatus;
@@ -139,12 +139,12 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         note: 'Composition collective.',
       },
       {
-        id: 'radar-cli',
-        name: 'RADAR CLI',
-        function: 'Détecter les signaux faibles depuis le terminal.',
+        id: 'oria',
+        name: 'ORIA',
+        function: 'Manger, dormir et récupérer selon son rythme, même en horaires atypiques.',
         status: 'deployed',
         statusLabel: 'EN LIGNE',
-        note: 'Outil de détection.',
+        note: 'Étude de cas.',
       },
       {
         id: 'sonar',
@@ -278,12 +278,12 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         note: 'Collective composition.',
       },
       {
-        id: 'radar-cli',
-        name: 'RADAR CLI',
-        function: 'Detect weak signals from the terminal.',
+        id: 'oria',
+        name: 'ORIA',
+        function: 'Eat, sleep and recover at your own pace, even on irregular hours.',
         status: 'deployed',
         statusLabel: 'ONLINE',
-        note: 'Detection tool.',
+        note: 'Case study.',
       },
       {
         id: 'sonar',
