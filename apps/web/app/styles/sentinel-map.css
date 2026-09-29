@@ -86,7 +86,7 @@
   fill: #f3f4f7;
 }
 .sn-map .pill-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: #0b1020;
@@ -103,7 +103,7 @@
   transition: fill 0.2s;
 }
 .sn-map .tab-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
@@ -129,7 +129,7 @@
   fill: var(--sn-blue);
 }
 .sn-map .side-hint {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
 }
@@ -142,7 +142,7 @@
     stroke 0.2s;
 }
 .sn-map .btn-txt {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
   fill: var(--sn-text);
@@ -171,7 +171,7 @@
   stroke-width: 1;
 }
 .sn-map .hint {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
   text-anchor: end;
@@ -260,7 +260,7 @@
   transition: fill 0.2s;
 }
 .sn-map .t-sub {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -348,7 +348,7 @@
   cursor: pointer;
 }
 .sn-map .t-edge {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: #7684a6;
@@ -386,7 +386,7 @@
   cursor: pointer;
 }
 .sn-map .chip-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -458,7 +458,7 @@
   opacity: 1;
 }
 .sn-map .m-legend {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   fill: var(--sn-dim);
 }
@@ -564,12 +564,12 @@
   stroke: var(--sn-lime);
 }
 .sn-map .sl-txt {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   fill: var(--sn-dim);
 }
 .sn-map .sl-ttl {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
   fill: #a9b4d0;
@@ -588,7 +588,7 @@
   stroke-width: 1;
 }
 .sn-map .p-kick {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -609,7 +609,7 @@
   font-style: italic;
 }
 .sn-map .p-test-k {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -620,7 +620,7 @@
   stroke-width: 1;
 }
 .sn-map .tag-txt {
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -644,7 +644,7 @@
   stroke-width: 1;
 }
 .sn-map .sig-lab {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   fill: var(--sn-mute);
 }
@@ -655,7 +655,7 @@
   fill: var(--sn-lime);
 }
 .sn-map .q-k {
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.18em;
   fill: var(--sn-blue);
@@ -667,7 +667,7 @@
   fill: #eef2ff;
 }
 .sn-map .note {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
 }
@@ -685,7 +685,7 @@
   letter-spacing: 0.05em;
 }
 .sn-map.compact .t-sub {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.05em;
 }
 .sn-map.compact .t-edge {
@@ -718,10 +718,10 @@
   font-size: 11.5px;
 }
 .sn-map.compact .tag-txt {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .sn-map.compact .sig-lab {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .sn-map.compact .sig-val {
   font-size: 10px;
@@ -730,27 +730,27 @@
   font-size: 9px;
 }
 .sn-map.compact .sl-txt {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .sn-map.compact .sl-val {
   font-size: 11px;
 }
 .sn-map.compact .q-k {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .sn-map.compact .q-t {
   font-size: 15px;
 }
 .sn-map.compact .note {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.04em;
 }
 .sn-map.compact .core-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .gate-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .corner .t-num {
@@ -764,7 +764,7 @@
   font-size: 9px;
 }
 .sn-map.compact .m-legend {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.06em;
 }
 .sn-map.compact .lv-txt {

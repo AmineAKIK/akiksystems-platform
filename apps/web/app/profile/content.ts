@@ -164,7 +164,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     identity: {
       eyebrow: 'Profil',
       name: ['Mohamed Amine', 'Akik'],
-      photoLabel: 'Photo à venir',
+      photoLabel: 'Portrait de Mohamed Amine Akik',
       role: 'Développeur full-stack',
       roleDetail: 'logiciels métier et opérationnels',
       intro:
@@ -186,22 +186,22 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     project: {
       label: 'Projet en cours',
-      follow: { label: 'Suivre le projet', href: '/fr/ecrits' },
-      name: 'AkikSystems',
+      follow: { label: 'Consulter le projet', href: '/fr/systems#sentinel' },
+      name: 'Sentinel',
       summary:
-        'La plateforme que vous parcourez : profil, systèmes, écrits et apprentissage reliés comme un seul système, où chaque page s’appuie sur les données des autres.',
+        'Le suivi des incidents d’atelier : une anomalie de production suivie de la déclaration à la capitalisation, sans jamais perdre la trace des décisions.',
       roleLabel: 'Mon rôle',
       role: 'Conception et développement',
       stackLabel: 'Stack du projet',
       stack: [
-        { icon: 'screen', name: 'TypeScript · React', detail: 'React Router, rendu serveur' },
-        { icon: 'server', name: 'Node.js · Express', detail: 'Serveur web' },
-        { icon: 'shield', name: 'Zod', detail: 'Configuration validée au démarrage' },
-        { icon: 'bolt', name: 'Vite · pnpm', detail: 'Build, monorepo' },
-        { icon: 'check', name: 'Vitest · ESLint', detail: 'Tests, qualité' },
-        { icon: 'package', name: 'Docker · Nginx', detail: 'Production sur VPS' },
+        { icon: 'screen', name: 'TypeScript · React', detail: 'Trois espaces, contrôles RGAA' },
+        { icon: 'server', name: 'Node.js · Express', detail: 'API, sessions JWT par espace' },
+        { icon: 'database', name: 'PostgreSQL', detail: 'Relationnel et JSONB, 50 migrations' },
+        { icon: 'shield', name: 'Zod', detail: 'Entrées et configuration validées' },
+        { icon: 'check', name: 'Tests · Playwright', detail: 'Près de 1 400 tests, 161 parcours' },
+        { icon: 'package', name: 'Docker · Compose', detail: 'Images non-root, sur VPS' },
       ],
-      updated: 'Mis à jour le 26 sept. 2026',
+      updated: 'Mis à jour le 29 sept. 2026',
     },
     stack: {
       eyebrow: 'Stack',
@@ -217,7 +217,11 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           context: 'Suivi des incidents d’atelier',
           href: '/fr/systems#sentinel',
         },
-        protocap: { name: 'ProtoCap', context: 'Outils pour la ligne de production', href: null },
+        protocap: {
+          name: 'ProtoCap',
+          context: 'Outils pour la ligne de production',
+          href: '/fr/systems#protocap',
+        },
         tugeres: {
           name: 'Tugères',
           context: 'Commandes et facturation pour traiteurs',
@@ -675,7 +679,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     identity: {
       eyebrow: 'Profile',
       name: ['Mohamed Amine', 'Akik'],
-      photoLabel: 'Photo coming soon',
+      photoLabel: 'Portrait of Mohamed Amine Akik',
       role: 'Full-stack developer',
       roleDetail: 'business and operational software',
       intro:
@@ -697,22 +701,22 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     project: {
       label: 'Current project',
-      follow: { label: 'Follow the project', href: '/en/writings' },
-      name: 'AkikSystems',
+      follow: { label: 'View the project', href: '/en/systems#sentinel' },
+      name: 'Sentinel',
       summary:
-        'The platform you are browsing: profile, systems, writings and learning connected as one system, where every page builds on the others.',
+        'Workshop incident tracking: a production anomaly followed from report to shared knowledge, without ever losing the trail of decisions.',
       roleLabel: 'My role',
       role: 'Design and development',
       stackLabel: 'Project stack',
       stack: [
-        { icon: 'screen', name: 'TypeScript · React', detail: 'React Router, server rendering' },
-        { icon: 'server', name: 'Node.js · Express', detail: 'Web server' },
-        { icon: 'shield', name: 'Zod', detail: 'Configuration validated at startup' },
-        { icon: 'bolt', name: 'Vite · pnpm', detail: 'Build, monorepo' },
-        { icon: 'check', name: 'Vitest · ESLint', detail: 'Tests, quality' },
-        { icon: 'package', name: 'Docker · Nginx', detail: 'Production on a VPS' },
+        { icon: 'screen', name: 'TypeScript · React', detail: 'Three workspaces, RGAA checks' },
+        { icon: 'server', name: 'Node.js · Express', detail: 'API, JWT sessions per workspace' },
+        { icon: 'database', name: 'PostgreSQL', detail: 'Relational and JSONB, 50 migrations' },
+        { icon: 'shield', name: 'Zod', detail: 'Inputs and configuration validated' },
+        { icon: 'check', name: 'Tests · Playwright', detail: 'About 1,400 tests, 161 journeys' },
+        { icon: 'package', name: 'Docker · Compose', detail: 'Non-root images, on a VPS' },
       ],
-      updated: 'Updated 26 Sept 2026',
+      updated: 'Updated 29 Sept 2026',
     },
     stack: {
       eyebrow: 'Stack',
@@ -728,7 +732,11 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           context: 'Workshop incident tracking',
           href: '/en/systems#sentinel',
         },
-        protocap: { name: 'ProtoCap', context: 'Tools for the production line', href: null },
+        protocap: {
+          name: 'ProtoCap',
+          context: 'Tools for the production line',
+          href: '/en/systems#protocap',
+        },
         tugeres: { name: 'Tugères', context: 'Orders and invoicing for caterers', href: null },
       },
       rows: [

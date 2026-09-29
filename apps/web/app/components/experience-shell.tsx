@@ -8,7 +8,6 @@ import {
   globalDestinations,
 } from '../i18n/global-destinations';
 import { ExperienceFooter } from './experience-footer';
-import { ExperienceLocalContext } from './experience-local-context';
 import { LanguageSwitch } from './language-switch';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
@@ -26,7 +25,6 @@ export function ExperienceShell({
   locale,
   pathname,
   alternateHref,
-  currentTitle = null,
   mode = 'default',
   children,
 }: ExperienceShellProps) {
@@ -36,8 +34,25 @@ export function ExperienceShell({
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const previousRootOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = previousRootOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [mobileMenuOpen]);
+
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
+  // Only the locale root is Home; legal and other pages outside the main destinations
+  // share the regular header and footer.
+  const isHome = pathname.split('/').filter(Boolean).length <= 1;
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
   const derivedLanguageHref =
     destinationId === null
@@ -55,7 +70,7 @@ export function ExperienceShell({
 
       <header
         className="aks-experience-shell aks-section-separator-after"
-        data-destination={destinationId ?? 'home'}
+        data-destination={destinationId ?? (isHome ? 'home' : 'page')}
         data-mode={mode}
       >
         <Container width="wide">
@@ -65,7 +80,6 @@ export function ExperienceShell({
               className="aks-brand-signature"
               prefetch="intent"
               to={`/${locale}`}
-              viewTransition
             >
               <BrandMark />
               <span className="aks-brand-wordmark">AkikSystems</span>
@@ -73,11 +87,10 @@ export function ExperienceShell({
 
             <nav aria-label={dictionary.shell.navigationLabel} className="aks-experience-nav">
               <RouterLink
-                aria-current={destinationId === null ? 'page' : undefined}
+                aria-current={isHome ? 'page' : undefined}
                 className="aks-link"
                 prefetch="intent"
                 to={`/${locale}`}
-                viewTransition
               >
                 {dictionary.shell.homeLabel}
               </RouterLink>
@@ -88,7 +101,6 @@ export function ExperienceShell({
                   key={destination.id}
                   prefetch="intent"
                   to={destinationHref(destination.id, locale)}
-                  viewTransition
                 >
                   {destination.label[locale]}
                 </RouterLink>
@@ -104,7 +116,9 @@ export function ExperienceShell({
               <summary className="aks-experience-mobile-menu-trigger">
                 <span>{dictionary.shell.menuLabel}</span>
                 <span aria-hidden="true" className="aks-experience-mobile-menu-icon">
-                  +
+                  <span />
+                  <span />
+                  <span />
                 </span>
               </summary>
               <nav
@@ -112,12 +126,11 @@ export function ExperienceShell({
                 className="aks-experience-mobile-nav"
               >
                 <RouterLink
-                  aria-current={destinationId === null ? 'page' : undefined}
+                  aria-current={isHome ? 'page' : undefined}
                   className="aks-link"
                   onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
                   to={`/${locale}`}
-                  viewTransition
                 >
                   {dictionary.shell.homeLabel}
                 </RouterLink>
@@ -129,20 +142,27 @@ export function ExperienceShell({
                     onClick={() => setMobileMenuOpen(false)}
                     prefetch="intent"
                     to={destinationHref(destination.id, locale)}
-                    viewTransition
                   >
                     {destination.label[locale]}
                   </RouterLink>
                 ))}
+                <div className="aks-experience-mobile-language">
+                  {languageHref === null ? (
+                    <span aria-disabled="true" className="aks-language-unavailable">
+                      {dictionary.shell.languageUnavailableLabel}
+                    </span>
+                  ) : (
+                    <LanguageSwitch
+                      className="aks-experience-language"
+                      locale={locale}
+                      to={languageHref}
+                    />
+                  )}
+                </div>
               </nav>
             </details>
 
             <div className="aks-experience-meta">
-              <ExperienceLocalContext
-                currentTitle={currentTitle}
-                destinationId={destinationId}
-                locale={locale}
-              />
               {languageHref === null ? (
                 <span aria-disabled="true" className="aks-language-unavailable">
                   {dictionary.shell.languageUnavailableLabel}
@@ -159,11 +179,11 @@ export function ExperienceShell({
         </Container>
       </header>
 
-      <div className="aks-experience-frame" data-home={destinationId === null || undefined}>
+      <div className="aks-experience-frame" data-home={isHome || undefined}>
         <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
           {children}
         </div>
-        <ExperienceFooter home={destinationId === null} locale={locale} />
+        <ExperienceFooter home={isHome} locale={locale} />
       </div>
     </>
   );

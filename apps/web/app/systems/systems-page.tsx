@@ -23,11 +23,23 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
 };
 
 const stationMedia: Record<Exclude<SystemsStation['id'], 'protocap'>, string> = {
-  mosaique: '/systems/mosaique.webp',
-  'radar-cli': '/systems/radar-cli.webp',
-  sonar: '/systems/sonar.webp',
-  detour: '/systems/detour.webp',
+  alkhawarizmi: '/systems/alkhawarizmi.svg',
+  oria: '/systems/oria.svg',
+  akiksystems: '/systems/akiksystems.svg',
 };
+
+/* Covers drawn at the card's ratio fall back to their portrait artwork on phones. */
+const stationPortraits: Partial<Record<SystemsStation['id'], string>> = {
+  alkhawarizmi: '/systems/alkhawarizmi-portrait.svg',
+  oria: '/systems/oria-portrait.svg',
+};
+
+const coversWithEnglish = new Set([
+  '/systems/alkhawarizmi.svg',
+  '/systems/alkhawarizmi-portrait.svg',
+  '/systems/oria.svg',
+  '/systems/oria-portrait.svg',
+]);
 
 function StatusPill({
   locale,
@@ -46,34 +58,70 @@ function StatusPill({
   );
 }
 
-function ActionLink({ action }: { action: SystemsAction }) {
+function ActionLink({ action, locale }: { action: SystemsAction; locale: 'en' | 'fr' }) {
   const className = `aks-systems-button aks-systems-button--${action.kind}`;
 
   if (action.href.startsWith('/')) {
     return (
-      <RouterLink className={className} prefetch="intent" to={action.href} viewTransition>
+      <RouterLink className={className} prefetch="intent" to={action.href}>
         {action.label}
         <span aria-hidden="true">↗</span>
       </RouterLink>
     );
   }
 
+  // Applications open in a new tab, and say so; email links stay in place.
+  const external = action.href.startsWith('http');
   return (
-    <a className={className} href={action.href}>
+    <a
+      className={className}
+      href={action.href}
+      rel={external ? 'noopener' : undefined}
+      target={external ? '_blank' : undefined}
+    >
       {action.label}
+      {external ? (
+        <span className="aks-visually-hidden">
+          {locale === 'fr' ? ' (nouvel onglet)' : ' (opens in a new tab)'}
+        </span>
+      ) : null}
       <span aria-hidden="true">↗</span>
     </a>
   );
 }
 
+/** The covers drawn with text carry an English edition next to the French one. */
+function localizedCover(path: string, locale: 'en' | 'fr') {
+  return locale === 'en' && coversWithEnglish.has(path) ? path.replace(/\.svg$/, '-en.svg') : path;
+}
+
 function StationImage({
   station,
+  locale,
   compact = false,
 }: {
   station: SystemsStation;
+  locale: 'en' | 'fr';
   compact?: boolean;
 }) {
   if (station.id === 'protocap') return null;
+
+  const portrait = stationPortraits[station.id];
+  if (portrait !== undefined && !compact) {
+    return (
+      <picture>
+        <source media="(max-width: 30rem)" srcSet={localizedCover(portrait, locale)} />
+        <img
+          alt=""
+          aria-hidden="true"
+          className="aks-systems-station-image"
+          decoding="async"
+          loading="lazy"
+          src={localizedCover(stationMedia[station.id], locale)}
+        />
+      </picture>
+    );
+  }
 
   return (
     <img
@@ -91,9 +139,15 @@ function StationImage({
   );
 }
 
-export function OperationRail({ items }: { items: SystemsPageContent['rail'] }) {
+export function OperationRail({
+  items,
+  label,
+}: {
+  items: SystemsPageContent['rail'];
+  label: string;
+}) {
   return (
-    <nav aria-label="System operation sequence" className="aks-systems-operation-rail">
+    <nav aria-label={label} className="aks-systems-operation-rail">
       <ol>
         {items.map((item) => (
           <li key={item.index}>
@@ -132,7 +186,7 @@ function SystemsHeroArt() {
       </g>
       <g className="aks-systems-hero-notes">
         <text textAnchor="middle" x="500" y="928">
-          Ø 740 · SYSTEMIC SCALE
+          Ø 740 · AKIKSYSTEMS
         </text>
         <text x="880" y="196">
           45°
@@ -155,9 +209,11 @@ function SystemsHeroArt() {
 export function SystemsHero({
   content,
   rail,
+  railLabel,
 }: {
   content: SystemsPageContent['hero'];
   rail: SystemsPageContent['rail'];
+  railLabel: string;
 }) {
   return (
     <section
@@ -179,7 +235,7 @@ export function SystemsHero({
         </p>
       </div>
       <div className="aks-systems-wrap aks-systems-hero-rail">
-        <OperationRail items={rail} />
+        <OperationRail items={rail} label={railLabel} />
       </div>
     </section>
   );
@@ -207,10 +263,9 @@ export function SentinelWorkspace({
           </div>
           <div className="aks-systems-sentinel-meta">
             <StatusPill locale={locale} status={content.status} label={content.statusLabel} />
-            <span>{content.updated}</span>
           </div>
         </div>
-        <SentinelMap label={content.mapLabel} />
+        <SentinelMap label={content.mapLabel} locale={locale} />
         <div className="aks-systems-sentinel-footer">
           <div className="aks-systems-sentinel-summary">
             <p>{content.summary}</p>
@@ -223,7 +278,7 @@ export function SentinelWorkspace({
           </ul>
           <div className="aks-systems-actions">
             {content.actions.map((action) => (
-              <ActionLink action={action} key={action.label} />
+              <ActionLink action={action} key={action.label} locale={locale} />
             ))}
           </div>
         </div>
@@ -234,9 +289,9 @@ export function SentinelWorkspace({
 
 function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: SystemsStation }) {
   return (
-    <article className="aks-systems-station aks-systems-station--feature">
+    <article className="aks-systems-station aks-systems-station--feature" id={station.id}>
       <figure>
-        <ProtocapMap label={station.mapLabel ?? station.name} />
+        <ProtocapMap label={station.mapLabel ?? station.name} locale={locale} />
         <figcaption>
           <div>
             <p>{station.note}</p>
@@ -245,7 +300,23 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
           <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
         </figcaption>
       </figure>
-      <p className="aks-systems-station-function">{station.function}</p>
+      <div className="aks-systems-feature-footer">
+        <p className="aks-systems-station-function">{station.function}</p>
+        {station.href === undefined ? null : (
+          <a
+            className="aks-systems-button aks-systems-button--primary"
+            href={station.href}
+            rel="noopener"
+            target="_blank"
+          >
+            {locale === 'fr' ? 'Ouvrir l’application' : 'Open the app'}
+            <span className="aks-visually-hidden">
+              {locale === 'fr' ? ' (nouvel onglet)' : ' (opens in a new tab)'}
+            </span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </div>
     </article>
   );
 }
@@ -254,14 +325,40 @@ function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: Syst
   return (
     <div className="aks-systems-station-pair">
       {stations.map((station) => (
-        <article className="aks-systems-station aks-systems-station--pair" key={station.id}>
+        <article
+          className="aks-systems-station aks-systems-station--pair"
+          data-station={station.id}
+          key={station.id}
+        >
           <figure>
             <div className="aks-systems-station-media">
-              <StationImage station={station} />
+              <StationImage locale={locale} station={station} />
               <p className="aks-systems-media-label">{station.note}</p>
             </div>
             <figcaption>
-              <h3>{station.name}</h3>
+              <h3>
+                {station.href === undefined ? (
+                  station.name
+                ) : (
+                  <a
+                    className="aks-systems-station-link"
+                    href={station.href}
+                    hrefLang="fr"
+                    rel="noopener"
+                    target="_blank"
+                  >
+                    {station.name}
+                    <span className="aks-visually-hidden">
+                      {locale === 'fr'
+                        ? ' (nouvel onglet)'
+                        : ' (opens in a new tab, site in French)'}
+                    </span>
+                    <span aria-hidden="true" className="aks-systems-station-arrow">
+                      ↗
+                    </span>
+                  </a>
+                )}
+              </h3>
               <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
             </figcaption>
           </figure>
@@ -284,19 +381,11 @@ function QuickStationRow({
       {stations.map((station) => (
         <article className="aks-systems-quick" key={station.id}>
           <div className="aks-systems-quick-media">
-            <StationImage compact station={station} />
+            <StationImage compact locale={locale} station={station} />
           </div>
           <h3>{station.name}</h3>
           <p>{station.function}</p>
           <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
-          <a
-            aria-label={`${station.name}: ${station.note}`}
-            className="aks-systems-quick-link"
-            href="#workbench"
-          >
-            {locale === 'fr' ? 'Ouvrir' : 'Open'}
-            <span aria-hidden="true">↗</span>
-          </a>
         </article>
       ))}
     </div>
@@ -310,7 +399,6 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
       className="aks-systems-manifesto"
       data-systems-section="manifesto"
     >
-      <div aria-hidden="true" className="aks-systems-manifesto-orbit" />
       <div className="aks-systems-wrap aks-systems-manifesto-inner">
         <div className="aks-systems-manifesto-meta">
           <p className="aks-systems-kicker">{content.eyebrow}</p>
@@ -318,8 +406,7 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
         </div>
         <div className="aks-systems-manifesto-grid">
           <h2 id="systems-manifesto-title">
-            <span>{content.lines[0]}</span>
-            <span>{content.lines[1]}</span>
+            <span>{content.lines[0]}</span> <span>{content.lines[1]}</span>{' '}
             <span>{content.lines[2]}</span>
           </h2>
           <p>{content.body}</p>
@@ -329,12 +416,7 @@ export function Manifesto({ content }: { content: SystemsPageContent['manifesto'
   );
 }
 
-export function Workbench({
-  content,
-}: {
-  locale: 'en' | 'fr';
-  content: SystemsPageContent['workbench'];
-}) {
+export function Workbench({ content }: { content: SystemsPageContent['workbench'] }) {
   return (
     <section
       aria-labelledby="workbench-title"
@@ -365,9 +447,6 @@ export function Workbench({
               <span className="aks-systems-tool-action">
                 <i aria-hidden="true" /> {tool.action}
               </span>
-              <span aria-hidden="true" className="aks-systems-tool-arrow">
-                ↗
-              </span>
             </li>
           ))}
         </ol>
@@ -376,7 +455,13 @@ export function Workbench({
   );
 }
 
-export function PerspectivesCTA({ content }: { content: SystemsPageContent['perspectives'] }) {
+export function PerspectivesCTA({
+  content,
+  locale,
+}: {
+  content: SystemsPageContent['perspectives'];
+  locale: 'en' | 'fr';
+}) {
   return (
     <section
       aria-labelledby="perspectives-title"
@@ -390,8 +475,7 @@ export function PerspectivesCTA({ content }: { content: SystemsPageContent['pers
         <div className="aks-systems-perspectives-bottom">
           <p>{content.body}</p>
           <div className="aks-systems-actions">
-            <ActionLink action={content.secondary} />
-            <ActionLink action={content.primary} />
+            <ActionLink action={content.primary} locale={locale} />
           </div>
         </div>
       </div>
@@ -413,14 +497,13 @@ export function SystemsPage({
   };
 
   const protocap = station('protocap');
-  const mosaique = station('mosaique');
-  const radar = station('radar-cli');
-  const sonar = station('sonar');
-  const detour = station('detour');
+  const alkhawarizmi = station('alkhawarizmi');
+  const oria = station('oria');
+  const akiksystems = station('akiksystems');
 
   return (
     <main className="aks-systems-page" data-locale={locale}>
-      <SystemsHero content={content.hero} rail={content.rail} />
+      <SystemsHero content={content.hero} rail={content.rail} railLabel={content.railLabel} />
       <SentinelWorkspace content={content.sentinel} locale={locale} />
       <section
         aria-labelledby="operation-title"
@@ -437,13 +520,13 @@ export function SystemsPage({
             <p>{content.operation.intro}</p>
           </div>
           <StationFeature locale={locale} station={protocap} />
-          <StationPair locale={locale} stations={[mosaique, radar]} />
-          <QuickStationRow locale={locale} stations={[sonar, detour]} />
+          <StationPair locale={locale} stations={[alkhawarizmi, oria]} />
+          <QuickStationRow locale={locale} stations={[akiksystems]} />
         </div>
       </section>
       <Manifesto content={content.manifesto} />
-      <Workbench content={content.workbench} locale={locale} />
-      <PerspectivesCTA content={content.perspectives} />
+      <Workbench content={content.workbench} />
+      <PerspectivesCTA content={content.perspectives} locale={locale} />
     </main>
   );
 }

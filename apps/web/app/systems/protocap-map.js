@@ -11,6 +11,35 @@
  */
 'use strict';
 
+/* ---------- traduction : la carte est écrite en français, le dictionnaire la traduit ---------- */
+var TR = null;
+function tr(s) {
+  if (TR === null || s == null) return s;
+  var k = String(s);
+  return Object.prototype.hasOwnProperty.call(TR, k) ? TR[k] : k;
+}
+/* Texte composé à l'exécution : correspondance exacte, sinon fragments connus (ceux qui
+   commencent ou finissent par une espace ou un séparateur, jamais au milieu d'un mot). */
+var FRAGMENTS = null;
+function trc(s) {
+  if (TR === null || s == null) return s;
+  var k = String(s);
+  if (Object.prototype.hasOwnProperty.call(TR, k)) return TR[k];
+  if (FRAGMENTS === null) {
+    FRAGMENTS = Object.keys(TR)
+      .filter(function (f) {
+        return f.length > 1 && /^[\s·›/+:=−]|[\s·›/+:=−]$/.test(f);
+      })
+      .sort(function (a, b) {
+        return b.length - a.length;
+      });
+  }
+  for (var i = 0; i < FRAGMENTS.length; i++) {
+    if (k.indexOf(FRAGMENTS[i]) !== -1) k = k.split(FRAGMENTS[i]).join(TR[FRAGMENTS[i]]);
+  }
+  return k;
+}
+
 var NS = 'http://www.w3.org/2000/svg';
 var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
 
@@ -23,18 +52,18 @@ function el(tag, attrs, parent, txt) {
         e.style.cssText = attrs[k];
         continue;
       }
-      e.setAttribute(k, attrs[k]);
+      e.setAttribute(k, k === 'aria-label' || k === 'aria-description' ? trc(attrs[k]) : attrs[k]);
       if (k === 'text-anchor') e.style.textAnchor = attrs[k];
     }
   if (parent) parent.appendChild(e);
-  if (txt != null) e.textContent = txt;
+  if (txt != null) e.textContent = trc(txt);
   return e;
 }
 function clear(n) {
   while (n.firstChild) n.removeChild(n.firstChild);
 }
 function up(s) {
-  return String(s).toUpperCase();
+  return String(trc(s)).toUpperCase();
 }
 function rad(d) {
   return (d * Math.PI) / 180;
@@ -140,7 +169,7 @@ function mount(root, startTab) {
   var meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
   function measure(str, cls) {
     meas.setAttribute('class', cls);
-    meas.textContent = str;
+    meas.textContent = trc(str);
     var w = 0;
     try {
       w = meas.getComputedTextLength();
@@ -152,7 +181,7 @@ function mount(root, startTab) {
   }
   function wrap(parent, str, x, y, maxW, lh, cls) {
     var t = el('text', { x: x, y: y, class: cls }, parent);
-    var words = String(str).split(' '),
+    var words = String(trc(str)).split(' '),
       line = '',
       lines = 1,
       first = true;
@@ -198,7 +227,7 @@ function mount(root, startTab) {
     els.forEach(function (e) {
       e.setAttribute('tabindex', '0');
       e.setAttribute('role', 'button');
-      e.setAttribute('aria-label', data.title);
+      e.setAttribute('aria-label', tr(data.title));
       e.addEventListener('pointerenter', function (ev) {
         if (ev.pointerType === 'mouse') {
           state.paused = true;
@@ -234,7 +263,7 @@ function mount(root, startTab) {
       e.classList.add('is-active');
     });
     renderPanel(it);
-    live.textContent = it.title + '. ' + it.body;
+    live.textContent = tr(it.title) + '. ' + tr(it.body);
     if (curScene && curScene.onSelect) curScene.onSelect(id, it);
   }
 
@@ -315,7 +344,7 @@ function mount(root, startTab) {
     var b = wrap(detailG, it.body, x + 16, by, w - 32, 16, 'p-body');
     var ny = by + (b.lines - 1) * 16;
     if (it.test) {
-      var q = wrap(detailG, 'TEST › ' + it.test, x + 16, ny + 20, w - 32, 15, 'p-test');
+      var q = wrap(detailG, 'TEST › ' + tr(it.test), x + 16, ny + 20, w - 32, 15, 'p-test');
     }
     if (it.tags && it.tags.length) {
       var tx = x + 16,
@@ -411,7 +440,7 @@ function mount(root, startTab) {
     el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
   function paintBtn(on) {
     btn.classList.toggle('is-on', on);
-    btnTxt.textContent = on ? 'ARRÊTER' : 'PARCOURIR';
+    btnTxt.textContent = trc(on ? 'ARRÊTER' : 'PARCOURIR');
     var ix = BX + 15;
     btnIco.setAttribute(
       'd',
@@ -462,7 +491,7 @@ function mount(root, startTab) {
   el('circle', { cx: PX + 16, cy: PILL_Y + 15, r: 4, class: 'btn-ico' }, pill);
   var pillTxt = el('text', { x: PX + 30, y: PILL_Y + 18.5, class: 'btn-txt' }, pill, '');
   function paintPill() {
-    pillTxt.textContent = (compact ? 'ANIMATION · ' : 'ANIM · ') + (state.anim ? 'ON' : 'OFF');
+    pillTxt.textContent = trc((compact ? 'ANIMATION · ' : 'ANIM · ') + (state.anim ? 'ON' : 'OFF'));
     pill.setAttribute('aria-pressed', state.anim ? 'true' : 'false');
     pill.classList.toggle('is-on', state.anim);
   }
@@ -1451,7 +1480,7 @@ function mount(root, startTab) {
         doorSubs.forEach(function (d, i) {
           var code = OUT[c][i],
             L = LABEL[code];
-          d.sub.textContent = L[0];
+          d.sub.textContent = trc(L[0]);
           d.sub.setAttribute('class', 't-sub ' + L[1]);
           d.orb.classList.toggle('ok', code === 200);
           d.orb.classList.toggle('no', code !== 200);
@@ -1533,8 +1562,8 @@ function mount(root, startTab) {
 
       function setRes(o, name, sub, cls) {
         var t = o.querySelectorAll('text');
-        t[0].textContent = up(name);
-        t[1].textContent = up(sub);
+        t[0].textContent = trc(up(name));
+        t[1].textContent = trc(up(sub));
         t[0].setAttribute('class', 't-name ' + cls);
       }
       var storeOk = true;
@@ -1686,7 +1715,7 @@ function mount(root, startTab) {
         msg = { t: '', k: '' };
       var POLID = { 'no-overrun': 'pol_no', 'round-carton': 'pol_ct', 'round-pallet': 'pol_pl' };
       function fmt(n) {
-        return Math.round(n).toLocaleString('fr-FR');
+        return Math.round(n).toLocaleString(TR === null ? 'fr-FR' : 'en-US');
       }
 
       function compute() {
@@ -1796,7 +1825,7 @@ function mount(root, startTab) {
           P[s[0]],
           function (v) {
             P[s[0]] = v;
-            val.textContent = s[5](v);
+            val.textContent = trc(s[5](v));
             if (s[0] === 'cad') {
               paintCock();
               return;
@@ -1811,7 +1840,7 @@ function mount(root, startTab) {
           },
           s[1],
         );
-        val.textContent = s[5](P[s[0]]);
+        val.textContent = trc(s[5](P[s[0]]));
         el('text', { x: SX, y: y0 + 46, class: 'sl-txt' }, g, fmt(s[2]));
         el('text', { x: SX + SW, y: y0 + 46, class: 'sl-txt', 'text-anchor': 'end' }, g, fmt(s[3]));
       });
@@ -2012,28 +2041,30 @@ function mount(root, startTab) {
       function paintCock() {
         var t = plan.total,
           rem = t - declared;
-        planT.textContent = 'PLAN · ' + fmt(t) + ' U · ' + up(plan.label);
+        planT.textContent = trc('PLAN · ' + fmt(t) + ' U · ' + up(plan.label));
         var full = plan.pal + Math.floor(plan.ctn / P.cpp),
           pc = plan.ctn % P.cpp,
           remU = pc * P.upc + plan.un;
         loadT.textContent =
           full +
-          ' PALETTE' +
-          (full > 1 ? 'S' : '') +
-          ' PLEINE' +
-          (full > 1 ? 'S' : '') +
-          (remU > 0 ? '  +  1 PARTIELLE' : '');
+          tr(full > 1 ? ' PALETTES PLEINES' : ' PALETTE PLEINE') +
+          (remU > 0 ? tr('  +  1 PARTIELLE') : '');
         bar.setAttribute('width', ((CW * declared) / t).toFixed(1));
-        progT.textContent = fmt(declared) + ' / ' + fmt(t) + ' U   ·   RESTE ' + fmt(rem) + ' U';
-        durT.textContent =
+        progT.textContent = trc(
+          fmt(declared) + ' / ' + fmt(t) + ' U   ·   RESTE ' + fmt(rem) + ' U',
+        );
+        durT.textContent = trc(
           rem > 0
             ? '≈ ' + fmt(Math.ceil(rem / P.cad)) + ' MIN RESTANTES À ' + P.cad + ' U / MIN'
-            : 'PLAN ATTEINT · RIEN À DÉCLARER';
-        msgT.textContent = msg.t;
+            : 'PLAN ATTEINT · RIEN À DÉCLARER',
+        );
+        msgT.textContent = trc(msg.t);
         msgT.setAttribute('class', 'pc-msg ' + msg.k);
         logT.forEach(function (x, i) {
           var l = log[log.length - 1 - i];
-          x.textContent = l ? log.length - i + ' ·  ' + up(l.n) + '  ·  +' + fmt(l.a) + ' U' : '';
+          x.textContent = trc(
+            l ? log.length - i + ' ·  ' + up(l.n) + '  ·  +' + fmt(l.a) + ' U' : '',
+          );
         });
       }
       drawCards();
@@ -2153,7 +2184,7 @@ function mount(root, startTab) {
           var ok = a[0] === cur && ALLOWED[cur].indexOf(a[1]) >= 0;
           arcEls[i].setAttribute('class', 'lnk fsm' + (ok ? ' ok' : ''));
         });
-        stT.textContent = 'ÉTAT ACTUEL  ›  ' + up(ST[cur].name);
+        stT.textContent = trc('ÉTAT ACTUEL  ›  ' + up(ST[cur].name));
       }
       function flash(k) {
         orbs[k].classList.remove('shake');
@@ -2168,17 +2199,20 @@ function mount(root, startTab) {
         if (ALLOWED[cur].indexOf(to) >= 0) {
           var from = cur;
           cur = to;
-          msgT.textContent =
+          msgT.textContent = trc(
             'Transition autorisée · ' +
-            ST[from].name +
-            ' → ' +
-            ST[to].name +
-            (TERMINAL[to] ? ' · completedAt écrit' : '');
+              ST[from].name +
+              ' → ' +
+              ST[to].name +
+              (TERMINAL[to] ? ' · completedAt écrit' : ''),
+          );
           msgT.setAttribute('class', 'pc-msg out-ok');
         } else {
-          msgT.textContent = TERMINAL[cur]
-            ? 'Refusé · ' + ST[cur].name + ' est terminal : aucune sortie possible'
-            : 'Refusé · un statut ne recule jamais (' + ST[cur].name + ' → ' + ST[to].name + ')';
+          msgT.textContent = trc(
+            TERMINAL[cur]
+              ? 'Refusé · ' + ST[cur].name + ' est terminal : aucune sortie possible'
+              : 'Refusé · un statut ne recule jamais (' + ST[cur].name + ' → ' + ST[to].name + ')',
+          );
           msgT.setAttribute('class', 'pc-msg out-no');
           flash(to);
         }
@@ -2192,7 +2226,7 @@ function mount(root, startTab) {
         'Réinitialiser',
         function () {
           cur = 'waiting';
-          msgT.textContent = '';
+          msgT.textContent = trc('');
           paint();
         },
         'Remettre la demande en attente',
@@ -2350,13 +2384,13 @@ function mount(root, startTab) {
               196,
               c[0],
               function () {
-                outT.textContent = c[1];
+                outT.textContent = trc(c[1]);
                 outT.setAttribute('class', 'pc-mid out-ok');
                 btns.forEach(function (x) {
                   x.classList.toggle('is-active', x === b);
                 });
               },
-              'Choisir : ' + c[0],
+              'Choisir : ' + tr(c[0]),
             );
             btns.push(b);
           });
@@ -2472,10 +2506,10 @@ function mount(root, startTab) {
         1,
         30,
         function (h) {
-          var lab = h <= 0 ? 'EXPIRÉ' : h <= 48 ? 'BIENTÔT EXPIRÉ' : 'OK';
+          var lab = tr(h <= 0 ? 'EXPIRÉ' : h <= 48 ? 'BIENTÔT EXPIRÉ' : 'OK');
           var line = h <= 0 ? 'nonConform' : h <= 48 ? 'watch' : 'conform';
-          gVal.textContent = 'RESTE ' + h + ' H  ›  ' + lab;
-          gLine.textContent = 'STATUT DE LA LIGNE  ›  ' + up(line);
+          gVal.textContent = trc('RESTE ' + h + ' H  ›  ' + lab);
+          gLine.textContent = trc('STATUT DE LA LIGNE  ›  ' + up(line));
           gVal.setAttribute('fill', h <= 0 ? '#ff9da0' : h <= 48 ? '#f5b942' : '#fff');
         },
         'Heures de validité restantes',
@@ -3025,7 +3059,7 @@ function mount(root, startTab) {
       doorSubs.forEach(function (d, i) {
         var code = OUT[c][i],
           L = LABEL[code];
-        d.sub.textContent = L[0];
+        d.sub.textContent = trc(L[0]);
         d.sub.setAttribute('class', 't-sub ' + L[1]);
         d.orb.classList.toggle('ok', code === 200);
         d.orb.classList.toggle('no', code !== 200);
@@ -3061,8 +3095,8 @@ function mount(root, startTab) {
     var bX = node(g, 'b_res', XS[2], YB, 14, 'Persisté', 'localStorage', null);
     function setRes(o, name, sub, cls) {
       var t = o.querySelectorAll('text');
-      t[0].textContent = up(name);
-      t[1].textContent = up(sub);
+      t[0].textContent = trc(up(name));
+      t[1].textContent = trc(up(sub));
       t[0].setAttribute('class', 't-name ' + cls);
     }
     function paintStore(ok) {
@@ -3159,7 +3193,7 @@ function mount(root, startTab) {
       msg = { t: '', k: '' };
     var POLID = { 'no-overrun': 'pol_no', 'round-carton': 'pol_ct', 'round-pallet': 'pol_pl' };
     function fmt(n) {
-      return Math.round(n).toLocaleString('fr-FR');
+      return Math.round(n).toLocaleString(TR === null ? 'fr-FR' : 'en-US');
     }
     function compute() {
       var upp = P.upc * P.cpp,
@@ -3278,7 +3312,7 @@ function mount(root, startTab) {
         P[s[0]],
         function (v) {
           P[s[0]] = v;
-          val.textContent = s[5](v);
+          val.textContent = trc(s[5](v));
           if (s[0] === 'cad') {
             paintCock();
             return;
@@ -3356,7 +3390,7 @@ function mount(root, startTab) {
           'text',
           { x: x + w - 14, y: y + 37, class: 'sl-txt', 'text-anchor': 'end' },
           cg,
-          fmt(o.total) + ' U · ' + (o.variance ? '+' + fmt(o.variance) : 'ÉCART 0'),
+          fmt(o.total) + ' U · ' + (o.variance ? '+' + fmt(o.variance) : tr('ÉCART 0')),
         );
         reg(POLID[o.pol], null, [cg], { noHover: true });
         cg.addEventListener('click', function () {
@@ -3457,14 +3491,15 @@ function mount(root, startTab) {
     function paintCock() {
       var t = plan.total,
         rem = t - declared;
-      planT.textContent = 'PLAN · ' + fmt(t) + ' U · ' + up(plan.label);
+      planT.textContent = trc('PLAN · ' + fmt(t) + ' U · ' + up(plan.label));
       bar.setAttribute('width', ((328 * declared) / t).toFixed(1));
-      progT.textContent = fmt(declared) + ' / ' + fmt(t) + ' U  ·  RESTE ' + fmt(rem) + ' U';
-      durT.textContent =
+      progT.textContent = trc(fmt(declared) + ' / ' + fmt(t) + ' U  ·  RESTE ' + fmt(rem) + ' U');
+      durT.textContent = trc(
         rem > 0
           ? '≈ ' + fmt(Math.ceil(rem / P.cad)) + ' MIN RESTANTES À ' + P.cad + ' U / MIN'
-          : 'PLAN ATTEINT';
-      msgT.textContent = msg.t;
+          : 'PLAN ATTEINT',
+      );
+      msgT.textContent = trc(msg.t);
       msgT.setAttribute('class', 'pc-msg ' + msg.k);
     }
     drawCards();
@@ -3560,7 +3595,7 @@ function mount(root, startTab) {
           'lnk fsm' + (a[0] === cur && ALLOWED[cur].indexOf(a[1]) >= 0 ? ' ok' : ''),
         );
       });
-      stT.textContent = 'ÉTAT ACTUEL  ›  ' + up(ST[cur].name);
+      stT.textContent = trc('ÉTAT ACTUEL  ›  ' + up(ST[cur].name));
     }
     function flash(k) {
       orbs[k].classList.remove('shake');
@@ -3575,17 +3610,20 @@ function mount(root, startTab) {
       if (ALLOWED[cur].indexOf(to) >= 0) {
         var from = cur;
         cur = to;
-        msgT.textContent =
+        msgT.textContent = trc(
           'Autorisée · ' +
-          ST[from].name +
-          ' → ' +
-          ST[to].name +
-          (TERMINAL[to] ? ' · completedAt écrit' : '');
+            ST[from].name +
+            ' → ' +
+            ST[to].name +
+            (TERMINAL[to] ? ' · completedAt écrit' : ''),
+        );
         msgT.setAttribute('class', 'pc-msg out-ok');
       } else {
-        msgT.textContent = TERMINAL[cur]
-          ? 'Refusé · ' + ST[cur].name + ' est terminal'
-          : 'Refusé · un statut ne recule jamais';
+        msgT.textContent = trc(
+          TERMINAL[cur]
+            ? 'Refusé · ' + ST[cur].name + ' est terminal'
+            : 'Refusé · un statut ne recule jamais',
+        );
         msgT.setAttribute('class', 'pc-msg out-no');
         flash(to);
       }
@@ -3599,7 +3637,7 @@ function mount(root, startTab) {
       'Réinitialiser',
       function () {
         cur = 'waiting';
-        msgT.textContent = '';
+        msgT.textContent = trc('');
         paint();
       },
       'Remettre la demande en attente',
@@ -3685,13 +3723,13 @@ function mount(root, startTab) {
             148,
             c[0],
             function () {
-              outT.textContent = c[1];
+              outT.textContent = trc(c[1]);
               outT.setAttribute('class', 'pc-mid out-ok');
               btns.forEach(function (x) {
                 x.classList.toggle('is-active', x === b);
               });
             },
-            'Choisir : ' + c[0],
+            'Choisir : ' + tr(c[0]),
           );
           btns.push(b);
         });
@@ -3771,9 +3809,9 @@ function mount(root, startTab) {
       1,
       30,
       function (h) {
-        var lab = h <= 0 ? 'EXPIRÉ' : h <= 48 ? 'BIENTÔT EXPIRÉ' : 'OK',
+        var lab = tr(h <= 0 ? 'EXPIRÉ' : h <= 48 ? 'BIENTÔT EXPIRÉ' : 'OK'),
           line = h <= 0 ? 'nonConform' : h <= 48 ? 'watch' : 'conform';
-        gVal.textContent = 'RESTE ' + h + ' H  ›  ' + lab + '  ·  ' + up(line);
+        gVal.textContent = trc('RESTE ' + h + ' H  ›  ' + lab + '  ·  ' + up(line));
         gVal.setAttribute('fill', h <= 0 ? '#ff9da0' : h <= 48 ? '#f5b942' : '#fff');
       },
       'Heures de validité restantes',
@@ -3843,8 +3881,9 @@ function mount(root, startTab) {
         });
       });
     });
-    el('text', { x: 12, y: 536, class: 'note' }, g).innerHTML =
-      '<tspan class="note-k">PRINCIPE  </tspan><tspan>UN CI VERT NE PROUVE PAS</tspan>';
+    el('text', { x: 12, y: 536, class: 'note' }, g).innerHTML = tr(
+      '<tspan class="note-k">PRINCIPE  </tspan><tspan>UN CI VERT NE PROUVE PAS</tspan>',
+    );
     el('text', { x: 12, y: 550, class: 'note' }, g, 'UN DÉPLOIEMENT : SEUL LE SHA SERVI LE PROUVE');
   };
 
@@ -3878,7 +3917,7 @@ function mount(root, startTab) {
       t.setAttribute('tabindex', k === i ? '0' : '-1');
     });
     if (focus) tabEls[i].focus();
-    tabNum.textContent = ('0' + (i + 1)).slice(-2);
+    tabNum.textContent = trc(('0' + (i + 1)).slice(-2));
     paintBtn(false);
   }
   /* Récupère les textes (titres, corps, pastilles) des éléments de la version large,
@@ -4001,7 +4040,9 @@ function mount(root, startTab) {
  * @param {HTMLElement} root
  * @returns {() => void}
  */
-export function mountProtocapMap(root) {
+export function mountProtocapMap(root, dictionary) {
+  TR = dictionary || null;
+  FRAGMENTS = null;
   mount(root);
   return function () {
     if (root.__pcClean) root.__pcClean();

@@ -25,7 +25,8 @@ describe('SystemsPage code-only contract', () => {
       expect(html).toContain('data-systems-section="perspectives"');
 
       for (const station of systemsPageContent[locale].stations) {
-        expect(html).toContain(`>${station.name}</h3>`);
+        expect(html).toMatch(new RegExp(`<h3>(<a [^>]*>)?${station.name}`));
+        if (station.href !== undefined) expect(html).toContain(`href="${station.href}"`);
       }
 
       for (const tool of systemsPageContent[locale].workbench.tools) {
@@ -34,16 +35,19 @@ describe('SystemsPage code-only contract', () => {
     },
   );
 
-  it('keeps every public action as a real link and the main action touch-target class', () => {
+  it.each(['fr', 'en'] as const)('offers only working actions in %s', (locale) => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
-        <SystemsPage locale="fr" content={systemsPageContent.fr} />
+        <SystemsPage locale={locale} content={systemsPageContent[locale]} />
       </MemoryRouter>,
     );
 
-    expect(html).toContain('href="#operation"');
-    expect(html).toContain('href="/fr/travailler-ensemble"');
-    expect(html).toContain('aks-systems-button--primary');
+    expect(html).toContain('href="https://sentinel.akiksystems.fr"');
+    expect(html).toContain('href="https://protocap.akiksystems.com"');
+    expect(html).toContain('href="mailto:contact@akiksystems.com?subject=');
+    expect(html).not.toContain('aria-disabled');
+    expect(html).not.toContain('href="#"');
+    expect(html).toContain(`aria-label="${systemsPageContent[locale].railLabel}"`);
   });
 });
 

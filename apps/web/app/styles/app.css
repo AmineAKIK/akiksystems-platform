@@ -82,13 +82,15 @@
 
 .aks-experience-shell-inner {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Equal side columns keep the navigation centred whatever the page name on the right. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: clamp(var(--aks-space-4), 3vw, var(--aks-space-6));
   align-items: center;
   min-height: 4rem;
 }
 
 .aks-experience-shell .aks-brand-signature {
+  justify-self: start;
   gap: 0.6rem;
   color: rgb(255 255 255 / 92%);
   font-size: 0.98rem;
@@ -171,6 +173,7 @@
 }
 
 .aks-experience-meta {
+  min-width: 0;
   justify-content: flex-end;
   color: rgb(255 255 255 / 56%);
 }
@@ -230,12 +233,46 @@
 }
 
 .aks-experience-mobile-menu-icon {
-  font-size: 1.25rem;
-  line-height: 1;
+  position: relative;
+  display: grid;
+  width: 1.1rem;
+  height: 1.1rem;
+  place-items: center;
 }
 
-.aks-experience-mobile-menu[open] .aks-experience-mobile-menu-icon {
+.aks-experience-mobile-menu-icon > span {
+  position: absolute;
+  width: 1.125rem;
+  height: 1px;
+  background: currentColor;
+  transition:
+    opacity var(--aks-motion-fast) var(--aks-ease-standard),
+    transform var(--aks-motion-fast) var(--aks-ease-standard);
+}
+
+.aks-experience-mobile-menu-icon > span:first-child {
+  transform: translateY(-0.3rem);
+}
+
+.aks-experience-mobile-menu-icon > span:nth-child(2) {
+  transform: translateY(0);
+}
+
+.aks-experience-mobile-menu-icon > span:nth-child(3) {
+  transform: translateY(0.3rem);
+}
+
+.aks-experience-mobile-menu[open] .aks-experience-mobile-menu-icon > span:first-child {
   transform: rotate(45deg);
+}
+
+.aks-experience-mobile-menu[open] .aks-experience-mobile-menu-icon > span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.aks-experience-mobile-menu[open] .aks-experience-mobile-menu-icon > span:nth-child(3) {
+  transform: rotate(-45deg);
 }
 
 .aks-experience-mobile-nav {
@@ -256,6 +293,15 @@
 .aks-experience-mobile-nav [aria-current='page'] {
   background: var(--aks-surface-subtle);
   font-weight: 700;
+}
+
+.aks-experience-mobile-language {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: var(--aks-space-2);
+  padding: var(--aks-space-3);
+  border-top: 1px solid rgb(255 255 255 / 10%);
 }
 
 .aks-experience-context {
@@ -351,87 +397,10 @@
   }
 }
 
-/* L2 route transition system: calm viewport cross-fade with persistent application chrome. */
-:root {
-  --aks-transition-route-duration: 180ms;
-  --aks-transition-route-easing: cubic-bezier(0.2, 0, 0, 1);
-}
-
-.aks-experience-shell {
-  view-transition-name: aks-experience-shell;
-}
-
-/*
- * Route content intentionally stays in the root snapshot. Giving the outlet its own
- * transition name makes the browser interpolate between different outlet rectangles
- * (the Home has no shell, internal pages do), which reads as a diagonal/upward slide.
- * The root snapshot is viewport-stable, so the transition remains spatially neutral.
- */
-::view-transition-group(root) {
-  animation-duration: var(--aks-transition-route-duration);
-  animation-timing-function: var(--aks-transition-route-easing);
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
-  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
-    aks-route-fade-out;
-}
-
-::view-transition-new(root) {
-  animation: var(--aks-transition-route-duration) var(--aks-transition-route-easing) both
-    aks-route-fade-in;
-}
-
-::view-transition-group(aks-experience-shell) {
-  animation-duration: 1ms;
-}
-
-::view-transition-old(aks-experience-shell),
-::view-transition-new(aks-experience-shell) {
-  animation: none;
-}
-
-/* Returning Home removes the shell; fade its captured state instead of dropping it abruptly. */
-:root:has(.aks-experience-frame[data-home='true'])::view-transition-old(aks-experience-shell) {
-  animation: 120ms var(--aks-transition-route-easing) both aks-route-fade-out;
-}
-
-@keyframes aks-route-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes aks-route-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-/* AKS-044: preserve route semantics while removing non-essential motion. */
+/* Motion is limited to controls; route changes render immediately. */
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    --aks-transition-route-duration: 1ms;
-  }
-
   .aks-experience-mobile-menu-icon {
     transition: none;
-  }
-
-  ::view-transition-group(root),
-  ::view-transition-old(root),
-  ::view-transition-new(root),
-  ::view-transition-group(aks-experience-shell),
-  ::view-transition-old(aks-experience-shell),
-  ::view-transition-new(aks-experience-shell) {
-    animation-duration: 1ms;
-    animation-delay: 0ms;
-    animation-iteration-count: 1;
   }
 }
 
@@ -459,3 +428,13 @@
 /* AKS-094: Sentinel dossier is an autonomous native Web reading, not a PDF-shaped page. */
 
 /* AKS-096: public System -> Learning evidence navigation without content duplication. */
+
+/* Text for assistive technology only. */
+.aks-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

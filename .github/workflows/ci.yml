@@ -102,35 +102,27 @@ jobs:
       - name: Smoke observability
         run: pnpm smoke:observability
 
+      # Playwright comes from the workspace (apps/web devDependencies); only Chromium is cached.
       - name: Cache Chromium smoke runtime
         id: browser-runtime-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: |
-            /tmp/akiksystems-browser-runtime/node_modules
-            /tmp/akiksystems-browser-runtime/ms-playwright
-          key: ${{ runner.os }}-node24-browser-smoke-v1-pw1.55.0
+          path: /tmp/akiksystems-browser-runtime/ms-playwright
+          key: ${{ runner.os }}-browser-smoke-v2-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Chromium smoke runtime
         if: steps.browser-runtime-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
-        run: |
-          mkdir -p /tmp/akiksystems-browser-runtime
-          cd /tmp/akiksystems-browser-runtime
-          npm init -y
-          npm install --ignore-scripts --no-audit --no-fund playwright@1.55.0
-          ./node_modules/.bin/playwright install --with-deps chromium
+        run: pnpm --filter @akiksystems/web exec playwright install --with-deps chromium
 
       - name: Smoke responsive Home
         env:
-          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: node apps/web/scripts/smoke-responsive-browser.cjs
 
-      - name: Smoke public Systems
+      - name: Smoke public Systems (French and English)
         env:
-          NODE_PATH: /tmp/akiksystems-browser-runtime/node_modules
           PLAYWRIGHT_BROWSERS_PATH: /tmp/akiksystems-browser-runtime/ms-playwright
         run: pnpm --filter @akiksystems/web smoke:systems-public
 

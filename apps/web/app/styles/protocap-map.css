@@ -80,7 +80,7 @@
   fill: #f3f4f7;
 }
 .pc-map .pill-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: #0b1020;
@@ -97,7 +97,7 @@
   transition: fill 0.2s;
 }
 .pc-map .tab-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
@@ -123,7 +123,7 @@
   fill: var(--sn-blue);
 }
 .pc-map .side-hint {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
 }
@@ -136,7 +136,7 @@
     stroke 0.2s;
 }
 .pc-map .btn-txt {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
   fill: var(--sn-text);
@@ -165,7 +165,7 @@
   stroke-width: 1;
 }
 .pc-map .hint {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
   text-anchor: end;
@@ -254,7 +254,7 @@
   transition: fill 0.2s;
 }
 .pc-map .t-sub {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -342,7 +342,7 @@
   cursor: pointer;
 }
 .pc-map .t-edge {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: #7684a6;
@@ -380,7 +380,7 @@
   cursor: pointer;
 }
 .pc-map .chip-txt {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -452,7 +452,7 @@
   opacity: 1;
 }
 .pc-map .m-legend {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   fill: var(--sn-dim);
 }
@@ -558,12 +558,12 @@
   stroke: var(--sn-lime);
 }
 .pc-map .sl-txt {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   fill: var(--sn-dim);
 }
 .pc-map .sl-ttl {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
   fill: #a9b4d0;
@@ -582,7 +582,7 @@
   stroke-width: 1;
 }
 .pc-map .p-kick {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -603,7 +603,7 @@
   font-style: italic;
 }
 .pc-map .p-test-k {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -614,7 +614,7 @@
   stroke-width: 1;
 }
 .pc-map .tag-txt {
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -638,7 +638,7 @@
   stroke-width: 1;
 }
 .pc-map .sig-lab {
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   fill: var(--sn-mute);
 }
@@ -649,7 +649,7 @@
   fill: var(--sn-lime);
 }
 .pc-map .q-k {
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.18em;
   fill: var(--sn-blue);
@@ -661,7 +661,7 @@
   fill: #eef2ff;
 }
 .pc-map .note {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
 }
@@ -689,7 +689,7 @@
   letter-spacing: 0.06em;
 }
 .pc-map.compact .t-sub {
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: 0.05em;
 }
 .pc-map.compact .t-edge {
@@ -722,10 +722,10 @@
   font-size: 11.5px;
 }
 .pc-map.compact .tag-txt {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .pc-map.compact .sig-lab {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .pc-map.compact .sig-val {
   font-size: 10px;
@@ -734,16 +734,16 @@
   font-size: 9px;
 }
 .pc-map.compact .sl-txt {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .pc-map.compact .q-k {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .pc-map.compact .q-t {
   font-size: 15px;
 }
 .pc-map.compact .note {
-  font-size: 8.5px;
+  font-size: 9px;
 }
 .pc-map.compact .core-txt {
   font-size: 10px;
