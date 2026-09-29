@@ -1,7 +1,8 @@
-/* Sentinel — interactive map (mounted by app/systems/sentinel-map.ts). */
+/* Sentinel — interactive map (mounted by app/systems/sentinel-map.js).
+ * Ported from sentinel-map.html; the ProtoCap map uses .pc-map / pc-* on the same page. */
 
 .sn-map {
-  --sn-font: Archivo, 'Helvetica Neue', Arial, sans-serif;
+  --sn-font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
   --sn-card: #070c16;
   --sn-head: #08101d;
   --sn-side: #0a111f;
@@ -18,16 +19,18 @@
   color: var(--sn-text);
 }
 .sn-map .sn-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 .sn-map svg {
   display: block;
   width: 100%;
   height: auto;
-  min-width: 780px;
+  max-width: 1312px;
+  margin: 0 auto;
   font-family: var(--sn-font);
+}
+.sn-map.compact svg {
+  max-width: 560px;
 }
 .sn-map text {
   text-rendering: geometricPrecision;
@@ -41,9 +44,6 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
-}
-.sn-map .sn-ptr {
-  cursor: pointer;
 }
 .sn-map [tabindex]:focus {
   outline: none;
@@ -676,6 +676,101 @@
   font-weight: 700;
 }
 
+/* --- mise en page compacte : tailles de texte relevées pour rester lisible sur mobile --- */
+.sn-map.compact .h-title {
+  font-size: 10px;
+}
+.sn-map.compact .t-name {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+.sn-map.compact .t-sub {
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+}
+.sn-map.compact .t-edge {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+.sn-map.compact .chip-txt {
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+}
+.sn-map.compact .tab-txt {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-anchor: middle;
+}
+.sn-map.compact .btn-txt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.sn-map.compact .p-kick {
+  font-size: 9px;
+}
+.sn-map.compact .p-title {
+  font-size: 16px;
+}
+.sn-map.compact .p-body {
+  font-size: 12px;
+}
+.sn-map.compact .p-test {
+  font-size: 11.5px;
+}
+.sn-map.compact .tag-txt {
+  font-size: 8.5px;
+}
+.sn-map.compact .sig-lab {
+  font-size: 8.5px;
+}
+.sn-map.compact .sig-val {
+  font-size: 10px;
+}
+.sn-map.compact .sl-ttl {
+  font-size: 9px;
+}
+.sn-map.compact .sl-txt {
+  font-size: 8.5px;
+}
+.sn-map.compact .sl-val {
+  font-size: 11px;
+}
+.sn-map.compact .q-k {
+  font-size: 8.5px;
+}
+.sn-map.compact .q-t {
+  font-size: 15px;
+}
+.sn-map.compact .note {
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+}
+.sn-map.compact .core-txt {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+}
+.sn-map.compact .gate-txt {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+}
+.sn-map.compact .corner .t-num {
+  font-size: 9px;
+}
+.sn-map.compact .corner .t-corner {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+.sn-map.compact .m-row .m-txt {
+  font-size: 9px;
+}
+.sn-map.compact .m-legend {
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+}
+.sn-map.compact .lv-txt {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+}
 .sn-map.no-anim .canvas {
   transition: none;
 }
