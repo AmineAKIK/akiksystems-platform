@@ -244,11 +244,11 @@ function frenchOnlyWords() {
     }
   }
   for (const word of english) french.delete(word);
-  // Names and technical terms the maps rightly keep as they are in English.
-  const shared = ['celine', 'céline', 'anim', 'anti', 'attestations', 'checksums', 'contents'];
-  shared.push('contract', 'cookies', 'csrf', 'culture', 'edge', 'followup', 'forward', 'https');
-  shared.push('jest', 'notes', 'pino', 'registry', 'revalidation', 'reverse', 'runbook');
-  shared.push('technology', 'conform', 'nonconform', 'number', 'issafeinteger', 'overlap');
+  // Reviewed list of the maps' own words that are English, names or code (classes, events,
+  // attributes). A new word outside it that reaches the English page fails the smoke.
+  const shared = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, 'systems-map-english-words.json'), 'utf8'),
+  );
   for (const word of shared) french.delete(word);
   return french;
 }
