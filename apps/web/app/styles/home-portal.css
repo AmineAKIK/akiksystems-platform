@@ -883,7 +883,9 @@
 
 /* Extreme short landscapes keep every label in dedicated vertical bands. */
 @media (orientation: landscape) and (max-height: 22.5rem) {
+  /* A smaller emblem, lower: it clears Perspectives and still leaves the preview its row. */
   .aks-home {
+    --aks-home-mark-size: clamp(3.5rem, 18dvh, 9rem);
     --aks-home-preview-top: 66.5%;
   }
 
@@ -892,7 +894,7 @@
   }
 
   .aks-home-center {
-    top: 37%;
+    top: 40%;
   }
 
   .aks-home-door[data-destination='profile'],
