@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { MapFullscreenFrame } from './map-fullscreen-frame';
+
 /** The map is written in French; the English page loads its dictionary alongside it. */
 export function ProtocapMap({ label, locale }: { label: string; locale: 'en' | 'fr' }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,5 +48,9 @@ export function ProtocapMap({ label, locale }: { label: string; locale: 'en' | '
     };
   }, [locale]);
 
-  return <div aria-label={label} className="aks-systems-protocap-map" ref={ref} role="region" />;
+  return (
+    <MapFullscreenFrame locale={locale} name="ProtoCap">
+      <div aria-label={label} className="aks-systems-protocap-map" ref={ref} role="region" />
+    </MapFullscreenFrame>
+  );
 }

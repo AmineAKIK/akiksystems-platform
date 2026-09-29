@@ -123,6 +123,7 @@ const matrixGlyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/{}[]%*+=?';
 function HomePlan() {
   return (
     <span aria-hidden="true" className="aks-home-plan">
+      <span className="aks-home-plan-atmosphere" />
       <span className="aks-home-plan-ring aks-home-plan-ring--inner" />
       <span className="aks-home-plan-ring aks-home-plan-ring--orbit" />
       <span className="aks-home-plan-ring aks-home-plan-ring--outer" />

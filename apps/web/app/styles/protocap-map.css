@@ -124,8 +124,9 @@
 }
 .pc-map .side-hint {
   font-size: 9px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   fill: var(--sn-dim);
+  text-anchor: middle;
 }
 .pc-map .btn-bg {
   fill: transparent;

@@ -191,8 +191,49 @@ async function inspectViewport(browser, viewport, locale) {
         );
       }
     }
+    await inspectMapControls(page);
   } finally {
     await context.close();
+  }
+}
+
+/** Decorative dots and SVG text must be tested too, not only interactive elements. */
+async function inspectMapControls(page) {
+  await page.evaluate(() => document.fonts.ready);
+  for (const name of ['sentinel', 'protocap']) {
+    const frame = page.locator(`[data-map="${name}"]`);
+    await frame.scrollIntoViewIfNeeded();
+    await frame.locator('.aks-map-fullscreen-control').waitFor();
+    await frame.locator('.canvas .q-t').waitFor();
+    const geometry = await frame.evaluate((root) => {
+      const button = root.querySelector('.aks-map-fullscreen-control').getBoundingClientRect();
+      const svg = root.querySelector('.sn-scroll > svg').getBoundingClientRect();
+      const collisions = [
+        ...root.querySelectorAll(
+          '.h-title, .hint, .q-t, .q-k, .tab, .pill, .btn, .chrome > circle',
+        ),
+      ]
+        .filter((element) => {
+          const box = element.getBoundingClientRect();
+          return (
+            Math.min(button.right, box.right) - Math.max(button.left, box.left) > 0.5 &&
+            Math.min(button.bottom, box.bottom) - Math.max(button.top, box.top) > 0.5
+          );
+        })
+        .map((element) => `${element.getAttribute('class')}: ${element.textContent}`);
+      return {
+        collisions,
+        inside:
+          button.left >= svg.left - 0.5 &&
+          button.top >= svg.top - 0.5 &&
+          button.right <= svg.right + 0.5 &&
+          button.bottom <= svg.bottom + 0.5,
+        addedHeight: root.getBoundingClientRect().height - svg.height,
+      };
+    });
+    assert.deepEqual(geometry.collisions, [], `${name}: fullscreen control overlaps map content`);
+    assert.ok(geometry.inside, `${name}: fullscreen control must stay inside the SVG`);
+    assert.ok(Math.abs(geometry.addedHeight) < 1, `${name}: control must not add a toolbar row`);
   }
 }
 
@@ -330,6 +371,8 @@ async function inspectEnglish(browser) {
       { width: 390, height: 844 },
       { width: 844, height: 390 },
       { width: 768, height: 1024 },
+      { width: 964, height: 900 },
+      { width: 1024, height: 900 },
       { width: 1280, height: 720 },
       { width: 1440, height: 900 },
       { width: 2560, height: 1440 },
