@@ -1,0 +1,7 @@
+# /etc/sudoers.d/akiksystems-deploy  (root:root 0440, check with `visudo -cf`)
+# The SSH deployment account may run exactly one root command, without a
+# password and with a reset environment. The script revalidates its argument.
+Defaults!/usr/local/bin/akiksystems-deploy env_reset
+akiksystems-deploy ALL=(root) NOPASSWD: /usr/local/bin/akiksystems-deploy ^[0-9a-f]{40}$
+# `^...$` argument regexes need sudo >= 1.9.10. On older sudo, drop the regex:
+# akiksystems-deploy ALL=(root) NOPASSWD: /usr/local/bin/akiksystems-deploy

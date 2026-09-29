@@ -6,10 +6,13 @@ Production is one web container built from an exact Git commit, published on
 `www.akiksystems.fr`. The application is code-only: no database, migration,
 worker or volume.
 
-| File                 | Role                                                    |
-| -------------------- | ------------------------------------------------------- |
-| `compose.yml`        | Build and run the hardened web container.               |
-| `nginx.conf.example` | Reference vhost: HTTPS, `www` redirects, proxy to 3100. |
+| File                 | Role                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `compose.yml`        | Build and run the hardened web container.                     |
+| `nginx.conf.example` | Reference vhost: HTTPS, `www` redirects, proxy to 3100.       |
+| `deploy.sh`          | Root deployment script (`/usr/local/bin/akiksystems-deploy`). |
+| `deploy-ssh.sh`      | Forced SSH command (`/usr/local/bin/akiksystems-deploy-ssh`). |
+| `sudoers.example`    | The single sudo rule of the deployment account.               |
 
 The commands below assume a shell in the deployment checkout of this
 repository on the VPS, with `GIT_SHA` set to the **full 40-character** SHA of
@@ -139,10 +142,74 @@ docker compose -f deploy/vps/compose.yml stop web
 
 ## Later releases
 
-Repeat steps 1 to 4 with the new SHA, then `up -d --no-build web` replaces the
-container on port 3100 with the new image. Earlier images stay tagged
-`akiksystems-web:<sha>`, so returning to a previous release is:
+Releases are automatic: every commit on `main` whose CI succeeded is deployed
+by `.github/workflows/deploy.yml` (see below). Manual deployments and rollbacks
+go through the same root script:
 
 ```sh
-GIT_SHA=<previous full SHA> docker compose -f deploy/vps/compose.yml up -d --no-build web
+sudo /usr/local/bin/akiksystems-deploy <full SHA>                  # newer commit of main
+sudo /usr/local/bin/akiksystems-deploy --allow-older <full SHA>    # rollback to an older one
+journalctl -t akiksystems-deploy                                   # deployment history
 ```
+
+## Automatic deployment
+
+```text
+GitHub Actions (CI green on main, environment "production")
+  -> ssh akiksystems-deploy@VPS "deploy <sha>"      (one attempt, pinned host key)
+  -> forced command /usr/local/bin/akiksystems-deploy-ssh   (validates "deploy <40-hex>")
+  -> sudo -n /usr/local/bin/akiksystems-deploy <sha>        (single sudo rule)
+```
+
+The root script, per deployment:
+
+1. accepts only a full lowercase SHA, takes a non-blocking `flock`, restarts
+   itself with an empty environment;
+2. refuses to run with less than 10 GiB or 15 % free where Docker stores
+   images, a dirty checkout, or an unexpected `origin`;
+3. fetches `origin/main` and refuses a commit that is not on it; a commit older
+   than production is skipped unless `--allow-older` is given;
+4. checks out the SHA, builds `akiksystems-web:<sha>` and checks its revision
+   label;
+5. replaces the `web` container (2 to 5 seconds of interruption), waits up to
+   120 s for `healthy`, checks the image and `/health`, `/en`, `/fr`,
+   `/fr/profil` and a `421` for an unknown host on `127.0.0.1:3100`;
+6. on success records the SHA in `/var/lib/akiksystems-deploy/current-sha`
+   (initialised from the running container the first time) and keeps the five
+   newest images plus the previous one; on failure restores the previous
+   checkout and image and verifies them again;
+7. logs every step to the job output and to journald
+   (`journalctl -t akiksystems-deploy`).
+
+It never runs `compose down`, prunes, or touches volumes, networks, Nginx or
+any other project.
+
+### One-time server setup
+
+```sh
+sudo useradd --system --create-home --shell /bin/sh akiksystems-deploy
+sudo install -o root -g root -m 0755 deploy/vps/deploy.sh     /usr/local/bin/akiksystems-deploy
+sudo install -o root -g root -m 0755 deploy/vps/deploy-ssh.sh /usr/local/bin/akiksystems-deploy-ssh
+sudo install -o root -g root -m 0440 deploy/vps/sudoers.example /etc/sudoers.d/akiksystems-deploy
+sudo visudo -cf /etc/sudoers.d/akiksystems-deploy
+```
+
+The checkout in `/var/www/akiksystems-platform` must be owned by root (the
+script runs `git` as root), with no write access for `akiksystems-deploy`.
+
+`~akiksystems-deploy/.ssh/authorized_keys` (directory `0700`, file `0600`)
+holds the public half of a key generated off the server:
+
+```text
+command="/usr/local/bin/akiksystems-deploy-ssh",no-pty,no-port-forwarding,no-agent-forwarding,no-X11-forwarding ssh-ed25519 AAAA... github-actions-deploy
+```
+
+Reinstall both scripts from an audited commit whenever `deploy.sh` or
+`deploy-ssh.sh` changes: the server never runs the repository copies.
+
+### GitHub side
+
+Environment `production` (deployment branches: `main` only), with the
+secrets `VPS_HOST`, `VPS_PORT`, `VPS_USER`, `VPS_KNOWN_HOSTS` and
+`VPS_SSH_KEY`. Failed runs are reported by GitHub's standard workflow
+notifications.
