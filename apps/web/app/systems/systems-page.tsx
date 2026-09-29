@@ -281,7 +281,18 @@ function StationPair({ locale, stations }: { locale: 'en' | 'fr'; stations: Syst
               <p className="aks-systems-media-label">{station.note}</p>
             </div>
             <figcaption>
-              <h3>{station.name}</h3>
+              <h3>
+                {station.href === undefined ? (
+                  station.name
+                ) : (
+                  <a className="aks-systems-station-link" href={station.href} target="_blank">
+                    {station.name}
+                    <span aria-hidden="true" className="aks-systems-station-arrow">
+                      ↗
+                    </span>
+                  </a>
+                )}
+              </h3>
               <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
             </figcaption>
           </figure>

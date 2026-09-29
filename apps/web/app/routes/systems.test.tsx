@@ -25,7 +25,11 @@ describe('SystemsPage code-only contract', () => {
       expect(html).toContain('data-systems-section="perspectives"');
 
       for (const station of systemsPageContent[locale].stations) {
-        expect(html).toContain(`>${station.name}</h3>`);
+        if (station.href === undefined) {
+          expect(html).toContain(`>${station.name}</h3>`);
+        } else {
+          expect(html).toContain(`href="${station.href}" target="_blank">${station.name}<span`);
+        }
       }
 
       for (const tool of systemsPageContent[locale].workbench.tools) {

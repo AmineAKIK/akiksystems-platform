@@ -15,6 +15,8 @@ export interface SystemsStation {
   status: SystemsStatus;
   statusLabel: string;
   note: string;
+  /** External page the whole card opens, for stations that have one. */
+  href?: string;
   /** Accessible name of the interactive map, for stations that have one. */
   mapLabel?: string;
 }
@@ -145,6 +147,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         status: 'deployed',
         statusLabel: 'EN LIGNE',
         note: 'Étude de cas.',
+        href: 'https://amineakik.github.io/orianutrition/',
       },
       {
         id: 'sonar',
@@ -284,6 +287,7 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         status: 'deployed',
         statusLabel: 'ONLINE',
         note: 'Case study.',
+        href: 'https://amineakik.github.io/orianutrition/',
       },
       {
         id: 'sonar',

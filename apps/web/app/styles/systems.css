@@ -1560,3 +1560,45 @@
     aspect-ratio: 2 / 3;
   }
 }
+
+/* A station with its own page: the title link covers the whole card. */
+.aks-systems-station--pair:has(.aks-systems-station-link) {
+  position: relative;
+}
+
+.aks-systems-station-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.aks-systems-station-link::after {
+  position: absolute;
+  z-index: 1;
+  content: '';
+  inset: 0;
+}
+
+.aks-systems-station-arrow {
+  margin-left: 0.18em;
+  color: var(--systems-lime);
+  font-size: 0.5em;
+  vertical-align: 0.7em;
+}
+
+.aks-systems-station--pair:has(.aks-systems-station-link) figure {
+  transition: border-color 120ms ease;
+}
+
+.aks-systems-station--pair:has(.aks-systems-station-link:hover) figure,
+.aks-systems-station--pair:has(.aks-systems-station-link:focus-visible) figure {
+  border-color: var(--systems-lime);
+}
+
+.aks-systems-station-link:focus-visible {
+  outline: none;
+}
+
+.aks-systems-station--pair:has(.aks-systems-station-link:focus-visible) figure {
+  outline: 2px solid var(--systems-lime);
+  outline-offset: 3px;
+}
