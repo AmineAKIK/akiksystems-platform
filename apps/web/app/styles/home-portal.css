@@ -204,7 +204,6 @@
   align-items: center;
   justify-content: center;
   color: var(--aks-home-starlight);
-  text-shadow: 0 0 0.625rem rgb(100 135 222 / 22%);
 }
 
 .aks-home-wordmark-slot {
@@ -238,9 +237,7 @@
   display: inline-block;
   color: var(--aks-home-mauve);
   opacity: 0;
-  text-shadow: 0 0 0 transparent;
   animation: none;
-  will-change: color, opacity, text-shadow;
 }
 
 .aks-home-scale-letter[data-scale-index='0'] {
@@ -291,23 +288,16 @@
     calc(var(--aks-home-scale-index) * 35ms) both;
 }
 
+/* Compositor-only: opacity and a small lift, no colour or shadow repaint. */
 @keyframes aks-home-scale-ignite {
-  0% {
-    color: rgb(147 135 158 / 24%);
-    opacity: 0.18;
-    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+  from {
+    opacity: 0;
+    transform: translateY(0.25em);
   }
 
-  46% {
-    color: var(--aks-home-starlight);
+  to {
     opacity: 1;
-    text-shadow: 0 0 0.5rem rgb(100 135 222 / 58%);
-  }
-
-  100% {
-    color: var(--aks-home-mauve);
-    opacity: 1;
-    text-shadow: 0 0 0 rgb(100 135 222 / 0%);
+    transform: none;
   }
 }
 
@@ -921,9 +911,7 @@
   .aks-home-scale-letter {
     color: var(--aks-home-mauve);
     opacity: 1;
-    text-shadow: none;
     animation: none;
-    will-change: auto;
   }
 
   .aks-home-door {
@@ -950,9 +938,7 @@ html[data-motion='reduced'] .aks-home-wordmark-matrix {
 html[data-motion='reduced'] .aks-home-scale-letter {
   color: var(--aks-home-mauve);
   opacity: 1;
-  text-shadow: none;
   animation: none;
-  will-change: auto;
 }
 
 html[data-motion='reduced'] .aks-home-door {
