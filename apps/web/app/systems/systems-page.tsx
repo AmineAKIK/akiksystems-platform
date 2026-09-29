@@ -239,7 +239,7 @@ export function SentinelWorkspace({
             <StatusPill locale={locale} status={content.status} label={content.statusLabel} />
           </div>
         </div>
-        <SentinelMap label={content.mapLabel} />
+        <SentinelMap label={content.mapLabel} locale={locale} />
         <div className="aks-systems-sentinel-footer">
           <div className="aks-systems-sentinel-summary">
             <p>{content.summary}</p>
@@ -265,7 +265,7 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
   return (
     <article className="aks-systems-station aks-systems-station--feature" id={station.id}>
       <figure>
-        <ProtocapMap label={station.mapLabel ?? station.name} />
+        <ProtocapMap label={station.mapLabel ?? station.name} locale={locale} />
         <figcaption>
           <div>
             <p>{station.note}</p>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-export function SentinelMap({ label }: { label: string }) {
+/** The map is written in French; the English page loads its dictionary alongside it. */
+export function SentinelMap({ label, locale }: { label: string; locale: 'en' | 'fr' }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -10,9 +11,14 @@ export function SentinelMap({ label }: { label: string }) {
     let teardown: (() => void) | undefined;
 
     const mount = async () => {
-      const { mountSentinelMap } = await import('./sentinel-map');
+      const [{ mountSentinelMap }, dictionary] = await Promise.all([
+        import('./sentinel-map'),
+        locale === 'en'
+          ? import('./sentinel-map.en').then((module) => module.default)
+          : Promise.resolve(undefined),
+      ]);
       if (!active) return;
-      teardown = mountSentinelMap(node);
+      teardown = mountSentinelMap(node, dictionary);
     };
 
     if (!('IntersectionObserver' in window)) {
@@ -38,7 +44,7 @@ export function SentinelMap({ label }: { label: string }) {
       observer.disconnect();
       teardown?.();
     };
-  }, []);
+  }, [locale]);
 
   return <div aria-label={label} className="aks-systems-sentinel-map" ref={ref} role="region" />;
 }

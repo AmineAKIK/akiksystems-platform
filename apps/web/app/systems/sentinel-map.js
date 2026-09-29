@@ -10,6 +10,35 @@
  */
 'use strict';
 
+/* ---------- traduction : la carte est écrite en français, le dictionnaire la traduit ---------- */
+var TR = null;
+function tr(s) {
+  if (TR === null || s == null) return s;
+  var k = String(s);
+  return Object.prototype.hasOwnProperty.call(TR, k) ? TR[k] : k;
+}
+/* Texte composé à l'exécution : correspondance exacte, sinon fragments connus (ceux qui
+   commencent ou finissent par une espace ou un séparateur, jamais au milieu d'un mot). */
+var FRAGMENTS = null;
+function trc(s) {
+  if (TR === null || s == null) return s;
+  var k = String(s);
+  if (Object.prototype.hasOwnProperty.call(TR, k)) return TR[k];
+  if (FRAGMENTS === null) {
+    FRAGMENTS = Object.keys(TR)
+      .filter(function (f) {
+        return f.length > 1 && /^[\s·›/+:=−]|[\s·›/+:=−]$/.test(f);
+      })
+      .sort(function (a, b) {
+        return b.length - a.length;
+      });
+  }
+  for (var i = 0; i < FRAGMENTS.length; i++) {
+    if (k.indexOf(FRAGMENTS[i]) !== -1) k = k.split(FRAGMENTS[i]).join(TR[FRAGMENTS[i]]);
+  }
+  return k;
+}
+
 var NS = 'http://www.w3.org/2000/svg';
 var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
 
@@ -22,18 +51,18 @@ function el(tag, attrs, parent, txt) {
         e.style.cssText = attrs[k];
         continue;
       }
-      e.setAttribute(k, attrs[k]);
+      e.setAttribute(k, k === 'aria-label' || k === 'aria-description' ? trc(attrs[k]) : attrs[k]);
       if (k === 'text-anchor') e.style.textAnchor = attrs[k];
     }
   if (parent) parent.appendChild(e);
-  if (txt != null) e.textContent = txt;
+  if (txt != null) e.textContent = trc(txt);
   return e;
 }
 function clear(n) {
   while (n.firstChild) n.removeChild(n.firstChild);
 }
 function up(s) {
-  return String(s).toUpperCase();
+  return String(trc(s)).toUpperCase();
 }
 function rad(d) {
   return (d * Math.PI) / 180;
@@ -141,7 +170,7 @@ function mount(root, startTab) {
   var meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
   function measure(str, cls) {
     meas.setAttribute('class', cls);
-    meas.textContent = str;
+    meas.textContent = trc(str);
     var w = 0;
     try {
       w = meas.getComputedTextLength();
@@ -153,7 +182,7 @@ function mount(root, startTab) {
   }
   function wrap(parent, str, x, y, maxW, lh, cls) {
     var t = el('text', { x: x, y: y, class: cls }, parent);
-    var words = String(str).split(' '),
+    var words = String(trc(str)).split(' '),
       line = '',
       lines = 1,
       first = true;
@@ -198,7 +227,7 @@ function mount(root, startTab) {
     els.forEach(function (e) {
       e.setAttribute('tabindex', '0');
       e.setAttribute('role', 'button');
-      e.setAttribute('aria-label', data.title);
+      e.setAttribute('aria-label', tr(data.title));
       e.addEventListener('pointerenter', function (ev) {
         if (ev.pointerType === 'mouse') {
           state.paused = true;
@@ -234,7 +263,7 @@ function mount(root, startTab) {
       e.classList.add('is-active');
     });
     renderPanel(it);
-    live.textContent = it.title + '. ' + it.body;
+    live.textContent = tr(it.title) + '. ' + tr(it.body);
     if (curScene && curScene.onSelect) curScene.onSelect(id, it);
   }
 
@@ -315,7 +344,7 @@ function mount(root, startTab) {
     var b = wrap(detailG, it.body, x + 16, by, w - 32, 16, 'p-body');
     var ny = by + (b.lines - 1) * 16;
     if (it.test) {
-      wrap(detailG, 'TEST › ' + it.test, x + 16, ny + 20, w - 32, 15, 'p-test');
+      wrap(detailG, 'TEST › ' + tr(it.test), x + 16, ny + 20, w - 32, 15, 'p-test');
     }
     if (it.tags && it.tags.length) {
       var tx = x + 16,
@@ -421,7 +450,7 @@ function mount(root, startTab) {
     '',
   );
   function paintPill() {
-    pillTxt.textContent = 'ANIMATION · ' + (state.anim ? 'ON' : 'OFF');
+    pillTxt.textContent = trc('ANIMATION · ' + (state.anim ? 'ON' : 'OFF'));
     pill.setAttribute('aria-pressed', state.anim ? 'true' : 'false');
     if (compact) pill.classList.toggle('is-on', state.anim);
   }
@@ -526,27 +555,6 @@ function mount(root, startTab) {
       });
       tabEls.push(g);
     });
-
-    var appLink = el(
-      'a',
-      {
-        class: 'tab external-tab',
-        href: 'https://sentinel.akiksystems.fr',
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        'aria-label': 'Ouvrir l’application Sentinel',
-        style: 'cursor:pointer',
-      },
-      tabList,
-    );
-    if (compact) {
-      el('rect', { x: 12, y: 118, width: 336, height: 26, rx: 4, class: 'tab-bg' }, appLink);
-      el('text', { x: 180, y: 135, class: 'tab-txt' }, appLink, 'APPLICATION ↗');
-    } else {
-      var appY = TAB_Y0 + SCENES.length * TAB_STEP;
-      el('rect', { x: 10, y: appY, width: 108, height: 30, rx: 4, class: 'tab-bg' }, appLink);
-      el('text', { x: 20, y: appY + 19, class: 'tab-txt' }, appLink, 'APPLICATION ↗');
-    }
   }
 
   var btn = el(
@@ -570,7 +578,7 @@ function mount(root, startTab) {
     el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
   function paintBtn(on) {
     btn.classList.toggle('is-on', on);
-    btnTxt.textContent = on ? 'ARRÊTER' : 'PARCOURIR';
+    btnTxt.textContent = trc(on ? 'ARRÊTER' : 'PARCOURIR');
     var ix = BX + 15;
     btnIco.setAttribute(
       'd',
@@ -1896,7 +1904,7 @@ function mount(root, startTab) {
           x,
           y,
           14,
-          p[1] + ' · ' + p[2],
+          p[1] + ' · ' + tr(p[2]),
           null,
           {
             kicker: 'Principe ' + p[1] + ' · design.md §3',
@@ -2001,7 +2009,7 @@ function mount(root, startTab) {
         var lvI = levelFor(dayV);
         var shown =
           dayV < 1 ? Math.round(dayV * 24) + ' H' : dayV.toFixed(1).replace('.0', '') + ' J';
-        val.textContent = 'DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name);
+        val.textContent = trc('DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name));
         val.setAttribute('fill', LEVELS[lvI].sw === '#5b6a95' ? '#fff' : LEVELS[lvI].sw);
         if (!quiet) select(LEVELS[lvI].id);
       }
@@ -2808,7 +2816,7 @@ function mount(root, startTab) {
       var a = rad(-90 + i * (360 / 7)),
         x = cx + RX * Math.cos(a),
         y = cy + RY * Math.sin(a);
-      node(g, p[0], x, y, 11, p[1] + ' · ' + p[2], null, null, {
+      node(g, p[0], x, y, 11, p[1] + ' · ' + tr(p[2]), null, null, {
         side: Math.sin(a) < -0.5 ? 'top' : 'bottom',
       });
     });
@@ -2892,7 +2900,7 @@ function mount(root, startTab) {
       var lvI = levelFor(dayV);
       var shown =
         dayV < 1 ? Math.round(dayV * 24) + ' H' : dayV.toFixed(1).replace('.0', '') + ' J';
-      val.textContent = 'DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name);
+      val.textContent = trc('DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name));
       val.setAttribute('fill', LEVELS[lvI].sw === '#5b6a95' ? '#fff' : LEVELS[lvI].sw);
       if (!quiet) select(LEVELS[lvI].id);
     }
@@ -3033,8 +3041,8 @@ function mount(root, startTab) {
       t.setAttribute('tabindex', k === i ? '0' : '-1');
     });
     if (focus) tabEls[i].focus();
-    tabNum.textContent = ('0' + (i + 1)).slice(-2);
-    if (!compact) crumb.textContent = '/ SENTINEL / CHAÎNE / ' + up(sc.tab);
+    tabNum.textContent = trc(('0' + (i + 1)).slice(-2));
+    if (!compact) crumb.textContent = trc('/ SENTINEL / CHAÎNE / ' + up(sc.tab));
     paintBtn(false);
   }
   /* Récupère les textes (titres, corps, pastilles) des éléments de la version large,
@@ -3061,8 +3069,8 @@ function mount(root, startTab) {
     var g = el('g', null, canvas);
     if (sc.q) {
       if (compact) {
-        el('text', { x: 12, y: 174, class: 'q-k' }, g, 'QUESTION');
-        wrap(g, sc.q, 12, 194, 336, 19, 'q-t');
+        el('text', { x: 12, y: 138, class: 'q-k' }, g, 'QUESTION');
+        wrap(g, sc.q, 12, 158, 336, 19, 'q-t');
       } else {
         el('text', { x: SIDE + 24, y: HEAD + 24, class: 'q-k' }, g, 'QUESTION');
         el('text', { x: SIDE + 24, y: HEAD + 43, class: 'q-t' }, g, sc.q);
@@ -3155,7 +3163,9 @@ function mount(root, startTab) {
  * @param {HTMLElement} root
  * @returns {() => void}
  */
-export function mountSentinelMap(root) {
+export function mountSentinelMap(root, dictionary) {
+  TR = dictionary || null;
+  FRAGMENTS = null;
   mount(root);
   return function () {
     if (root.__pcClean) root.__pcClean();

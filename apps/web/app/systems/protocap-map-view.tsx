@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-export function ProtocapMap({ label }: { label: string }) {
+/** The map is written in French; the English page loads its dictionary alongside it. */
+export function ProtocapMap({ label, locale }: { label: string; locale: 'en' | 'fr' }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -10,9 +11,14 @@ export function ProtocapMap({ label }: { label: string }) {
     let teardown: (() => void) | undefined;
 
     const mount = async () => {
-      const { mountProtocapMap } = await import('./protocap-map');
+      const [{ mountProtocapMap }, dictionary] = await Promise.all([
+        import('./protocap-map'),
+        locale === 'en'
+          ? import('./protocap-map.en').then((module) => module.default)
+          : Promise.resolve(undefined),
+      ]);
       if (!active) return;
-      teardown = mountProtocapMap(node);
+      teardown = mountProtocapMap(node, dictionary);
     };
 
     if (!('IntersectionObserver' in window)) {
@@ -38,7 +44,7 @@ export function ProtocapMap({ label }: { label: string }) {
       observer.disconnect();
       teardown?.();
     };
-  }, []);
+  }, [locale]);
 
   return <div aria-label={label} className="aks-systems-protocap-map" ref={ref} role="region" />;
 }
