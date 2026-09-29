@@ -1504,6 +1504,9 @@
 }
 
 .aks-systems-sentinel-map {
+  /* An explicit width keeps min-height from widening the box through the aspect ratio. */
+  width: 100%;
+  min-width: 0;
   min-height: 381px;
   aspect-ratio: 1312 / 640;
   border-radius: 10px;
