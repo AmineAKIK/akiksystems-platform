@@ -15,17 +15,21 @@
   font-family: Archivo, system-ui, sans-serif;
 }
 
-.aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
-  position: absolute;
-  inset: 0 0 auto;
-  width: 100%;
+/* One header on every page but Home, the Systems one. Systems and Profile lay it over
+ * their opening visual; the other pages keep it in the flow. */
+.aks-experience-shell:not([data-destination='home']) {
   border: 0;
   background: linear-gradient(180deg, rgb(1 5 9 / 82%), rgb(1 5 9 / 36%) 72%, transparent);
   backdrop-filter: none;
 }
 
-.aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-  .aks-experience-shell-inner {
+.aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+}
+
+.aks-experience-shell:not([data-destination='home']) .aks-experience-shell-inner {
   min-height: 3.6rem;
 }
 
@@ -758,13 +762,15 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
-    position: absolute;
+  .aks-experience-shell:not([data-destination='home']) {
     background: linear-gradient(180deg, rgb(1 5 9 / 94%), rgb(1 5 9 / 58%) 82%, transparent);
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-shell-inner {
+  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
+    position: absolute;
+  }
+
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-shell-inner {
     min-height: 0;
   }
 
@@ -1262,34 +1268,37 @@
     min-height: 44px;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-shell-inner {
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-shell-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.7rem;
     min-height: 3.15rem;
     padding-block: 0.35rem;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-brand-signature {
+  .aks-experience-shell:not([data-destination='home']) .aks-brand-signature {
     grid-row: 1;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-mobile-menu {
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-mobile-menu {
     display: block;
     grid-row: 1;
     grid-column: 3;
     justify-self: end;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-meta {
+  /* Phones keep the language switch in the bar, next to the menu; the page name goes. */
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-meta {
+    display: flex;
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-context {
     display: none;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-mobile-menu-trigger {
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-mobile-menu-trigger {
     width: 2.35rem;
     min-height: 2.35rem;
     padding: 0;
@@ -1299,13 +1308,11 @@
     font-size: 0;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-mobile-menu-icon {
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-mobile-menu-icon {
     font-size: 1rem;
   }
 
-  .aks-experience-shell:is([data-destination='systems'], [data-destination='profile'])
-    .aks-experience-mobile-nav {
+  .aks-experience-shell:not([data-destination='home']) .aks-experience-mobile-nav {
     position: absolute;
     top: calc(100% + 0.25rem);
     right: 1rem;

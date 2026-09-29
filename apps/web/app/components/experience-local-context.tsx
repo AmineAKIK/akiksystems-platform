@@ -11,17 +11,26 @@ export interface ExperienceLocalContextProps {
   destinationId: GlobalDestinationId | null;
   locale: Locale;
   currentTitle?: string | null;
+  /** Outside Home and the main destinations, the page's own title names the context. */
+  home?: boolean;
 }
 
 export function ExperienceLocalContext({
   destinationId,
   locale,
   currentTitle = null,
+  home = true,
 }: ExperienceLocalContextProps) {
   const dictionary = dictionaryFor(locale);
   const destination = destinationId === null ? null : destinationById(destinationId);
+  const standaloneTitle = currentTitle?.trim() ?? '';
+  if (destination === null && !home && standaloneTitle.length === 0) return null;
   const sectionLabel =
-    destination === null ? dictionary.shell.homeLabel : destination.label[locale];
+    destination !== null
+      ? destination.label[locale]
+      : home
+        ? dictionary.shell.homeLabel
+        : standaloneTitle;
   const hasChildContext =
     currentTitle !== null && currentTitle.trim().length > 0 && currentTitle !== sectionLabel;
 

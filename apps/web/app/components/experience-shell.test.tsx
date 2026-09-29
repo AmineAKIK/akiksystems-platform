@@ -115,10 +115,10 @@ describe('ExperienceShell', () => {
 
   it('marks the current top-level destination and localizes the shell in French', () => {
     const html = renderToStaticMarkup(
-      <MemoryRouter initialEntries={['/fr/about']}>
-        <ExperienceShell locale="fr" pathname="/fr/about">
+      <MemoryRouter initialEntries={['/fr']}>
+        <ExperienceShell locale="fr" pathname="/fr">
           <main>
-            <h1>À propos</h1>
+            <h1>Accueil</h1>
           </main>
         </ExperienceShell>
       </MemoryRouter>,
@@ -128,8 +128,30 @@ describe('ExperienceShell', () => {
     expect(html).toContain('href="/fr/profil" data-discover="true">Profil</a>');
     expect(html).toContain('aria-label="Contexte actuel"');
     expect(html).toContain('<span aria-current="page">Accueil</span>');
+    expect(html).toContain('aria-current="page" class="aks-link"');
     expect(html).toContain(
       'aria-label="Français actif. Afficher en English." class="aks-home-language aks-experience-language" hrefLang="en" href="/en"',
     );
+  });
+
+  it('gives standalone pages the regular shell, named by their own title', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/fr/mentions-legales']}>
+        <ExperienceShell
+          currentTitle="Mentions légales"
+          locale="fr"
+          pathname="/fr/mentions-legales"
+        >
+          <main>
+            <h1>Mentions légales</h1>
+          </main>
+        </ExperienceShell>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('data-destination="page"');
+    expect(html).not.toContain('data-home="true"');
+    expect(html).toContain('<span aria-current="page">Mentions légales</span>');
+    expect(html).not.toContain('aria-current="page" class="aks-link"');
   });
 });

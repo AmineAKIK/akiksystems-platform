@@ -38,6 +38,9 @@ export function ExperienceShell({
 
   const dictionary = dictionaryFor(locale);
   const destinationId = destinationFromPathname(pathname);
+  // Only the locale root is Home; legal and other pages outside the main destinations
+  // share the regular header and footer.
+  const isHome = pathname.split('/').filter(Boolean).length <= 1;
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
   const derivedLanguageHref =
     destinationId === null
@@ -55,7 +58,7 @@ export function ExperienceShell({
 
       <header
         className="aks-experience-shell aks-section-separator-after"
-        data-destination={destinationId ?? 'home'}
+        data-destination={destinationId ?? (isHome ? 'home' : 'page')}
         data-mode={mode}
       >
         <Container width="wide">
@@ -73,7 +76,7 @@ export function ExperienceShell({
 
             <nav aria-label={dictionary.shell.navigationLabel} className="aks-experience-nav">
               <RouterLink
-                aria-current={destinationId === null ? 'page' : undefined}
+                aria-current={isHome ? 'page' : undefined}
                 className="aks-link"
                 prefetch="intent"
                 to={`/${locale}`}
@@ -112,7 +115,7 @@ export function ExperienceShell({
                 className="aks-experience-mobile-nav"
               >
                 <RouterLink
-                  aria-current={destinationId === null ? 'page' : undefined}
+                  aria-current={isHome ? 'page' : undefined}
                   className="aks-link"
                   onClick={() => setMobileMenuOpen(false)}
                   prefetch="intent"
@@ -141,6 +144,7 @@ export function ExperienceShell({
               <ExperienceLocalContext
                 currentTitle={currentTitle}
                 destinationId={destinationId}
+                home={isHome}
                 locale={locale}
               />
               {languageHref === null ? (
@@ -159,11 +163,11 @@ export function ExperienceShell({
         </Container>
       </header>
 
-      <div className="aks-experience-frame" data-home={destinationId === null || undefined}>
+      <div className="aks-experience-frame" data-home={isHome || undefined}>
         <div className="aks-experience-outlet" id="experience-outlet" tabIndex={-1}>
           {children}
         </div>
-        <ExperienceFooter home={destinationId === null} locale={locale} />
+        <ExperienceFooter home={isHome} locale={locale} />
       </div>
     </>
   );
