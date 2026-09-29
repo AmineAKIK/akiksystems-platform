@@ -217,9 +217,9 @@
 }
 
 .aks-profile-contacts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 
 .aks-profile-contact {
@@ -1643,11 +1643,6 @@
 
   .aks-profile-lede {
     font-size: 1.0625rem;
-  }
-
-  .aks-profile-contacts {
-    display: flex;
-    gap: 1.25rem;
   }
 
   .aks-profile-facts {
