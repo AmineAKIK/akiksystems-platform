@@ -431,15 +431,23 @@
   margin-bottom: calc(2 * var(--r));
 }
 
-.aks-systems-station-backdrop {
-  aspect-ratio: 2.08 / 1;
-  background:
-    radial-gradient(ellipse 60% 70% at 68% 42%, rgb(45 92 255 / 20%), transparent 70%),
-    linear-gradient(rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / calc(3 * var(--r))
-      calc(3 * var(--r)),
-    linear-gradient(90deg, rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / calc(3 * var(--r))
-      calc(3 * var(--r)),
-    #071019;
+.aks-systems-station--feature figure {
+  container-type: inline-size;
+}
+
+/* Reserves the map's own geometry before it mounts: landscape 1312 × 630,
+   portrait 360 × 908 below the map's 900px compact breakpoint. */
+.aks-systems-protocap-map {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1312 / 630;
+  background: #070c16;
+}
+
+@container (max-width: 899px) {
+  .aks-systems-protocap-map {
+    aspect-ratio: 360 / 908;
+  }
 }
 
 .aks-systems-station-pair {
@@ -1469,10 +1477,6 @@
 }
 
 @media (max-width: 30rem) {
-  .aks-systems-station-backdrop {
-    aspect-ratio: 1.65 / 1;
-  }
-
   .aks-systems-sentinel-footer .aks-systems-actions {
     display: flex;
     flex-wrap: wrap;
