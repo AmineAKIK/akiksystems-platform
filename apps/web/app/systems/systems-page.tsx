@@ -297,26 +297,26 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
             <p>{station.note}</p>
             <h3>{station.name}</h3>
           </div>
-          <div className="aks-systems-feature-actions">
-            <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
-            {station.href === undefined ? null : (
-              <a
-                className="aks-systems-button aks-systems-button--primary"
-                href={station.href}
-                rel="noopener"
-                target="_blank"
-              >
-                {locale === 'fr' ? 'Ouvrir l’application' : 'Open the app'}
-                <span className="aks-visually-hidden">
-                  {locale === 'fr' ? ' (nouvel onglet)' : ' (opens in a new tab)'}
-                </span>
-                <span aria-hidden="true">↗</span>
-              </a>
-            )}
-          </div>
+          <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
         </figcaption>
       </figure>
-      <p className="aks-systems-station-function">{station.function}</p>
+      <div className="aks-systems-feature-footer">
+        <p className="aks-systems-station-function">{station.function}</p>
+        {station.href === undefined ? null : (
+          <a
+            className="aks-systems-button aks-systems-button--primary"
+            href={station.href}
+            rel="noopener"
+            target="_blank"
+          >
+            {locale === 'fr' ? 'Ouvrir l’application' : 'Open the app'}
+            <span className="aks-visually-hidden">
+              {locale === 'fr' ? ' (nouvel onglet)' : ' (opens in a new tab)'}
+            </span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </div>
     </article>
   );
 }
