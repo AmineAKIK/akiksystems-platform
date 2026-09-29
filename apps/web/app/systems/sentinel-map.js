@@ -1,121 +1,50 @@
-/*
- * Sentinel — interactive map of the Sentinel system (incident cycle, roles,
- * architecture, security, design doctrine and delivery chain).
- *
- * Imperative SVG scene engine, mounted client-side by <SentinelMap />.
- * The content is sourced from the Sentinel repository documentation.
- * No inline style attributes are emitted: the production CSP forbids them.
+/* eslint-disable no-empty, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions --
+   ported prototype: kept close to sentinel-map.html rather than restyled. */
+/* global window, document, requestAnimationFrame, cancelAnimationFrame, IntersectionObserver, ResizeObserver, setTimeout, clearTimeout, setInterval, clearInterval */
+/**
+ * Sentinel — interactive map, ported from sentinel-map.html (kept close to the source
+ * so later versions of the prototype can be diffed in). Differences with the source:
+ * - exported mount function instead of an auto-boot on [data-sentinel-map];
+ * - no inline style attributes (production CSP): styles go through the CSSOM.
+ * Client-only: call it from an effect.
  */
+'use strict';
 
-const NS = 'http://www.w3.org/2000/svg';
-const W = 1312;
-const H = 640;
-const HEAD = 56;
-const SIDE = 128;
+var NS = 'http://www.w3.org/2000/svg';
+var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
 
-type Attrs = Record<string, string | number>;
-
-interface Tag {
-  t: string;
-  k?: 'ok' | 'no';
-}
-
-interface ItemData {
-  kicker?: string;
-  title: string;
-  body: string;
-  tags?: Tag[];
-  test?: string;
-}
-
-interface Item extends ItemData {
-  id: string;
-  els: SVGElement[];
-}
-
-interface Scene {
-  q: string;
-  tab: string;
-  label: string;
-  signal: [string, string];
-  def: string;
-  tour: string[];
-  build: (g: SVGGElement) => void;
-}
-
-interface Orbit {
-  rx: number;
-  ry: number;
-  rot: number;
-  nodes: Array<[string, number]>;
-  faint?: boolean;
-}
-
-interface Mover {
-  g: SVGGElement;
-  o: Orbit;
-  t0: number;
-  t: number;
-  time: number;
-  amp: number;
-  w: number;
-  ph: number;
-  cx: number;
-  cy: number;
-}
-
-interface Level {
-  id: string;
-  name: string;
-  sw: string;
-  kicker: string;
-  body: string;
-}
-
-function at<T>(list: readonly T[], index: number): T {
-  const value = list[index];
-  if (value === undefined) throw new Error(`Sentinel map: missing index ${index}`);
-  return value;
-}
-
-function el<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs?: Attrs | null,
-  parent?: Element | null,
-  txt?: string | null,
-): SVGElementTagNameMap[K] {
-  const e = document.createElementNS(NS, tag);
-  if (attrs) {
-    for (const k of Object.keys(attrs)) {
-      const v = attrs[k];
-      if (v === undefined) continue;
-      e.setAttribute(k, String(v));
-      if (k === 'text-anchor') e.style.setProperty('text-anchor', String(v));
+function el(tag, attrs, parent, txt) {
+  var e = document.createElementNS(NS, tag);
+  if (attrs)
+    for (var k in attrs) {
+      /* CSP : jamais d'attribut style, les styles passent par le CSSOM. */
+      if (k === 'style') {
+        e.style.cssText = attrs[k];
+        continue;
+      }
+      e.setAttribute(k, attrs[k]);
+      if (k === 'text-anchor') e.style.textAnchor = attrs[k];
     }
-  }
   if (parent) parent.appendChild(e);
   if (txt != null) e.textContent = txt;
   return e;
 }
-
-function clear(n: Element) {
+function clear(n) {
   while (n.firstChild) n.removeChild(n.firstChild);
 }
-
-function up(s: string) {
-  return s.toUpperCase();
+function up(s) {
+  return String(s).toUpperCase();
 }
-
-function rad(d: number) {
+function rad(d) {
   return (d * Math.PI) / 180;
 }
 
 /* ---------------------------------------------------------------
-   CONTENU — tout est issu des docs et du code du dépôt Sentinel
+   CONTENU — tout est issu des docs et du code du dépôt
    (README, conception, design, technique, collaboration, production).
    --------------------------------------------------------------- */
 
-const LEVELS: Level[] = [
+var LEVELS = [
   {
     id: 'lv_calm',
     name: 'Calme',
@@ -146,26 +75,30 @@ const LEVELS: Level[] = [
   },
 ];
 
-/** Mounts the map into `root` and returns a cleanup function. */
-export function mountSentinelMap(root: HTMLElement): () => void {
-  const reduceMotion =
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let destroyed = false;
+/* ---------------------------------------------------------------
+   MONTAGE
+   --------------------------------------------------------------- */
+function mount(root, startTab) {
+  var reduceMotion =
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root.__pcClean) root.__pcClean();
+  var rw = root.getBoundingClientRect().width || window.innerWidth;
+  var compact = rw < BP;
+  var W = compact ? 360 : 1312,
+    H = compact ? 960 : 640,
+    HEAD = compact ? 44 : 56,
+    SIDE = compact ? 0 : 128;
+  var CUR = null;
   root.classList.add('sn-map');
-  clear(root);
-  const scroll = document.createElement('div');
-  scroll.className = 'sn-scroll';
-  const live = document.createElement('p');
-  live.className = 'sn-sr';
-  live.setAttribute('aria-live', 'polite');
-  root.append(scroll, live);
+  root.classList.toggle('compact', compact);
+  root.innerHTML = '<div class="sn-scroll"></div><p class="sn-sr" aria-live="polite"></p>';
+  var scroll = root.firstChild,
+    live = root.lastChild;
 
-  const svg = el(
+  var svg = el(
     'svg',
     {
-      viewBox: `0 0 ${W} ${H}`,
+      viewBox: '0 0 ' + W + ' ' + H,
       role: 'group',
       'aria-label':
         'Carte interactive de Sentinel : cycle des incidents, rôles, architecture, sécurité, design et livraison',
@@ -173,265 +106,413 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     scroll,
   );
 
-  const defs = el('defs', null, svg);
+  var defs = el('defs', null, svg);
   defs.innerHTML =
-    `<clipPath id="sn-clip"><rect x="0" y="0" width="${W}" height="${H}" rx="10"/></clipPath>` +
-    `<clipPath id="sn-clip-canvas"><rect x="${SIDE}" y="${HEAD}" width="${W - SIDE}" height="${H - HEAD}"/></clipPath>` +
+    '<clipPath id="sn-clip"><rect x="0" y="0" width="' +
+    W +
+    '" height="' +
+    H +
+    '" rx="10"/></clipPath>' +
+    '<clipPath id="sn-clip-canvas"><rect x="' +
+    SIDE +
+    '" y="' +
+    HEAD +
+    '" width="' +
+    (W - SIDE) +
+    '" height="' +
+    (H - HEAD) +
+    '"/></clipPath>' +
     '<radialGradient id="sn-glow"><stop offset="0" stop-color="#2d55ff" stop-opacity=".16"/><stop offset="1" stop-color="#2d55ff" stop-opacity="0"/></radialGradient>' +
     '<radialGradient id="sn-glow-core"><stop offset="0" stop-color="#2d55ff" stop-opacity=".38"/><stop offset="1" stop-color="#2d55ff" stop-opacity="0"/></radialGradient>' +
     '<radialGradient id="sn-core" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#4a6dff"/><stop offset="1" stop-color="#1b2fb0"/></radialGradient>' +
     '<marker id="sn-arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9z" fill="#7f95e0"/></marker>' +
     '<marker id="sn-arr-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9z" fill="#c8ff2e"/></marker>';
 
-  const clipG = el('g', { 'clip-path': 'url(#sn-clip)' }, svg);
+  var clipG = el('g', { 'clip-path': 'url(#sn-clip)' }, svg);
   el('rect', { x: 0, y: 0, width: W, height: H, class: 'card-bg' }, clipG);
 
-  const canvasClip = el('g', { 'clip-path': 'url(#sn-clip-canvas)' }, clipG);
-  const canvas = el('g', { class: 'canvas' }, canvasClip);
-  const panelG = el('g', { class: 'panel' }, clipG);
-  const chrome = el('g', { class: 'chrome' }, clipG);
+  var canvasClip = el('g', { 'clip-path': 'url(#sn-clip-canvas)' }, clipG);
+  var canvas = el('g', { class: 'canvas' }, canvasClip);
+  var panelG = el('g', { class: 'panel' }, clipG);
+  var chrome = el('g', { class: 'chrome' }, clipG);
   el('rect', { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 10, class: 'card-edge' }, svg);
 
   /* mesure de texte */
-  const meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
-  function measure(str: string, cls: string) {
+  var meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
+  function measure(str, cls) {
     meas.setAttribute('class', cls);
     meas.textContent = str;
-    let w = 0;
+    var w = 0;
     try {
       w = meas.getComputedTextLength();
-    } catch {
+    } catch (e) {
       w = 0;
     }
     if (!w) w = str.length * 6.2;
     return w;
   }
-  function wrap(
-    parent: Element,
-    str: string,
-    x: number,
-    y: number,
-    maxW: number,
-    lh: number,
-    cls: string,
-  ) {
-    const t = el('text', { x, y, class: cls }, parent);
-    const words = str.split(' ');
-    let line = '';
-    let lines = 1;
-    let ts = el('tspan', { x, dy: 0 }, t);
-    for (const word of words) {
-      const test = line ? `${line} ${word}` : word;
+  function wrap(parent, str, x, y, maxW, lh, cls) {
+    var t = el('text', { x: x, y: y, class: cls }, parent);
+    var words = String(str).split(' '),
+      line = '',
+      lines = 1,
+      first = true;
+    var ts = el('tspan', { x: x, dy: 0 }, t);
+    for (var i = 0; i < words.length; i++) {
+      var test = line ? line + ' ' + words[i] : words[i];
       if (line && measure(test, cls) > maxW) {
         ts.textContent = line;
-        ts = el('tspan', { x, dy: lh }, t);
-        line = word;
+        ts = el('tspan', { x: x, dy: lh }, t);
+        line = words[i];
         lines++;
       } else {
         line = test;
       }
     }
     ts.textContent = line;
-    return { node: t, lines };
+    return { node: t, lines: lines };
   }
 
   /* ---------- état ---------- */
-  let items: Record<string, Item> = {};
-  const state: {
-    tab: number;
-    sel: string | null;
-    tour: ReturnType<typeof setInterval> | null;
-    anim: boolean;
-    paused: boolean;
-    visible: boolean;
-  } = { tab: 0, sel: null, tour: null, anim: !reduceMotion, paused: false, visible: true };
-  let movers: Mover[] = [];
-  let curScene: Scene | null = null;
-  let sceneHooks: { onSelect?: (id: string) => void } = {};
-  let buildT: ReturnType<typeof setTimeout> | undefined;
-  if (!state.anim) root.classList.add('no-anim');
+  var items = {},
+    state = {
+      tab: 0,
+      sel: null,
+      tour: null,
+      anim: root.__pcAnim === undefined ? !reduceMotion : root.__pcAnim,
+      paused: false,
+      visible: true,
+    };
+  var movers = [],
+    curScene = null,
+    sceneState = {},
+    buildT = 0;
+  root.classList.toggle('no-anim', !state.anim);
 
   /* ---------- enregistrement des éléments interactifs ---------- */
-  function reg(id: string, data: ItemData, els: SVGElement[]) {
-    const item: Item = { ...data, id, els };
-    items[id] = item;
-    for (const e of els) {
+  function reg(id, data, els) {
+    if (!data) data = Object.assign({ title: id, body: '' }, CUR && CUR[id]);
+    data.id = id;
+    data.els = els;
+    items[id] = data;
+    els.forEach(function (e) {
       e.setAttribute('tabindex', '0');
       e.setAttribute('role', 'button');
       e.setAttribute('aria-label', data.title);
-      e.addEventListener('pointerenter', (ev) => {
+      e.addEventListener('pointerenter', function (ev) {
         if (ev.pointerType === 'mouse') {
           state.paused = true;
           select(id);
         }
       });
-      e.addEventListener('pointerleave', (ev) => {
+      e.addEventListener('pointerleave', function (ev) {
         if (ev.pointerType === 'mouse') state.paused = false;
       });
-      e.addEventListener('click', () => select(id));
-      e.addEventListener('keydown', (ev) => {
+      e.addEventListener('click', function () {
+        select(id);
+      });
+      e.addEventListener('keydown', function (ev) {
         if (ev.key === 'Enter' || ev.key === ' ') {
           ev.preventDefault();
           select(id);
         }
       });
-    }
+    });
   }
 
-  function select(id: string, opt?: { tour?: boolean; force?: boolean }) {
-    const it = items[id];
-    if (!it) return;
-    if (!opt?.tour) stopTour();
-    if (state.sel === id && !opt?.force) return;
-    const prev = state.sel ? items[state.sel] : undefined;
-    if (prev) for (const e of prev.els) e.classList.remove('is-active');
+  function select(id, opt) {
+    if (!items[id]) return;
+    if (!(opt && opt.tour)) stopTour();
+    if (state.sel === id && !(opt && opt.force)) return;
+    if (state.sel && items[state.sel])
+      items[state.sel].els.forEach(function (e) {
+        e.classList.remove('is-active');
+      });
     state.sel = id;
-    for (const e of it.els) e.classList.add('is-active');
+    var it = items[id];
+    it.els.forEach(function (e) {
+      e.classList.add('is-active');
+    });
     renderPanel(it);
-    live.textContent = `${it.title}. ${it.body}`;
-    sceneHooks.onSelect?.(id);
+    live.textContent = it.title + '. ' + it.body;
+    if (curScene && curScene.onSelect) curScene.onSelect(id, it);
   }
 
   /* ---------- panneau de détail + signal ---------- */
-  let sigW = 240;
-  const sigG = el('g', { class: 'signal' }, panelG);
-  const detailG = el('g', { class: 'detail' }, panelG);
+  var sigW = 240;
+  var sigG = el('g', { class: 'signal' }, panelG);
+  var detailG = el('g', { class: 'detail' }, panelG);
 
-  function setSignal(pair: [string, string]) {
+  function setSignal(pair) {
     clear(sigG);
-    const lab = up(pair[0]);
-    const val = up(pair[1]);
-    let w = Math.max(measure(lab, 'sig-lab') * 1.25, measure(val, 'sig-val') * 1.18) + 32;
+    var lab = up(pair[0]),
+      val = up(pair[1]);
+    var w = Math.max(measure(lab, 'sig-lab') * 1.25, measure(val, 'sig-val') * 1.18) + 32;
     w = Math.max(190, Math.min(360, w));
+    if (compact) {
+      var cy0 = H - 92;
+      el('rect', { x: 12, y: cy0, width: 336, height: 42, rx: 6, class: 'sig-bg' }, sigG);
+      el('text', { x: 28, y: cy0 + 17, class: 'sig-lab' }, sigG, lab);
+      el('text', { x: 28, y: cy0 + 33, class: 'sig-val' }, sigG, val);
+      return;
+    }
     sigW = w;
-    const x = W - 24 - w;
-    const y = H - 24 - 50;
-    el('rect', { x, y, width: w, height: 50, rx: 6, class: 'sig-bg' }, sigG);
+    var x = W - 24 - w,
+      y = H - 24 - 50;
+    el('rect', { x: x, y: y, width: w, height: 50, rx: 6, class: 'sig-bg' }, sigG);
     el('text', { x: x + 16, y: y + 21, class: 'sig-lab' }, sigG, lab);
     el('text', { x: x + 16, y: y + 37, class: 'sig-val' }, sigG, val);
   }
 
-  function renderPanel(it: Item) {
+  function renderPanel(it) {
     clear(detailG);
-    const x = SIDE + 24;
-    const w = W - 24 - sigW - 16 - x;
-    const h = 126;
-    const y = H - 24 - h;
-    el('rect', { x, y, width: w, height: h, rx: 6, class: 'panel-bg' }, detailG);
-    el('text', { x: x + 20, y: y + 26, class: 'p-kick' }, detailG, up(it.kicker ?? ''));
+    if (compact) {
+      renderPanelC(it);
+      return;
+    }
+    var x = SIDE + 24,
+      w = W - 24 - sigW - 16 - x,
+      h = 126,
+      y = H - 24 - h;
+    el('rect', { x: x, y: y, width: w, height: h, rx: 6, class: 'panel-bg' }, detailG);
+    el('text', { x: x + 20, y: y + 26, class: 'p-kick' }, detailG, up(it.kicker || ''));
     el('text', { x: x + 20, y: y + 50, class: 'p-title' }, detailG, it.title);
 
     /* pastilles à droite */
     if (it.tags && it.tags.length) {
-      let tx = x + w - 18;
-      for (let i = it.tags.length - 1; i >= 0; i--) {
-        const tg = at(it.tags, i);
-        const txt = up(tg.t);
-        const tw = measure(txt, 'tag-txt') * 1.22 + 20;
+      var tx = x + w - 18;
+      for (var i = it.tags.length - 1; i >= 0; i--) {
+        var tg = it.tags[i],
+          txt = up(tg.t),
+          tw = measure(txt, 'tag-txt') * 1.22 + 20;
         tx -= tw;
-        const g = el('g', { class: `tag ${tg.k ?? ''}` }, detailG);
+        var g = el('g', { class: 'tag ' + (tg.k || '') }, detailG);
         el('rect', { x: tx, y: y + 14, width: tw, height: 18, rx: 9, class: 'tag-bg' }, g);
         el('text', { x: tx + tw / 2, y: y + 26, class: 'tag-txt' }, g, txt);
         tx -= 6;
       }
     }
-    const bodyY = y + 72;
-    const maxW = w - 40;
-    const b = wrap(detailG, it.body, x + 20, bodyY, maxW, 17, 'p-body');
+    var bodyY = y + 72,
+      maxW = w - 40;
+    var b = wrap(detailG, it.body, x + 20, bodyY, maxW, 17, 'p-body');
     if (it.test) {
-      const ty = bodyY + (b.lines - 1) * 17 + 21;
+      var ty = bodyY + (b.lines - 1) * 17 + 21;
       el('text', { x: x + 20, y: ty, class: 'p-test-k' }, detailG, 'TEST ›');
-      el('text', { x: x + 64, y: ty + 0.5, class: 'p-test' }, detailG, it.test);
+      var t = el('text', { x: x + 64, y: ty + 0.5, class: 'p-test' }, detailG, it.test);
+    }
+  }
+
+  function renderPanelC(it) {
+    var x = 12,
+      w = 336,
+      h = 232,
+      y = H - 332;
+    el('rect', { x: x, y: y, width: w, height: h, rx: 6, class: 'panel-bg' }, detailG);
+    var k = wrap(detailG, up(it.kicker || ''), x + 16, y + 22, w - 32, 12, 'p-kick');
+    var ky = (k.lines - 1) * 12;
+    var t = wrap(detailG, it.title, x + 16, y + 46 + ky, w - 32, 20, 'p-title');
+    var by = y + 46 + ky + (t.lines - 1) * 20 + 24;
+    var b = wrap(detailG, it.body, x + 16, by, w - 32, 16, 'p-body');
+    var ny = by + (b.lines - 1) * 16;
+    if (it.test) {
+      wrap(detailG, 'TEST › ' + it.test, x + 16, ny + 20, w - 32, 15, 'p-test');
+    }
+    if (it.tags && it.tags.length) {
+      var tx = x + 16,
+        ty = y + h - 28;
+      it.tags.forEach(function (tg) {
+        var txt = up(tg.t),
+          tw = measure(txt, 'tag-txt') * 1.2 + 18;
+        if (tx + tw > x + w - 12) return;
+        var g = el('g', { class: 'tag ' + (tg.k || '') }, detailG);
+        el('rect', { x: tx, y: ty, width: tw, height: 18, rx: 9, class: 'tag-bg' }, g);
+        el('text', { x: tx + tw / 2, y: ty + 12, class: 'tag-txt' }, g, txt);
+        tx += tw + 6;
+      });
     }
   }
 
   /* ---------- chrome : en-tête, onglets, bouton parcours ---------- */
   el('rect', { x: 0, y: 0, width: W, height: HEAD, class: 'head-bg' }, chrome);
   el('line', { x1: 0, y1: HEAD, x2: W, y2: HEAD, class: 'rule' }, chrome);
-  el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
-  el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
+  if (!compact) {
+    el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
+    el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
+  }
 
-  el('rect', { x: 17, y: 16, width: 24, height: 24, rx: 6, fill: '#2d55ff' }, chrome);
+  var lgx = compact ? 12 : 17,
+    lgy = compact ? 10 : 16;
+  el('rect', { x: lgx, y: lgy, width: 24, height: 24, rx: 6, fill: '#2d55ff' }, chrome);
   el(
     'path',
     {
-      d: 'M29 20.5 L30.8 26.2 L36.5 28 L30.8 29.8 L29 35.5 L27.2 29.8 L21.5 28 L27.2 26.2 Z',
+      d:
+        'M' +
+        (lgx + 12) +
+        ' ' +
+        (lgy + 4.5) +
+        ' L' +
+        (lgx + 13.8) +
+        ' ' +
+        (lgy + 10.2) +
+        ' L' +
+        (lgx + 19.5) +
+        ' ' +
+        (lgy + 12) +
+        ' L' +
+        (lgx + 13.8) +
+        ' ' +
+        (lgy + 13.8) +
+        ' L' +
+        (lgx + 12) +
+        ' ' +
+        (lgy + 19.5) +
+        ' L' +
+        (lgx + 10.2) +
+        ' ' +
+        (lgy + 13.8) +
+        ' L' +
+        (lgx + 4.5) +
+        ' ' +
+        (lgy + 12) +
+        ' L' +
+        (lgx + 10.2) +
+        ' ' +
+        (lgy + 10.2) +
+        ' Z',
       fill: '#fff',
     },
     chrome,
   );
-  const ttl = el('text', { x: 52, y: 32, class: 'h-title' }, chrome);
+  var ttl = el('text', { x: lgx + 35, y: compact ? 26.5 : 32, class: 'h-title' }, chrome);
   el('tspan', null, ttl, 'SENTINEL / INCIDENTS');
-  const crumb = el('tspan', { dx: 12, class: 'h-crumb' }, ttl, '');
+  var crumb = el('tspan', { dx: 12, class: 'h-crumb' }, ttl, '');
 
-  const pill = el(
+  var pill = el(
     'g',
     {
-      class: 'pill sn-ptr',
+      class: compact ? 'btn is-on' : 'pill',
       tabindex: 0,
       role: 'button',
       'aria-pressed': state.anim ? 'true' : 'false',
       'aria-label': 'Activer ou couper les animations',
+      style: 'cursor:pointer',
     },
     chrome,
   );
-  const pillW = 132;
+  var pillW = compact ? 164 : 132,
+    PX = compact ? 184 : W - 16 - pillW,
+    PY = compact ? H - 42 : 13,
+    PH = 30;
   el(
     'rect',
-    { x: W - 16 - pillW, y: 13, width: pillW, height: 30, rx: 15, class: 'pill-bg' },
+    { x: PX, y: PY, width: pillW, height: PH, rx: 15, class: compact ? 'btn-bg' : 'pill-bg' },
     pill,
   );
-  const pillTxt = el('text', { x: W - 16 - pillW / 2, y: 31.5, class: 'pill-txt' }, pill, '');
+  if (compact) el('circle', { cx: PX + 16, cy: PY + 15, r: 4, class: 'btn-ico' }, pill);
+  var pillTxt = el(
+    'text',
+    {
+      x: compact ? PX + 30 : PX + pillW / 2,
+      y: PY + 18.5,
+      class: compact ? 'btn-txt' : 'pill-txt',
+    },
+    pill,
+    '',
+  );
   function paintPill() {
-    pillTxt.textContent = `ANIMATION · ${state.anim ? 'ON' : 'OFF'}`;
+    pillTxt.textContent = 'ANIMATION · ' + (state.anim ? 'ON' : 'OFF');
     pill.setAttribute('aria-pressed', state.anim ? 'true' : 'false');
+    if (compact) pill.classList.toggle('is-on', state.anim);
   }
   paintPill();
   function togglePill() {
     state.anim = !state.anim;
+    root.__pcAnim = state.anim;
     root.classList.toggle('no-anim', !state.anim);
     paintPill();
     if (state.anim) kick();
   }
   pill.addEventListener('click', togglePill);
-  pill.addEventListener('keydown', (e) => {
+  pill.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       togglePill();
     }
   });
-  el('circle', { cx: W - 16 - pillW - 34, cy: 28, r: 5, fill: '#7d99ff' }, chrome);
-  el('circle', { cx: W - 16 - pillW - 14, cy: 28, r: 5, fill: '#c8ff2e' }, chrome);
+  el(
+    'circle',
+    { cx: compact ? W - 34 : W - 16 - pillW - 34, cy: compact ? 22 : 28, r: 5, fill: '#7d99ff' },
+    chrome,
+  );
+  el(
+    'circle',
+    { cx: compact ? W - 14 : W - 16 - pillW - 14, cy: compact ? 22 : 28, r: 5, fill: '#c8ff2e' },
+    chrome,
+  );
 
-  const tabNum = el('text', { x: 20, y: 86, class: 'tab-num' }, chrome, '01');
-  const tabList = el('g', { role: 'tablist', 'aria-label': 'Vues de la carte' }, chrome);
-  const tabEls: SVGGElement[] = [];
-  const TAB_Y0 = 100;
-  const TAB_STEP = 38;
+  var tabNum = el('text', { x: 20, y: 86, class: 'tab-num' }, chrome, '01');
+  if (compact) tabNum.setAttribute('display', 'none');
+  var tabList = el('g', { role: 'tablist', 'aria-label': 'Vues de la carte' }, chrome);
+  var tabEls = [];
+  var TAB_Y0 = 100,
+    TAB_STEP = 38;
 
   function buildTabs() {
-    SCENES.forEach((sc, i) => {
-      const g = el(
+    var cpos = [];
+    if (compact) {
+      var rowsT = [
+        [0, 1, 2, 3],
+        [4, 5, 6],
+      ];
+      rowsT.forEach(function (row, ri) {
+        var ws = row.map(function (i) {
+          return Math.ceil(measure(up(SCENES[i].tab), 'tab-txt')) + 16;
+        });
+        var tot = ws.reduce(function (p, q) {
+            return p + q;
+          }, 0),
+          gap = 6;
+        var extra = (336 - gap * (row.length - 1) - tot) / row.length,
+          x = 12;
+        row.forEach(function (i, k) {
+          var w = ws[k] + extra;
+          cpos[i] = [x, 54 + ri * 32, w];
+          x += w + gap;
+        });
+      });
+    }
+    SCENES.forEach(function (sc, i) {
+      var g = el(
         'g',
         {
-          class: 'tab sn-ptr',
+          class: 'tab',
           role: 'tab',
           tabindex: i === 0 ? 0 : -1,
           'aria-selected': i === 0 ? 'true' : 'false',
           'aria-label': sc.label,
+          style: 'cursor:pointer',
         },
         tabList,
       );
-      el(
-        'rect',
-        { x: 10, y: TAB_Y0 + i * TAB_STEP, width: 108, height: 30, rx: 4, class: 'tab-bg' },
-        g,
-      );
-      el('text', { x: 20, y: TAB_Y0 + i * TAB_STEP + 19, class: 'tab-txt' }, g, up(sc.tab));
-      g.addEventListener('click', () => go(i));
-      g.addEventListener('keydown', (e) => {
-        const n = SCENES.length;
-        const k = e.key;
+      if (compact) {
+        var p = cpos[i];
+        el('rect', { x: p[0], y: p[1], width: p[2], height: 26, rx: 4, class: 'tab-bg' }, g);
+        el('text', { x: p[0] + p[2] / 2, y: p[1] + 17, class: 'tab-txt' }, g, up(sc.tab));
+      } else {
+        el(
+          'rect',
+          { x: 10, y: TAB_Y0 + i * TAB_STEP, width: 108, height: 30, rx: 4, class: 'tab-bg' },
+          g,
+        );
+        el('text', { x: 20, y: TAB_Y0 + i * TAB_STEP + 19, class: 'tab-txt' }, g, up(sc.tab));
+      }
+      g.addEventListener('click', function () {
+        go(i);
+      });
+      g.addEventListener('keydown', function (e) {
+        var n = SCENES.length,
+          k = e.key;
         if (k === 'Enter' || k === ' ') {
           e.preventDefault();
           go(i);
@@ -447,180 +528,168 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     });
   }
 
-  const btn = el(
+  var btn = el(
     'g',
     {
-      class: 'btn sn-ptr',
+      class: 'btn',
       tabindex: 0,
       role: 'button',
       'aria-label': 'Lancer ou arrêter le parcours guidé',
+      style: 'cursor:pointer',
     },
     chrome,
   );
-  const BTN_Y = H - 24 - 30;
-  el('rect', { x: 10, y: BTN_Y, width: 108, height: 30, rx: 15, class: 'btn-bg' }, btn);
-  const btnIco = el(
-    'path',
-    { class: 'btn-ico', d: `M24 ${BTN_Y + 10} L24 ${BTN_Y + 20} L32 ${BTN_Y + 15} Z` },
-    btn,
-  );
-  const btnTxt = el('text', { x: 42, y: BTN_Y + 18.5, class: 'btn-txt' }, btn, 'PARCOURIR');
-  el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
-  function paintBtn(on: boolean) {
+  var BTN_Y = compact ? H - 42 : H - 24 - 30;
+  var BX = compact ? 12 : 10,
+    BW = compact ? 164 : 108;
+  el('rect', { x: BX, y: BTN_Y, width: BW, height: 30, rx: 15, class: 'btn-bg' }, btn);
+  var btnIco = el('path', { class: 'btn-ico', d: '' }, btn);
+  var btnTxt = el('text', { x: BX + 32, y: BTN_Y + 18.5, class: 'btn-txt' }, btn, 'PARCOURIR');
+  if (!compact)
+    el('text', { x: 20, y: BTN_Y - 12, class: 'side-hint' }, chrome, 'SURVOLER · CLIQUER');
+  function paintBtn(on) {
     btn.classList.toggle('is-on', on);
     btnTxt.textContent = on ? 'ARRÊTER' : 'PARCOURIR';
+    var ix = BX + 15;
     btnIco.setAttribute(
       'd',
       on
-        ? `M25 ${BTN_Y + 10.5} h9 v9 h-9 Z`
-        : `M25 ${BTN_Y + 10} L25 ${BTN_Y + 20} L33 ${BTN_Y + 15} Z`,
+        ? 'M' + (ix + 1) + ' ' + (BTN_Y + 10.5) + ' h9 v9 h-9 Z'
+        : 'M' +
+            (ix + 1) +
+            ' ' +
+            (BTN_Y + 10) +
+            ' L' +
+            (ix + 1) +
+            ' ' +
+            (BTN_Y + 20) +
+            ' L' +
+            (ix + 9) +
+            ' ' +
+            (BTN_Y + 15) +
+            ' Z',
     );
   }
-  function toggleTour() {
-    if (state.tour) stopTour();
-    else startTour();
-  }
-  btn.addEventListener('click', toggleTour);
-  btn.addEventListener('keydown', (e) => {
+  paintBtn(false);
+  btn.addEventListener('click', function () {
+    state.tour ? stopTour() : startTour();
+  });
+  btn.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      toggleTour();
+      state.tour ? stopTour() : startTour();
     }
   });
 
   /* ---------- parcours guidé ---------- */
   function stopTour() {
     if (state.tour) {
-      clearInterval(state.tour);
+      clearInterval(state.tour.timer);
       state.tour = null;
       paintBtn(false);
     }
   }
   function startTour() {
-    const sc = curScene;
-    if (!sc || !sc.tour.length) return;
+    var sc = curScene;
+    if (!sc || !sc.tour || !sc.tour.length) return;
     stopTour();
-    let i = 0;
-    const step = () => {
+    var i = 0;
+    function step() {
       if (i >= sc.tour.length) {
         stopTour();
         return;
       }
-      select(at(sc.tour, i), { tour: true, force: true });
+      select(sc.tour[i], { tour: true, force: true });
       i++;
-    };
+    }
     step();
-    state.tour = setInterval(step, 3200);
+    state.tour = { timer: setInterval(step, 3200) };
     paintBtn(true);
   }
 
   /* ---------- primitives de dessin ---------- */
-  function decor(g: SVGGElement, cx: number, cy: number) {
-    el('ellipse', { cx, cy, rx: 430, ry: 250, fill: 'url(#sn-glow)' }, g);
-    for (const x of [cx - 190, cx + 210]) {
-      el('line', { x1: x, y1: HEAD, x2: x, y2: H, class: 'grid-l' }, g);
+  function decor(g, cx, cy) {
+    if (compact) {
+      el('ellipse', { cx: cx, cy: cy, rx: 230, ry: 230, fill: 'url(#sn-glow)' }, g);
+      return;
     }
+    el('ellipse', { cx: cx, cy: cy, rx: 430, ry: 250, fill: 'url(#sn-glow)' }, g);
+    [cx - 190, cx + 210].forEach(function (x) {
+      el('line', { x1: x, y1: HEAD, x2: x, y2: H, class: 'grid-l' }, g);
+    });
     el('line', { x1: SIDE, y1: cy + 176, x2: W, y2: cy + 176, class: 'grid-l' }, g);
     el('text', { x: W - 24, y: HEAD + 22, class: 'hint' }, g, 'INTERACTIF');
   }
 
-  function orb(g: SVGGElement, x: number, y: number, r: number, tone?: string | null) {
-    const o = el(
+  function orb(g, x, y, r, tone) {
+    var o = el(
       'g',
-      { class: `orb${tone ? ` tone-${tone}` : ''}`, transform: `translate(${x} ${y})` },
+      { class: 'orb' + (tone ? ' tone-' + tone : ''), transform: 'translate(' + x + ' ' + y + ')' },
       g,
     );
     el('circle', { class: 'orb-halo', r: r + 11 }, o);
     el('circle', { class: 'orb-ring', r: r + 5 }, o);
-    el('circle', { class: 'orb-core', r }, o);
+    el('circle', { class: 'orb-core', r: r }, o);
     el('circle', { class: 'orb-dot', r: Math.max(2.4, r * 0.28) }, o);
     el('circle', { class: 'orb-hit', r: r + 16 }, o);
     return o;
   }
-  function nodeLabels(
-    o: SVGGElement,
-    r: number,
-    name: string | null,
-    sub: string | null,
-    side?: 'top' | 'bottom',
-  ) {
+  function nodeLabels(o, r, name, sub, side) {
     if (!name) return;
-    const dy = side === 'top' ? [-(r + 29), -(r + 17)] : [r + 27, r + 40];
-    el('text', { x: 0, y: at(dy, 0), class: 't-name' }, o, up(name));
-    if (sub) el('text', { x: 0, y: at(dy, 1), class: 't-sub' }, o, up(sub));
+    if (compact) {
+      if (side === 'right') {
+        el(
+          'text',
+          { x: r + 14, y: sub ? -1 : 3, class: 't-name', 'text-anchor': 'start' },
+          o,
+          up(name),
+        );
+        if (sub)
+          el('text', { x: r + 14, y: 12, class: 't-sub', 'text-anchor': 'start' }, o, up(sub));
+        return;
+      }
+      var cy2 = side === 'top' ? (sub ? [-(r + 27), -(r + 15)] : [-(r + 15)]) : [r + 24, r + 36];
+      el('text', { x: 0, y: cy2[0], class: 't-name' }, o, up(name));
+      if (sub) el('text', { x: 0, y: cy2[1], class: 't-sub' }, o, up(sub));
+      return;
+    }
+    var dy = side === 'top' ? [-(r + 29), -(r + 17)] : [r + 27, r + 40];
+    el('text', { x: 0, y: dy[0], class: 't-name' }, o, up(name));
+    if (sub) el('text', { x: 0, y: dy[1], class: 't-sub' }, o, up(sub));
   }
-  function node(
-    g: SVGGElement,
-    id: string,
-    x: number,
-    y: number,
-    r: number,
-    name: string | null,
-    sub: string | null,
-    data: ItemData,
-    o: { tone?: string; side?: 'top' | 'bottom' } = {},
-  ) {
-    const orbEl = orb(g, x, y, r, o.tone);
+  function node(g, id, x, y, r, name, sub, data, o) {
+    o = o || {};
+    var orbEl = orb(g, x, y, r, o.tone);
     nodeLabels(orbEl, r, name, sub, o.side);
     reg(id, data, [orbEl]);
     return orbEl;
   }
-  function edge(
-    g: SVGGElement,
-    id: string,
-    d: string,
-    lx: number,
-    ly: number,
-    text: string,
-    anchor: string,
-    data: ItemData,
-    cls?: string,
-  ) {
-    const e = el('g', { class: 'edge' }, g);
-    el('path', { d, class: 'edge-hit' }, e);
-    el('path', { d, class: `edge-line${cls ? ` ${cls}` : ''}` }, e);
-    if (text) el('text', { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor }, e, up(text));
+  function edge(g, id, d, lx, ly, text, anchor, data, cls) {
+    var e = el('g', { class: 'edge' }, g);
+    el('path', { d: d, class: 'edge-hit' }, e);
+    el('path', { d: d, class: 'edge-line' + (cls ? ' ' + cls : '') }, e);
+    if (text)
+      el('text', { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor || 'middle' }, e, up(text));
     reg(id, data, [e]);
     return e;
   }
-  function line(
-    g: SVGGElement,
-    d: string,
-    lx: number,
-    ly: number,
-    txt: string,
-    anchor = 'middle',
-    cls?: string,
-  ) {
-    const e = el('g', { class: 'edge' }, g);
-    el('path', { d, class: `edge-line${cls ? ` ${cls}` : ''}` }, e);
-    if (txt) el('text', { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor }, e, up(txt));
-  }
-  function chip(
-    g: SVGGElement,
-    id: string,
-    x: number,
-    y: number,
-    w: number,
-    text: string,
-    data: ItemData,
-  ) {
-    const c = el('g', { class: 'chip' }, g);
-    el('rect', { x, y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
+  function chip(g, id, x, y, w, text, data) {
+    var c = el('g', { class: 'chip' }, g);
+    el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     reg(id, data, [c]);
     return c;
   }
-  function note(g: SVGGElement, x: number, y: number, key: string, text: string) {
-    const t = el('text', { x, y, class: 'note' }, g);
-    el('tspan', { class: 'note-k' }, t, `${up(key)}  `);
+  function note(g, x, y, key, text) {
+    var t = el('text', { x: x, y: y, class: 'note' }, g);
+    el('tspan', { class: 'note-k' }, t, up(key) + '  ');
     el('tspan', null, t, up(text));
   }
 
   /* =================================================================
      SCÈNES
      ================================================================= */
-  const SCENES: Scene[] = [];
+  var SCENES = [];
 
   /* ---------- 01 · ORBITE ---------- */
   SCENES.push({
@@ -630,11 +699,11 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     signal: ['Finalité', 'Maîtrise collective'],
     def: 'sentinel',
     tour: ['c_sig', 'c_res', 'c_doc', 'c_app', 'sentinel'],
-    build(g) {
-      const cx = 730;
-      const cy = 262;
+    build: function (g) {
+      var cx = 730,
+        cy = 262;
       decor(g, cx, cy);
-      const orbits: Orbit[] = [
+      var orbits = [
         { rx: 336, ry: 150, rot: -8, nodes: [['atelier', 2.97]] },
         {
           rx: 300,
@@ -666,28 +735,30 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         { rx: 126, ry: 92, rot: 12, nodes: [], faint: true },
         { rx: 330, ry: 70, rot: 22, nodes: [], faint: true },
       ];
-      const lineEls = orbits.map((o) =>
-        el(
+      var lineEls = [];
+      orbits.forEach(function (o) {
+        var e = el(
           'ellipse',
           {
-            cx,
-            cy,
+            cx: cx,
+            cy: cy,
             rx: o.rx,
             ry: o.ry,
-            transform: `rotate(${o.rot} ${cx} ${cy})`,
-            class: `orbit-line${o.faint ? ' faint' : ''}`,
+            transform: 'rotate(' + o.rot + ' ' + cx + ' ' + cy + ')',
+            class: 'orbit-line' + (o.faint ? ' faint' : ''),
           },
           g,
-        ),
-      );
+        );
+        lineEls.push(e);
+      });
 
       /* cœur */
-      const core = el('g', { class: 'core', transform: `translate(${cx} ${cy})` }, g);
+      var core = el('g', { class: 'core', transform: 'translate(' + cx + ' ' + cy + ')' }, g);
       el('circle', { r: 104, class: 'core-halo' }, core);
       el('circle', { r: 68, class: 'core-mid' }, core);
       el('circle', { r: 58, class: 'core-disc' }, core);
       el('text', { x: 0, y: 4, class: 'core-txt' }, core, 'SENTINEL');
-      el('circle', { r: 74, fill: 'transparent', class: 'sn-ptr' }, core);
+      el('circle', { r: 74, fill: 'transparent', style: 'cursor:pointer' }, core);
       reg(
         'sentinel',
         {
@@ -700,7 +771,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       );
 
       /* nœuds mobiles */
-      const nodeDefs: Record<string, [string, string, string, string, string, Tag[]]> = {
+      var defs = {
         atelier: [
           'Atelier',
           '/workshop/*',
@@ -759,54 +830,51 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         ],
       };
       movers = [];
-      let mk = 0;
-      orbits.forEach((o, oi) => {
-        const orbitEl = at(lineEls, oi);
-        for (const [key, t0] of o.nodes) {
-          const d = nodeDefs[key];
-          if (!d) continue;
-          const og = orb(g, 0, 0, 12, null);
+      var mk = 0;
+      orbits.forEach(function (o, oi) {
+        o.nodes.forEach(function (n) {
+          var d = defs[n[0]];
+          var og = orb(g, 0, 0, 12, null);
           nodeLabels(og, 12, d[0], d[1], 'bottom');
-          reg(key, { kicker: d[2], title: d[3], body: d[4], tags: d[5] }, [og]);
+          reg(n[0], { kicker: d[2], title: d[3], body: d[4], tags: d[5] }, [og]);
           movers.push({
             g: og,
-            o,
-            t0,
-            t: t0,
+            o: o,
+            t0: n[1],
+            t: n[1],
             time: mk * 3.1,
             amp: 0.09 + 0.018 * mk,
             w: 0.26 + 0.03 * mk,
             ph: mk * 1.7,
-            cx,
-            cy,
+            cx: cx,
+            cy: cy,
+            orbitEl: lineEls[oi],
           });
-          og.addEventListener('pointerenter', () => orbitEl.classList.add('hot'));
-          og.addEventListener('pointerleave', () => orbitEl.classList.remove('hot'));
           mk++;
-        }
+        });
       });
       placeMovers();
+      movers.forEach(function (m) {
+        m.g.addEventListener('pointerenter', function () {
+          m.orbitEl.classList.add('hot');
+        });
+        m.g.addEventListener('pointerleave', function () {
+          m.orbitEl.classList.remove('hot');
+        });
+      });
 
       /* les quatre temps de la boucle */
-      function corner(
-        id: string,
-        x: number,
-        y: number,
-        num: string,
-        text: string,
-        anchor: 'start' | 'end',
-        data: ItemData,
-      ) {
-        const c = el('g', { class: 'corner' }, g);
-        const w = 150;
-        const rx = anchor === 'end' ? x - w : x;
+      function corner(id, x, y, num, text, anchor, data) {
+        var c = el('g', { class: 'corner' }, g);
+        var w = 150,
+          rx = anchor === 'end' ? x - w : x;
         el('rect', { x: rx, y: y - 16, width: w, height: 28, class: 'c-hit' }, c);
-        const t = el('text', { x, y, 'text-anchor': anchor }, c);
+        var t = el('text', { x: x, y: y, 'text-anchor': anchor }, c);
         if (anchor === 'end') {
-          el('tspan', { class: 't-corner' }, t, `${up(text)}  `);
+          el('tspan', { class: 't-corner' }, t, up(text) + '  ');
           el('tspan', { class: 't-num' }, t, num);
         } else {
-          el('tspan', { class: 't-num' }, t, `${num}  `);
+          el('tspan', { class: 't-num' }, t, num + '  ');
           el('tspan', { class: 't-corner' }, t, up(text));
         }
         reg(id, data, [c]);
@@ -820,7 +888,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       corner('c_res', 1288, 236, '02', 'Résoudre', 'end', {
         kicker: 'Boucle · 02',
         title: 'Résoudre',
-        body: 'La maintenance prend en charge, met en attente avec un motif, reprend, puis clôture. Le responsable priorise et arbitre les demandes de correction ou d’annulation, dans la même transaction que la décision.',
+        body: "La maintenance prend en charge, met en attente avec un motif, reprend, puis clôture. Le responsable priorise et arbitre les demandes de correction ou d'annulation, dans la même transaction que la décision.",
         tags: [{ t: 'Maintenance' }, { t: 'Responsable' }],
       });
       corner('c_doc', 1288, 470, '03', 'Documenter', 'end', {
@@ -859,17 +927,18 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       'e_inval',
       'n_invalid',
     ],
-    build(g0) {
-      decor(g0, 700, 292);
-      const g = el('g', { transform: 'translate(0 16)' }, g0);
-      const P = {
+    build: function (g) {
+      decor(g, 700, 292);
+      var g0 = g;
+      g = el('g', { transform: 'translate(0 16)' }, g0);
+      var P = {
         canc: [300, 160],
         pend: [560, 160],
         open: [300, 304],
         take: [560, 304],
         clos: [860, 304],
         inv: [1130, 304],
-      } as const;
+      };
 
       /* départ */
       el('circle', { cx: 176, cy: 304, r: 6, fill: '#c8ff2e' }, g);
@@ -1030,14 +1099,14 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     signal: ['Autorité', 'Policy serveur · canPerform'],
     def: 'role_resp',
     tour: ['role_op', 'role_mnt', 'role_resp', 'r_arb', 'r_take', 'r_create'],
-    build(g) {
+    build: function (g) {
       decor(g, 720, 292);
-      const cols = [
+      var cols = [
         { id: 'role_op', x: 800, name: 'Opérateur', sub: 'signale' },
         { id: 'role_mnt', x: 950, name: 'Maintenance', sub: 'intervient' },
         { id: 'role_resp', x: 1100, name: 'Responsable', sub: 'oriente' },
       ];
-      const rows: Array<[string, string, [number, number, number], string]> = [
+      var rows = [
         [
           'r_create',
           'Déclarer un incident',
@@ -1117,9 +1186,9 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           "Suivi strictement volontaire (l'étoile) : ni la création ni une décision d'arbitrage n'ajoutent de suivi.",
         ],
       ];
-      const Y0 = 180;
-      const RH = 22.5;
-      const colBg = el(
+      var Y0 = 180,
+        RH = 22.5;
+      var colBg = el(
         'rect',
         {
           class: 'm-col-bg',
@@ -1130,17 +1199,17 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         },
         g,
       );
-      function showCol(x: number | null) {
-        if (x == null) {
+      function showCol(i) {
+        if (i == null) {
           colBg.classList.remove('on');
           return;
         }
-        colBg.setAttribute('x', String(x - 54));
+        colBg.setAttribute('x', cols[i].x - 54);
         colBg.classList.add('on');
       }
 
       /* en-têtes de rôles */
-      const roleData: Record<string, ItemData> = {
+      var roleData = {
         role_op: {
           kicker: 'Rôle · OPERATOR · signale',
           title: 'Opérateur',
@@ -1157,49 +1226,61 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           body: 'Arbitre pour le collectif. Besoin : une visibilité complète pour décider au bon moment. Priorise, arbitre, invalide une clôture, et seul accède au Journal transverse.',
         },
       };
-      cols.forEach((c, i) => {
-        const count = rows.filter((r) => at(r[2], i) > 0).length;
-        const o = orb(g, c.x, 96, 15, null);
+      cols.forEach(function (c, i) {
+        var count = rows.filter(function (r) {
+          return r[2][i] > 0;
+        }).length;
+        var o = orb(g, c.x, 96, 15, null);
         o.classList.add('role');
         el('text', { x: 0, y: 40, class: 't-name' }, o, up(c.name));
         el('text', { x: 0, y: 53, class: 't-sub' }, o, up(c.sub));
-        const d = roleData[c.id];
-        if (!d) return;
-        reg(c.id, { ...d, tags: [{ t: `${count} actions sur 13`, k: 'ok' }] }, [o]);
-        o.addEventListener('pointerenter', () => showCol(c.x));
-        o.addEventListener('pointerleave', () => showCol(null));
-        o.addEventListener('focus', () => showCol(c.x));
-        o.addEventListener('blur', () => showCol(null));
+        var d = roleData[c.id];
+        d.tags = [{ t: count + ' actions sur 13', k: 'ok' }];
+        reg(c.id, d, [o]);
+        o.addEventListener('pointerenter', function () {
+          showCol(i);
+        });
+        o.addEventListener('pointerleave', function () {
+          showCol(null);
+        });
+        o.addEventListener('focus', function () {
+          showCol(i);
+        });
+        o.addEventListener('blur', function () {
+          showCol(null);
+        });
       });
 
       /* lignes */
-      rows.forEach((r, ri) => {
-        const y = Y0 + ri * RH;
-        const rg = el('g', { class: 'm-row' }, g);
+      rows.forEach(function (r, ri) {
+        var y = Y0 + ri * RH;
+        var rg = el('g', { class: 'm-row' }, g);
         el('rect', { x: 152, y: y - 15, width: 1000, height: RH, rx: 4, class: 'm-row-bg' }, rg);
         el('text', { x: 164, y: y + 1, class: 'm-txt' }, rg, r[1]);
-        const tags: Tag[] = [];
-        r[2].forEach((v, ci) => {
-          const col = at(cols, ci);
-          const cx = col.x;
-          if (v === 1) {
-            el('circle', { cx, cy: y - 3, r: 5.5, class: 'm-yes' }, rg);
-          } else if (v === 2) {
-            el('circle', { cx, cy: y - 3, r: 6, class: 'm-cond-ring' }, rg);
-            el('circle', { cx, cy: y - 3, r: 2.3, class: 'm-cond-dot' }, rg);
-          } else {
-            el('circle', { cx, cy: y - 3, r: 2, class: 'm-no' }, rg);
-          }
-          if (v > 0) tags.push({ t: col.name + (v === 2 ? ' · si affecté' : ''), k: 'ok' });
+        r[2].forEach(function (v, ci) {
+          var cx = cols[ci].x;
+          if (v === 1) el('circle', { cx: cx, cy: y - 3, r: 5.5, class: 'm-yes' }, rg);
+          else if (v === 2) {
+            el('circle', { cx: cx, cy: y - 3, r: 6, class: 'm-cond-ring' }, rg);
+            el('circle', { cx: cx, cy: y - 3, r: 2.3, class: 'm-cond-dot' }, rg);
+          } else el('circle', { cx: cx, cy: y - 3, r: 2, class: 'm-no' }, rg);
         });
-        reg(r[0], { kicker: 'Action · matrice des permissions', title: r[1], body: r[3], tags }, [
-          rg,
-        ]);
-        rg.addEventListener('pointerenter', () => showCol(null));
+        var tags = [];
+        r[2].forEach(function (v, ci) {
+          if (v > 0) tags.push({ t: cols[ci].name + (v === 2 ? ' · si affecté' : ''), k: 'ok' });
+        });
+        reg(
+          r[0],
+          { kicker: 'Action · matrice des permissions', title: r[1], body: r[3], tags: tags },
+          [rg],
+        );
+        rg.addEventListener('pointerenter', function () {
+          showCol(null);
+        });
       });
 
       /* légende */
-      const ly = Y0 + (rows.length - 1) * RH + 30;
+      var ly = Y0 + (rows.length - 1) * RH + 30;
       el('circle', { cx: 800, cy: ly, r: 4.5, class: 'm-yes-l' }, g);
       el('text', { x: 812, y: ly + 3, class: 'm-legend' }, g, 'AUTORISÉ');
       el('circle', { cx: 894, cy: ly, r: 5, class: 'm-cond-ring' }, g);
@@ -1230,9 +1311,9 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       'outbox',
       'smtp',
     ],
-    build(g) {
+    build: function (g) {
       decor(g, 700, 292);
-      const N = {
+      var N = {
         nav: [212, 300],
         proxy: [400, 300],
         front: [612, 176],
@@ -1242,15 +1323,26 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         ia: [1030, 176],
         out: [760, 424],
         smtp: [1030, 424],
-      } as const;
-      line(g, 'M240 300 L372 300', 306, 288, 'https');
-      line(g, 'M428 300 L584 300', 506, 288, '/api/*');
-      line(g, 'M420 278 C 470 176, 520 176, 584 176', 470, 166, 'autres chemins');
-      line(g, 'M640 300 L832 300', 736, 288, 'sql paramétré');
-      line(g, 'M636 284 C 680 250, 700 210, 736 190', 0, 0, '');
-      line(g, 'M636 316 C 680 350, 700 390, 736 410', 0, 0, '');
-      line(g, 'M788 176 L1002 176', 895, 165, 'clé jamais exposée au navigateur');
-      line(g, 'M788 424 L1002 424', 895, 413, 'smtp · retries · backoff');
+      };
+      function ln(id, d, lx, ly, txt, anchor, cls) {
+        var e = el('g', { class: 'edge' }, g);
+        el('path', { d: d, class: 'edge-line' + (cls ? ' ' + cls : '') }, e);
+        if (txt)
+          el(
+            'text',
+            { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor || 'middle' },
+            e,
+            up(txt),
+          );
+      }
+      ln('a', 'M240 300 L372 300', 306, 288, 'https');
+      ln('b', 'M428 300 L584 300', 506, 288, '/api/*');
+      ln('c', 'M420 278 C 470 176, 520 176, 584 176', 470, 166, 'autres chemins', 'middle');
+      ln('d', 'M640 300 L832 300', 736, 288, 'sql paramétré');
+      ln('e', 'M636 284 C 680 250, 700 210, 736 190', 0, 0, '');
+      ln('f', 'M636 316 C 680 350, 700 390, 736 410', 0, 0, '');
+      ln('g', 'M788 176 L1002 176', 895, 165, 'clé jamais exposée au navigateur');
+      ln('h', 'M788 424 L1002 424', 895, 413, 'smtp · retries · backoff');
 
       node(g, 'nav', N.nav[0], N.nav[1], 22, 'Navigateur', 'SPA React 18', {
         kicker: 'Client · frontend/src',
@@ -1344,7 +1436,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         g,
         "COUCHES D'UN MODULE BACKEND",
       );
-      const layers: Array<[string, string, string]> = [
+      var layers = [
         [
           'l_route',
           'Route',
@@ -1366,9 +1458,9 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'SQL paramétré et mapping des lignes. Les contraintes SQL restent la dernière défense contre les courses concurrentes.',
         ],
       ];
-      let lx = 158;
-      layers.forEach((l, i) => {
-        const w = i === 2 ? 128 : 92;
+      var lx = 158;
+      layers.forEach(function (l, i) {
+        var w = i === 2 ? 128 : 92;
         chip(g, l[0], lx, 398, w, l[1], {
           kicker: 'Couche · route → controller → service → repository',
           title: l[1],
@@ -1376,7 +1468,11 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           tags: [{ t: 'Backend' }],
         });
         if (i < 3)
-          el('path', { d: `M${lx + w + 3} 410 L${lx + w + 12} 410`, class: 'edge-line' }, g);
+          el(
+            'path',
+            { d: 'M' + (lx + w + 3) + ' 410 L' + (lx + w + 12) + ' 410', class: 'edge-line' },
+            g,
+          );
         lx += w + 16;
       });
 
@@ -1387,7 +1483,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         g,
         'TABLES · 6 GROUPES',
       );
-      const groups: Array<[string, string, string]> = [
+      var groups = [
         [
           't_id',
           'Identités',
@@ -1419,9 +1515,9 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'notification_outbox : payload, statut, tentatives, prochaine tentative et destinataires déjà livrés pour une reprise idempotente.',
         ],
       ];
-      groups.forEach((t, i) => {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
+      groups.forEach(function (t, i) {
+        var col = i % 2,
+          row = Math.floor(i / 2);
         chip(g, t[0], 1010 + col * 138, 274 + row * 32, 128, t[1], {
           kicker: 'Données · groupe de tables',
           title: t[1],
@@ -1450,64 +1546,74 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       'c_reval',
       'c_rate',
     ],
-    build(g) {
+    build: function (g) {
       decor(g, 700, 280);
-      const TX = 300;
-      const RX = 1090;
-      const YS = [150, 280, 410];
-      const allow: Record<string, string[]> = {
+      var TX = 300,
+        RX = 1090,
+        YS = [150, 280, 410];
+      var allow = {
         tk_admin: ['r_admin'],
         tk_workshop: ['r_workshop', 'r_board'],
         tk_board: ['r_board'],
       };
-      const tokIds = ['tk_admin', 'tk_workshop', 'tk_board'];
-      const routeIds = ['r_admin', 'r_workshop', 'r_board'];
-      const routeNames: Record<string, string> = {
+      var tokIds = ['tk_admin', 'tk_workshop', 'tk_board'];
+      var routeIds = ['r_admin', 'r_workshop', 'r_board'];
+      var routeNames = {
         r_admin: '/api/admin/*',
         r_workshop: '/api/workshop/*',
         r_board: '/api/board/data',
       };
-      const tokNames: Record<string, string> = {
-        tk_admin: 'JWT admin',
-        tk_workshop: 'JWT atelier',
-        tk_board: 'JWT board',
-      };
+      var tokNames = { tk_admin: 'JWT admin', tk_workshop: 'JWT atelier', tk_board: 'JWT board' };
 
       /* liens (dessous) */
-      const links = new Map<string, { p: SVGPathElement; x: SVGGElement }>();
-      const link = (t: string, r: string) => {
-        const found = links.get(`${t}|${r}`);
-        if (!found) throw new Error(`Sentinel map: missing link ${t} → ${r}`);
-        return found;
-      };
-      tokIds.forEach((t, ti) => {
-        routeIds.forEach((r, ri) => {
-          const yt = at(YS, ti);
-          const yr = at(YS, ri);
-          const d = `M${TX + 28} ${yt} C 560 ${yt}, 830 ${yr}, ${RX - 30} ${yr}`;
-          const p = el('path', { d, class: 'lnk' }, g);
-          const x = el('g', { class: 'xmark' }, g);
-          /* croix au milieu des liens refusés */
-          let pt = { x: (TX + RX) / 2, y: (yt + yr) / 2 };
+      var links = {};
+      tokIds.forEach(function (t, ti) {
+        links[t] = {};
+        routeIds.forEach(function (r, ri) {
+          var d =
+            'M' +
+            (TX + 28) +
+            ' ' +
+            YS[ti] +
+            ' C 560 ' +
+            YS[ti] +
+            ', 830 ' +
+            YS[ri] +
+            ', ' +
+            (RX - 30) +
+            ' ' +
+            YS[ri];
+          var p = el('path', { d: d, class: 'lnk' }, g);
+          var mid = { x: (TX + RX) / 2, y: (YS[ti] + YS[ri]) / 2 };
+          var x = el('g', { class: 'xmark' }, g);
+          links[t][r] = { p: p, x: x, mid: mid };
+        });
+      });
+      /* croix au milieu des liens refusés */
+      tokIds.forEach(function (t) {
+        routeIds.forEach(function (r) {
+          var L = links[t][r],
+            len = 0,
+            pt = null;
           try {
-            const q = p.getPointAtLength(p.getTotalLength() * 0.62);
-            pt = { x: q.x, y: q.y };
-          } catch {
-            /* garde le milieu géométrique */
+            len = L.p.getTotalLength();
+            pt = L.p.getPointAtLength(len * 0.62);
+          } catch (e) {
+            pt = L.mid;
           }
-          el('line', { x1: pt.x - 5, y1: pt.y - 5, x2: pt.x + 5, y2: pt.y + 5 }, x);
-          el('line', { x1: pt.x - 5, y1: pt.y + 5, x2: pt.x + 5, y2: pt.y - 5 }, x);
-          links.set(`${t}|${r}`, { p, x });
+          el('line', { x1: pt.x - 5, y1: pt.y - 5, x2: pt.x + 5, y2: pt.y + 5 }, L.x);
+          el('line', { x1: pt.x - 5, y1: pt.y + 5, x2: pt.x + 5, y2: pt.y - 5 }, L.x);
+          L.x.setAttribute('class', 'xmark');
         });
       });
 
       /* portique central */
-      const gate = el('g', { class: 'gate', transform: 'translate(700 280)' }, g);
+      var gate = el('g', { class: 'gate', transform: 'translate(700 280)' }, g);
       el('circle', { r: 62, fill: 'url(#sn-glow-core)' }, gate);
       el('circle', { r: 40, class: 'gate-disc' }, gate);
       el('text', { x: 0, y: -2, class: 'gate-txt' }, gate, 'GARDES');
       el('text', { x: 0, y: 11, class: 't-sub' }, gate, 'SERVEUR');
-      el('circle', { r: 48, fill: 'transparent', class: 'sn-ptr' }, gate);
+      el('circle', { r: 48, fill: 'transparent', style: 'cursor:pointer' }, gate);
       reg(
         'gate',
         {
@@ -1520,7 +1626,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       );
 
       /* jetons */
-      const tokData: Record<string, ItemData> = {
+      var tokData = {
         tk_admin: {
           kicker: 'Audience · admin',
           title: 'Session admin',
@@ -1552,23 +1658,20 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           ],
         },
       };
-      tokIds.forEach((t, i) => {
-        const o = orb(g, TX, at(YS, i), 24, null);
-        o.querySelector('.orb-dot')?.setAttribute('r', '4');
-        el(
-          'text',
-          { x: -40, y: 4, class: 't-name', 'text-anchor': 'end' },
-          o,
-          up(tokNames[t] ?? t),
-        );
-        const d = tokData[t];
-        if (d) reg(t, d, [o]);
+      var tokOrbs = {},
+        routeOrbs = {};
+      tokIds.forEach(function (t, i) {
+        var o = orb(g, TX, YS[i], 24, null);
+        o.querySelector('.orb-dot').setAttribute('r', 4);
+        el('text', { x: -40, y: 4, class: 't-name', 'text-anchor': 'end' }, o, up(tokNames[t]));
+        reg(t, tokData[t], [o]);
+        tokOrbs[t] = o;
       });
-      const routeData: Record<string, ItemData> = {
+      var routeData = {
         r_admin: {
           kicker: 'Espace · /api/admin',
           title: '/api/admin/*',
-          body: 'Toutes les routes exigent une session admin, y compris les lectures sensibles. Réauthentification sur les actions sensibles : les quatre premiers échecs refusent l’action, le cinquième révoque toutes les sessions admin (SESSION_REVOKED).',
+          body: "Toutes les routes exigent une session admin, y compris les lectures sensibles. Réauthentification sur les actions sensibles : les quatre premiers échecs refusent l'action, le cinquième révoque toutes les sessions admin (SESSION_REVOKED).",
           tags: [{ t: 'Session admin' }, { t: 'Réauth' }],
         },
         r_workshop: {
@@ -1584,24 +1687,17 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           tags: [{ t: 'Board ou Atelier' }, { t: 'No-store' }],
         },
       };
-      const routeOrbs = new Map<string, SVGGElement>();
-      routeIds.forEach((r, i) => {
-        const o = orb(g, RX, at(YS, i), 24, null);
-        o.querySelector('.orb-dot')?.setAttribute('r', '4');
-        el(
-          'text',
-          { x: 40, y: 4, class: 't-name', 'text-anchor': 'start' },
-          o,
-          up(routeNames[r] ?? r),
-        );
-        const d = routeData[r];
-        if (d) reg(r, d, [o]);
-        routeOrbs.set(r, o);
+      routeIds.forEach(function (r, i) {
+        var o = orb(g, RX, YS[i], 24, null);
+        o.querySelector('.orb-dot').setAttribute('r', 4);
+        el('text', { x: 40, y: 4, class: 't-name', 'text-anchor': 'start' }, o, up(routeNames[r]));
+        reg(r, routeData[r], [o]);
+        routeOrbs[r] = o;
       });
 
       /* défenses */
       el('text', { x: 396, y: 440, class: 't-sub', 'text-anchor': 'start' }, g, 'DÉFENSES');
-      const defenses: Array<[string, string, number, string]> = [
+      var defs = [
         [
           'c_jwt',
           'JWT cloisonnés',
@@ -1624,7 +1720,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'c_reval',
           'Revalidation',
           108,
-          'Rotation de mot de passe, changement de rôle ou de badge, désactivation : incrément atomique de session_version, sessions coupées immédiatement plutôt qu’à l’expiration du JWT.',
+          "Rotation de mot de passe, changement de rôle ou de badge, désactivation : incrément atomique de session_version, sessions coupées immédiatement plutôt qu'à l'expiration du JWT.",
         ],
         [
           'c_rate',
@@ -1633,8 +1729,8 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'Limite globale par IP, limite renforcée sur les connexions, le support IA et la réauthentification admin. Compteurs en mémoire de processus : adaptés à une réplique unique ; plusieurs répliques exigeraient un stockage partagé.',
         ],
       ];
-      let dx = 396;
-      for (const d of defenses) {
+      var dx = 396;
+      defs.forEach(function (d) {
         chip(g, d[0], dx, 450, d[2], d[1], {
           kicker: 'Défense · couche HTTP',
           title: d[1],
@@ -1642,30 +1738,37 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           tags: [{ t: 'Backend' }],
         });
         dx += d[2] + 10;
-      }
+      });
 
       /* interaction : jeton sélectionné */
-      function paintToken(t: string) {
-        const allowed = allow[t];
-        if (!allowed) return;
-        for (const o of routeOrbs.values()) o.classList.remove('ok', 'no');
-        for (const tk of tokIds) {
-          for (const r of routeIds) {
-            const L = link(tk, r);
+      var cur = null;
+      function paintToken(t) {
+        cur = t;
+        routeIds.forEach(function (r) {
+          routeOrbs[r].classList.remove('ok', 'no');
+        });
+        tokIds.forEach(function (tk) {
+          routeIds.forEach(function (r) {
+            var L = links[tk][r];
             L.p.setAttribute('class', 'lnk');
             L.x.setAttribute('class', 'xmark');
-          }
-        }
-        for (const r of routeIds) {
-          const ok = allowed.includes(r);
-          const L = link(t, r);
-          L.p.setAttribute('class', `lnk ${ok ? 'ok' : 'no'}`);
+          });
+        });
+        routeIds.forEach(function (r) {
+          var ok = allow[t].indexOf(r) >= 0;
+          var L = links[t][r];
+          L.p.setAttribute('class', 'lnk ' + (ok ? 'ok' : 'no'));
           if (!ok) L.x.setAttribute('class', 'xmark on');
-          routeOrbs.get(r)?.classList.add(ok ? 'ok' : 'no');
-        }
+          routeOrbs[r].classList.add(ok ? 'ok' : 'no');
+        });
       }
-      sceneHooks.onSelect = (id) => paintToken(id);
+      sceneState.onSelect = function (id) {
+        if (allow[id]) paintToken(id);
+      };
       paintToken('tk_workshop');
+    },
+    onSelect: function (id) {
+      if (sceneState.onSelect) sceneState.onSelect(id);
     },
   });
 
@@ -1677,21 +1780,21 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     signal: ['Doctrine', '7 principes · 4 niveaux'],
     def: 'd_core',
     tour: ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'],
-    build(g) {
-      const cx = 700;
-      const cy = 282;
-      const RXd = 318;
-      const RYd = 148;
+    build: function (g) {
+      var cx = 700,
+        cy = 282,
+        RX = 318,
+        RY = 148;
       decor(g, cx, cy);
-      el('ellipse', { cx, cy, rx: RXd, ry: RYd, class: 'orbit-line' }, g);
-      el('ellipse', { cx, cy, rx: RXd * 0.62, ry: RYd * 0.62, class: 'orbit-line faint' }, g);
+      el('ellipse', { cx: cx, cy: cy, rx: RX, ry: RY, class: 'orbit-line' }, g);
+      el('ellipse', { cx: cx, cy: cy, rx: RX * 0.62, ry: RY * 0.62, class: 'orbit-line faint' }, g);
 
-      const core = el('g', { class: 'core', transform: `translate(${cx} ${cy})` }, g);
+      var core = el('g', { class: 'core', transform: 'translate(' + cx + ' ' + cy + ')' }, g);
       el('circle', { r: 88, class: 'core-halo' }, core);
       el('circle', { r: 58, class: 'core-mid' }, core);
       el('circle', { r: 48, class: 'core-disc' }, core);
       el('text', { x: 0, y: 4, class: 'core-txt' }, core, 'MAÎTRISE');
-      el('circle', { r: 62, fill: 'transparent', class: 'sn-ptr' }, core);
+      el('circle', { r: 62, fill: 'transparent', style: 'cursor:pointer' }, core);
       reg(
         'd_core',
         {
@@ -1703,7 +1806,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         [core],
       );
 
-      const principles: Array<[string, string, string, string, string, string]> = [
+      var P = [
         [
           'p1',
           'P1',
@@ -1750,7 +1853,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'Sans punir',
           'Responsabiliser sans punir',
           "La traçabilité valorise la contribution ; elle n'est pas un instrument de surveillance. Signaler, intervenir, se tromper de bonne foi doit rester sûr — l'erreur honnête se distingue de la faute.",
-          '« Qui a fait quoi » donne-t-il envie de contribuer, ou crainte d’être pris en faute ?',
+          "« Qui a fait quoi » donne-t-il envie de contribuer, ou crainte d'être pris en faute ?",
         ],
         [
           'p7',
@@ -1761,21 +1864,21 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           "Le temps écoulé est-il visible et porteur de sens, ou réduit à une date qu'il faut calculer ?",
         ],
       ];
-      principles.forEach((p, i) => {
-        const a = rad(-90 + i * (360 / 7));
-        const x = cx + RXd * Math.cos(a);
-        const y = cy + RYd * Math.sin(a);
-        const top = Math.sin(a) < -0.5;
+      P.forEach(function (p, i) {
+        var a = rad(-90 + i * (360 / 7));
+        var x = cx + RX * Math.cos(a),
+          y = cy + RY * Math.sin(a);
+        var top = Math.sin(a) < -0.5;
         node(
           g,
           p[0],
           x,
           y,
           14,
-          `${p[1]} · ${p[2]}`,
+          p[1] + ' · ' + p[2],
           null,
           {
-            kicker: `Principe ${p[1]} · design.md §3`,
+            kicker: 'Principe ' + p[1] + ' · design.md §3',
             title: p[3],
             body: p[4],
             test: p[5],
@@ -1787,11 +1890,10 @@ export function mountSentinelMap(root: HTMLElement): () => void {
 
       /* niveaux d'attention */
       el('text', { x: 1092, y: 104, class: 'sl-ttl' }, g, "NIVEAUX D'ATTENTION");
-      const tokens = ['calm', 'watch', 'act', 'critical'];
-      LEVELS.forEach((lv, i) => {
-        const y = 116 + i * 30;
-        const lg = el('g', { class: 'lv' }, g);
-        el('rect', { x: 1092, y, width: 196, height: 24, rx: 5, class: 'lv-box' }, lg);
+      LEVELS.forEach(function (lv, i) {
+        var y = 116 + i * 30;
+        var lg = el('g', { class: 'lv' }, g);
+        el('rect', { x: 1092, y: y, width: 196, height: 24, rx: 5, class: 'lv-box' }, lg);
         el(
           'rect',
           { x: 1102, y: y + 7, width: 10, height: 10, rx: 2.5, fill: lv.sw, class: 'lv-sw' },
@@ -1804,27 +1906,29 @@ export function mountSentinelMap(root: HTMLElement): () => void {
             kicker: lv.kicker,
             title: lv.name,
             body: lv.body,
-            tags: [{ t: `--attention-${at(tokens, i)}` }],
+            tags: [{ t: '--attention-' + ['calm', 'watch', 'act', 'critical'][i] }],
           },
           [lg],
         );
       });
 
       /* curseur P7 : ancienneté → niveau (mêmes paliers que ageAttentionLevel : 1, 3, 7 jours) */
-      const SX = 160;
-      const SW = 250;
-      const SY = 446;
-      const MAXD = 9;
-      const levelFor = (d: number) => (d >= 7 ? 3 : d >= 3 ? 2 : d >= 1 ? 1 : 0);
-      el('text', { x: SX, y: 404, class: 'sl-ttl' }, g, 'P7 · ÂGE D’UN INCIDENT');
-      const val = el('text', { x: SX, y: 424, class: 'sl-val' }, g, '');
-      const segs: Array<[number, number]> = [
+      var SX = 160,
+        SW = 250,
+        SY = 446,
+        MAXD = 9;
+      function levelFor(d) {
+        return d >= 7 ? 3 : d >= 3 ? 2 : d >= 1 ? 1 : 0;
+      }
+      el('text', { x: SX, y: 404, class: 'sl-ttl' }, g, "P7 · ÂGE D'UN INCIDENT");
+      var val = el('text', { x: SX, y: 424, class: 'sl-val' }, g, '');
+      var segs = [
         [0, 1],
         [1, 3],
         [3, 7],
         [7, MAXD],
       ];
-      segs.forEach((s, i) => {
+      segs.forEach(function (s, i) {
         el(
           'rect',
           {
@@ -1833,22 +1937,22 @@ export function mountSentinelMap(root: HTMLElement): () => void {
             width: ((s[1] - s[0]) / MAXD) * SW - 1,
             height: 4,
             rx: 2,
-            fill: at(LEVELS, i).sw,
+            fill: LEVELS[i].sw,
             opacity: 0.85,
           },
           g,
         );
       });
-      for (const d of [1, 3, 7]) {
+      [1, 3, 7].forEach(function (d) {
         el(
           'text',
           { x: SX + (d / MAXD) * SW, y: SY + 24, class: 'sl-txt', 'text-anchor': 'middle' },
           g,
-          `${d} J`,
+          d + ' J',
         );
-      }
-      let dayV = 2;
-      const handle = el(
+      });
+      var dayV = 2;
+      var handle = el(
         'circle',
         {
           cx: SX + (dayV / MAXD) * SW,
@@ -1864,51 +1968,53 @@ export function mountSentinelMap(root: HTMLElement): () => void {
         },
         g,
       );
-      const hit = el(
+      var hit = el(
         'rect',
         { x: SX - 12, y: SY - 16, width: SW + 24, height: 32, class: 'sl-hit' },
         g,
       );
-      function setDay(d: number, quiet?: boolean) {
+      function setDay(d, quiet) {
         dayV = Math.max(0, Math.min(MAXD, d));
-        handle.setAttribute('cx', String(SX + (dayV / MAXD) * SW));
+        handle.setAttribute('cx', SX + (dayV / MAXD) * SW);
         handle.setAttribute('aria-valuenow', dayV.toFixed(1));
-        const lv = at(LEVELS, levelFor(dayV));
-        const shown =
-          dayV < 1 ? `${Math.round(dayV * 24)} H` : `${dayV.toFixed(1).replace('.0', '')} J`;
-        val.textContent = `DEPUIS ${shown}  ›  ${up(lv.name)}`;
-        val.setAttribute('fill', lv.sw === '#5b6a95' ? '#fff' : lv.sw);
-        if (!quiet) select(lv.id);
+        var lvI = levelFor(dayV);
+        var shown =
+          dayV < 1 ? Math.round(dayV * 24) + ' H' : dayV.toFixed(1).replace('.0', '') + ' J';
+        val.textContent = 'DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name);
+        val.setAttribute('fill', LEVELS[lvI].sw === '#5b6a95' ? '#fff' : LEVELS[lvI].sw);
+        if (!quiet) select(LEVELS[lvI].id);
       }
-      function svgX(ev: PointerEvent) {
-        const m = svg.getScreenCTM();
+      function svgX(ev) {
+        var pt = svg.createSVGPoint();
+        pt.x = ev.clientX;
+        pt.y = ev.clientY;
+        var m = svg.getScreenCTM();
         if (!m) return 0;
-        return new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m.inverse()).x;
+        return pt.matrixTransform(m.inverse()).x;
       }
-      let drag = false;
-      const move = (ev: PointerEvent) => setDay(((svgX(ev) - SX) / SW) * MAXD);
-      const dragTargets: SVGElement[] = [hit, handle];
-      for (const t of dragTargets) {
-        t.addEventListener('pointerdown', (ev) => {
+      var drag = false;
+      function move(ev) {
+        setDay(((svgX(ev) - SX) / SW) * MAXD);
+      }
+      [hit, handle].forEach(function (t) {
+        t.addEventListener('pointerdown', function (ev) {
           drag = true;
           try {
             t.setPointerCapture(ev.pointerId);
-          } catch {
-            /* capture indisponible */
-          }
+          } catch (e) {}
           move(ev);
         });
-        t.addEventListener('pointermove', (ev) => {
+        t.addEventListener('pointermove', function (ev) {
           if (drag) move(ev);
         });
-        t.addEventListener('pointerup', () => {
+        t.addEventListener('pointerup', function () {
           drag = false;
         });
-        t.addEventListener('pointercancel', () => {
+        t.addEventListener('pointercancel', function () {
           drag = false;
         });
-      }
-      handle.addEventListener('keydown', (ev) => {
+      });
+      handle.addEventListener('keydown', function (ev) {
         if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') {
           ev.preventDefault();
           setDay(Math.round((dayV + 0.5) * 2) / 2);
@@ -1942,21 +2048,32 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       'health',
       'rollback',
     ],
-    build(g) {
+    build: function (g) {
       decor(g, 700, 292);
-      const TY = 170;
-      const BY = 356;
-      const X = [212, 420, 628, 836, 1044] as const;
-      const XB = [1044, 836, 628, 420] as const;
+      var TY = 170,
+        BY = 356;
+      var X = [212, 420, 628, 836, 1044];
+      var XB = [1044, 836, 628, 420];
 
-      line(g, `M240 ${TY} L370 ${TY}`, 305, TY - 12, '');
-      line(g, `M470 ${TY} L600 ${TY}`, 535, TY - 12, '6 verts');
-      line(g, `M656 ${TY} L808 ${TY}`, 732, TY - 12, 'workflow_dispatch');
-      line(g, `M864 ${TY} L1016 ${TY}`, 940, TY - 12, 'digests · notes');
-      line(g, `M1044 ${TY + 30} L1044 ${BY - 30}`, 1056, 268, 'runbook · vps', 'start');
-      line(g, `M1016 ${BY} L864 ${BY}`, 940, BY - 12, '@sha256');
-      line(g, `M808 ${BY} L656 ${BY}`, 732, BY - 12, '');
-      line(g, `M600 ${BY} L448 ${BY}`, 524, BY - 12, 'up --no-build');
+      function ln(d, lx, ly, txt, anchor, cls) {
+        var e = el('g', { class: 'edge' }, g);
+        el('path', { d: d, class: 'edge-line' + (cls ? ' ' + cls : '') }, e);
+        if (txt)
+          el(
+            'text',
+            { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor || 'middle' },
+            e,
+            up(txt),
+          );
+      }
+      ln('M240 ' + TY + ' L370 ' + TY, 305, TY - 12, '');
+      ln('M470 ' + TY + ' L600 ' + TY, 535, TY - 12, '6 verts');
+      ln('M656 ' + TY + ' L808 ' + TY, 732, TY - 12, 'workflow_dispatch');
+      ln('M864 ' + TY + ' L1016 ' + TY, 940, TY - 12, 'digests · notes');
+      ln('M1044 ' + (TY + 30) + ' L1044 ' + (BY - 30), 1056, 268, 'runbook · vps', 'start');
+      ln('M1016 ' + BY + ' L864 ' + BY, 940, BY - 12, '@sha256');
+      ln('M808 ' + BY + ' L656 ' + BY, 732, BY - 12, '');
+      ln('M600 ' + BY + ' L448 ' + BY, 524, BY - 12, 'up --no-build');
 
       node(g, 'pr', X[0], TY, 22, 'Pull request', 'main protégée', {
         kicker: 'Étape 01 · GitHub',
@@ -1966,7 +2083,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       });
 
       /* CI : six satellites */
-      const ci = node(
+      var ci = node(
         g,
         'ci',
         X[1],
@@ -1984,7 +2101,7 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       );
       el('text', { x: 0, y: 84, class: 't-name' }, ci, '6 CHECKS');
       el('text', { x: 0, y: 97, class: 't-sub' }, ci, 'REQUIS');
-      const checks: Array<[string, string, string]> = [
+      var checks = [
         [
           'c1',
           'Backend / Quality',
@@ -2016,15 +2133,17 @@ export function mountSentinelMap(root: HTMLElement): () => void {
           'Exercice de sauvegarde puis restauration, isolé, contre un PostgreSQL réel.',
         ],
       ];
-      checks.forEach((c, i) => {
-        const a = rad(30 + i * 60);
-        const so = orb(g, X[1] + 48 * Math.cos(a), TY + 48 * Math.sin(a), 6, 'lime');
-        so.querySelector('.orb-halo')?.setAttribute('r', '9');
-        so.querySelector('.orb-ring')?.setAttribute('r', '7.5');
+      checks.forEach(function (c, i) {
+        var a = rad(30 + i * 60);
+        var sx = X[1] + 48 * Math.cos(a),
+          sy = TY + 48 * Math.sin(a);
+        var so = orb(g, sx, sy, 6, 'lime');
+        so.querySelector('.orb-halo').setAttribute('r', 9);
+        so.querySelector('.orb-ring').setAttribute('r', 7.5);
         reg(
           c[0],
           {
-            kicker: `Check requis · ${i + 1} / 6`,
+            kicker: 'Check requis · ' + (i + 1) + ' / 6',
             title: c[1],
             body: c[2],
             tags: [{ t: 'Requis', k: 'ok' }],
@@ -2087,7 +2206,8 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       );
 
       /* rollback */
-      const rbD = `M420 ${BY + 74} L420 ${BY + 88} L1044 ${BY + 88} L1044 ${BY + 76}`;
+      var rbD =
+        'M420 ' + (BY + 74) + ' L420 ' + (BY + 88) + ' L1044 ' + (BY + 88) + ' L1044 ' + (BY + 76);
       edge(
         g,
         'rollback',
@@ -2107,18 +2227,775 @@ export function mountSentinelMap(root: HTMLElement): () => void {
     },
   });
 
+  /* =================================================================
+     MISE EN PAGE COMPACTE (mobile / tablette) — mêmes contenus, autre géométrie
+     ================================================================= */
+  function noteC(g, x, y, key, text) {
+    el('text', { x: x, y: y, class: 'note note-k' }, g, up(key));
+    return wrap(g, up(text), x, y + 11, 336, 11, 'note');
+  }
+  function chipAuto(g, id, x, y, text, pad) {
+    var w = Math.ceil(measure(up(text), 'chip-txt')) + (pad || 18);
+    chip(g, id, x, y, w, text, null);
+    return w;
+  }
+
+  /* ---------- 01 · ORBITE ---------- */
+  SCENES[0].cbuild = function (g) {
+    var cx = 180,
+      cy = 416;
+    decor(g, cx, cy);
+    var orbits = [
+      { rx: 148, ry: 92, rot: -14, nodes: [['atelier', 2.97]] },
+      {
+        rx: 150,
+        ry: 78,
+        rot: 64,
+        nodes: [
+          ['board', 6.2],
+          ['pilotage', 3.32],
+        ],
+      },
+      {
+        rx: 118,
+        ry: 72,
+        rot: -52,
+        nodes: [
+          ['admin', 1.05],
+          ['journal', 4.45],
+        ],
+      },
+      {
+        rx: 100,
+        ry: 82,
+        rot: 100,
+        nodes: [
+          ['connaissance', 3.75],
+          ['outbox', 0.87],
+        ],
+      },
+      { rx: 70, ry: 50, rot: 12, nodes: [], faint: true },
+      { rx: 160, ry: 56, rot: 26, nodes: [], faint: true },
+    ];
+    var names = {
+      atelier: 'Atelier',
+      board: 'Board',
+      admin: 'Administration',
+      pilotage: 'Pilotage',
+      journal: 'Journal',
+      connaissance: 'Connaissance',
+      outbox: 'Outbox',
+    };
+    var lineEls = [];
+    orbits.forEach(function (o) {
+      lineEls.push(
+        el(
+          'ellipse',
+          {
+            cx: cx,
+            cy: cy,
+            rx: o.rx,
+            ry: o.ry,
+            transform: 'rotate(' + o.rot + ' ' + cx + ' ' + cy + ')',
+            class: 'orbit-line' + (o.faint ? ' faint' : ''),
+          },
+          g,
+        ),
+      );
+    });
+    var core = el('g', { class: 'core', transform: 'translate(' + cx + ' ' + cy + ')' }, g);
+    el('circle', { r: 62, class: 'core-halo' }, core);
+    el('circle', { r: 42, class: 'core-mid' }, core);
+    el('circle', { r: 35, class: 'core-disc' }, core);
+    el('text', { x: 0, y: 3.5, class: 'core-txt' }, core, 'SENTINEL');
+    el('circle', { r: 46, fill: 'transparent', style: 'cursor:pointer' }, core);
+    reg('sentinel', null, [core]);
+    movers = [];
+    var mk = 0;
+    orbits.forEach(function (o, oi) {
+      o.nodes.forEach(function (n) {
+        var og = orb(g, 0, 0, 10, null);
+        nodeLabels(og, 10, names[n[0]], null, 'bottom');
+        reg(n[0], null, [og]);
+        movers.push({
+          g: og,
+          o: o,
+          t0: n[1],
+          t: n[1],
+          time: mk * 3.1,
+          amp: 0.09 + 0.018 * mk,
+          w: 0.26 + 0.03 * mk,
+          ph: mk * 1.7,
+          cx: cx,
+          cy: cy,
+          orbitEl: lineEls[oi],
+        });
+        mk++;
+      });
+    });
+    placeMovers();
+    movers.forEach(function (m) {
+      m.g.addEventListener('pointerenter', function () {
+        m.orbitEl.classList.add('hot');
+      });
+      m.g.addEventListener('pointerleave', function () {
+        m.orbitEl.classList.remove('hot');
+      });
+    });
+    function corner(id, x, y, num, text, anchor) {
+      var c = el('g', { class: 'corner' }, g);
+      var w = 124,
+        rx = anchor === 'end' ? x - w : x;
+      el('rect', { x: rx, y: y - 16, width: w, height: 26, class: 'c-hit' }, c);
+      var t = el('text', { x: x, y: y, 'text-anchor': anchor }, c);
+      if (anchor === 'end') {
+        el('tspan', { class: 't-corner' }, t, up(text) + '  ');
+        el('tspan', { class: 't-num' }, t, num);
+      } else {
+        el('tspan', { class: 't-num' }, t, num + '  ');
+        el('tspan', { class: 't-corner' }, t, up(text));
+      }
+      reg(id, null, [c]);
+    }
+    corner('c_sig', 12, 222, '01', 'Signaler', 'start');
+    corner('c_res', 348, 222, '02', 'Résoudre', 'end');
+    corner('c_doc', 348, 610, '03', 'Documenter', 'end');
+    corner('c_app', 12, 610, '04', 'Apprendre', 'start');
+  };
+
+  /* ---------- 02 · CYCLE ---------- */
+  SCENES[1].cbuild = function (g) {
+    decor(g, 180, 400);
+    var xL = 84,
+      xR = 276,
+      y1 = 254,
+      y2 = 364,
+      y3 = 474,
+      r = 20;
+    el('circle', { cx: 22, cy: y2, r: 5, fill: '#c8ff2e' }, g);
+    el('text', { x: 12, y: y2 + 22, class: 't-sub', 'text-anchor': 'start' }, g, 'CRÉATION');
+    edge(g, 'e_create', 'M30 ' + y2 + ' L57 ' + y2, 24, y2 - 12, 'create', 'middle', null);
+    edge(g, 'e_take', 'M112 ' + y2 + ' L248 ' + y2, 180, y2 - 12, 'take', 'middle', null);
+    edge(
+      g,
+      'e_pend',
+      'M266 ' + (y2 - 28) + ' L266 ' + (y1 + 30),
+      258,
+      (y1 + y2) / 2 + 3,
+      'set_pending',
+      'end',
+      null,
+    );
+    edge(
+      g,
+      'e_resume',
+      'M286 ' + (y1 + 30) + ' L286 ' + (y2 - 28),
+      294,
+      (y1 + y2) / 2 + 3,
+      'resume',
+      'start',
+      null,
+    );
+    edge(
+      g,
+      'e_close',
+      'M276 ' + (y2 + 28) + ' L276 ' + (y3 - 28),
+      268,
+      (y2 + y3) / 2 + 3,
+      "close + note d'intervention",
+      'end',
+      null,
+    );
+    edge(
+      g,
+      'e_inval',
+      'M248 ' + y3 + ' L112 ' + y3,
+      180,
+      y3 - 12,
+      'invalidate + motif',
+      'middle',
+      null,
+    );
+    edge(
+      g,
+      'e_cancel',
+      'M84 ' + (y2 - 28) + ' L84 ' + (y1 + 30),
+      92,
+      (y1 + y2) / 2 + 3,
+      'cancel',
+      'start',
+      null,
+    );
+    edge(
+      g,
+      'e_cancel2',
+      'M248 ' + y1 + ' L112 ' + y1,
+      180,
+      y1 - 12,
+      'cancel · responsable',
+      'middle',
+      null,
+      'soft',
+    );
+    node(g, 'n_open', xL, y2, r, 'Non pris', 'OPEN', null, { side: 'bottom' });
+    node(g, 'n_taken', xR, y2, r, 'Pris', 'OPEN', null, { side: 'right' });
+    node(g, 'n_pending', xR, y1, r, 'En attente', 'PENDING', null, { tone: 'amber', side: 'top' });
+    node(g, 'n_closed', xR, y3, r, 'Clôturé', 'CLOSED', null, { tone: 'lime', side: 'bottom' });
+    node(g, 'n_canceled', xL, y1, r, 'Annulé', 'CANCELED', null, { tone: 'grey', side: 'top' });
+    node(g, 'n_invalid', xL, y3, r, 'Invalidé', 'INVALIDATED', null, {
+      tone: 'grey',
+      side: 'bottom',
+    });
+    var n1 = noteC(
+      g,
+      12,
+      560,
+      'Arbitrage',
+      'une demande ouverte bloque les mutations concurrentes',
+    );
+    noteC(
+      g,
+      12,
+      560 + 11 + n1.lines * 11 + 8,
+      'Autorité',
+      "la policy backend décide — le frontend n'en est que le miroir",
+    );
+  };
+
+  /* ---------- 03 · RÔLES ---------- */
+  SCENES[2].cbuild = function (g) {
+    decor(g, 180, 400);
+    var cols = [
+      { id: 'role_op', x: 248, name: 'Opér.', full: 'Opérateur' },
+      { id: 'role_mnt', x: 292, name: 'Maint.', full: 'Maintenance' },
+      { id: 'role_resp', x: 334, name: 'Resp.', full: 'Responsable' },
+    ];
+    var rows = [
+      ['r_create', 'Déclarer un incident', [1, 1, 1]],
+      ['r_req_edit', 'Demander / retirer une correction', [1, 0, 0]],
+      ['r_req_cancel', 'Demander / retirer une annulation', [1, 0, 0]],
+      ['r_edit_free', 'Modifier un incident actif non pris', [0, 1, 1]],
+      ['r_edit_taken', 'Modifier un incident actif pris', [0, 2, 1]],
+      ['r_take', 'Prendre / transférer un incident', [0, 1, 0]],
+      ['r_treat', 'Mettre en attente / reprendre / clôturer', [0, 1, 0]],
+      ['r_cancel', 'Annuler un incident non pris', [0, 1, 1]],
+      ['r_cancel_pend', 'Annuler un incident en attente', [0, 0, 1]],
+      ['r_arb', 'Arbitrer correction / annulation', [0, 0, 1]],
+      ['r_prio', 'Définir priorité / consigne', [0, 0, 1]],
+      ['r_inval', 'Invalider une clôture', [0, 0, 1]],
+      ['r_follow', 'Suivre / ne plus suivre', [0, 0, 1]],
+    ];
+    var Y0 = 278,
+      RH = 26;
+    var colBg = el(
+      'rect',
+      {
+        class: 'm-col-bg',
+        rx: 8,
+        y: 194,
+        height: Y0 + (rows.length - 1) * RH + 14 - 194,
+        width: 42,
+      },
+      g,
+    );
+    function showCol(i) {
+      if (i == null) {
+        colBg.classList.remove('on');
+        return;
+      }
+      colBg.setAttribute('x', cols[i].x - 21);
+      colBg.classList.add('on');
+    }
+    cols.forEach(function (c, i) {
+      var o = orb(g, c.x, 216, 11, null);
+      o.classList.add('role');
+      el('text', { x: 0, y: 34, class: 't-name' }, o, up(c.name));
+      reg(c.id, null, [o]);
+      o.addEventListener('pointerenter', function () {
+        showCol(i);
+      });
+      o.addEventListener('pointerleave', function () {
+        showCol(null);
+      });
+      o.addEventListener('focus', function () {
+        showCol(i);
+      });
+      o.addEventListener('blur', function () {
+        showCol(null);
+      });
+    });
+    rows.forEach(function (r, ri) {
+      var y = Y0 + ri * RH;
+      var rg = el('g', { class: 'm-row' }, g);
+      el('rect', { x: 8, y: y - 15, width: 344, height: RH, rx: 4, class: 'm-row-bg' }, rg);
+      var tx = wrap(rg, r[1], 16, y - 4, 228, 10.5, 'm-txt');
+      if (tx.lines === 1) tx.node.setAttribute('y', y + 1);
+      r[2].forEach(function (v, ci) {
+        var cx = cols[ci].x,
+          cy = y - 2;
+        if (v === 1) el('circle', { cx: cx, cy: cy, r: 5.5, class: 'm-yes' }, rg);
+        else if (v === 2) {
+          el('circle', { cx: cx, cy: cy, r: 6, class: 'm-cond-ring' }, rg);
+          el('circle', { cx: cx, cy: cy, r: 2.3, class: 'm-cond-dot' }, rg);
+        } else el('circle', { cx: cx, cy: cy, r: 2, class: 'm-no' }, rg);
+      });
+      reg(r[0], null, [rg]);
+      rg.addEventListener('pointerenter', function () {
+        showCol(null);
+      });
+    });
+    var ly = Y0 + (rows.length - 1) * RH + 30;
+    el('circle', { cx: 18, cy: ly, r: 4.5, class: 'm-yes-l' }, g);
+    el('text', { x: 28, y: ly + 3, class: 'm-legend' }, g, 'AUTORISÉ');
+    el('circle', { cx: 116, cy: ly, r: 5, class: 'm-cond-ring' }, g);
+    el('circle', { cx: 116, cy: ly, r: 2, class: 'm-cond-dot' }, g);
+    el('text', { x: 126, y: ly + 3, class: 'm-legend' }, g, 'SI AFFECTÉ');
+    el('circle', { cx: 224, cy: ly, r: 2, class: 'm-no' }, g);
+    el('text', { x: 234, y: ly + 3, class: 'm-legend' }, g, 'REFUSÉ');
+  };
+
+  /* ---------- 04 · ARCHITECTURE ---------- */
+  SCENES[3].cbuild = function (g) {
+    decor(g, 180, 400);
+    function ln(d, lx, ly, txt, anchor, cls) {
+      var e = el('g', { class: 'edge' }, g);
+      el('path', { d: d, class: 'edge-line' + (cls ? ' ' + cls : '') }, e);
+      if (txt)
+        el(
+          'text',
+          { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor || 'middle' },
+          e,
+          up(txt),
+        );
+    }
+    ln('M75 254 L157 254', 116, 243, 'https');
+    ln('M203 254 L285 254', 244, 243, 'autres chemins');
+    ln('M180 277 L180 325', 188, 305, '/api/*', 'start');
+    ln('M203 352 L284 352', 244, 341, 'sql paramétré');
+    ln('M157 352 L78 352', 0, 0, '');
+    ln('M52 374 L52 412', 0, 0, '');
+    var t1 = el(
+      'text',
+      { x: 60, y: 388, class: 't-edge', 'text-anchor': 'start' },
+      g,
+      'CLÉ JAMAIS EXPOSÉE',
+    );
+    el('text', { x: 60, y: 399, class: 't-edge', 'text-anchor': 'start' }, g, 'AU NAVIGATEUR');
+    ln('M198 371 C 236 397, 262 425, 288 436', 0, 0, '');
+    ln('M308 458 L308 486', 0, 0, '');
+    el('text', { x: 300, y: 470, class: 't-edge', 'text-anchor': 'end' }, g, 'SMTP · RETRIES');
+    el('text', { x: 300, y: 481, class: 't-edge', 'text-anchor': 'end' }, g, '· BACKOFF');
+    node(g, 'nav', 52, 254, 17, 'Navigateur', null, null, { side: 'top' });
+    node(g, 'proxy', 180, 254, 17, 'Proxy', null, null, { side: 'top' });
+    node(g, 'front', 308, 254, 17, 'Frontend', null, null, { side: 'top' });
+    node(g, 'sup', 52, 352, 15, 'Support IA', null, null, { side: 'top' });
+    node(g, 'back', 180, 352, 22, 'Backend', null, null, { tone: 'lime', side: 'bottom' });
+    node(g, 'db', 308, 352, 20, 'PostgreSQL', null, null, { side: 'top' });
+    node(g, 'ia', 52, 436, 15, 'DeepSeek', null, null, { tone: 'dim', side: 'bottom' });
+    node(g, 'outbox', 308, 436, 15, 'Outbox', null, null, { side: 'top' });
+    node(g, 'smtp', 308, 510, 15, 'SMTP', null, null, { tone: 'dim', side: 'bottom' });
+    /* groupes de tables */
+    el('text', { x: 92, y: 478, class: 't-sub', 'text-anchor': 'start' }, g, 'TABLES · 6 GROUPES');
+    [
+      ['t_id', 'Identités'],
+      ['t_ref', 'Référentiel'],
+      ['t_inc', 'Incidents'],
+      ['t_arb', 'Arbitrage'],
+      ['t_aud', 'Audit'],
+      ['t_out', 'Outbox'],
+    ].forEach(function (t, i) {
+      chip(g, t[0], 92 + (i % 2) * 68, 486 + Math.floor(i / 2) * 28, 64, t[1], null);
+    });
+    /* couches d'un module */
+    el(
+      'text',
+      { x: 12, y: 582, class: 't-sub', 'text-anchor': 'start' },
+      g,
+      "COUCHES D'UN MODULE BACKEND",
+    );
+    var L = [
+      ['l_route', 'Route'],
+      ['l_ctrl', 'Controller'],
+      ['l_serv', 'Service · policy'],
+      ['l_repo', 'Repository'],
+    ];
+    var ws = L.map(function (l) {
+      return Math.ceil(measure(up(l[1]), 'chip-txt')) + 14;
+    });
+    var tot = ws.reduce(function (a, b) {
+        return a + b;
+      }, 0),
+      gap = Math.min(12, (336 - tot) / 3),
+      lx = 12;
+    L.forEach(function (l, i) {
+      chip(g, l[0], lx, 590, ws[i], l[1], null);
+      if (i < 3 && gap >= 8)
+        el(
+          'path',
+          {
+            d: 'M' + (lx + ws[i] + 2) + ' 602 L' + (lx + ws[i] + gap - 2) + ' 602',
+            class: 'edge-line',
+          },
+          g,
+        );
+      lx += ws[i] + gap;
+    });
+  };
+
+  /* ---------- 05 · SÉCURITÉ ---------- */
+  SCENES[4].cbuild = function (g) {
+    decor(g, 180, 380);
+    var TX = 62,
+      RX = 298,
+      YS = [262, 372, 482];
+    var allow = {
+      tk_admin: ['r_admin'],
+      tk_workshop: ['r_workshop', 'r_board'],
+      tk_board: ['r_board'],
+    };
+    var tokIds = ['tk_admin', 'tk_workshop', 'tk_board'],
+      routeIds = ['r_admin', 'r_workshop', 'r_board'];
+    var routeNames = {
+      r_admin: '/api/admin/*',
+      r_workshop: '/api/workshop/*',
+      r_board: '/api/board/data',
+    };
+    var tokNames = { tk_admin: 'JWT admin', tk_workshop: 'JWT atelier', tk_board: 'JWT board' };
+    var links = {};
+    tokIds.forEach(function (t, ti) {
+      links[t] = {};
+      routeIds.forEach(function (r, ri) {
+        var d =
+          'M' +
+          (TX + 26) +
+          ' ' +
+          YS[ti] +
+          ' C 150 ' +
+          YS[ti] +
+          ', 210 ' +
+          YS[ri] +
+          ', ' +
+          (RX - 26) +
+          ' ' +
+          YS[ri];
+        var p = el('path', { d: d, class: 'lnk' }, g);
+        links[t][r] = { p: p, x: el('g', { class: 'xmark' }, g) };
+      });
+    });
+    tokIds.forEach(function (t) {
+      routeIds.forEach(function (r) {
+        var L = links[t][r],
+          pt = { x: 180, y: 372 };
+        try {
+          pt = L.p.getPointAtLength(L.p.getTotalLength() * 0.66);
+        } catch (e) {}
+        el('line', { x1: pt.x - 4.5, y1: pt.y - 4.5, x2: pt.x + 4.5, y2: pt.y + 4.5 }, L.x);
+        el('line', { x1: pt.x - 4.5, y1: pt.y + 4.5, x2: pt.x + 4.5, y2: pt.y - 4.5 }, L.x);
+      });
+    });
+    var gate = el('g', { class: 'gate', transform: 'translate(180 372)' }, g);
+    el('circle', { r: 46, fill: 'url(#sn-glow-core)' }, gate);
+    el('circle', { r: 31, class: 'gate-disc' }, gate);
+    el('text', { x: 0, y: -1, class: 'gate-txt' }, gate, 'GARDES');
+    el('text', { x: 0, y: 10, class: 't-sub' }, gate, 'SERVEUR');
+    el('circle', { r: 38, fill: 'transparent', style: 'cursor:pointer' }, gate);
+    reg('gate', null, [gate]);
+    var tokOrbs = {},
+      routeOrbs = {};
+    tokIds.forEach(function (t, i) {
+      var o = orb(g, TX, YS[i], 20, null);
+      o.querySelector('.orb-dot').setAttribute('r', 3.5);
+      el('text', { x: 0, y: -37, class: 't-name' }, o, up(tokNames[t]));
+      reg(t, null, [o]);
+      tokOrbs[t] = o;
+    });
+    routeIds.forEach(function (r, i) {
+      var o = orb(g, RX, YS[i], 20, null);
+      o.querySelector('.orb-dot').setAttribute('r', 3.5);
+      el('text', { x: 0, y: -37, class: 't-name' }, o, up(routeNames[r]));
+      reg(r, null, [o]);
+      routeOrbs[r] = o;
+    });
+    el('text', { x: 12, y: 548, class: 't-sub', 'text-anchor': 'start' }, g, 'DÉFENSES');
+    var rowsD = [
+      [
+        ['c_jwt', 'JWT cloisonnés'],
+        ['c_cookie', 'Cookies'],
+        ['c_csrf', 'Anti-CSRF'],
+      ],
+      [
+        ['c_reval', 'Revalidation'],
+        ['c_rate', 'Rate limits'],
+      ],
+    ];
+    rowsD.forEach(function (row, ri) {
+      var dx = 12;
+      row.forEach(function (d) {
+        dx += chipAuto(g, d[0], dx, 556 + ri * 30, d[1]) + 8;
+      });
+    });
+    function paintToken(t) {
+      routeIds.forEach(function (r) {
+        routeOrbs[r].classList.remove('ok', 'no');
+      });
+      tokIds.forEach(function (tk) {
+        routeIds.forEach(function (r) {
+          links[tk][r].p.setAttribute('class', 'lnk');
+          links[tk][r].x.setAttribute('class', 'xmark');
+        });
+      });
+      routeIds.forEach(function (r) {
+        var ok = allow[t].indexOf(r) >= 0,
+          L = links[t][r];
+        L.p.setAttribute('class', 'lnk ' + (ok ? 'ok' : 'no'));
+        if (!ok) L.x.setAttribute('class', 'xmark on');
+        routeOrbs[r].classList.add(ok ? 'ok' : 'no');
+      });
+    }
+    sceneState.onSelect = function (id) {
+      if (allow[id]) paintToken(id);
+    };
+    paintToken('tk_workshop');
+  };
+
+  /* ---------- 06 · DESIGN ---------- */
+  SCENES[5].cbuild = function (g) {
+    var cx = 180,
+      cy = 328,
+      RX = 116,
+      RY = 86;
+    decor(g, cx, cy);
+    el('ellipse', { cx: cx, cy: cy, rx: RX, ry: RY, class: 'orbit-line' }, g);
+    el('ellipse', { cx: cx, cy: cy, rx: RX * 0.62, ry: RY * 0.62, class: 'orbit-line faint' }, g);
+    var core = el('g', { class: 'core', transform: 'translate(' + cx + ' ' + cy + ')' }, g);
+    el('circle', { r: 58, class: 'core-halo' }, core);
+    el('circle', { r: 40, class: 'core-mid' }, core);
+    el('circle', { r: 33, class: 'core-disc' }, core);
+    el('text', { x: 0, y: 3.5, class: 'core-txt' }, core, 'MAÎTRISE');
+    el('circle', { r: 44, fill: 'transparent', style: 'cursor:pointer' }, core);
+    reg('d_core', null, [core]);
+    var P = [
+      ['p1', 'P1', 'Hiérarchie'],
+      ['p2', 'P2', 'Silence'],
+      ['p3', 'P3', 'Une question'],
+      ['p4', 'P4', 'Couleur'],
+      ['p5', 'P5', 'Apprentissage'],
+      ['p6', 'P6', 'Sans punir'],
+      ['p7', 'P7', 'Temps'],
+    ];
+    P.forEach(function (p, i) {
+      var a = rad(-90 + i * (360 / 7)),
+        x = cx + RX * Math.cos(a),
+        y = cy + RY * Math.sin(a);
+      node(g, p[0], x, y, 11, p[1] + ' · ' + p[2], null, null, {
+        side: Math.sin(a) < -0.5 ? 'top' : 'bottom',
+      });
+    });
+    el('text', { x: 12, y: 470, class: 'sl-ttl' }, g, "NIVEAUX D'ATTENTION");
+    LEVELS.forEach(function (lv, i) {
+      var lx = 12 + (i % 2) * 172,
+        y = 478 + Math.floor(i / 2) * 30;
+      var lg = el('g', { class: 'lv' }, g);
+      el('rect', { x: lx, y: y, width: 164, height: 24, rx: 5, class: 'lv-box' }, lg);
+      el(
+        'rect',
+        { x: lx + 10, y: y + 7, width: 10, height: 10, rx: 2.5, fill: lv.sw, class: 'lv-sw' },
+        lg,
+      );
+      el('text', { x: lx + 28, y: y + 16, class: 'lv-txt' }, lg, up(lv.name));
+      reg(lv.id, null, [lg]);
+    });
+    var SX = 24,
+      SW = 312,
+      SY = 594,
+      MAXD = 9;
+    function levelFor(d) {
+      return d >= 7 ? 3 : d >= 3 ? 2 : d >= 1 ? 1 : 0;
+    }
+    el('text', { x: 12, y: 552, class: 'sl-ttl' }, g, "P7 · ÂGE D'UN INCIDENT");
+    var val = el('text', { x: 12, y: 570, class: 'sl-val' }, g, '');
+    [
+      [0, 1],
+      [1, 3],
+      [3, 7],
+      [7, MAXD],
+    ].forEach(function (s, i) {
+      el(
+        'rect',
+        {
+          x: SX + (s[0] / MAXD) * SW,
+          y: SY - 2,
+          width: ((s[1] - s[0]) / MAXD) * SW - 1,
+          height: 4,
+          rx: 2,
+          fill: LEVELS[i].sw,
+          opacity: 0.85,
+        },
+        g,
+      );
+    });
+    [1, 3, 7].forEach(function (d) {
+      el(
+        'text',
+        { x: SX + (d / MAXD) * SW, y: SY + 22, class: 'sl-txt', 'text-anchor': 'middle' },
+        g,
+        d + ' J',
+      );
+    });
+    var dayV = 2;
+    var handle = el(
+      'circle',
+      {
+        cx: SX + (dayV / MAXD) * SW,
+        cy: SY,
+        r: 9,
+        class: 'sl-handle',
+        tabindex: 0,
+        role: 'slider',
+        'aria-label': "Ancienneté de l'incident en jours",
+        'aria-valuemin': 0,
+        'aria-valuemax': MAXD,
+        'aria-valuenow': dayV,
+      },
+      g,
+    );
+    var hit = el(
+      'rect',
+      { x: SX - 14, y: SY - 20, width: SW + 28, height: 40, class: 'sl-hit' },
+      g,
+    );
+    function setDay(d, quiet) {
+      dayV = Math.max(0, Math.min(MAXD, d));
+      handle.setAttribute('cx', SX + (dayV / MAXD) * SW);
+      handle.setAttribute('aria-valuenow', dayV.toFixed(1));
+      var lvI = levelFor(dayV);
+      var shown =
+        dayV < 1 ? Math.round(dayV * 24) + ' H' : dayV.toFixed(1).replace('.0', '') + ' J';
+      val.textContent = 'DEPUIS ' + shown + '  ›  ' + up(LEVELS[lvI].name);
+      val.setAttribute('fill', LEVELS[lvI].sw === '#5b6a95' ? '#fff' : LEVELS[lvI].sw);
+      if (!quiet) select(LEVELS[lvI].id);
+    }
+    function svgX(ev) {
+      var pt = svg.createSVGPoint();
+      pt.x = ev.clientX;
+      pt.y = ev.clientY;
+      var m = svg.getScreenCTM();
+      if (!m) return 0;
+      return pt.matrixTransform(m.inverse()).x;
+    }
+    var drag = false;
+    function move(ev) {
+      setDay(((svgX(ev) - SX) / SW) * MAXD);
+    }
+    [hit, handle].forEach(function (t) {
+      t.addEventListener('pointerdown', function (ev) {
+        drag = true;
+        try {
+          t.setPointerCapture(ev.pointerId);
+        } catch (e) {}
+        move(ev);
+      });
+      t.addEventListener('pointermove', function (ev) {
+        if (drag) move(ev);
+      });
+      t.addEventListener('pointerup', function () {
+        drag = false;
+      });
+      t.addEventListener('pointercancel', function () {
+        drag = false;
+      });
+    });
+    handle.addEventListener('keydown', function (ev) {
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        setDay(Math.round((dayV + 0.5) * 2) / 2);
+      }
+      if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        setDay(Math.round((dayV - 0.5) * 2) / 2);
+      }
+      if (ev.key === 'Home') {
+        ev.preventDefault();
+        setDay(0);
+      }
+      if (ev.key === 'End') {
+        ev.preventDefault();
+        setDay(MAXD);
+      }
+    });
+    setDay(dayV, true);
+  };
+
+  /* ---------- 07 · LIVRAISON ---------- */
+  SCENES[6].cbuild = function (g) {
+    decor(g, 180, 400);
+    var y1 = 258,
+      y2 = 378,
+      y3 = 478;
+    function ln(d, lx, ly, txt, anchor, cls) {
+      var e = el('g', { class: 'edge' }, g);
+      el('path', { d: d, class: 'edge-line' + (cls ? ' ' + cls : '') }, e);
+      if (txt)
+        el(
+          'text',
+          { x: lx, y: ly, class: 't-edge', 'text-anchor': anchor || 'middle' },
+          e,
+          up(txt),
+        );
+    }
+    ln('M74 ' + y1 + ' L154 ' + y1, 0, 0, '');
+    ln('M206 ' + y1 + ' L285 ' + y1, 250, y1 - 10, '6 verts');
+    ln('M308 ' + (y1 + 26) + ' L308 ' + (y2 - 27), 300, 340, 'workflow_dispatch', 'end');
+    ln('M286 ' + y2 + ' L206 ' + y2, 246, y2 - 11, 'digests · notes');
+    ln('M158 ' + y2 + ' L78 ' + y2, 118, y2 - 11, 'runbook · vps');
+    ln('M52 ' + (y2 + 25) + ' L52 ' + (y3 - 25), 60, (y2 + y3) / 2 + 3, '@sha256', 'start');
+    ln('M78 ' + y3 + ' L156 ' + y3, 0, 0, '');
+    ln('M204 ' + y3 + ' L282 ' + y3, 243, y3 - 11, 'up --no-build');
+    node(g, 'pr', 52, y1, 19, 'Pull request', 'main protégée', null, { side: 'bottom' });
+    var ci = node(g, 'ci', 180, y1, 16, null, null, null, { tone: 'lime' });
+    el('text', { x: 0, y: 58, class: 't-name' }, ci, '6 CHECKS');
+    el('text', { x: 0, y: 70, class: 't-sub' }, ci, 'REQUIS');
+    for (var i = 0; i < 6; i++) {
+      var a = rad(30 + i * 60),
+        so = orb(g, 180 + 40 * Math.cos(a), y1 + 40 * Math.sin(a), 5.5, 'lime');
+      so.querySelector('.orb-halo').setAttribute('r', 8);
+      so.querySelector('.orb-ring').setAttribute('r', 7);
+      reg('c' + (i + 1), null, [so]);
+    }
+    node(g, 'merge', 308, y1, 19, 'Merge commit', 'main', null, { side: 'top' });
+    node(g, 'release', 308, y2, 19, 'Release', 'tag immuable', null, { side: 'bottom' });
+    node(g, 'backup', 180, y2, 19, 'Sauvegarde', 'backup.sh', null, { side: 'bottom' });
+    node(g, 'pull', 52, y2, 19, 'Pull digest', 'registry', null, { side: 'top' });
+    node(g, 'preflight', 52, y3, 19, 'Préflight', 'avant bascule', null, { side: 'bottom' });
+    node(g, 'deploy', 180, y3, 19, 'Déploiement', 'sans rebuild', null, { side: 'bottom' });
+    node(g, 'health', 308, y3, 21, 'Health = SHA', '/api/health', null, {
+      tone: 'lime',
+      side: 'bottom',
+    });
+    edge(
+      g,
+      'rollback',
+      'M334 ' + y3 + ' L346 ' + y3 + ' L346 566 L16 566 L16 ' + y2 + ' L26 ' + y2,
+      181,
+      556,
+      'rollback · digests de la release précédente',
+      'middle',
+      null,
+      'soft',
+    );
+  };
+
   /* ---------- moteur de scènes ---------- */
-  function go(i: number, focus?: boolean) {
+  function go(i, focus) {
     stopTour();
     state.tab = i;
-    const sc = at(SCENES, i);
+    var sc = SCENES[i];
     curScene = sc;
-    sceneHooks = {};
+    sceneState = {};
     canvas.classList.add('is-out');
     clearTimeout(buildT);
     buildT = setTimeout(
-      () => {
-        if (destroyed) return;
+      function () {
         clear(canvas);
         items = {};
         movers = [];
@@ -2129,88 +3006,140 @@ export function mountSentinelMap(root: HTMLElement): () => void {
       state.anim ? 180 : 0,
     );
 
-    tabEls.forEach((t, k) => {
+    tabEls.forEach(function (t, k) {
       t.classList.toggle('is-on', k === i);
       t.setAttribute('aria-selected', k === i ? 'true' : 'false');
       t.setAttribute('tabindex', k === i ? '0' : '-1');
     });
-    if (focus) at(tabEls, i).focus();
-    tabNum.textContent = String(i + 1).padStart(2, '0');
-    crumb.textContent = `/ SENTINEL / CHAÎNE / ${up(sc.tab)}`;
+    if (focus) tabEls[i].focus();
+    tabNum.textContent = ('0' + (i + 1)).slice(-2);
+    if (!compact) crumb.textContent = '/ SENTINEL / CHAÎNE / ' + up(sc.tab);
     paintBtn(false);
   }
-  function buildScene(sc: Scene) {
-    const g = el('g', null, canvas);
-    el('text', { x: SIDE + 24, y: HEAD + 24, class: 'q-k' }, g, 'QUESTION');
-    el('text', { x: SIDE + 24, y: HEAD + 43, class: 'q-t' }, g, sc.q);
-    sc.build(g);
+  /* Récupère les textes (titres, corps, pastilles) des éléments de la version large,
+     pour que la mise en page compacte affiche exactement les mêmes contenus. */
+  function harvest(sc) {
+    var sItems = items,
+      sMov = movers,
+      sSS = sceneState,
+      sCur = CUR;
+    items = {};
+    movers = [];
+    sceneState = {};
+    CUR = null;
+    try {
+      sc.build(el('g', null, null));
+    } catch (e) {}
+    sc.data = items;
+    items = sItems;
+    movers = sMov;
+    sceneState = sSS;
+    CUR = sCur;
+  }
+  function buildScene(sc) {
+    var g = el('g', null, canvas);
+    if (sc.q) {
+      if (compact) {
+        el('text', { x: 12, y: 138, class: 'q-k' }, g, 'QUESTION');
+        wrap(g, sc.q, 12, 158, 336, 19, 'q-t');
+      } else {
+        el('text', { x: SIDE + 24, y: HEAD + 24, class: 'q-k' }, g, 'QUESTION');
+        el('text', { x: SIDE + 24, y: HEAD + 43, class: 'q-t' }, g, sc.q);
+      }
+    }
+    if (compact) {
+      if (!sc.data) harvest(sc);
+      CUR = sc.data;
+      sc.cbuild(g);
+    } else sc.build(g);
     setSignal(sc.signal);
     select(sc.def, { force: true, tour: true });
     kick();
   }
 
   /* ---------- animation des orbites ---------- */
-  function orbitPos(m: Mover): [number, number] {
-    const o = m.o;
-    const a = rad(o.rot);
-    const x = o.rx * Math.cos(m.t);
-    const y = o.ry * Math.sin(m.t);
+  function orbitPos(m) {
+    var o = m.o,
+      a = rad(o.rot),
+      x = o.rx * Math.cos(m.t),
+      y = o.ry * Math.sin(m.t);
     return [m.cx + x * Math.cos(a) - y * Math.sin(a), m.cy + x * Math.sin(a) + y * Math.cos(a)];
   }
   function placeMovers() {
-    for (const m of movers) {
-      const [px, py] = orbitPos(m);
-      m.g.setAttribute('transform', `translate(${px.toFixed(2)} ${py.toFixed(2)})`);
-    }
+    movers.forEach(function (m) {
+      var p = orbitPos(m);
+      m.g.setAttribute('transform', 'translate(' + p[0].toFixed(2) + ' ' + p[1].toFixed(2) + ')');
+    });
   }
-  let raf = 0;
-  let last = 0;
-  function frame(ts: number) {
+  var raf = 0,
+    last = 0,
+    io = null;
+  function frame(ts) {
     raf = 0;
-    if (destroyed || !movers.length || !state.anim || !state.visible) return;
-    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
+    if (!movers.length || !state.anim || !state.visible) return;
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
     last = ts;
     if (!state.paused) {
-      for (const m of movers) {
+      movers.forEach(function (m) {
         m.time += dt;
         m.t = m.t0 + m.amp * Math.sin(m.time * m.w + m.ph);
-      }
+      });
       placeMovers();
     }
     raf = requestAnimationFrame(frame);
   }
   function kick() {
-    if (destroyed || raf || !movers.length || !state.anim || !state.visible) return;
+    if (raf || !movers.length || !state.anim || !state.visible) return;
     last = 0;
     raf = requestAnimationFrame(frame);
   }
-  let observer: IntersectionObserver | null = null;
   if ('IntersectionObserver' in window) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        state.visible = entries.some((entry) => entry.isIntersecting);
+    io = new IntersectionObserver(
+      function (es) {
+        state.visible = es[0].isIntersecting;
         if (state.visible) kick();
       },
       { threshold: 0.05 },
     );
-    observer.observe(root);
+    io.observe(root);
   }
+  var ro = null;
+  if ('ResizeObserver' in window) {
+    ro = new ResizeObserver(function () {
+      var w = root.getBoundingClientRect().width;
+      if (w && w < BP !== compact) mount(root, state.tab);
+    });
+    ro.observe(root);
+  }
+  root.__pcClean = function () {
+    stopTour();
+    clearTimeout(buildT);
+    if (raf) cancelAnimationFrame(raf);
+    if (io) io.disconnect();
+    if (ro) ro.disconnect();
+  };
 
   /* ---------- démarrage ---------- */
   buildTabs();
-  go(0);
-  void document.fonts?.ready.then(() => {
-    const it = state.sel ? items[state.sel] : undefined;
-    if (!destroyed && it) renderPanel(it);
-  });
+  go(startTab || 0);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      if (state.sel && items[state.sel]) renderPanel(items[state.sel]);
+    });
+  }
+}
 
-  return () => {
-    destroyed = true;
-    if (state.tour) clearInterval(state.tour);
-    clearTimeout(buildT);
-    if (raf) cancelAnimationFrame(raf);
-    observer?.disconnect();
+/**
+ * Mounts the map into `root` and returns the cleanup function.
+ * @param {HTMLElement} root
+ * @returns {() => void}
+ */
+export function mountSentinelMap(root) {
+  mount(root);
+  return function () {
+    if (root.__pcClean) root.__pcClean();
+    root.__pcClean = undefined;
     clear(root);
-    root.classList.remove('sn-map', 'no-anim');
+    root.classList.remove('sn-map', 'compact', 'no-anim');
   };
 }
