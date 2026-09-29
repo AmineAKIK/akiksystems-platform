@@ -452,9 +452,25 @@
 
 .aks-systems-station-pair {
   display: grid;
-  grid-template-columns: 1fr 1.08fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: calc(1.1 * var(--r));
   margin-block: calc(1.9 * var(--r)) calc(2.55 * var(--r));
+}
+
+/* Paired cards share one height, whatever wraps in their captions. */
+.aks-systems-station--pair {
+  display: flex;
+  flex-direction: column;
+}
+
+.aks-systems-station--pair figure {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.aks-systems-station--pair figcaption {
+  flex: 1;
 }
 
 .aks-systems-station--pair .aks-systems-station-media {
@@ -709,10 +725,6 @@
 
   .aks-systems-sentinel-heading > .aks-systems-status {
     justify-self: start;
-  }
-
-  .aks-systems-station-pair {
-    grid-template-columns: 1fr 1fr;
   }
 
   .aks-systems-manifesto h2 {
