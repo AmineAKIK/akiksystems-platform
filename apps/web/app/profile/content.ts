@@ -164,7 +164,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     identity: {
       eyebrow: 'Profil',
       name: ['Mohamed Amine', 'Akik'],
-      photoLabel: 'Photo à venir',
+      photoLabel: 'Portrait de Mohamed Amine Akik',
       role: 'Développeur full-stack',
       roleDetail: 'logiciels métier et opérationnels',
       intro:
@@ -675,7 +675,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     identity: {
       eyebrow: 'Profile',
       name: ['Mohamed Amine', 'Akik'],
-      photoLabel: 'Photo coming soon',
+      photoLabel: 'Portrait of Mohamed Amine Akik',
       role: 'Full-stack developer',
       roleDetail: 'business and operational software',
       intro:

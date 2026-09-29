@@ -6,7 +6,6 @@ import type { ProfileIcon, ProfileLink, ProfilePageContent } from './content';
 
 type Glyph =
   | ProfileIcon
-  | 'person'
   | 'linkedin'
   | 'github'
   | 'mail'
@@ -29,7 +28,6 @@ const glyphs: Record<Glyph, string> = {
   link: 'M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8',
   shield: 'M12 3l7 3v6c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6l7-3zM9 12l2 2 4-4',
   bolt: 'M13 3L4 14h7l-1 7 9-11h-7z',
-  person: 'M12 12a4 4 0 1 0 0-8a4 4 0 1 0 0 8zM4 21a8 8 0 0 1 16 0',
   linkedin:
     'M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zM8 10v7M8 7v.01M12 17v-7M12 13a3 3 0 0 1 6 0v4',
   github: 'M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14',
@@ -203,9 +201,13 @@ function IdentitySection({
         <div className="aks-profile-identity">
           <p className="aks-profile-eyebrow">{identity.eyebrow}</p>
           <div className="aks-profile-person">
-            <div aria-label={identity.photoLabel} className="aks-profile-photo" role="img">
-              <Icon path={glyphs.person} size={34} />
-            </div>
+            <img
+              alt={identity.photoLabel}
+              className="aks-profile-photo"
+              height={400}
+              src="/profile/mohamed-amine-akik.jpg"
+              width={400}
+            />
             <h1 id="profile-title">
               {identity.name[0]}
               <br />

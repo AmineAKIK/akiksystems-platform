@@ -170,13 +170,12 @@
 }
 
 .aks-profile-photo {
-  display: flex;
+  display: block;
   width: 4.75rem;
   height: 4.75rem;
   flex: none;
-  align-items: center;
-  justify-content: center;
   margin-left: 0.4375rem;
+  object-fit: cover;
   border: 1px solid var(--profile-ring);
   border-radius: 50%;
   background: #0f151a;
@@ -184,11 +183,6 @@
     0 0 0 6px var(--profile-bg),
     0 0 0 7px var(--profile-border);
   color: var(--profile-faint);
-}
-
-.aks-profile-photo .aks-profile-icon {
-  width: 1.75rem;
-  height: 1.75rem;
 }
 
 .aks-profile-person h1 {
