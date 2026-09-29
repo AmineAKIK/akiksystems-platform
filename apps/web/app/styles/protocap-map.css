@@ -1,0 +1,915 @@
+/* ProtoCap — interactive map (mounted by app/systems/protocap-map.js).
+ * Ported from protocap-map.html: root class .pc-map and SVG ids pc-* so it can sit
+ * next to the Sentinel map on the same page. */
+
+.pc-map {
+  --sn-font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --sn-card: #070c16;
+  --sn-head: #08101d;
+  --sn-side: #0a111f;
+  --sn-line: rgba(140, 165, 220, 0.16);
+  --sn-blue: #2d55ff;
+  --sn-blue-soft: #8aa5ff;
+  --sn-lime: #c8ff2e;
+  --sn-text: #f3f6ff;
+  --sn-mute: #8b97b3;
+  --sn-dim: #55617c;
+  --sn-amber: #f5b942;
+  --sn-red: #ff5d62;
+  font-family: var(--sn-font);
+  color: var(--sn-text);
+}
+.pc-map .sn-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.pc-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--sn-font);
+}
+.pc-map.compact svg {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.pc-map text {
+  text-rendering: geometricPrecision;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pc-map .sn-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.pc-map [tabindex]:focus {
+  outline: none;
+}
+
+/* cadre */
+.pc-map .head-bg {
+  fill: var(--sn-head);
+}
+.pc-map .side-bg {
+  fill: rgba(10, 17, 31, 0.55);
+}
+.pc-map .rule {
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+
+/* en-tête */
+.pc-map .h-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  fill: var(--sn-text);
+}
+.pc-map .h-crumb {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  fill: var(--sn-dim);
+}
+.pc-map .pill-bg {
+  fill: #f3f4f7;
+}
+.pc-map .pill-txt {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  fill: #0b1020;
+  text-anchor: middle;
+}
+.pc-map .pill:hover .pill-bg,
+.pc-map .pill:focus-visible .pill-bg {
+  fill: #fff;
+}
+
+/* onglets */
+.pc-map .tab-bg {
+  fill: transparent;
+  transition: fill 0.2s;
+}
+.pc-map .tab-txt {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  fill: var(--sn-dim);
+  transition: fill 0.2s;
+}
+.pc-map .tab:hover .tab-txt {
+  fill: #b8c3de;
+}
+.pc-map .tab.is-on .tab-bg {
+  fill: #14286b;
+}
+.pc-map .tab.is-on .tab-txt {
+  fill: #fff;
+}
+.pc-map .tab:focus-visible .tab-bg {
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.pc-map .tab-num {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  fill: var(--sn-blue);
+}
+.pc-map .side-hint {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  fill: var(--sn-dim);
+}
+.pc-map .btn-bg {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.pc-map .btn-txt {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  fill: var(--sn-text);
+}
+.pc-map .btn-ico {
+  fill: var(--sn-lime);
+}
+.pc-map .btn:hover .btn-bg,
+.pc-map .btn:focus-visible .btn-bg {
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.55);
+}
+.pc-map .btn.is-on .btn-bg {
+  stroke: var(--sn-lime);
+}
+
+/* scène */
+.pc-map .canvas {
+  transition: opacity 0.35s ease;
+}
+.pc-map .canvas.is-out {
+  opacity: 0;
+}
+.pc-map .grid-l {
+  stroke: rgba(140, 165, 220, 0.07);
+  stroke-width: 1;
+}
+.pc-map .hint {
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  fill: var(--sn-dim);
+  text-anchor: end;
+}
+.pc-map .orbit-line {
+  fill: none;
+  stroke: rgba(150, 175, 235, 0.3);
+  stroke-width: 1.1;
+}
+.pc-map .orbit-line.faint {
+  stroke: rgba(150, 175, 235, 0.13);
+}
+.pc-map .orbit-line.hot {
+  stroke: rgba(200, 255, 46, 0.6);
+}
+
+/* orbes */
+.pc-map .orb-halo {
+  fill: rgba(45, 85, 255, 0.07);
+  stroke: rgba(125, 155, 255, 0.2);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.pc-map .orb-ring {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.34);
+  stroke-width: 1;
+}
+.pc-map .orb-core {
+  fill: #0a1330;
+  stroke: var(--tone, #4368ff);
+  stroke-width: 1.5;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+.pc-map .orb-dot {
+  fill: var(--tone-soft, #9db4ff);
+}
+.pc-map .orb-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.pc-map .tone-amber {
+  --tone: #f5b942;
+  --tone-soft: #ffd98a;
+}
+.pc-map .tone-lime {
+  --tone: #c8ff2e;
+  --tone-soft: #e3ff8f;
+}
+.pc-map .tone-grey {
+  --tone: #7f8aa6;
+  --tone-soft: #aab4cc;
+}
+.pc-map .tone-red {
+  --tone: #ff5d62;
+  --tone-soft: #ff9da0;
+}
+.pc-map .tone-dim {
+  --tone: #34406a;
+  --tone-soft: #55648f;
+}
+.pc-map .orb.is-active .orb-core {
+  stroke: var(--sn-lime);
+  fill: #12245a;
+}
+.pc-map .orb.is-active .orb-halo {
+  stroke: rgba(200, 255, 46, 0.6);
+  fill: rgba(200, 255, 46, 0.07);
+}
+.pc-map .orb:focus-visible .orb-halo {
+  stroke: #fff;
+}
+.pc-map .orb.is-dim {
+  opacity: 0.35;
+}
+.pc-map .t-name {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+  transition: fill 0.2s;
+}
+.pc-map .t-sub {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  fill: var(--sn-dim);
+  text-anchor: middle;
+}
+.pc-map .orb.is-active .t-name {
+  fill: #fff;
+}
+
+/* cœur */
+.pc-map .core-halo {
+  fill: url(#pc-glow-core);
+}
+.pc-map .core-mid {
+  fill: rgba(45, 85, 255, 0.16);
+  stroke: rgba(120, 150, 255, 0.28);
+  stroke-width: 1;
+}
+.pc-map .core-disc {
+  fill: url(#pc-core);
+  stroke: #6b88ff;
+  stroke-width: 1.4;
+}
+.pc-map .core-txt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: #fff;
+  text-anchor: middle;
+}
+.pc-map .core.is-active .core-disc {
+  stroke: var(--sn-lime);
+}
+.pc-map .core.is-active .core-mid {
+  stroke: rgba(200, 255, 46, 0.55);
+}
+.pc-map .core:focus-visible .core-mid {
+  stroke: #fff;
+}
+
+/* étiquettes de coin */
+.pc-map .corner .t-num {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  fill: var(--sn-blue);
+}
+.pc-map .corner .t-corner {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  fill: #8d99b6;
+  transition: fill 0.2s;
+}
+.pc-map .corner .c-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.pc-map .corner.is-active .t-corner {
+  fill: var(--sn-lime);
+}
+.pc-map .corner:hover .t-corner {
+  fill: #fff;
+}
+.pc-map .corner.is-active:hover .t-corner {
+  fill: var(--sn-lime);
+}
+
+/* liens */
+.pc-map .edge-line {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.42);
+  stroke-width: 1.3;
+  marker-end: url(#pc-arr);
+}
+.pc-map .edge-line.plain {
+  marker-end: none;
+}
+.pc-map .edge-line.soft {
+  stroke: rgba(125, 155, 255, 0.22);
+}
+.pc-map .edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  cursor: pointer;
+}
+.pc-map .t-edge {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  fill: #7684a6;
+  transition: fill 0.2s;
+}
+.pc-map .edge.is-active .edge-line {
+  stroke: var(--sn-lime);
+  stroke-dasharray: 5 5;
+  animation: sn-flow 1s linear infinite;
+  marker-end: url(#pc-arr-hot);
+}
+.pc-map .edge.is-active .t-edge {
+  fill: var(--sn-lime);
+}
+.pc-map .edge:focus-visible .t-edge {
+  fill: #fff;
+}
+.pc-map.no-anim .edge.is-active .edge-line {
+  animation: none;
+}
+@keyframes sn-flow {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* pastilles */
+.pc-map .chip-bg {
+  fill: rgba(20, 40, 110, 0.22);
+  stroke: rgba(125, 155, 255, 0.28);
+  stroke-width: 1;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+  cursor: pointer;
+}
+.pc-map .chip-txt {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+  pointer-events: none;
+  transition: fill 0.2s;
+}
+.pc-map .chip:hover .chip-bg {
+  stroke: rgba(180, 200, 255, 0.6);
+}
+.pc-map .chip.is-active .chip-bg {
+  fill: rgba(200, 255, 46, 0.09);
+  stroke: var(--sn-lime);
+}
+.pc-map .chip.is-active .chip-txt {
+  fill: #fff;
+}
+.pc-map .chip:focus-visible .chip-bg {
+  stroke: #fff;
+}
+
+/* matrice rôles */
+.pc-map .m-row-bg {
+  fill: transparent;
+  transition: fill 0.15s;
+}
+.pc-map .m-row.is-active .m-row-bg {
+  fill: rgba(45, 85, 255, 0.13);
+}
+.pc-map .m-row .m-txt {
+  font-size: 11px;
+  fill: #b2bdd8;
+  transition: fill 0.15s;
+}
+.pc-map .m-row.is-active .m-txt {
+  fill: #fff;
+}
+.pc-map .m-row:focus-visible .m-row-bg {
+  stroke: var(--sn-blue-soft);
+}
+.pc-map .m-sep {
+  stroke: rgba(140, 165, 220, 0.09);
+}
+.pc-map .m-no {
+  fill: #2a3556;
+}
+.pc-map .m-yes {
+  fill: var(--sn-blue);
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.pc-map .m-cond-ring {
+  fill: none;
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1.3;
+}
+.pc-map .m-cond-dot {
+  fill: var(--sn-blue-soft);
+}
+.pc-map .m-col-bg {
+  fill: rgba(200, 255, 46, 0.045);
+  stroke: rgba(200, 255, 46, 0.28);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.pc-map .m-col-bg.on {
+  opacity: 1;
+}
+.pc-map .m-legend {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  fill: var(--sn-dim);
+}
+.pc-map .m-yes-l {
+  fill: var(--sn-blue);
+  stroke: var(--sn-blue-soft);
+  stroke-width: 1;
+}
+.pc-map .role.is-active .orb-core {
+  stroke: var(--sn-lime);
+}
+
+/* sécurité */
+.pc-map .lnk {
+  fill: none;
+  stroke: rgba(125, 155, 255, 0.1);
+  stroke-width: 1.1;
+}
+.pc-map .lnk.ok {
+  stroke: var(--sn-lime);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 6;
+  animation: sn-flow 1s linear infinite;
+}
+.pc-map .lnk.no {
+  stroke: rgba(255, 93, 98, 0.55);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 5;
+}
+.pc-map.no-anim .lnk.ok {
+  animation: none;
+}
+.pc-map .xmark {
+  stroke: var(--sn-red);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.pc-map .xmark.on {
+  opacity: 1;
+}
+.pc-map .orb.ok .orb-core {
+  stroke: var(--sn-lime);
+}
+.pc-map .orb.no .orb-core {
+  stroke: rgba(255, 93, 98, 0.7);
+}
+.pc-map .gate-txt {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: #dfe6fa;
+  text-anchor: middle;
+}
+.pc-map .gate-disc {
+  fill: #0d1838;
+  stroke: rgba(125, 155, 255, 0.45);
+  stroke-width: 1.2;
+}
+.pc-map .gate.is-active .gate-disc {
+  stroke: var(--sn-lime);
+}
+
+/* niveaux d'attention + curseur */
+.pc-map .lv-sw {
+  stroke-width: 1.2;
+}
+.pc-map .lv-txt {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  transition: fill 0.2s;
+}
+.pc-map .lv.is-active .lv-txt {
+  fill: #fff;
+}
+.pc-map .lv.is-active .lv-box {
+  stroke: #fff;
+}
+.pc-map .lv-box {
+  fill: rgba(255, 255, 255, 0.02);
+  stroke: transparent;
+  stroke-width: 1;
+  cursor: pointer;
+}
+.pc-map .sl-track {
+  stroke: rgba(140, 165, 220, 0.22);
+  stroke-width: 2;
+}
+.pc-map .sl-hit {
+  fill: transparent;
+  cursor: ew-resize;
+}
+.pc-map .sl-handle {
+  fill: #fff;
+  stroke: var(--sn-blue);
+  stroke-width: 2;
+  cursor: grab;
+}
+.pc-map .sl-handle:focus-visible {
+  stroke: var(--sn-lime);
+}
+.pc-map .sl-txt {
+  font-size: 8px;
+  letter-spacing: 0.13em;
+  fill: var(--sn-dim);
+}
+.pc-map .sl-ttl {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  fill: #a9b4d0;
+}
+.pc-map .sl-val {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  fill: #fff;
+}
+
+/* panneau de détail */
+.pc-map .panel-bg {
+  fill: rgba(9, 15, 30, 0.92);
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+.pc-map .p-kick {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: var(--sn-lime);
+}
+.pc-map .p-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  fill: #fff;
+}
+.pc-map .p-body {
+  font-size: 12px;
+  fill: #a3aecb;
+}
+.pc-map .p-test {
+  font-size: 11.5px;
+  fill: #dfe6fa;
+  font-style: italic;
+}
+.pc-map .p-test-k {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  fill: var(--sn-lime);
+}
+.pc-map .tag-bg {
+  fill: transparent;
+  stroke: rgba(125, 155, 255, 0.38);
+  stroke-width: 1;
+}
+.pc-map .tag-txt {
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  fill: #a9b4d0;
+  text-anchor: middle;
+}
+.pc-map .tag.ok .tag-bg {
+  stroke: rgba(200, 255, 46, 0.7);
+}
+.pc-map .tag.ok .tag-txt {
+  fill: var(--sn-lime);
+}
+.pc-map .tag.no .tag-bg {
+  stroke: rgba(255, 93, 98, 0.55);
+}
+.pc-map .tag.no .tag-txt {
+  fill: #ff9da0;
+}
+.pc-map .sig-bg {
+  fill: rgba(9, 15, 30, 0.92);
+  stroke: var(--sn-line);
+  stroke-width: 1;
+}
+.pc-map .sig-lab {
+  font-size: 7.5px;
+  letter-spacing: 0.13em;
+  fill: var(--sn-mute);
+}
+.pc-map .sig-val {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--sn-lime);
+}
+.pc-map .q-k {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  fill: var(--sn-blue);
+}
+.pc-map .q-t {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  fill: #eef2ff;
+}
+.pc-map .note {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  fill: var(--sn-dim);
+}
+.pc-map .note-k {
+  fill: var(--sn-lime);
+  font-weight: 700;
+}
+
+.pc-map.no-anim .canvas {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-map .canvas {
+    transition: none;
+  }
+  .pc-map .edge.is-active .edge-line,
+  .pc-map .lnk.ok {
+    animation: none;
+  }
+}
+
+/* --- mise en page compacte : tailles de texte relevées pour rester lisible sur mobile --- */
+.pc-map.compact .t-name {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.pc-map.compact .t-sub {
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+}
+.pc-map.compact .t-edge {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+.pc-map.compact .chip-txt {
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+}
+.pc-map.compact .tab-txt {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+}
+.pc-map.compact .btn-txt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.pc-map.compact .p-kick {
+  font-size: 9px;
+}
+.pc-map.compact .p-title {
+  font-size: 16px;
+}
+.pc-map.compact .p-body {
+  font-size: 12px;
+}
+.pc-map.compact .p-test {
+  font-size: 11.5px;
+}
+.pc-map.compact .tag-txt {
+  font-size: 8.5px;
+}
+.pc-map.compact .sig-lab {
+  font-size: 8.5px;
+}
+.pc-map.compact .sig-val {
+  font-size: 10px;
+}
+.pc-map.compact .sl-ttl {
+  font-size: 9px;
+}
+.pc-map.compact .sl-txt {
+  font-size: 8.5px;
+}
+.pc-map.compact .q-k {
+  font-size: 8.5px;
+}
+.pc-map.compact .q-t {
+  font-size: 15px;
+}
+.pc-map.compact .note {
+  font-size: 8.5px;
+}
+.pc-map.compact .core-txt {
+  font-size: 10px;
+}
+.pc-map.compact .pc-big {
+  font-size: 16px;
+}
+.pc-map.compact .pc-mid {
+  font-size: 11px;
+}
+.pc-map.compact .pc-msg {
+  font-size: 11px;
+}
+.pc-map.compact .ev-state {
+  font-size: 11px;
+}
+.pc-map.compact .lv-txt {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+.pc-map.compact .lv-dim {
+  display: none;
+}
+/* --- ajouts Protocap --- */
+.pc-map .edge.is-dim {
+  opacity: 0.28;
+}
+.pc-map .t-sub.out-ok,
+.pc-map .t-name.out-ok,
+.pc-map .pc-mid.out-ok,
+.pc-map .pc-big.out-ok,
+.pc-map .pc-msg.out-ok {
+  fill: var(--sn-lime);
+}
+.pc-map .t-sub.out-no,
+.pc-map .t-name.out-no,
+.pc-map .pc-mid.out-no,
+.pc-map .pc-big.out-no,
+.pc-map .pc-msg.out-no {
+  fill: #ff9da0;
+}
+.pc-map .t-sub.out-warn,
+.pc-map .t-name.out-warn,
+.pc-map .pc-mid.out-warn,
+.pc-map .pc-big.out-warn,
+.pc-map .pc-msg.out-warn {
+  fill: var(--sn-amber);
+}
+.pc-map .sl-fill {
+  stroke: var(--sn-blue-soft);
+  stroke-width: 2;
+}
+.pc-map .pc-big {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  fill: #fff;
+}
+.pc-map .pc-mid {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: #dfe6fa;
+}
+.pc-map .pc-msg {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: #a9b4d0;
+}
+.pc-map .card2-bg {
+  fill: rgba(20, 40, 110, 0.16);
+  stroke: rgba(125, 155, 255, 0.26);
+  stroke-width: 1;
+  transition:
+    stroke 0.2s,
+    fill 0.2s;
+}
+.pc-map .card2 {
+  cursor: pointer;
+}
+.pc-map .card2.is-active .card2-bg {
+  stroke: rgba(180, 200, 255, 0.6);
+}
+.pc-map .card2.sel .card2-bg {
+  stroke: var(--sn-lime);
+  fill: rgba(200, 255, 46, 0.05);
+}
+.pc-map .card2:focus-visible .card2-bg {
+  stroke: #fff;
+}
+.pc-map .ev {
+  transition: opacity 0.35s ease;
+}
+.pc-map .ev-bg {
+  fill: rgba(20, 40, 110, 0.28);
+  stroke: rgba(125, 155, 255, 0.32);
+  stroke-width: 1;
+}
+.pc-map .ev.wait .ev-bg {
+  stroke-dasharray: 4 4;
+}
+.pc-map .ev.bad .ev-bg {
+  stroke: rgba(255, 93, 98, 0.75);
+}
+.pc-map .ev.good .ev-bg {
+  stroke: var(--sn-lime);
+}
+.pc-map .ev-state {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: #dfe6fa;
+}
+.pc-map .ev.bad .ev-state {
+  fill: #ff9da0;
+}
+.pc-map .ev.good .ev-state {
+  fill: var(--sn-lime);
+}
+.pc-map .orb.door .t-name,
+.pc-map .orb.door .t-sub {
+  paint-order: stroke;
+  stroke: var(--sn-halo, #070c16);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.pc-map .lv-dim {
+  fill: var(--sn-dim);
+  font-weight: 500;
+}
+.pc-map .orb.cur .orb-core {
+  stroke: var(--sn-lime);
+  fill: #1a3170;
+}
+.pc-map .orb.cur .orb-halo {
+  stroke: rgba(200, 255, 46, 0.6);
+  fill: rgba(200, 255, 46, 0.07);
+}
+.pc-map .orb.cur .t-name {
+  fill: #fff;
+}
+.pc-map .lnk.fsm {
+  stroke: rgba(125, 155, 255, 0.3);
+  marker-end: url(#pc-arr);
+}
+.pc-map .lnk.fsm.ok {
+  stroke: var(--sn-lime);
+  marker-end: url(#pc-arr-hot);
+}
+.pc-map .orb.shake .orb-core {
+  animation: sn-flash 0.6s ease;
+}
+@keyframes sn-flash {
+  0%,
+  55% {
+    stroke: #ff5d62;
+    fill: #3a1420;
+  }
+}
+.pc-map .chip.is-active .chip-bg,
+.pc-map .chip[aria-pressed='true'] .chip-bg {
+  fill: rgba(200, 255, 46, 0.09);
+  stroke: var(--sn-lime);
+}
+
+.pc-map .pc-ptr {
+  cursor: pointer;
+}

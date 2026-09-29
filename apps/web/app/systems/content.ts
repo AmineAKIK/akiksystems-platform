@@ -9,12 +9,14 @@ export interface SystemsAction {
 }
 
 export interface SystemsStation {
-  id: 'cirrus' | 'mosaique' | 'radar-cli' | 'sonar' | 'detour';
+  id: 'protocap' | 'mosaique' | 'radar-cli' | 'sonar' | 'detour';
   name: string;
   function: string;
   status: SystemsStatus;
   statusLabel: string;
   note: string;
+  /** Accessible name of the interactive map, for stations that have one. */
+  mapLabel?: string;
 }
 
 export interface SystemsTool {
@@ -120,12 +122,13 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     },
     stations: [
       {
-        id: 'cirrus',
-        name: 'CIRRUS',
-        function: 'Lire les transformations lentes avant qu’elles ne deviennent visibles.',
+        id: 'protocap',
+        name: 'PROTOCAP',
+        function: 'Huit outils de poste qui disent honnêtement ce qu’ils prouvent.',
         status: 'deployed',
-        statusLabel: 'FLUX ACTIF',
-        note: 'Orchestration et circulation des décisions.',
+        statusLabel: 'EN LIGNE',
+        note: 'Démonstrateur d’ingénierie pour la ligne de production.',
+        mapLabel: 'Carte interactive de ProtoCap',
       },
       {
         id: 'mosaique',
@@ -257,12 +260,14 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     },
     stations: [
       {
-        id: 'cirrus',
-        name: 'CIRRUS',
-        function: 'Read slow transformations before they become visible.',
+        id: 'protocap',
+        name: 'PROTOCAP',
+        function:
+          'Eight shop-floor tools that state honestly what they prove. Map content is in French.',
         status: 'deployed',
-        statusLabel: 'ACTIVE FLOW',
-        note: 'Decision orchestration and circulation.',
+        statusLabel: 'ONLINE',
+        note: 'Engineering demonstrator for the production line.',
+        mapLabel: 'ProtoCap interactive map',
       },
       {
         id: 'mosaique',

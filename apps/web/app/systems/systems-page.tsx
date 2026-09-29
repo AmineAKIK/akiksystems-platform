@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router';
 
+import { ProtocapMap } from './protocap-map-view';
 import { SentinelMap } from './sentinel-map-view';
 import type { SystemsAction, SystemsPageContent, SystemsStation, SystemsStatus } from './content';
 
@@ -20,7 +21,7 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
   },
 };
 
-const stationMedia: Record<Exclude<SystemsStation['id'], 'cirrus'>, string> = {
+const stationMedia: Record<Exclude<SystemsStation['id'], 'protocap'>, string> = {
   mosaique: '/systems/mosaique.webp',
   'radar-cli': '/systems/radar-cli.webp',
   sonar: '/systems/sonar.webp',
@@ -71,7 +72,7 @@ function StationImage({
   station: SystemsStation;
   compact?: boolean;
 }) {
-  if (station.id === 'cirrus') return null;
+  if (station.id === 'protocap') return null;
 
   return (
     <img
@@ -197,10 +198,7 @@ function StationFeature({ locale, station }: { locale: 'en' | 'fr'; station: Sys
   return (
     <article className="aks-systems-station aks-systems-station--feature">
       <figure>
-        <div
-          aria-hidden="true"
-          className="aks-systems-station-media aks-systems-station-backdrop"
-        />
+        <ProtocapMap label={station.mapLabel ?? station.name} />
         <figcaption>
           <div>
             <p>{station.note}</p>
@@ -376,7 +374,7 @@ export function SystemsPage({
     return match;
   };
 
-  const cirrus = station('cirrus');
+  const protocap = station('protocap');
   const mosaique = station('mosaique');
   const radar = station('radar-cli');
   const sonar = station('sonar');
@@ -400,7 +398,7 @@ export function SystemsPage({
             </div>
             <p>{content.operation.intro}</p>
           </div>
-          <StationFeature locale={locale} station={cirrus} />
+          <StationFeature locale={locale} station={protocap} />
           <StationPair locale={locale} stations={[mosaique, radar]} />
           <QuickStationRow locale={locale} stations={[sonar, detour]} />
         </div>

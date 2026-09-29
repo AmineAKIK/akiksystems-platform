@@ -109,6 +109,8 @@ async function inspectViewport(browser, viewport) {
     const sentinel = document.querySelector('.aks-systems-sentinel-map')?.getBoundingClientRect();
     const sentinelMounted =
       document.querySelector('.aks-systems-sentinel-map svg [role="tab"]') !== null;
+    const protocapMounted =
+      document.querySelector('.aks-systems-protocap-map svg [role="tab"]') !== null;
     const feature = document
       .querySelector('.aks-systems-station--feature figure')
       ?.getBoundingClientRect();
@@ -126,6 +128,7 @@ async function inspectViewport(browser, viewport) {
       smallestText,
       sentinelWidth: sentinel?.width ?? 0,
       sentinelMounted,
+      protocapMounted,
       featureWidth: feature?.width ?? 0,
       pageWidth: document.querySelector('.aks-systems-page')?.getBoundingClientRect().width ?? 0,
     };
@@ -172,6 +175,7 @@ async function inspectViewport(browser, viewport) {
       measurement.sentinelWidth > 0 && measurement.sentinelWidth <= measurement.pageWidth + 1,
     );
     assert.ok(measurement.sentinelMounted, 'Sentinel map must mount its interactive SVG');
+    assert.ok(measurement.protocapMounted, 'ProtoCap map must mount its interactive SVG');
     assert.ok(
       measurement.featureWidth > 0 && measurement.featureWidth <= measurement.pageWidth + 1,
     );
