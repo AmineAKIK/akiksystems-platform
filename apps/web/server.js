@@ -42,17 +42,11 @@ const publicSitemapEntries = {
     ['/en', '/fr'],
     ['/en/profile', '/fr/profil'],
     ['/en/systems', '/fr/systems'],
-    ['/en/privacy', '/fr/confidentialite'],
-    ['/en/legal-notice', '/fr/mentions-legales'],
-    ['/en/cookies', '/fr/cookies'],
   ],
   fr: [
     ['/fr', '/en'],
     ['/fr/profil', '/en/profile'],
     ['/fr/systems', '/en/systems'],
-    ['/fr/confidentialite', '/en/privacy'],
-    ['/fr/mentions-legales', '/en/legal-notice'],
-    ['/fr/cookies', '/en/cookies'],
   ],
 };
 

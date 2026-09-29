@@ -16,25 +16,11 @@ describe('legal pages', () => {
     expect(legalPageHref('cookies', 'fr')).toBe('/fr/cookies');
   });
 
-  it('publishes canonical, reciprocal locale, and x-default metadata', () => {
+  it('keeps the legal pages unindexed while they are in preparation', () => {
     const metadata = legalPageMeta('privacy', 'fr');
-    expect(metadata).toContainEqual({
-      tagName: 'link',
-      rel: 'canonical',
-      href: 'https://akiksystems.fr/fr/confidentialite',
-    });
-    expect(metadata).toContainEqual({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: 'en',
-      href: 'https://akiksystems.com/en/privacy',
-    });
-    expect(metadata).toContainEqual({
-      tagName: 'link',
-      rel: 'alternate',
-      hrefLang: 'x-default',
-      href: 'https://akiksystems.com/en/privacy',
-    });
+    expect(metadata).toContainEqual({ title: 'Confidentialité · AkikSystems' });
+    expect(metadata).toContainEqual(expect.objectContaining({ name: 'robots' }));
+    expect(metadata).not.toContainEqual(expect.objectContaining({ rel: 'canonical' }));
   });
 
   it('documents the code-only privacy contract in both locales', () => {

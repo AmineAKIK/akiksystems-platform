@@ -40,7 +40,7 @@ export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestin
         en: 'Projects, collaborations, or missions. Let’s build what deserves to exist.',
         fr: 'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
       },
-      href: { en: '/en/profile#contact', fr: '/fr/profil#contact' },
+      soon: true,
     },
     profile: {
       label: {

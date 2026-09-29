@@ -126,8 +126,9 @@ async function measure(page) {
       doorOrder: [...document.querySelectorAll('.aks-home-door')].map(
         (door) => door.dataset.destination,
       ),
-      legalCount: document.querySelectorAll(".aks-experience-footer[data-home='true'] nav a")
-        .length,
+      legalCount: document.querySelectorAll(
+        ".aks-experience-footer[data-home='true'] nav [data-state='soon']",
+      ).length,
       background: getComputedStyle(
         document.querySelector('.aks-experience-frame[data-home="true"]'),
       ).backgroundImage,
@@ -653,9 +654,15 @@ async function assertTouchSelection(browser) {
     assert.equal(soon.previewState, 'active', 'a door in preparation must show its preview');
     assert.equal(new URL(page.url()).pathname, '/fr', 'a door in preparation must not navigate');
 
+    // Perspectives is in preparation too: a second tap keeps the preview and stays home.
     await perspective.tap();
     await perspective.tap();
-    await page.waitForURL('**/fr/profil#contact');
+    assert.equal(new URL(page.url()).pathname, '/fr', 'Perspectives must not navigate');
+
+    const profile = page.locator('.aks-home-door[data-destination="profile"]');
+    await profile.tap();
+    await profile.tap();
+    await page.waitForURL('**/fr/profil');
   } finally {
     await context.close();
   }
@@ -679,14 +686,8 @@ async function assertKeyboardOrder(browser) {
       }),
     );
 
-    assert.deepEqual(order, [
-      'Perspectives',
-      'Profil',
-      'Systèmes',
-      'Confidentialité',
-      'Mentions légales',
-      'Cookies',
-    ]);
+    // Doors and legal pages in preparation are not links, so they are not in the tab order.
+    assert.deepEqual(order, ['Profil', 'Systèmes']);
   } finally {
     await context.close();
   }

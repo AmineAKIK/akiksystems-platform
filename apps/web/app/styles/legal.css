@@ -171,3 +171,16 @@
     gap: var(--aks-space-7);
   }
 }
+
+/* Legal pages in preparation: named, not links, with the same quiet status as the portal doors. */
+.aks-experience-footer-inner nav [data-state='soon'] {
+  cursor: default;
+}
+
+.aks-experience-footer-status {
+  color: rgb(255 255 255 / 64%);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+}

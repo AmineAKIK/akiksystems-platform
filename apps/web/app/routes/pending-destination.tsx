@@ -51,18 +51,36 @@ export function PendingDestinationRoute({
   locale: Locale;
   destinationId: GlobalDestinationId;
 }) {
-  const destination = destinationById(destinationId);
+  return (
+    <PendingPage
+      locale={locale}
+      marker={destinationId}
+      title={destinationById(destinationId).label[locale]}
+    />
+  );
+}
+
+/** A public page in preparation: not indexed, not linked, and a way back home. */
+export function PendingPage({
+  locale,
+  marker,
+  title,
+}: {
+  locale: Locale;
+  marker: string;
+  title: string;
+}) {
   const labels = copy[locale];
 
   return (
-    <main className="aks-proof-page" data-pending-destination={destinationId}>
+    <main className="aks-proof-page" data-pending-destination={marker}>
       <Container>
         <div className="aks-proof-stack">
           <Text className="aks-proof-eyebrow" size="sm" tone="muted">
             {labels.eyebrow}
           </Text>
           <Heading level={1} size="lg">
-            {destination.label[locale]}
+            {title}
           </Heading>
           <Text tone="muted">{labels.body}</Text>
           <Link href={`/${locale}`}>{labels.home}</Link>
