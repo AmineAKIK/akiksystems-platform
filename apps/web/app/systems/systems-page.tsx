@@ -75,6 +75,22 @@ function StationImage({
 }) {
   if (station.id === 'protocap') return null;
 
+  if (station.id === 'oria' && !compact) {
+    return (
+      <picture>
+        <source media="(max-width: 30rem)" srcSet="/systems/oria-portrait.svg" />
+        <img
+          alt=""
+          aria-hidden="true"
+          className="aks-systems-station-image"
+          decoding="async"
+          loading="lazy"
+          src={stationMedia.oria}
+        />
+      </picture>
+    );
+  }
+
   return (
     <img
       alt=""

@@ -1549,30 +1549,14 @@
   }
 }
 
-/* Oria is a portrait cover: it is shown whole, framed on the card, never cropped. */
-.aks-systems-station--pair[data-station='oria'] .aks-systems-station-image {
-  position: absolute;
-  top: calc(3.1 * var(--r));
-  left: calc(1.2 * var(--r));
-  width: calc(100% - 2.4 * var(--r));
-  height: calc(100% - 4.3 * var(--r));
-  object-fit: contain;
-  object-position: center;
+/* The Oria cover is drawn at the card's own ratio and carries its own label. */
+.aks-systems-station--pair[data-station='oria'] .aks-systems-media-label {
+  display: none;
 }
 
-/* One column: the cover takes its own portrait height instead of a letterbox. */
-@media (max-width: 48rem) {
+/* Phones switch to the portrait cover, at its own height. */
+@media (max-width: 30rem) {
   .aks-systems-station--pair[data-station='oria'] .aks-systems-station-media {
-    display: grid;
-    aspect-ratio: auto;
-    justify-items: center;
-    padding: calc(3.1 * var(--r)) calc(1.2 * var(--r)) calc(1.2 * var(--r));
-  }
-
-  .aks-systems-station--pair[data-station='oria'] .aks-systems-station-image {
-    position: static;
-    width: min(100%, calc(28 * var(--r)));
-    height: auto;
     aspect-ratio: 2 / 3;
   }
 }
