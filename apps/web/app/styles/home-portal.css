@@ -722,7 +722,7 @@
         clamp(1.375rem, min(2.1vw, 3.1dvh), 2.125rem) + 0.625rem
     );
     --aks-home-preview-top: calc(46% + var(--aks-home-center-half-height) + 0.75rem);
-    --aks-home-perspective-top: calc(46% - var(--aks-home-center-half-height) - 1.75rem);
+    --aks-home-perspective-top: calc(46% - var(--aks-home-center-half-height) - 3.125rem);
   }
 
   .aks-home-portal {

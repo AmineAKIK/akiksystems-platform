@@ -17,6 +17,7 @@ import {
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
 import { homeDestinationOrder, homeDestinationPresentation } from './home-portal-content';
+import { LanguageSwitch } from './language-switch';
 import {
   homeDescriptionEvent,
   type HomeDescriptionDetail,
@@ -74,8 +75,6 @@ function ParisContext({ locale }: { locale: Locale }) {
   }, []);
 
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
-  const localeName = locale === 'fr' ? 'Français' : 'English';
-  const alternateName = alternateLocale === 'fr' ? 'français' : 'English';
   const parisContext =
     now === null ? { context: '--:--:-- · PARIS UTC', date: '—' } : formatParisContext(now, locale);
 
@@ -90,27 +89,10 @@ function ParisContext({ locale }: { locale: Locale }) {
           <span className="aks-home-clock-date">{parisContext.date}</span>
         </time>
       </p>
-      <Link
-        aria-label={
-          locale === 'fr'
-            ? localeName + ' actif. Afficher en ' + alternateName + '.'
-            : localeName + ' active. View in ' + alternateName + '.'
-        }
-        className="aks-home-language"
-        hrefLang={alternateLocale}
-        prefetch="intent"
+      <LanguageSwitch
+        locale={locale}
         to={publicLanguageHref(alternateLocale, '/' + alternateLocale)}
-      >
-        <span aria-hidden="true" className="aks-home-language-display">
-          <span className="aks-home-language-current" lang={locale}>
-            {locale.toUpperCase()}
-          </span>
-          <span className="aks-home-language-separator">/</span>
-          <span className="aks-home-language-target" lang={alternateLocale}>
-            {alternateLocale.toUpperCase()}
-          </span>
-        </span>
-      </Link>
+      />
     </div>
   );
 }
