@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router';
 import {
   destinationFromPathname,
   destinationHref,
-  globalDestinations,
+  openDestinations,
 } from '../i18n/global-destinations';
 import { ExperienceFooter } from './experience-footer';
 import { LanguageSwitch } from './language-switch';
@@ -94,7 +94,7 @@ export function ExperienceShell({
               >
                 {dictionary.shell.homeLabel}
               </RouterLink>
-              {globalDestinations.map((destination) => (
+              {openDestinations.map((destination) => (
                 <RouterLink
                   aria-current={destinationId === destination.id ? 'page' : undefined}
                   className="aks-link"
@@ -134,7 +134,7 @@ export function ExperienceShell({
                 >
                   {dictionary.shell.homeLabel}
                 </RouterLink>
-                {globalDestinations.map((destination) => (
+                {openDestinations.map((destination) => (
                   <RouterLink
                     aria-current={destinationId === destination.id ? 'page' : undefined}
                     className="aks-link"

@@ -24,7 +24,9 @@ export function LegalPageView({ content, id, locale }: LegalPageViewProps) {
               {content.description}
             </Text>
             <Text className="aks-legal-updated" size="sm" tone="muted">
-              {content.updatedLabel}:{' '}
+              {content.updatedLabel}
+              {/* French typography: a non-breaking space before the colon. */}
+              {locale === 'fr' ? '\u00a0: ' : ': '}
               <time dateTime={content.updatedAtIso}>{content.updatedAt}</time>
             </Text>
           </header>
