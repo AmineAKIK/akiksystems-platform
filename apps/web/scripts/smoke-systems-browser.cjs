@@ -96,6 +96,16 @@ async function inspectViewport(browser, viewport) {
     });
 
     const hero = document.querySelector('.aks-systems-hero')?.getBoundingClientRect();
+    const rail = document.querySelector('.aks-systems-hero-rail')?.getBoundingClientRect();
+    let smallestText = Infinity;
+    for (const element of document.querySelectorAll('.aks-systems-page *')) {
+      if (element.closest('svg')) continue;
+      const hasText = [...element.childNodes].some(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '',
+      );
+      const size = parseFloat(getComputedStyle(element).fontSize);
+      if (hasText && size > 0) smallestText = Math.min(smallestText, size);
+    }
     const sentinel = document.querySelector('.aks-systems-sentinel-map')?.getBoundingClientRect();
     const sentinelMounted =
       document.querySelector('.aks-systems-sentinel-map svg [role="tab"]') !== null;
@@ -112,6 +122,8 @@ async function inspectViewport(browser, viewport) {
       naturalImages,
       touchTargets,
       heroHeight: hero?.height ?? 0,
+      railBottom: rail?.bottom ?? Infinity,
+      smallestText,
       sentinelWidth: sentinel?.width ?? 0,
       sentinelMounted,
       featureWidth: feature?.width ?? 0,
@@ -140,8 +152,21 @@ async function inspectViewport(browser, viewport) {
     for (const image of measurement.naturalImages) {
       assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');
     }
+    // The hero fills the first screen within its bounds and its rail stays inside it.
+    // Mirrors --r in systems.css: 1rem up to 1440px, then 0.35rem + 0.72vw, capped at 2rem.
+    const unit = Math.min(Math.max(16, 5.6 + 0.0072 * viewport.width), 32);
+    const firstScreen = Math.min(Math.max(viewport.height, 30 * unit), 62 * unit);
     assert.ok(
-      measurement.heroHeight >= (viewport.width <= 480 ? 900 : viewport.width <= 768 ? 700 : 680),
+      Math.abs(measurement.heroHeight - firstScreen) <= 1,
+      viewport.width + 'px hero measured ' + measurement.heroHeight + 'px, expected ' + firstScreen,
+    );
+    assert.ok(
+      measurement.railBottom <= firstScreen + 1,
+      viewport.width + 'px operation rail must stay within the first screen',
+    );
+    assert.ok(
+      measurement.smallestText >= 11,
+      viewport.width + 'px smallest Systems text is ' + measurement.smallestText + 'px',
     );
     assert.ok(
       measurement.sentinelWidth > 0 && measurement.sentinelWidth <= measurement.pageWidth + 1,
@@ -174,16 +199,17 @@ async function inspectViewport(browser, viewport) {
   const browser = await chromium.launch({ headless: true });
   try {
     for (const viewport of [
+      { width: 320, height: 568 },
       { width: 390, height: 844 },
+      { width: 844, height: 390 },
       { width: 768, height: 1024 },
       { width: 1280, height: 720 },
       { width: 1440, height: 900 },
+      { width: 2560, height: 1440 },
     ]) {
       await inspectViewport(browser, viewport);
     }
-    console.log(
-      'Systems visual smoke passed at 390, 768, 1280 and 1440px with dossier media loaded.',
-    );
+    console.log('Systems visual smoke passed from 320 to 2560px with dossier media loaded.');
   } finally {
     await browser.close();
     server.kill('SIGTERM');
