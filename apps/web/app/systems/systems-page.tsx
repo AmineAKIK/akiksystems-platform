@@ -23,10 +23,16 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
 };
 
 const stationMedia: Record<Exclude<SystemsStation['id'], 'protocap'>, string> = {
-  mosaique: '/systems/mosaique.webp',
+  alkhawarizmi: '/systems/alkhawarizmi.svg',
   oria: '/systems/oria.svg',
   sonar: '/systems/sonar.webp',
   detour: '/systems/detour.webp',
+};
+
+/* Covers drawn at the card's ratio fall back to their portrait artwork on phones. */
+const stationPortraits: Partial<Record<SystemsStation['id'], string>> = {
+  alkhawarizmi: '/systems/alkhawarizmi-portrait.svg',
+  oria: '/systems/oria-portrait.svg',
 };
 
 function StatusPill({
@@ -75,17 +81,18 @@ function StationImage({
 }) {
   if (station.id === 'protocap') return null;
 
-  if (station.id === 'oria' && !compact) {
+  const portrait = stationPortraits[station.id];
+  if (portrait !== undefined && !compact) {
     return (
       <picture>
-        <source media="(max-width: 30rem)" srcSet="/systems/oria-portrait.svg" />
+        <source media="(max-width: 30rem)" srcSet={portrait} />
         <img
           alt=""
           aria-hidden="true"
           className="aks-systems-station-image"
           decoding="async"
           loading="lazy"
-          src={stationMedia.oria}
+          src={stationMedia[station.id]}
         />
       </picture>
     );
@@ -444,7 +451,7 @@ export function SystemsPage({
   };
 
   const protocap = station('protocap');
-  const mosaique = station('mosaique');
+  const alkhawarizmi = station('alkhawarizmi');
   const oria = station('oria');
   const sonar = station('sonar');
   const detour = station('detour');
@@ -468,7 +475,7 @@ export function SystemsPage({
             <p>{content.operation.intro}</p>
           </div>
           <StationFeature locale={locale} station={protocap} />
-          <StationPair locale={locale} stations={[mosaique, oria]} />
+          <StationPair locale={locale} stations={[alkhawarizmi, oria]} />
           <QuickStationRow locale={locale} stations={[sonar, detour]} />
         </div>
       </section>

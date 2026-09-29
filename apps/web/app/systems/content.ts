@@ -9,7 +9,7 @@ export interface SystemsAction {
 }
 
 export interface SystemsStation {
-  id: 'protocap' | 'mosaique' | 'oria' | 'sonar' | 'detour';
+  id: 'protocap' | 'alkhawarizmi' | 'oria' | 'sonar' | 'detour';
   name: string;
   function: string;
   status: SystemsStatus;
@@ -133,12 +133,13 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         mapLabel: 'Carte interactive de ProtoCap',
       },
       {
-        id: 'mosaique',
-        name: 'MOSAÏQUE',
-        function: 'Assembler des points de vue sans les aplatir.',
-        status: 'building',
-        statusLabel: 'OUVERT',
-        note: 'Composition collective.',
+        id: 'alkhawarizmi',
+        name: 'AL-KHAWARIZMI',
+        function: 'Des fiches systémiques pour apprendre le développement, nœud par nœud.',
+        status: 'deployed',
+        statusLabel: 'EN LIGNE',
+        note: 'Fiches systémiques.',
+        href: 'https://amineakik.github.io/alkhawarizmi/',
       },
       {
         id: 'oria',
@@ -273,12 +274,13 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         mapLabel: 'ProtoCap interactive map',
       },
       {
-        id: 'mosaique',
-        name: 'MOSAÏQUE',
-        function: 'Assemble viewpoints without flattening them.',
-        status: 'building',
-        statusLabel: 'OPEN',
-        note: 'Collective composition.',
+        id: 'alkhawarizmi',
+        name: 'AL-KHAWARIZMI',
+        function: 'Systemic study cards for learning software development, node by node.',
+        status: 'deployed',
+        statusLabel: 'ONLINE',
+        note: 'Systemic study cards.',
+        href: 'https://amineakik.github.io/alkhawarizmi/',
       },
       {
         id: 'oria',

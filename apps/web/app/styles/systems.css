@@ -1151,8 +1151,14 @@
   align-items: end;
 }
 
+/* Pair titles stay on one line: the longest name sets a cap from the card width. */
+.aks-systems-station--pair {
+  container-type: inline-size;
+}
+
 .aks-systems-station--pair h3 {
-  font-size: clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r)));
+  font-size: min(clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))), 8.4cqi);
+  white-space: nowrap;
 }
 
 .aks-systems-quick-media {
@@ -1549,14 +1555,14 @@
   }
 }
 
-/* The Oria cover is drawn at the card's own ratio and carries its own label. */
-.aks-systems-station--pair[data-station='oria'] .aks-systems-media-label {
+/* Covers are drawn at the card's own ratio and carry their own label. */
+.aks-systems-station--pair:has(picture) .aks-systems-media-label {
   display: none;
 }
 
 /* Phones switch to the portrait cover, at its own height. */
 @media (max-width: 30rem) {
-  .aks-systems-station--pair[data-station='oria'] .aks-systems-station-media {
+  .aks-systems-station--pair:has(picture) .aks-systems-station-media {
     aspect-ratio: 2 / 3;
   }
 }
