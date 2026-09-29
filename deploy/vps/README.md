@@ -116,9 +116,11 @@ for url in https://www.akiksystems.com/ https://www.akiksystems.fr/ \
 done
 
 # Exactly one HSTS header, one CSP header, and a request id from Nginx.
-curl -sSI https://akiksystems.com/en | grep -ci '^strict-transport-security:'   # 1
-curl -sSI https://akiksystems.com/en | grep -ci '^content-security-policy:'     # 1
-curl -sSI https://akiksystems.com/en | grep -i '^x-request-id:'
+# Use GET: the nonce-based CSP is only built for rendered pages, not for HEAD.
+headers="$(curl -sS -D - -o /dev/null https://akiksystems.com/en)"
+grep -ci '^strict-transport-security:' <<<"$headers"   # 1
+grep -ci '^content-security-policy:' <<<"$headers"     # 1
+grep -i '^x-request-id:' <<<"$headers"
 ```
 
 Then open both domains in a browser and check the Home, Systems and Profile
@@ -126,18 +128,26 @@ pages. The previous site keeps running until the validation window is closed.
 
 ## Rollback
 
-Nginx goes back to the previous site on `127.0.0.1:3000`:
+The previous site (PM2, port 3000) is disabled: rolling back means running an
+earlier image, not switching Nginx. Images stay tagged `akiksystems-web:<sha>`
+and the previous production SHA is kept, so:
 
 ```sh
+sudo /usr/local/bin/akiksystems-deploy --allow-older <previous full SHA>
+```
+
+This goes through the same checks (build from cache, health, routes) and
+restores the checkout. Nginx is not touched.
+
+Only if the container stack itself is unusable, restore the vhost backup from
+step 5 **after** bringing the old site back, otherwise Nginx answers `502`:
+
+```sh
+sudo systemctl start pm2-deploy.service
+curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/   # must answer before switching
 sudo cp -a "$backup" /etc/nginx/sites-available/akiksystems.conf
 sudo nginx -t
 sudo systemctl reload nginx
-```
-
-The candidate container can then be stopped without touching anything else:
-
-```sh
-docker compose -f deploy/vps/compose.yml stop web
 ```
 
 ## Later releases

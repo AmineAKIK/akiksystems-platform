@@ -123,12 +123,19 @@ CHECKS
 rollback() {
   set +e
   log "rollback: restoring $previous"
-  git -C "$REPO_DIR" checkout --quiet --detach "$previous"
+
+  if ! git -C "$REPO_DIR" checkout --quiet --detach "$previous"; then
+    log "rollback FAILED: cannot restore checkout $previous"
+    return 1
+  fi
+
   if compose "$previous" up -d --no-build --no-deps "$SERVICE" && verify "$previous"; then
     log "rollback: $previous is serving again"
-  else
-    log "rollback FAILED: production needs manual intervention"
+    return 0
   fi
+
+  log "rollback FAILED: production needs manual intervention"
+  return 1
 }
 
 on_exit() {
@@ -140,13 +147,19 @@ on_exit() {
       ;;
     switched)
       log "result: failed after switch sha=$target"
-      rollback
-      log "result: rolled back to $previous duration=${duration}s"
+      if rollback; then
+        log "result: rolled back to $previous duration=${duration}s"
+      else
+        log "result: rollback failed, production needs manual intervention duration=${duration}s"
+      fi
       ;;
     checked-out)
       set +e
-      git -C "$REPO_DIR" checkout --quiet --detach "$previous"
-      log "result: failed before switch, production untouched (still $previous) duration=${duration}s"
+      if git -C "$REPO_DIR" checkout --quiet --detach "$previous"; then
+        log "result: failed before switch, production untouched (still $previous) duration=${duration}s"
+      else
+        log "result: failed before switch, production untouched but checkout could not be restored to $previous duration=${duration}s"
+      fi
       ;;
     skipped) ;;
     *)
