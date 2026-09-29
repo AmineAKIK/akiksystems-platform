@@ -1,6 +1,6 @@
 .aks-experience-footer {
   border-top: 0;
-  background: var(--aks-experience-chrome-surface);
+  background: transparent;
   color: rgb(255 255 255 / 64%);
 }
 
@@ -96,8 +96,6 @@
   --legal-gutter: clamp(1rem, 4.5vw, 4rem);
   min-height: calc(100dvh - 4.5rem);
   padding-block: clamp(3rem, 7vw, 5.5rem) clamp(4rem, 8vw, 7rem);
-  background: radial-gradient(ellipse 140% 40rem at 50% 0%, #0e161c 0%, var(--legal-bg) 70%)
-    var(--legal-bg);
   color: var(--legal-text);
   font-family: Archivo, 'Helvetica Neue', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;

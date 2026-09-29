@@ -24,8 +24,6 @@
   --profile-gutter: clamp(1rem, 4.5vw, 4rem);
   min-width: 0;
   overflow: clip;
-  background: radial-gradient(ellipse 140% 40rem at 50% 0%, #0e161c 0%, var(--profile-bg) 70%)
-    var(--profile-bg);
   color: var(--profile-text);
   font-family: Archivo, 'Helvetica Neue', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -1566,9 +1564,8 @@
 /* Desktop composition */
 
 @media (min-width: 64rem) {
-  .aks-profile-page {
-    background: radial-gradient(ellipse 70% 56.25rem at 50% 0%, #0e161c 0%, var(--profile-bg) 70%)
-      var(--profile-bg);
+  .aks-experience-page[data-destination='profile'] {
+    background: radial-gradient(ellipse 70% 56.25rem at 50% 0%, #0e161c 0%, #070b0e 70%) #070b0e;
   }
 
   .aks-profile-section {

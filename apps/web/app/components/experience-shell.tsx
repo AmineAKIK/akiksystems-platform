@@ -63,7 +63,10 @@ export function ExperienceShell({
     languagePath === null ? null : publicLanguageHref(alternateLocale, languagePath);
 
   return (
-    <>
+    <div
+      className="aks-experience-page"
+      data-destination={destinationId ?? (isHome ? 'home' : 'page')}
+    >
       <a className="aks-skip-link" href="#experience-outlet">
         {dictionary.shell.skipToContent}
       </a>
@@ -185,6 +188,6 @@ export function ExperienceShell({
         </div>
         <ExperienceFooter home={isHome} locale={locale} />
       </div>
-    </>
+    </div>
   );
 }

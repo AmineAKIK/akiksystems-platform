@@ -1,3 +1,7 @@
+.aks-experience-page[data-destination='systems'] {
+  background: #05070a;
+}
+
 .aks-systems-page {
   --r: clamp(1rem, 0.35rem + 0.72vw, 2rem);
   --systems-canvas: #05070a;
@@ -19,8 +23,6 @@
  * their opening visual; the other pages keep it in the flow. */
 .aks-experience-shell:not([data-destination='home']) {
   border: 0;
-  background: linear-gradient(180deg, rgb(1 5 9 / 82%), rgb(1 5 9 / 36%) 72%, transparent);
-  backdrop-filter: none;
 }
 
 .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
@@ -835,11 +837,6 @@
   line-height: 1.5;
 }
 
-/* One footer on every page, Home included. */
-.aks-experience-footer {
-  background: #05070a;
-}
-
 @media (max-width: 80rem) {
   .aks-systems-wrap {
     width: min(calc(100% - calc(4.5 * var(--r))), calc(71 * var(--r)));
@@ -895,16 +892,6 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-experience-shell:not([data-destination='home']) {
-    background: rgb(3 7 11);
-    backdrop-filter: none;
-  }
-
-  .aks-experience-shell:not([data-destination='home']) {
-    background: rgb(3 7 11);
-    backdrop-filter: none;
-  }
-
   .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
     position: absolute;
   }
