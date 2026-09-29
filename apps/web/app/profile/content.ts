@@ -40,6 +40,7 @@ export interface ProfilePageContent {
     timeline: {
       eyebrow: string;
       title: string;
+      intro: string;
       workLabel: string;
       educationLabel: string;
       work: ProfileTimelineEntry[];
@@ -175,7 +176,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profil — Mohamed Amine Akik',
       description:
-        'Fondateur d’AkikSystems, ingénieur logiciel full-stack : dix ans d’opérations de terrain, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
+        'Fondateur d’AkikSystems, ingénieur logiciel full-stack : une expérience industrielle exigeante, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
     },
     identity: {
       eyebrow: 'Profil',
@@ -202,6 +203,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       timeline: {
         eyebrow: 'Parcours',
         title: 'Du terrain au logiciel.',
+        intro:
+          'Une expérience industrielle dans des environnements exigeants en qualité et en technicité, et une première entreprise dirigée.',
         workLabel: 'Expérience',
         educationLabel: 'Formation',
         work: [
@@ -212,36 +215,12 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             detail:
               'Conception et développement de logiciels métier et opérationnels : Sentinel, ProtoCap.',
           },
-          {
-            period: '2026 —',
-            title: 'Conducteur de ligne de conditionnement, L’Oréal',
-            place: 'La Roche-Posay',
-            detail:
-              'Continuité de production, contrôles qualité, traçabilité et gestion des écarts.',
-          },
-          {
-            period: '2023 — 2025',
-            title: 'Conducteur de ligne automatisée, Marelli',
-            place: 'Industrie automobile, Châtellerault',
-            detail:
-              'Réglage des paramètres process et des robots, premier diagnostic des pannes, traçabilité.',
-          },
+          { period: '2026 —', title: 'L’Oréal', place: 'Cosmétique dermatologique' },
+          { period: '2023 — 2025', title: 'Marelli', place: 'Électronique automobile' },
           {
             period: '2022 — 2023',
-            title: 'Opérateur de découpe de précision',
-            place: 'Maroquinerie de luxe, Châtellerault',
-          },
-          {
-            period: '2018 — 2021',
-            title: 'Livreur, sous-traitant Chronopost',
-            place: 'Drancy',
-            detail: 'Un secteur de livraison géré en autonomie, sous contrainte horaire.',
-          },
-          {
-            period: '2014 — 2017',
-            title: 'Ouvrier du bâtiment',
-            place: 'Île-de-France',
-            detail: 'Dallage sur plots et rénovation de façades, pour de grands donneurs d’ordre.',
+            title: 'Ateliers Réunis du Centre-Ouest',
+            place: 'Maroquinerie de luxe',
           },
           {
             period: '2012 — 2014',
@@ -253,23 +232,23 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         education: [
           {
             period: '2025 — 2026',
-            title: 'Titre professionnel Développeur web et web mobile',
-            place: 'Studi',
+            title: 'Développeur web et web mobile',
+            place: 'Titre professionnel d’État inscrit au RNCP · préparé avec Studi',
           },
           {
             period: '2024 — 2025',
-            title: 'Titre professionnel Technicien d’assistance informatique',
-            place: 'Studi',
+            title: 'Technicien d’assistance informatique',
+            place: 'Titre professionnel d’État inscrit au RNCP · préparé avec Studi',
+          },
+          {
+            period: '2010 — 2012',
+            title: 'Baccalauréat programmation et technologies',
+            place: 'Tunisie',
           },
           {
             period: '2010 — 2011',
             title: 'Technicien réseaux et télécoms, stage chez Tunisie Telecom',
             place: 'Sousse, Tunisie',
-          },
-          {
-            period: '2009',
-            title: 'Baccalauréat, section informatique',
-            place: 'Tunisie',
           },
         ],
       },
@@ -437,7 +416,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Code',
             description: 'Écrire, tester et livrer du logiciel qui tient dans le temps.',
             figure: null,
-            source: 'Titre professionnel Développeur web et web mobile (Studi, 2026).',
+            source: 'Titre professionnel d’État Développeur web et web mobile (RNCP, 2026).',
             brings: 'Savoir ce qu’une idée coûte à construire, à tester et à maintenir.',
             avoids: 'Les promesses impossibles à tenir, et la dette qu’on découvre trop tard.',
             asks: 'Comment le tester ? Qui le maintiendra ? Que se passe-t-il quand ça casse ?',
@@ -460,9 +439,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Terrain',
             description:
               'Voir l’usage réel, les contraintes concrètes et les effets sur le travail.',
-            figure: { value: '10 ans', label: 'd’opérations de terrain' },
+            figure: null,
             source:
-              'Industrie automobile, cosmétique et maroquinerie de luxe (3 ans), logistique et bâtiment.',
+              'Industrie exigeante : cosmétique dermatologique, électronique automobile, maroquinerie de luxe.',
             brings:
               'Du réel : le retour d’expérience, les signaux faibles, les contraintes qu’on ne voit pas depuis un schéma.',
             avoids: 'Les solutions théoriques, déconnectées de l’exploitation ou du besoin.',
@@ -724,7 +703,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profile — Mohamed Amine Akik',
       description:
-        'Founder of AkikSystems, full-stack software engineer: ten years of field operations, two companies led, and business software that is live and testable.',
+        'Founder of AkikSystems, full-stack software engineer: demanding industrial experience, two companies led, and business software that is live and testable.',
     },
     identity: {
       eyebrow: 'Profile',
@@ -751,6 +730,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       timeline: {
         eyebrow: 'Background',
         title: 'From the field to software.',
+        intro:
+          'Industrial experience in environments demanding on quality and technical precision, and a first company led.',
         workLabel: 'Experience',
         educationLabel: 'Education',
         work: [
@@ -760,34 +741,12 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             place: 'Châtellerault, France',
             detail: 'Designing and building business and operational software: Sentinel, ProtoCap.',
           },
-          {
-            period: '2026 —',
-            title: 'Packaging line operator, L’Oréal',
-            place: 'La Roche-Posay, France',
-            detail: 'Production continuity, quality checks, traceability and deviation handling.',
-          },
-          {
-            period: '2023 — 2025',
-            title: 'Automated production line operator, Marelli',
-            place: 'Automotive industry, Châtellerault',
-            detail: 'Process and robot adjustments, first-level fault diagnosis, traceability.',
-          },
+          { period: '2026 —', title: 'L’Oréal', place: 'Dermatological cosmetics' },
+          { period: '2023 — 2025', title: 'Marelli', place: 'Automotive electronics' },
           {
             period: '2022 — 2023',
-            title: 'Precision cutting operator',
-            place: 'Luxury leather goods, Châtellerault',
-          },
-          {
-            period: '2018 — 2021',
-            title: 'Delivery driver, Chronopost subcontractor',
-            place: 'Paris area',
-            detail: 'A delivery area run independently, under tight time constraints.',
-          },
-          {
-            period: '2014 — 2017',
-            title: 'Construction worker',
-            place: 'Paris area',
-            detail: 'Pedestal paving and facade renovation for major contractors.',
+            title: 'Ateliers Réunis du Centre-Ouest',
+            place: 'Luxury leather goods',
           },
           {
             period: '2012 — 2014',
@@ -799,23 +758,23 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         education: [
           {
             period: '2025 — 2026',
-            title: 'Web and Mobile Web Developer, French professional title (DWWM)',
-            place: 'Studi',
+            title: 'Web and Mobile Web Developer',
+            place: 'French state professional title, listed in the RNCP · prepared with Studi',
           },
           {
             period: '2024 — 2025',
-            title: 'IT Support Technician, French professional title',
-            place: 'Studi',
+            title: 'IT Support Technician',
+            place: 'French state professional title, listed in the RNCP · prepared with Studi',
+          },
+          {
+            period: '2010 — 2012',
+            title: 'Baccalaureate in programming and technology',
+            place: 'Tunisia',
           },
           {
             period: '2010 — 2011',
             title: 'Network and telecoms technician, internship at Tunisie Telecom',
             place: 'Sousse, Tunisia',
-          },
-          {
-            period: '2009',
-            title: 'Baccalaureate, computer science track',
-            place: 'Tunisia',
           },
         ],
       },
@@ -987,7 +946,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Code',
             description: 'Writing, testing and shipping software that holds up over time.',
             figure: null,
-            source: 'Web and Mobile Web Developer professional title (Studi, 2026).',
+            source: 'Web and Mobile Web Developer, French state professional title (RNCP, 2026).',
             brings: 'Knowing what an idea costs to build, to test and to maintain.',
             avoids: 'Promises that cannot be kept, and debt discovered too late.',
             asks: 'How do we test it? Who will maintain it? What happens when it breaks?',
@@ -1007,9 +966,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             id: 'field',
             name: 'Field',
             description: 'Seeing real use, concrete constraints and the effects on the work.',
-            figure: { value: '10 years', label: 'of field operations' },
+            figure: null,
             source:
-              'Automotive, cosmetics and luxury leather manufacturing (3 years), logistics and construction.',
+              'Demanding industry: dermatological cosmetics, automotive electronics, luxury leather goods.',
             brings:
               'Reality: lessons learned, weak signals, the constraints you cannot see from a diagram.',
             avoids: 'Theoretical solutions, disconnected from operations or from the need.',

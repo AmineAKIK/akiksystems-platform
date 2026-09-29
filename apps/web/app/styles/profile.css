@@ -2554,3 +2554,11 @@
     width: 6.75rem;
   }
 }
+
+.aks-profile-timeline-intro {
+  max-width: 40rem;
+  margin: 1rem 0 0;
+  color: var(--profile-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}

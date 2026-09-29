@@ -332,6 +332,7 @@ function TimelineSection({ content }: { content: ProfilePageContent['identity'][
       <div className="aks-profile-wrap">
         <p className="aks-profile-eyebrow">{content.eyebrow}</p>
         <h2 id="profile-timeline-title">{content.title}</h2>
+        <p className="aks-profile-timeline-intro">{content.intro}</p>
         <div className="aks-profile-timeline-grid">
           <TimelineList entries={content.work} label={content.workLabel} />
           <TimelineList entries={content.education} label={content.educationLabel} />
