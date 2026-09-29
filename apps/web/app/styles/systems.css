@@ -1,4 +1,5 @@
 .aks-systems-page {
+  --r: clamp(1rem, 0.35rem + 0.72vw, 2rem);
   --systems-canvas: #05070a;
   --systems-panel: #0a0f17;
   --systems-panel-2: #111722;
@@ -49,14 +50,14 @@
 }
 
 .aks-systems-wrap {
-  width: min(calc(100% - 7rem), 78rem);
+  width: min(calc(100% - calc(7 * var(--r))), calc(78 * var(--r)));
   margin-inline: auto;
 }
 
 .aks-systems-kicker {
   color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.62rem;
+  font-size: calc(0.75 * var(--r));
   font-weight: 700;
   letter-spacing: 0.17em;
   text-transform: uppercase;
@@ -64,7 +65,8 @@
 
 .aks-systems-hero {
   position: relative;
-  height: clamp(43rem, 70vw, 61rem);
+  height: clamp(calc(30 * var(--r)), 100vh, calc(62 * var(--r)));
+  height: clamp(calc(30 * var(--r)), 100svh, calc(62 * var(--r)));
   isolation: isolate;
   overflow: hidden;
   background: #061019;
@@ -124,15 +126,15 @@
   z-index: 2;
   display: grid;
   align-content: start;
-  gap: 0.9rem;
+  gap: calc(0.9 * var(--r));
   height: 100%;
-  padding-top: clamp(8.5rem, 15vw, 13.25rem);
+  padding-top: clamp(calc(8.5 * var(--r)), 15vw, calc(13.25 * var(--r)));
 }
 
 .aks-systems-hero h1 {
   display: grid;
   width: min-content;
-  font-size: clamp(4.6rem, 8.1vw, 7.6rem);
+  font-size: clamp(calc(4.6 * var(--r)), 8.1vw, calc(7.6 * var(--r)));
   line-height: 0.88;
   text-transform: uppercase;
 }
@@ -147,10 +149,10 @@
 }
 
 .aks-systems-hero-intro {
-  max-width: 29rem;
-  margin-top: 0.1rem !important;
+  max-width: calc(29 * var(--r));
+  margin-top: calc(0.1 * var(--r)) !important;
   color: rgb(255 255 255 / 88%);
-  font-size: 0.92rem;
+  font-size: calc(1.125 * var(--r));
   line-height: 1.48;
 }
 
@@ -168,7 +170,7 @@
 .aks-systems-operation-rail {
   border-top: 1px solid rgb(255 255 255 / 12%);
   background: rgb(3 6 10 / 62%);
-  backdrop-filter: blur(0.35rem);
+  backdrop-filter: blur(calc(0.35 * var(--r)));
 }
 
 .aks-systems-operation-rail ol {
@@ -180,10 +182,10 @@
 
 .aks-systems-operation-rail li {
   display: flex;
-  min-height: 5.6rem;
+  min-height: calc(5.6 * var(--r));
   align-items: center;
   justify-content: center;
-  padding-inline: 1rem;
+  padding-inline: var(--r);
   border-left: 1px solid rgb(255 255 255 / 11%);
 }
 
@@ -195,11 +197,11 @@
 .aks-systems-rail-step {
   display: grid;
   justify-items: start;
-  gap: 0.22rem;
+  gap: calc(0.22 * var(--r));
 }
 .aks-systems-operation-rail :is(span, strong) {
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.58rem;
+  font-size: calc(0.75 * var(--r));
   letter-spacing: 0.13em;
 }
 
@@ -208,7 +210,7 @@
 }
 
 .aks-systems-section {
-  padding-block: 7rem;
+  padding-block: calc(7 * var(--r));
 }
 
 .aks-systems-sentinel {
@@ -219,17 +221,17 @@
 .aks-systems-operation-heading,
 .aks-systems-workbench-heading {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.62fr);
-  gap: 4rem;
+  grid-template-columns: minmax(0, 1.25fr) minmax(calc(19 * var(--r)), 0.62fr);
+  gap: calc(4 * var(--r));
   align-items: end;
-  margin-bottom: 2.75rem;
+  margin-bottom: calc(2.75 * var(--r));
 }
 
 .aks-systems-sentinel-heading h2,
 .aks-systems-operation-heading h2,
 .aks-systems-workbench-heading h2 {
-  margin-top: 0.42rem;
-  font-size: clamp(3rem, 5.2vw, 5.2rem);
+  margin-top: calc(0.42 * var(--r));
+  font-size: clamp(calc(3 * var(--r)), 5.2vw, calc(5.2 * var(--r)));
   text-transform: uppercase;
 }
 
@@ -240,32 +242,32 @@
 
 .aks-systems-operation-heading > p,
 .aks-systems-workbench-heading > p {
-  max-width: 27rem;
+  max-width: calc(30 * var(--r));
   color: var(--systems-muted);
-  font-size: 0.82rem;
+  font-size: calc(1.0625 * var(--r));
   line-height: 1.55;
 }
 
 .aks-systems-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.38rem;
+  gap: calc(0.38 * var(--r));
   width: fit-content;
-  min-height: 1.55rem;
-  padding: 0.2rem 0.54rem;
+  min-height: calc(1.55 * var(--r));
+  padding: calc(0.2 * var(--r)) calc(0.54 * var(--r));
   border: 1px solid #4a5624;
   border-radius: 999px;
   color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.49rem;
+  font-size: calc(0.75 * var(--r));
   font-weight: 700;
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .aks-systems-status-dot {
-  width: 0.28rem;
-  height: 0.28rem;
+  width: calc(0.28 * var(--r));
+  height: calc(0.28 * var(--r));
   border-radius: 50%;
   background: currentColor;
 }
@@ -288,47 +290,47 @@
 .aks-systems-sentinel-footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2rem;
+  gap: calc(2 * var(--r));
   align-items: center;
-  padding-top: 1.25rem;
+  padding-top: calc(1.25 * var(--r));
 }
 
 .aks-systems-sentinel-footer > div:first-child {
   display: grid;
-  gap: 0.4rem;
-  max-width: 39rem;
+  gap: calc(0.4 * var(--r));
+  max-width: calc(39 * var(--r));
 }
 
 .aks-systems-sentinel-footer p {
-  font-size: 0.83rem;
+  font-size: calc(1.0625 * var(--r));
   line-height: 1.45;
 }
 
 .aks-systems-sentinel-footer > div:first-child span {
   color: var(--systems-muted);
-  font-size: 0.68rem;
+  font-size: calc(0.9 * var(--r));
   line-height: 1.4;
 }
 
 .aks-systems-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.52rem;
+  gap: calc(0.52 * var(--r));
   align-items: center;
 }
 
 .aks-systems-button,
 .aks-systems-quick-link {
   display: inline-flex;
-  min-height: 2.25rem;
+  min-height: calc(2.75 * var(--r));
   align-items: center;
   justify-content: center;
-  gap: 0.48rem;
-  padding: 0.5rem 0.82rem;
+  gap: calc(0.48 * var(--r));
+  padding: calc(0.5 * var(--r)) calc(0.82 * var(--r));
   border: 1px solid #303948;
   border-radius: 999px;
   background: rgb(7 10 14 / 62%);
-  font-size: 0.66rem;
+  font-size: calc(0.875 * var(--r));
   font-weight: 650;
   text-decoration: none;
   transition:
@@ -358,12 +360,12 @@
 }
 
 .aks-systems-operation {
-  padding-block: 8.5rem 7.7rem;
+  padding-block: calc(8.5 * var(--r)) calc(7.7 * var(--r));
   background: #07090d;
 }
 
 .aks-systems-operation-heading {
-  margin-bottom: 3rem;
+  margin-bottom: calc(3 * var(--r));
 }
 
 .aks-systems-station {
@@ -373,7 +375,7 @@
 .aks-systems-station figure {
   overflow: hidden;
   border: 1px solid var(--systems-border);
-  border-radius: 0.38rem;
+  border-radius: calc(0.38 * var(--r));
   background: #0b1119;
 }
 
@@ -392,57 +394,59 @@
 
 .aks-systems-station figcaption {
   display: flex;
-  min-height: 6.25rem;
+  min-height: calc(6.25 * var(--r));
   align-items: end;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.8rem 0.95rem 0.9rem;
+  gap: var(--r);
+  padding: calc(0.8 * var(--r)) calc(0.95 * var(--r)) calc(0.9 * var(--r));
   border-top: 1px solid var(--systems-border);
 }
 
 .aks-systems-station figcaption > div {
   display: grid;
-  gap: 0.2rem;
+  gap: calc(0.2 * var(--r));
 }
 
 .aks-systems-station figcaption p {
-  max-width: 41rem;
+  max-width: calc(41 * var(--r));
   color: var(--systems-muted);
-  font-size: 0.58rem;
+  font-size: calc(0.85 * var(--r));
   line-height: 1.4;
 }
 
 .aks-systems-station h3 {
-  font-size: clamp(2rem, 4vw, 3.75rem);
+  font-size: clamp(calc(2 * var(--r)), 4vw, calc(3.75 * var(--r)));
   text-transform: uppercase;
 }
 
 .aks-systems-station-function {
-  max-width: 46rem;
-  margin-top: 0.55rem !important;
+  max-width: calc(46 * var(--r));
+  margin-top: calc(0.55 * var(--r)) !important;
   color: var(--systems-muted);
-  font-size: 0.66rem;
+  font-size: calc(0.95 * var(--r));
   line-height: 1.5;
 }
 
 .aks-systems-station--feature {
-  margin-bottom: 2rem;
+  margin-bottom: calc(2 * var(--r));
 }
 
 .aks-systems-station-backdrop {
   aspect-ratio: 2.08 / 1;
   background:
     radial-gradient(ellipse 60% 70% at 68% 42%, rgb(45 92 255 / 20%), transparent 70%),
-    linear-gradient(rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / 3rem 3rem,
-    linear-gradient(90deg, rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / 3rem 3rem,
+    linear-gradient(rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / calc(3 * var(--r))
+      calc(3 * var(--r)),
+    linear-gradient(90deg, rgb(140 165 220 / 7%) 1px, transparent 1px) 0 0 / calc(3 * var(--r))
+      calc(3 * var(--r)),
     #071019;
 }
 
 .aks-systems-station-pair {
   display: grid;
   grid-template-columns: 1fr 1.08fr;
-  gap: 1.1rem;
-  margin-block: 1.9rem 2.55rem;
+  gap: calc(1.1 * var(--r));
+  margin-block: calc(1.9 * var(--r)) calc(2.55 * var(--r));
 }
 
 .aks-systems-station--pair .aks-systems-station-media {
@@ -463,18 +467,20 @@
 
 .aks-systems-quick {
   display: grid;
-  grid-template-columns: 6.3rem minmax(7rem, 0.55fr) minmax(0, 1fr) auto auto;
-  gap: 0.9rem;
-  min-height: 5.75rem;
+  grid-template-columns:
+    calc(6.3 * var(--r)) minmax(calc(7 * var(--r)), 0.55fr) minmax(0, 1fr)
+    auto auto;
+  gap: calc(0.9 * var(--r));
+  min-height: calc(5.75 * var(--r));
   align-items: center;
   border-bottom: 1px solid var(--systems-border);
 }
 
 .aks-systems-quick-media {
-  width: 5.75rem;
-  height: 3.2rem;
+  width: calc(5.75 * var(--r));
+  height: calc(3.2 * var(--r));
   overflow: hidden;
-  border-radius: 0.22rem;
+  border-radius: calc(0.22 * var(--r));
   background: #08101a;
 }
 
@@ -486,18 +492,18 @@
 }
 
 .aks-systems-quick h3 {
-  font-size: 1.2rem;
+  font-size: calc(1.2 * var(--r));
   text-transform: uppercase;
 }
 
 .aks-systems-quick p {
   color: var(--systems-muted);
-  font-size: 0.64rem;
+  font-size: calc(0.95 * var(--r));
   line-height: 1.42;
 }
 
 .aks-systems-quick-link {
-  min-width: 4.35rem;
+  min-width: calc(4.35 * var(--r));
   min-height: 44px;
 }
 
@@ -522,28 +528,28 @@
 .aks-systems-manifesto-orbit {
   position: absolute;
   top: 15%;
-  right: -4rem;
-  width: 18rem;
-  height: 18rem;
+  right: calc(-4 * var(--r));
+  width: calc(18 * var(--r));
+  height: calc(18 * var(--r));
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 50%;
 }
 
 .aks-systems-manifesto-inner {
-  padding-block: 5.8rem 6.1rem;
+  padding-block: calc(5.8 * var(--r)) calc(6.1 * var(--r));
 }
 
 .aks-systems-manifesto-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.55fr);
-  gap: 4rem;
+  grid-template-columns: minmax(0, 1.1fr) minmax(calc(18 * var(--r)), 0.55fr);
+  gap: calc(4 * var(--r));
   align-items: end;
-  margin-top: 0.8rem;
+  margin-top: calc(0.8 * var(--r));
 }
 
 .aks-systems-manifesto h2 {
   display: grid;
-  font-size: clamp(4.5rem, 8.1vw, 7.7rem);
+  font-size: clamp(calc(4.5 * var(--r)), 8.1vw, calc(7.7 * var(--r)));
   line-height: 0.86;
 }
 
@@ -552,19 +558,19 @@
 }
 
 .aks-systems-manifesto-grid > p {
-  max-width: 31rem;
-  padding-bottom: 0.7rem;
-  font-size: 0.73rem;
+  max-width: calc(31 * var(--r));
+  padding-bottom: calc(0.7 * var(--r));
+  font-size: calc(1.0625 * var(--r));
   line-height: 1.55;
 }
 
 .aks-systems-workbench {
-  padding-block: 5.3rem 6.3rem;
+  padding-block: calc(5.3 * var(--r)) calc(6.3 * var(--r));
   background: #141923;
 }
 
 .aks-systems-workbench-heading {
-  margin-bottom: 2.8rem;
+  margin-bottom: calc(2.8 * var(--r));
 }
 
 .aks-systems-tools {
@@ -576,10 +582,13 @@
 .aks-systems-tools li {
   display: grid;
   grid-template-columns:
-    2.1rem minmax(6rem, 0.5fr) minmax(0, 1.25fr) minmax(5rem, 0.48fr)
-    auto 1.2rem;
-  gap: 0.9rem;
-  min-height: 4.15rem;
+    calc(2.1 * var(--r)) minmax(calc(6 * var(--r)), 0.5fr) minmax(0, 1.25fr) minmax(
+      calc(5 * var(--r)),
+      0.48fr
+    )
+    auto calc(1.2 * var(--r));
+  gap: calc(0.9 * var(--r));
+  min-height: calc(4.15 * var(--r));
   align-items: center;
   border-bottom: 1px solid #27303e;
 }
@@ -587,17 +596,17 @@
 .aks-systems-tool-index {
   color: var(--systems-lime);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.5rem;
+  font-size: calc(0.72 * var(--r));
 }
 
 .aks-systems-tools strong {
-  font-size: 0.7rem;
+  font-size: calc(0.95 * var(--r));
 }
 
 .aks-systems-tool-function,
 .aks-systems-tool-env {
   color: var(--systems-muted);
-  font-size: 0.62rem;
+  font-size: calc(0.9 * var(--r));
 }
 
 .aks-systems-tool-env {
@@ -611,36 +620,37 @@
 }
 
 .aks-systems-perspectives {
-  min-height: 44rem;
-  padding-block: 7.6rem 3rem;
-  background: radial-gradient(circle at 27% 8%, rgb(24 37 67 / 58%), transparent 32rem), #05070a;
+  min-height: calc(44 * var(--r));
+  padding-block: calc(7.6 * var(--r)) calc(3 * var(--r));
+  background:
+    radial-gradient(circle at 27% 8%, rgb(24 37 67 / 58%), transparent calc(32 * var(--r))), #05070a;
 }
 
 .aks-systems-perspectives-inner {
   display: grid;
-  gap: 1.2rem;
+  gap: calc(1.2 * var(--r));
 }
 
 .aks-systems-perspectives h2 {
   max-width: 11.8ch;
-  font-size: clamp(4.25rem, 7.4vw, 7rem);
+  font-size: clamp(calc(4.25 * var(--r)), 7.4vw, calc(7 * var(--r)));
   line-height: 0.94;
 }
 
 .aks-systems-perspectives-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2rem;
+  gap: calc(2 * var(--r));
   align-items: end;
   margin-top: auto;
-  padding-top: 3.1rem;
+  padding-top: calc(3.1 * var(--r));
   border-top: 1px solid #202733;
 }
 
 .aks-systems-perspectives-bottom > p {
-  max-width: 36rem;
+  max-width: calc(36 * var(--r));
   color: var(--systems-muted);
-  font-size: 0.7rem;
+  font-size: var(--r);
   line-height: 1.5;
 }
 
@@ -650,41 +660,33 @@
 
 @media (max-width: 80rem) {
   .aks-systems-wrap {
-    width: min(calc(100% - 4.5rem), 71rem);
-  }
-
-  .aks-systems-hero {
-    height: 53rem;
+    width: min(calc(100% - calc(4.5 * var(--r))), calc(71 * var(--r)));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(4.2rem, 8.6vw, 6.8rem);
+    font-size: clamp(calc(4.2 * var(--r)), 8.6vw, calc(6.8 * var(--r)));
   }
 
   .aks-systems-section {
-    padding-block: 6.25rem;
+    padding-block: calc(6.25 * var(--r));
   }
 
   .aks-systems-operation {
-    padding-block: 7rem 6.6rem;
+    padding-block: calc(7 * var(--r)) calc(6.6 * var(--r));
   }
 }
 
 @media (max-width: 64rem) {
   .aks-systems-wrap {
-    width: min(calc(100% - 3rem), 61rem);
-  }
-
-  .aks-systems-hero {
-    height: 46rem;
+    width: min(calc(100% - calc(3 * var(--r))), calc(61 * var(--r)));
   }
 
   .aks-systems-hero-copy {
-    padding-top: 8.4rem;
+    padding-top: calc(8.4 * var(--r));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(3.9rem, 9.7vw, 6rem);
+    font-size: clamp(calc(3.9 * var(--r)), 9.7vw, calc(6 * var(--r)));
   }
 
   .aks-systems-sentinel-heading,
@@ -694,7 +696,7 @@
   .aks-systems-sentinel-footer,
   .aks-systems-perspectives-bottom {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.6rem;
+    gap: calc(1.6 * var(--r));
   }
 
   .aks-systems-sentinel-heading > .aks-systems-status {
@@ -706,11 +708,11 @@
   }
 
   .aks-systems-manifesto h2 {
-    font-size: clamp(4rem, 10.5vw, 6.2rem);
+    font-size: clamp(calc(4 * var(--r)), 10.5vw, calc(6.2 * var(--r)));
   }
 
   .aks-systems-perspectives {
-    min-height: 40rem;
+    min-height: calc(40 * var(--r));
   }
 }
 
@@ -726,11 +728,7 @@
   }
 
   .aks-systems-wrap {
-    width: min(calc(100% - 2rem), 44rem);
-  }
-
-  .aks-systems-hero {
-    height: 54rem;
+    width: min(calc(100% - calc(2 * var(--r))), calc(44 * var(--r)));
   }
 
   .aks-systems-hero-media {
@@ -750,15 +748,15 @@
   }
 
   .aks-systems-hero-copy {
-    padding-top: 10.5rem;
+    padding-top: calc(10.5 * var(--r));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(3.6rem, 12.5vw, 5.5rem);
+    font-size: clamp(calc(3.6 * var(--r)), 12.5vw, calc(5.5 * var(--r)));
   }
 
   .aks-systems-hero-intro {
-    max-width: 26rem;
+    max-width: calc(26 * var(--r));
   }
 
   .aks-systems-hero-rail {
@@ -770,17 +768,17 @@
   }
 
   .aks-systems-operation-rail li {
-    min-height: 4.75rem;
-    padding-inline: 0.55rem;
+    min-height: calc(4.75 * var(--r));
+    padding-inline: calc(0.55 * var(--r));
   }
 
   .aks-systems-operation-rail :is(span, strong) {
-    font-size: 0.47rem;
+    font-size: calc(0.75 * var(--r));
   }
 
   .aks-systems-section,
   .aks-systems-operation {
-    padding-block: 5rem;
+    padding-block: calc(5 * var(--r));
   }
 
   .aks-systems-station-pair {
@@ -792,7 +790,7 @@
   }
 
   .aks-systems-quick {
-    grid-template-columns: 5rem minmax(0, 0.65fr) minmax(0, 1fr) auto;
+    grid-template-columns: calc(5 * var(--r)) minmax(0, 0.65fr) minmax(0, 1fr) auto;
   }
 
   .aks-systems-quick .aks-systems-status {
@@ -800,15 +798,17 @@
   }
 
   .aks-systems-manifesto-inner {
-    padding-block: 4.7rem;
+    padding-block: calc(4.7 * var(--r));
   }
 
   .aks-systems-manifesto-grid {
-    margin-top: 0.6rem;
+    margin-top: calc(0.6 * var(--r));
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.6rem minmax(4.8rem, 0.55fr) minmax(0, 1fr) auto 1rem;
+    grid-template-columns:
+      calc(1.6 * var(--r)) minmax(calc(4.8 * var(--r)), 0.55fr) minmax(0, 1fr)
+      auto var(--r);
   }
 
   .aks-systems-tool-env {
@@ -816,27 +816,23 @@
   }
 
   .aks-systems-perspectives {
-    min-height: 44rem;
-    padding-top: 6rem;
+    min-height: calc(44 * var(--r));
+    padding-top: calc(6 * var(--r));
   }
 
   .aks-systems-perspectives h2 {
     max-width: 10.4ch;
-    font-size: clamp(3.7rem, 11vw, 5.5rem);
+    font-size: clamp(calc(3.7 * var(--r)), 11vw, calc(5.5 * var(--r)));
   }
 
   .aks-systems-perspectives-bottom {
-    margin-top: 4rem;
+    margin-top: calc(4 * var(--r));
   }
 }
 
 @media (max-width: 30rem) {
   .aks-systems-wrap {
-    width: calc(100% - 1.5rem);
-  }
-
-  .aks-systems-hero {
-    height: 61rem;
+    width: calc(100% - calc(1.5 * var(--r)));
   }
 
   .aks-systems-hero-media {
@@ -844,16 +840,16 @@
   }
 
   .aks-systems-hero-copy {
-    padding-top: 11.5rem;
+    padding-top: calc(11.5 * var(--r));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(3.25rem, 14.8vw, 4.2rem);
+    font-size: clamp(calc(3.25 * var(--r)), 14.8vw, calc(4.2 * var(--r)));
   }
 
   .aks-systems-hero-intro {
-    max-width: 19rem;
-    font-size: 0.78rem;
+    max-width: calc(19 * var(--r));
+    font-size: var(--r);
   }
 
   .aks-systems-operation-rail ol {
@@ -868,9 +864,9 @@
   }
 
   .aks-systems-operation-rail li {
-    min-height: 2.6rem;
-    padding-block: 0.35rem;
-    padding-inline: 0.65rem;
+    min-height: calc(2.6 * var(--r));
+    padding-block: calc(0.35 * var(--r));
+    padding-inline: calc(0.65 * var(--r));
     border-top: 1px solid rgb(255 255 255 / 8%);
     border-left: 0;
   }
@@ -882,11 +878,11 @@
   .aks-systems-sentinel-heading h2,
   .aks-systems-operation-heading h2,
   .aks-systems-workbench-heading h2 {
-    font-size: 2.75rem;
+    font-size: clamp(calc(1.85 * var(--r)), 9.2vw, calc(2.75 * var(--r)));
   }
 
   .aks-systems-sentinel-footer {
-    padding-top: 1rem;
+    padding-top: var(--r);
   }
 
   .aks-systems-sentinel-footer .aks-systems-actions {
@@ -896,7 +892,7 @@
 
   .aks-systems-button {
     width: 100%;
-    min-height: 2.75rem;
+    min-height: calc(2.75 * var(--r));
   }
 
   .aks-systems-station figcaption {
@@ -905,17 +901,17 @@
   }
 
   .aks-systems-station h3 {
-    font-size: 2.45rem;
+    font-size: calc(2.45 * var(--r));
   }
 
   .aks-systems-quick {
-    grid-template-columns: 4.2rem minmax(0, 1fr) auto;
-    min-height: 5rem;
+    grid-template-columns: calc(4.2 * var(--r)) minmax(0, 1fr) auto;
+    min-height: calc(5 * var(--r));
   }
 
   .aks-systems-quick-media {
-    width: 3.8rem;
-    height: 2.6rem;
+    width: calc(3.8 * var(--r));
+    height: calc(2.6 * var(--r));
   }
 
   .aks-systems-quick p,
@@ -924,7 +920,7 @@
   }
 
   .aks-systems-quick h3 {
-    font-size: 1rem;
+    font-size: var(--r);
   }
 
   .aks-systems-quick-link {
@@ -938,21 +934,23 @@
   }
 
   .aks-systems-quick-link span {
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--r));
   }
 
   .aks-systems-manifesto h2 {
-    font-size: clamp(3.45rem, 17vw, 4.5rem);
+    font-size: clamp(calc(3.45 * var(--r)), 17vw, calc(4.5 * var(--r)));
   }
 
   .aks-systems-manifesto-grid > p {
-    max-width: 18rem;
+    max-width: calc(18 * var(--r));
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.4rem minmax(4.2rem, 0.65fr) minmax(0, 1fr) 1rem;
-    gap: 0.55rem;
-    min-height: 4.1rem;
+    grid-template-columns:
+      calc(1.4 * var(--r)) minmax(calc(4.2 * var(--r)), 0.65fr) minmax(0, 1fr)
+      var(--r);
+    gap: calc(0.55 * var(--r));
+    min-height: calc(4.1 * var(--r));
   }
 
   .aks-systems-tools .aks-systems-status,
@@ -961,21 +959,21 @@
   }
 
   .aks-systems-tool-function {
-    font-size: 0.55rem;
+    font-size: calc(0.85 * var(--r));
   }
 
   .aks-systems-perspectives {
-    min-height: 49rem;
-    padding-top: 5.5rem;
+    min-height: calc(49 * var(--r));
+    padding-top: calc(5.5 * var(--r));
   }
 
   .aks-systems-perspectives h2 {
     max-width: 9.2ch;
-    font-size: clamp(3.3rem, 15.2vw, 4.15rem);
+    font-size: clamp(calc(3.3 * var(--r)), 15.2vw, calc(4.15 * var(--r)));
   }
 
   .aks-systems-perspectives-bottom {
-    margin-top: 5rem;
+    margin-top: calc(5 * var(--r));
   }
 
   .aks-systems-perspectives-bottom .aks-systems-actions {
@@ -993,7 +991,7 @@
 /* Systems V1.1 dossier fidelity pass. The supplied 1440 / 1280 / 768 / 390 boards
  * are the visual source of truth for these final layout corrections. */
 .aks-systems-wrap {
-  width: min(calc(100% - 7rem), 82rem);
+  width: min(calc(100% - calc(7 * var(--r))), calc(82 * var(--r)));
 }
 
 .aks-systems-hero-overlay {
@@ -1014,53 +1012,53 @@
 }
 
 .aks-systems-hero-copy {
-  padding-top: clamp(6.75rem, 8.5vw, 8.5rem);
+  padding-top: clamp(calc(6.75 * var(--r)), 8.5vw, calc(8.5 * var(--r)));
 }
 
 .aks-systems-hero h1 {
-  font-size: clamp(4rem, 6.7vw, 6rem);
+  font-size: clamp(calc(4 * var(--r)), 6.7vw, calc(6 * var(--r)));
 }
 
 .aks-systems-sentinel-meta {
   display: grid;
   justify-items: end;
-  gap: 0.45rem;
+  gap: calc(0.45 * var(--r));
   color: var(--systems-muted);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.55rem;
+  font-size: calc(0.72 * var(--r));
   letter-spacing: 0.05em;
 }
 
 .aks-systems-sentinel-footer {
-  grid-template-columns: minmax(17rem, 0.8fr) minmax(14rem, 0.58fr) auto;
-  gap: 2rem;
+  grid-template-columns: minmax(calc(17 * var(--r)), 0.8fr) minmax(calc(14 * var(--r)), 0.58fr) auto;
+  gap: calc(2 * var(--r));
   align-items: start;
 }
 
 .aks-systems-sentinel-summary {
   display: grid;
-  gap: 0.45rem;
+  gap: calc(0.45 * var(--r));
 }
 
 .aks-systems-sentinel-summary span {
   color: var(--systems-muted);
-  font-size: 0.68rem;
+  font-size: calc(0.9 * var(--r));
   line-height: 1.45;
 }
 
 .aks-systems-sentinel-bullets {
   display: grid;
-  gap: 0.35rem;
+  gap: calc(0.35 * var(--r));
   margin: 0;
   padding: 0;
   color: var(--systems-muted);
-  font-size: 0.68rem;
+  font-size: calc(0.9 * var(--r));
   line-height: 1.4;
   list-style: none;
 }
 
 .aks-systems-sentinel-bullets li::before {
-  margin-right: 0.6rem;
+  margin-right: calc(0.6 * var(--r));
   color: var(--systems-text);
   content: '—';
 }
@@ -1092,20 +1090,20 @@
 
 .aks-systems-media-label {
   position: absolute;
-  top: 0.85rem;
-  left: 0.95rem;
-  padding: 0.24rem 0.42rem;
+  top: calc(0.85 * var(--r));
+  left: calc(0.95 * var(--r));
+  padding: calc(0.24 * var(--r)) calc(0.42 * var(--r));
   border: 1px solid rgb(255 255 255 / 12%);
   background: rgb(2 6 10 / 58%);
   color: rgb(255 255 255 / 62%);
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.48rem;
+  font-size: calc(0.75 * var(--r));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .aks-systems-station figcaption {
-  padding: 0.86rem 1rem 0.95rem;
+  padding: calc(0.86 * var(--r)) var(--r) calc(0.95 * var(--r));
 }
 
 .aks-systems-station--pair figcaption {
@@ -1113,13 +1111,13 @@
 }
 
 .aks-systems-station--pair h3 {
-  font-size: clamp(2rem, 3.6vw, 3.7rem);
+  font-size: clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r)));
 }
 
 .aks-systems-quick-media {
   overflow: hidden;
-  height: 4.35rem;
-  border-radius: 0.28rem;
+  height: calc(4.35 * var(--r));
+  border-radius: calc(0.28 * var(--r));
   background: #0a0f17;
 }
 
@@ -1132,83 +1130,86 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: calc(2 * var(--r));
 }
 
 .aks-systems-manifesto-meta > span {
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.52rem;
+  font-size: calc(0.75 * var(--r));
   letter-spacing: 0.12em;
 }
 
 .aks-systems-workbench-title {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: calc(0.8 * var(--r));
 }
 
 .aks-systems-workbench-mark {
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: calc(2.35 * var(--r));
+  height: calc(2.35 * var(--r));
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid var(--systems-lime);
   border-radius: 50%;
   color: var(--systems-lime);
-  font-size: 1.15rem;
+  font-size: calc(1.15 * var(--r));
 }
 
 .aks-systems-tools li {
   grid-template-columns:
-    2.25rem minmax(7rem, 0.48fr) minmax(12rem, 1.1fr) minmax(6rem, 0.42fr)
-    minmax(5.5rem, 0.4fr) 1rem;
+    calc(2.25 * var(--r)) minmax(calc(7 * var(--r)), 0.48fr) minmax(calc(12 * var(--r)), 1.1fr)
+    minmax(calc(6 * var(--r)), 0.42fr)
+    minmax(calc(5.5 * var(--r)), 0.4fr) var(--r);
 }
 
 .aks-systems-tool-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.38rem;
+  gap: calc(0.38 * var(--r));
   color: var(--systems-text) !important;
   font-family: var(--aks-font-mono, ui-monospace, monospace);
-  font-size: 0.58rem !important;
+  font-size: calc(0.72 * var(--r)) !important;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
 
 .aks-systems-tool-action i {
-  width: 0.35rem;
-  height: 0.35rem;
+  width: calc(0.35 * var(--r));
+  height: calc(0.35 * var(--r));
   border-radius: 50%;
   background: var(--systems-lime);
 }
 
 .aks-systems-perspectives {
-  min-height: 40rem;
+  min-height: calc(40 * var(--r));
 }
 
 @media (max-width: 80rem) {
   .aks-systems-wrap {
-    width: min(calc(100% - 6rem), 73rem);
+    width: min(calc(100% - calc(6 * var(--r))), calc(73 * var(--r)));
   }
 
   .aks-systems-sentinel-footer {
-    grid-template-columns: minmax(15rem, 0.78fr) minmax(12rem, 0.55fr) auto;
-    gap: 1.4rem;
+    grid-template-columns:
+      minmax(calc(15 * var(--r)), 0.78fr) minmax(calc(12 * var(--r)), 0.55fr)
+      auto;
+    gap: calc(1.4 * var(--r));
   }
 
   .aks-systems-sentinel-footer .aks-systems-actions {
-    max-width: 18rem;
+    max-width: calc(18 * var(--r));
   }
 }
 
 @media (max-width: 64rem) {
   .aks-systems-wrap {
-    width: min(calc(100% - 3rem), 61rem);
+    width: min(calc(100% - calc(3 * var(--r))), calc(61 * var(--r)));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(3rem, 7.2vw, 4.25rem);
+    font-size: clamp(calc(3 * var(--r)), 7.2vw, calc(4.25 * var(--r)));
   }
 
   .aks-systems-sentinel-meta {
@@ -1217,7 +1218,7 @@
 
   .aks-systems-sentinel-footer {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
+    gap: var(--r);
   }
 
   .aks-systems-sentinel-footer .aks-systems-actions {
@@ -1226,7 +1227,7 @@
   }
 
   .aks-systems-operation {
-    padding-block: 6.4rem 5.6rem;
+    padding-block: calc(6.4 * var(--r)) calc(5.6 * var(--r));
   }
 
   .aks-systems-manifesto-meta {
@@ -1234,7 +1235,9 @@
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 2rem minmax(6rem, 0.5fr) minmax(0, 1fr) minmax(5rem, 0.45fr) 1rem;
+    grid-template-columns:
+      calc(2 * var(--r)) minmax(calc(6 * var(--r)), 0.5fr) minmax(0, 1fr)
+      minmax(calc(5 * var(--r)), 0.45fr) var(--r);
   }
 
   .aks-systems-tool-env {
@@ -1308,31 +1311,33 @@
   }
 
   .aks-systems-manifesto-meta > span {
-    max-width: 12rem;
+    max-width: calc(12 * var(--r));
     text-align: right;
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.6rem minmax(6rem, 0.48fr) minmax(0, 1fr) auto 1rem;
+    grid-template-columns:
+      calc(1.6 * var(--r)) minmax(calc(6 * var(--r)), 0.48fr) minmax(0, 1fr)
+      auto var(--r);
   }
 
   .aks-systems-tool-action {
-    font-size: 0.52rem !important;
+    font-size: calc(0.75 * var(--r)) !important;
   }
 }
 
 @media (max-width: 30rem) {
   .aks-systems-wrap {
-    width: min(calc(100% - 1.5rem), 27rem);
+    width: min(calc(100% - calc(1.5 * var(--r))), calc(27 * var(--r)));
   }
 
   .aks-systems-hero h1 {
-    font-size: clamp(2.25rem, 10vw, 2.7rem);
+    font-size: clamp(calc(2.25 * var(--r)), 10vw, calc(2.7 * var(--r)));
     line-height: 0.9;
   }
 
   .aks-systems-hero-copy {
-    padding-top: 5.25rem;
+    padding-top: calc(5.25 * var(--r));
   }
 
   .aks-systems-hero-media {
@@ -1346,7 +1351,7 @@
   }
 
   .aks-systems-sentinel-bullets {
-    font-size: 0.62rem;
+    font-size: calc(0.85 * var(--r));
   }
 
   .aks-systems-station--pair .aks-systems-station-media {
@@ -1355,8 +1360,8 @@
 
   .aks-systems-quick {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.45rem 0.75rem;
-    padding-block: 0.85rem 1rem;
+    gap: calc(0.45 * var(--r)) calc(0.75 * var(--r));
+    padding-block: calc(0.85 * var(--r)) var(--r);
   }
 
   .aks-systems-quick-media {
@@ -1368,13 +1373,13 @@
 
   .aks-systems-quick h3 {
     grid-column: 1;
-    font-size: 1.45rem;
+    font-size: calc(1.45 * var(--r));
   }
 
   .aks-systems-quick p {
     display: block;
     grid-column: 1 / -1;
-    font-size: 0.68rem;
+    font-size: calc(0.9 * var(--r));
   }
 
   .aks-systems-quick .aks-systems-status {
@@ -1394,12 +1399,12 @@
   }
 
   .aks-systems-quick-link span {
-    font-size: 0.75rem;
+    font-size: calc(0.75 * var(--r));
   }
 
   .aks-systems-manifesto-meta {
     display: grid;
-    gap: 0.75rem;
+    gap: calc(0.75 * var(--r));
   }
 
   .aks-systems-manifesto-meta > span {
@@ -1407,14 +1412,14 @@
   }
 
   .aks-systems-manifesto h2 {
-    font-size: clamp(2.8rem, 13.5vw, 3.35rem);
+    font-size: clamp(calc(2.8 * var(--r)), 13.5vw, calc(3.35 * var(--r)));
   }
 
   .aks-systems-tools li {
-    grid-template-columns: 1.3rem minmax(0, 1fr) auto;
-    gap: 0.25rem 0.55rem;
-    min-height: 4.5rem;
-    padding-block: 0.65rem;
+    grid-template-columns: calc(1.3 * var(--r)) minmax(0, 1fr) auto;
+    gap: calc(0.25 * var(--r)) calc(0.55 * var(--r));
+    min-height: calc(4.5 * var(--r));
+    padding-block: calc(0.65 * var(--r));
   }
 
   .aks-systems-tool-index {
@@ -1423,7 +1428,7 @@
 
   .aks-systems-tool-function {
     grid-column: 2;
-    font-size: 0.62rem !important;
+    font-size: calc(0.85 * var(--r)) !important;
   }
 
   .aks-systems-tool-env {
@@ -1441,7 +1446,7 @@
   }
 
   .aks-systems-perspectives h2 {
-    font-size: clamp(2.35rem, 11vw, 2.8rem);
+    font-size: clamp(calc(2.35 * var(--r)), 11vw, calc(2.8 * var(--r)));
   }
 }
 
@@ -1472,18 +1477,14 @@
     display: flex;
     flex-wrap: wrap;
     grid-template-columns: none;
-    gap: 0.45rem;
+    gap: calc(0.45 * var(--r));
   }
 
   .aks-systems-sentinel-footer .aks-systems-button {
     width: auto;
     min-height: 44px;
     flex: 0 0 auto;
-    padding-inline: 0.8rem;
-  }
-
-  .aks-systems-operation {
-    padding-bottom: 13rem;
+    padding-inline: calc(0.8 * var(--r));
   }
 
   .aks-systems-manifesto {
@@ -1491,19 +1492,15 @@
   }
 
   .aks-systems-manifesto-grid {
-    margin-top: 4.5rem;
-  }
-
-  .aks-systems-workbench {
-    min-height: 840px;
+    margin-top: calc(4.5 * var(--r));
   }
 
   .aks-systems-tools li {
-    min-height: 5.75rem;
+    min-height: calc(5.75 * var(--r));
   }
 
   .aks-systems-perspectives {
-    min-height: 44rem;
+    min-height: calc(44 * var(--r));
   }
 }
 
