@@ -72,38 +72,77 @@
   background: #061019;
 }
 
-.aks-systems-hero-media {
+/* The hero is a size container so the emblem watermark can be sized from its real box. */
+.aks-systems-hero {
+  container: systems-hero / size;
+}
+
+/* Emblem watermark: right of the copy on wide screens, below it on portrait screens. */
+.aks-systems-hero-art {
   position: absolute;
-  z-index: -3;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 55% center;
-  filter: saturate(0.92) contrast(1.08) brightness(0.74);
-  transform: scale(1.015);
+  z-index: 0;
+  top: 48%;
+  left: 68%;
+  width: min(56cqw, 86cqh);
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
-.aks-systems-hero-media--topography {
-  filter: none;
-  transform-origin: 64% 35%;
-  animation: aks-systems-topography-drift 60s ease-in-out infinite alternate;
-}
-
-@keyframes aks-systems-topography-drift {
-  from {
-    transform: scale(1.02) translate3d(0, 0, 0);
-  }
-
-  to {
-    transform: scale(1.07) translate3d(-1.2%, 0.8%, 0);
+@container systems-hero (aspect-ratio < 1) {
+  .aks-systems-hero-art {
+    top: 53%;
+    left: 50%;
+    width: min(100cqw, 64cqh);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aks-systems-hero-media--topography {
-    animation: none;
+@container systems-hero (aspect-ratio < 1) {
+  .aks-systems-hero-line {
+    stroke: rgb(201 214 255 / 64%);
   }
+}
+
+/* The annotations only stay legible when the drawing is large enough. */
+@container systems-hero (aspect-ratio < 1) or (height < 40rem) {
+  .aks-systems-hero-notes {
+    display: none;
+  }
+}
+
+.aks-systems-hero-guides {
+  fill: none;
+  stroke: rgb(140 165 220 / 22%);
+  stroke-width: 1;
+}
+
+.aks-systems-hero-guides * {
+  vector-effect: non-scaling-stroke;
+}
+
+.aks-systems-hero-guide--dashed {
+  stroke: rgb(140 165 220 / 13%);
+  stroke-dasharray: 3 6;
+}
+
+.aks-systems-hero-notes {
+  fill: rgb(140 165 220 / 55%);
+  font-family: var(--aks-font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+}
+
+.aks-systems-hero-line {
+  fill: none;
+  stroke: rgb(201 214 255 / 52%);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.aks-systems-hero-star {
+  fill: var(--systems-lime);
 }
 
 .aks-systems-hero-overlay {
@@ -750,10 +789,6 @@
     width: min(calc(100% - calc(2 * var(--r))), calc(44 * var(--r)));
   }
 
-  .aks-systems-hero-media {
-    object-position: 58% center;
-  }
-
   .aks-systems-hero-overlay {
     background:
       linear-gradient(
@@ -852,10 +887,6 @@
 @media (max-width: 30rem) {
   .aks-systems-wrap {
     width: calc(100% - calc(1.5 * var(--r)));
-  }
-
-  .aks-systems-hero-media {
-    object-position: 61% center;
   }
 
   .aks-systems-hero-copy {
@@ -1023,11 +1054,6 @@
       rgb(2 5 8 / 20%) 100%
     ),
     linear-gradient(180deg, rgb(1 5 9 / 2%) 54%, rgb(2 5 8 / 37%) 86%, #05070a 100%);
-}
-
-.aks-systems-hero-media {
-  object-position: 50% 52%;
-  filter: saturate(0.98) contrast(1.05) brightness(0.9);
 }
 
 .aks-systems-hero-copy {
@@ -1325,10 +1351,6 @@
     box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 38%);
   }
 
-  .aks-systems-hero-media {
-    object-position: 54% 54%;
-  }
-
   .aks-systems-manifesto-meta > span {
     max-width: calc(12 * var(--r));
     text-align: right;
@@ -1357,10 +1379,6 @@
 
   .aks-systems-hero-copy {
     padding-top: calc(5.25 * var(--r));
-  }
-
-  .aks-systems-hero-media {
-    object-position: 58% 50%;
   }
 
   .aks-systems-hero-overlay {
@@ -1471,9 +1489,6 @@
 
 /* Final dossier alignment: preserve the photographic hero stacking and the exact
  * mobile section rhythm from the supplied 390px board. */
-.aks-systems-hero-media {
-  z-index: 0;
-}
 
 .aks-systems-hero-overlay {
   z-index: 1;
