@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router';
 
+import { emblemParts } from './hero-emblem';
 import { ProtocapMap } from './protocap-map-view';
 import { SentinelMap } from './sentinel-map-view';
 import type { SystemsAction, SystemsPageContent, SystemsStation, SystemsStatus } from './content';
@@ -107,6 +108,50 @@ export function OperationRail({ items }: { items: SystemsPageContent['rail'] }) 
   );
 }
 
+const heroStars = new Set<string>(['star-center', 'star-left', 'star-right']);
+
+/**
+ * The AkikSystems emblem drawn as a construction plan: crisp 1px outlines (inlined so the
+ * stroke stays 1px at any size) over its geometric guides, with the stars in lime.
+ */
+function SystemsHeroArt() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="aks-systems-hero-art"
+      focusable="false"
+      viewBox="0 0 1000 1000"
+    >
+      <g className="aks-systems-hero-guides">
+        <circle cx="500" cy="500" r="370" />
+        <circle className="aks-systems-hero-guide--dashed" cx="500" cy="500" r="430" />
+        <circle className="aks-systems-hero-guide--dashed" cx="500" cy="500" r="248" />
+        <path className="aks-systems-hero-guide--dashed" d="M40 500H960M500 40V960" />
+        <path className="aks-systems-hero-guide--dashed" d="M175 175L825 825M825 175L175 825" />
+        <path d="M130 900H870M130 890V910M870 890V910" />
+      </g>
+      <g className="aks-systems-hero-notes">
+        <text textAnchor="middle" x="500" y="928">
+          Ø 740 · SYSTEMIC SCALE
+        </text>
+        <text x="880" y="196">
+          45°
+        </text>
+      </g>
+      <g transform="translate(500 500) scale(0.4) translate(-1024 -1024)">
+        {emblemParts.map((part) => (
+          <path
+            className={heroStars.has(part.id) ? 'aks-systems-hero-star' : 'aks-systems-hero-line'}
+            d={part.d}
+            fillRule="evenodd"
+            key={part.id}
+          />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 export function SystemsHero({
   content,
   rail,
@@ -120,14 +165,7 @@ export function SystemsHero({
       className="aks-systems-hero"
       data-systems-section="hero"
     >
-      <img
-        alt=""
-        aria-hidden="true"
-        className="aks-systems-hero-media aks-systems-hero-media--topography"
-        decoding="sync"
-        fetchPriority="high"
-        src="/systems/hero-topography.svg"
-      />
+      <SystemsHeroArt />
       <div aria-hidden="true" className="aks-systems-hero-overlay" />
       <div className="aks-systems-wrap aks-systems-hero-copy">
         <p className="aks-systems-kicker">{content.eyebrow}</p>

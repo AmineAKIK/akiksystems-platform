@@ -50,7 +50,7 @@ async function inspectViewport(browser, viewport) {
     viewport.width + 'x' + viewport.height + ' route must return 200',
   );
   await page.locator('.aks-systems-page').waitFor();
-  await page.locator('.aks-systems-hero-media').waitFor();
+  await page.locator('.aks-systems-hero-art').waitFor();
   await page.locator('.aks-systems-page').evaluate((root) => {
     for (const image of root.querySelectorAll('img')) {
       image.loading = 'eager';
@@ -149,8 +149,8 @@ async function inspectViewport(browser, viewport) {
     ]);
     assert.equal(
       measurement.naturalImages.length,
-      5,
-      'Systems must render the five dossier media assets',
+      4,
+      'Systems must render the four station media assets',
     );
     for (const image of measurement.naturalImages) {
       assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');
