@@ -58,7 +58,7 @@ function StatusPill({
   );
 }
 
-function ActionLink({ action }: { action: SystemsAction }) {
+function ActionLink({ action, locale }: { action: SystemsAction; locale: 'en' | 'fr' }) {
   const className = `aks-systems-button aks-systems-button--${action.kind}`;
 
   if (action.href.startsWith('/')) {
@@ -70,9 +70,21 @@ function ActionLink({ action }: { action: SystemsAction }) {
     );
   }
 
+  // Applications open in a new tab, and say so; email links stay in place.
+  const external = action.href.startsWith('http');
   return (
-    <a className={className} href={action.href}>
+    <a
+      className={className}
+      href={action.href}
+      rel={external ? 'noopener' : undefined}
+      target={external ? '_blank' : undefined}
+    >
       {action.label}
+      {external ? (
+        <span className="aks-visually-hidden">
+          {locale === 'fr' ? ' (nouvel onglet)' : ' (opens in a new tab)'}
+        </span>
+      ) : null}
       <span aria-hidden="true">↗</span>
     </a>
   );
@@ -266,7 +278,7 @@ export function SentinelWorkspace({
           </ul>
           <div className="aks-systems-actions">
             {content.actions.map((action) => (
-              <ActionLink action={action} key={action.label} />
+              <ActionLink action={action} key={action.label} locale={locale} />
             ))}
           </div>
         </div>
@@ -443,7 +455,13 @@ export function Workbench({ content }: { content: SystemsPageContent['workbench'
   );
 }
 
-export function PerspectivesCTA({ content }: { content: SystemsPageContent['perspectives'] }) {
+export function PerspectivesCTA({
+  content,
+  locale,
+}: {
+  content: SystemsPageContent['perspectives'];
+  locale: 'en' | 'fr';
+}) {
   return (
     <section
       aria-labelledby="perspectives-title"
@@ -457,7 +475,7 @@ export function PerspectivesCTA({ content }: { content: SystemsPageContent['pers
         <div className="aks-systems-perspectives-bottom">
           <p>{content.body}</p>
           <div className="aks-systems-actions">
-            <ActionLink action={content.primary} />
+            <ActionLink action={content.primary} locale={locale} />
           </div>
         </div>
       </div>
@@ -508,7 +526,7 @@ export function SystemsPage({
       </section>
       <Manifesto content={content.manifesto} />
       <Workbench content={content.workbench} />
-      <PerspectivesCTA content={content.perspectives} />
+      <PerspectivesCTA content={content.perspectives} locale={locale} />
     </main>
   );
 }
