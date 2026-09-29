@@ -39,15 +39,15 @@ async function waitForServer() {
   throw new Error('Systems smoke server did not become ready. stderr=' + stderr);
 }
 
-async function inspectViewport(browser, viewport) {
+async function inspectViewport(browser, viewport, locale) {
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
-  const response = await page.goto(origin + '/fr/systems');
+  const response = await page.goto(origin + '/' + locale + '/systems');
 
   assert.equal(
     response?.status(),
     200,
-    viewport.width + 'x' + viewport.height + ' route must return 200',
+    locale + ' ' + viewport.width + 'x' + viewport.height + ' route must return 200',
   );
   await page.locator('.aks-systems-page').waitFor();
   await page.locator('.aks-systems-hero-art').waitFor();
@@ -76,7 +76,7 @@ async function inspectViewport(browser, viewport) {
   });
   await page.screenshot({
     fullPage: true,
-    path: path.join(screenshotDirectory, `systems-${viewport.width}.png`),
+    path: path.join(screenshotDirectory, `systems-${locale}-${viewport.width}.png`),
   });
 
   const measurement = await page.evaluate(() => {
@@ -196,6 +196,129 @@ async function inspectViewport(browser, viewport) {
   }
 }
 
+/** String literals of a map module (comments skipped, quotes and escapes honoured). */
+function stringLiterals(source) {
+  const literals = [];
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === '/' && source[index + 1] === '*') {
+      index = source.indexOf('*/', index + 2) + 1;
+    } else if (char === '/' && source[index + 1] === '/') {
+      index = source.indexOf('\n', index);
+      if (index < 0) break;
+    } else if (char === "'" || char === '"' || char === '`') {
+      let text = '';
+      let end = index + 1;
+      while (source[end] !== char) {
+        if (source[end] === '\\') end += 1;
+        text += source[end];
+        end += 1;
+      }
+      literals.push(text);
+      index = end;
+    }
+  }
+  return literals;
+}
+
+/**
+ * Words the maps write in French: every word of their string literals that no English
+ * translation uses. A string missing from a dictionary therefore still shows up.
+ */
+function frenchOnlyWords() {
+  const words = (text) => (text.match(/[A-Za-zÀ-ÿ]{4,}/g) ?? []).map((word) => word.toLowerCase());
+  const french = new Set();
+  const english = new Set();
+  for (const name of ['sentinel', 'protocap']) {
+    const read = (file) =>
+      fs.readFileSync(path.resolve(__dirname, '../app/systems/' + file), 'utf8');
+    for (const literal of stringLiterals(read(name + '-map.js'))) {
+      for (const word of words(literal)) french.add(word);
+    }
+    const module = read(name + '-map.en.ts');
+    const dictionary = new Function(
+      'return ' + module.slice(module.indexOf('{'), module.lastIndexOf('}') + 1),
+    )();
+    for (const value of Object.values(dictionary)) {
+      for (const word of words(value)) english.add(word);
+    }
+  }
+  for (const word of english) french.delete(word);
+  // Names and technical terms the maps rightly keep as they are in English.
+  const shared = ['celine', 'céline', 'anim', 'anti', 'attestations', 'checksums', 'contents'];
+  shared.push('contract', 'cookies', 'csrf', 'culture', 'edge', 'followup', 'forward', 'https');
+  shared.push('jest', 'notes', 'pino', 'registry', 'revalidation', 'reverse', 'runbook');
+  shared.push('technology', 'conform', 'nonconform', 'number', 'issafeinteger', 'overlap');
+  for (const word of shared) french.delete(word);
+  return french;
+}
+
+/** The English page: fully English maps, and a language switch that keeps the section. */
+async function inspectEnglish(browser) {
+  const french = frenchOnlyWords();
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(origin + '/en/systems');
+    for (const map of ['.aks-systems-sentinel-map', '.aks-systems-protocap-map']) {
+      await page.locator(map).scrollIntoViewIfNeeded();
+      await page.waitForFunction((selector) => document.querySelector(selector + ' svg text'), map);
+      const tabs = page.locator(map + ' [role="tab"]');
+      const leftovers = new Set();
+      for (let tab = 0; tab < (await tabs.count()); tab += 1) {
+        await tabs.nth(tab).click();
+        const items = page.locator(
+          map + ' [role="button"], ' + map + ' [tabindex="0"]:not([role="tab"])',
+        );
+        // Opening an item can redraw the scene: recount each time and skip what went away.
+        for (let item = -1; item < (await items.count()); item += 1) {
+          if (item >= 0) {
+            try {
+              await items.nth(item).focus({ timeout: 1000 });
+              await page.keyboard.press('Enter');
+            } catch {
+              continue;
+            }
+          }
+          const texts = await page.evaluate((selector) => {
+            const root = document.querySelector(selector);
+            return [
+              ...[...root.querySelectorAll('text, title')]
+                .filter((node) => node.getAttribute('x') !== '-999')
+                .map((node) => node.textContent),
+              ...[...root.querySelectorAll('[aria-label]')].map((node) =>
+                node.getAttribute('aria-label'),
+              ),
+            ];
+          }, map);
+          for (const text of texts) {
+            const words = (text.match(/[A-Za-zÀ-ÿ]{4,}/g) ?? []).map((word) => word.toLowerCase());
+            if (words.some((word) => french.has(word))) leftovers.add(text.trim());
+          }
+        }
+      }
+      assert.deepEqual([...leftovers], [], map + ' must be fully English on the English page');
+    }
+
+    const switcher = page.locator('.aks-experience-meta .aks-experience-language');
+    assert.equal((await switcher.innerText()).replace(/\s+/g, ''), 'FR/EN');
+    await page.evaluate(() => document.getElementById('workbench').scrollIntoView());
+    await page.waitForFunction(() =>
+      document
+        .querySelector('.aks-experience-meta .aks-experience-language')
+        ?.getAttribute('href')
+        ?.endsWith('#workbench'),
+    );
+    assert.equal(
+      await switcher.getAttribute('href'),
+      'https://akiksystems.fr/fr/systems#workbench',
+      'the language switch must keep the section across domains',
+    );
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
@@ -209,9 +332,12 @@ async function inspectViewport(browser, viewport) {
       { width: 1440, height: 900 },
       { width: 2560, height: 1440 },
     ]) {
-      await inspectViewport(browser, viewport);
+      for (const locale of ['fr', 'en']) await inspectViewport(browser, viewport, locale);
     }
-    console.log('Systems visual smoke passed from 320 to 2560px with dossier media loaded.');
+    await inspectEnglish(browser);
+    console.log(
+      'Systems visual smoke passed in French and English from 320 to 2560px, with fully English maps and a language switch that keeps the section.',
+    );
   } finally {
     await browser.close();
     server.kill('SIGTERM');

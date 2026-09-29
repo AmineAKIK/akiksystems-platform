@@ -46,6 +46,8 @@ describe('ExperienceShell', () => {
       'aria-label="English active. View in French." class="aks-home-language aks-experience-language" hrefLang="fr" href="/fr/systems/sentinelle"',
     );
     expect(html).toContain('class="aks-home-language-current" lang="en">EN</span>');
+    // Fixed order whatever the active language: FR first, then EN.
+    expect(html).toMatch(/lang="fr">FR<\/span>.*lang="en">EN<\/span>/);
     expect(html).toContain('class="aks-home-language-target" lang="fr">FR</span>');
     expect(html).toContain('class="aks-experience-outlet" id="experience-outlet" tabindex="-1"');
     expect(html).toContain('<main><h1>Sentinel</h1></main>');
