@@ -537,8 +537,12 @@
   z-index: 8;
   inset-inline: 0;
   inset-block-end: 0;
-  /* On the portal the footer keeps its separator but lets the plan show through. */
+  /* On the portal the footer has no band and no separator: the plan runs through. */
   background: transparent;
+}
+
+.aks-experience-footer[data-home='true']::before {
+  display: none;
 }
 
 /* Same footer, tighter when stacked: the portal is one screen, so this gives the doors room. */

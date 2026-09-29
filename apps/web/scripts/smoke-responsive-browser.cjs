@@ -226,8 +226,8 @@ async function assertGeometry(browser, viewport, name, locale = 'fr') {
     );
     assert.deepEqual(m.doorOrder, ['work-with-us', 'profile', 'systems', 'writings', 'learning']);
     assert.equal(m.legalCount, 3);
-    // Home carries the shared footer, separator included.
-    assert.equal(m.footerSeparator, 'block');
+    // On the portal the footer has no separator.
+    assert.equal(m.footerSeparator, 'none');
     assert.match(m.background, /^radial-gradient\(/);
     assert.equal(m.clockFits, true, name + ' clock must never truncate');
 
