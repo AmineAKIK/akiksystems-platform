@@ -8,7 +8,7 @@
   --profile-soft: #dcdfe1;
   --profile-muted: #aeb4ba;
   --profile-dim: #7e868d;
-  --profile-faint: #5a6268;
+  --profile-faint: #868e95;
   --profile-eyebrow: #b7bcc1;
   --profile-line: #1b2228;
   --profile-line-soft: #141b20;
@@ -82,7 +82,7 @@
 
 .aks-profile-label {
   color: var(--profile-dim);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -2417,5 +2417,140 @@
   .aks-profile-page *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Background: the dated facts, experience beside education. */
+.aks-profile-timeline-section h2 {
+  max-width: 40rem;
+  margin: 0.75rem 0 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.aks-profile-timeline-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.aks-profile-timeline-column .aks-profile-label {
+  margin: 0 0 1rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+
+.aks-profile-timeline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--profile-line);
+  list-style: none;
+}
+
+.aks-profile-timeline li {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.95rem;
+  border-bottom: 1px solid var(--profile-line);
+}
+
+.aks-profile-timeline p {
+  margin: 0;
+}
+
+.aks-profile-timeline-period {
+  color: var(--profile-dim);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+.aks-profile-timeline-title {
+  color: var(--profile-text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.aks-profile-timeline-place {
+  color: var(--profile-dim);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.aks-profile-timeline-detail {
+  margin-top: 0.35rem !important;
+  color: var(--profile-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 48rem) {
+  .aks-profile-timeline-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aks-profile-timeline li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+}
+
+/* Where a cycle step already runs: one quiet line, the system it comes from. */
+.aks-profile-panel-proof p {
+  margin: 0;
+  color: var(--profile-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Narrow phones: the chain keeps every note inside the card, steps narrower, notes shifted in. */
+@media (max-width: 22.5rem) {
+  .aks-profile-chain {
+    max-width: calc(100% + 1.5rem);
+    margin-inline: -0.75rem;
+  }
+
+  .aks-profile-chain-steps {
+    width: 7rem;
+  }
+
+  .aks-profile-chain
+    :is(
+      [data-mark='scope'],
+      [data-mark='scope-label'],
+      [data-mark='tick-simple'],
+      [data-mark='tick-ready'],
+      [data-mark='simple'],
+      [data-mark='conflicts'],
+      [data-mark='ready'],
+      [data-mark='invisible'],
+      [data-mark='free'],
+      [data-mark='usable'],
+      [data-mark='invisible-bracket'],
+      [data-mark='unexpected']
+    ) {
+    translate: -2.25rem 0;
+  }
+
+  .aks-profile-chain :is([data-mark='free'], [data-mark='usable'], [data-mark='unexpected']) {
+    width: 7.25rem;
+  }
+
+  .aks-profile-chain
+    :is(
+      [data-mark='scope-label'],
+      [data-mark='simple'],
+      [data-mark='conflicts'],
+      [data-mark='ready'],
+      [data-mark='invisible']
+    ) {
+    width: 6.75rem;
   }
 }

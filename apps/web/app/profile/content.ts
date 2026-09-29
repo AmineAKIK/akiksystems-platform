@@ -3,7 +3,14 @@ import type { Locale } from '../i18n/locales';
 export type ProfileIcon =
   'screen' | 'server' | 'database' | 'layers' | 'check' | 'package' | 'link' | 'shield' | 'bolt';
 
-export type ProfileSystemId = 'sentinel' | 'protocap' | 'tugeres';
+export type ProfileSystemId = 'sentinel' | 'protocap';
+
+export interface ProfileTimelineEntry {
+  period: string;
+  title: string;
+  place: string;
+  detail?: string;
+}
 
 export interface ProfileLink {
   label: string;
@@ -30,6 +37,14 @@ export interface ProfilePageContent {
       phone: (ProfileLink & { ariaLabel: string }) | null;
     };
     facts: Array<{ label: string; value: string }>;
+    timeline: {
+      eyebrow: string;
+      title: string;
+      workLabel: string;
+      educationLabel: string;
+      work: ProfileTimelineEntry[];
+      education: ProfileTimelineEntry[];
+    };
   };
   project: {
     label: string;
@@ -49,7 +64,7 @@ export interface ProfilePageContent {
     provenIn: { one: string; many: string };
     regionLabel: string;
     inspect: string;
-    systems: Record<ProfileSystemId, { name: string; context: string; href: string | null }>;
+    systems: Record<ProfileSystemId, { name: string; context: string; href: string }>;
     rows: Array<{
       icon: ProfileIcon;
       category: string;
@@ -82,13 +97,15 @@ export interface ProfilePageContent {
     title: [string, string];
     tablistLabel: string;
     groups: [string, string, string];
-    labels: { does: string; receives: string };
+    labels: { does: string; receives: string; proof: string };
     phases: Array<{
       name: string;
       group: 0 | 1 | 2;
       purpose: string;
       services: string[];
       deliverable: string;
+      /** Where this step already runs in a real system; omitted when there is none to show. */
+      proof?: string;
     }>;
     loopNote: string;
     throughout: { title: string; items: Array<{ title: string; body: string }> };
@@ -98,7 +115,6 @@ export interface ProfilePageContent {
     title: string;
     lead: [string, string];
     body: string;
-    reasoning: ProfileLink;
     method: { eyebrow: string; intro: string };
     tablistLabel: string;
     stepLabel: string;
@@ -159,14 +175,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profil — Mohamed Amine Akik',
       description:
-        'Développeur full-stack de logiciels métier et opérationnels : stack vérifiable, méthode de conception et tout le cycle, du cadrage à la maintenance.',
+        'Fondateur d’AkikSystems, ingénieur logiciel full-stack : dix ans d’opérations de terrain, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
     },
     identity: {
       eyebrow: 'Profil',
       name: ['Mohamed Amine', 'Akik'],
       photoLabel: 'Portrait de Mohamed Amine Akik',
-      role: 'Développeur full-stack',
-      roleDetail: 'logiciels métier et opérationnels',
+      role: 'Fondateur d’AkikSystems',
+      roleDetail: 'ingénieur logiciel full-stack',
       intro:
         'Je conçois et développe des logiciels métier à partir du système réel dans lequel ils vont fonctionner : utilisateurs, flux, données, règles et contraintes. De la modélisation au déploiement, je livre des outils qu’on peut comprendre, maintenir et faire évoluer.',
       contacts: {
@@ -180,9 +196,83 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         phone: null,
       },
       facts: [
+        { label: 'Basé à', value: 'Châtellerault, France' },
         { label: 'Langues', value: 'Français · Arabe · Anglais' },
-        { label: 'Mobilité', value: '[À COMPLÉTER]' },
       ],
+      timeline: {
+        eyebrow: 'Parcours',
+        title: 'Du terrain au logiciel.',
+        workLabel: 'Expérience',
+        educationLabel: 'Formation',
+        work: [
+          {
+            period: '2026 —',
+            title: 'Fondateur, AkikSystems',
+            place: 'Châtellerault',
+            detail:
+              'Conception et développement de logiciels métier et opérationnels : Sentinel, ProtoCap.',
+          },
+          {
+            period: '2026 —',
+            title: 'Conducteur de ligne de conditionnement, L’Oréal',
+            place: 'La Roche-Posay',
+            detail:
+              'Continuité de production, contrôles qualité, traçabilité et gestion des écarts.',
+          },
+          {
+            period: '2023 — 2025',
+            title: 'Conducteur de ligne automatisée, Marelli',
+            place: 'Industrie automobile, Châtellerault',
+            detail:
+              'Réglage des paramètres process et des robots, premier diagnostic des pannes, traçabilité.',
+          },
+          {
+            period: '2022 — 2023',
+            title: 'Opérateur de découpe de précision',
+            place: 'Maroquinerie de luxe, Châtellerault',
+          },
+          {
+            period: '2018 — 2021',
+            title: 'Livreur, sous-traitant Chronopost',
+            place: 'Drancy',
+            detail: 'Un secteur de livraison géré en autonomie, sous contrainte horaire.',
+          },
+          {
+            period: '2014 — 2017',
+            title: 'Ouvrier du bâtiment',
+            place: 'Île-de-France',
+            detail: 'Dallage sur plots et rénovation de façades, pour de grands donneurs d’ordre.',
+          },
+          {
+            period: '2012 — 2014',
+            title: 'Cogérant, AkikTex',
+            place: 'Sous-traitance textile, Tunisie',
+            detail: 'Production, équipes, trésorerie et relation clients.',
+          },
+        ],
+        education: [
+          {
+            period: '2025 — 2026',
+            title: 'Titre professionnel Développeur web et web mobile',
+            place: 'Studi',
+          },
+          {
+            period: '2024 — 2025',
+            title: 'Titre professionnel Technicien d’assistance informatique',
+            place: 'Studi',
+          },
+          {
+            period: '2010 — 2011',
+            title: 'Technicien réseaux et télécoms, stage chez Tunisie Telecom',
+            place: 'Sousse, Tunisie',
+          },
+          {
+            period: '2009',
+            title: 'Baccalauréat, section informatique',
+            place: 'Tunisie',
+          },
+        ],
+      },
     },
     project: {
       label: 'Projet en cours',
@@ -205,9 +295,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     stack: {
       eyebrow: 'Stack',
-      title: ['Ce que je maîtrise,', 'et où le vérifier.'],
+      title: ['Ma stack,', 'et où la vérifier.'],
       intro:
-        'Pas une liste de mots-clés : chaque technologie est adossée à un système publié, que vous pouvez inspecter.',
+        'Chaque technologie renvoie au système qui l’utilise : en ligne, testable, et relié à sa carte sur la page Systèmes.',
       provenIn: { one: 'Prouvé dans 1 système', many: 'Prouvé dans {count} systèmes' },
       regionLabel: 'Preuve pour',
       inspect: 'Inspecter le système',
@@ -221,11 +311,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           name: 'ProtoCap',
           context: 'Outils pour la ligne de production',
           href: '/fr/systems#protocap',
-        },
-        tugeres: {
-          name: 'Tugères',
-          context: 'Commandes et facturation pour traiteurs',
-          href: null,
         },
       },
       rows: [
@@ -279,19 +364,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           ],
         },
         {
-          icon: 'layers',
-          category: 'Back-end et données',
-          name: 'PHP · MySQL',
-          primary: 0,
-          proofs: [
-            {
-              system: 'tugeres',
-              description:
-                'MVC avec politiques métier centralisées, paiements tenus dans un registre, migrations suivies par empreinte, white-label par simple configuration.',
-            },
-          ],
-        },
-        {
           icon: 'check',
           category: 'Qualité',
           name: 'Tests automatisés',
@@ -307,18 +379,13 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
               description:
                 'Tests par mutation, preuves rouge puis verte, audits d’accessibilité axe, recette finale en 45 points fermés avec preuve.',
             },
-            {
-              system: 'tugeres',
-              description:
-                'PHPUnit, analyse statique PHPStan et audit des dépendances à chaque changement.',
-            },
           ],
         },
         {
           icon: 'package',
           category: 'Exploitation',
           name: 'Docker · déploiement',
-          primary: 1,
+          primary: 0,
           proofs: [
             {
               system: 'sentinel',
@@ -330,24 +397,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
               description:
                 'Image multi-étapes non-root, deux origines séparées (réelle et démo), sondes de santé et de disponibilité.',
             },
-            {
-              system: 'tugeres',
-              description:
-                'Migrations exécutées avant le démarrage du serveur, sondes de santé et de disponibilité.',
-            },
           ],
         },
         {
           icon: 'link',
           category: 'Intégrations',
-          name: 'Stripe · Brevo · API de LLM',
+          name: 'IA · API de LLM',
           primary: 0,
           proofs: [
-            {
-              system: 'tugeres',
-              description:
-                'Paiement Stripe avec webhooks idempotents et réconciliation, e-mails transactionnels via Brevo, PDF générés côté serveur.',
-            },
             {
               system: 'protocap',
               description:
@@ -364,7 +421,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       relate: {
         eyebrow: 'Ce que je relie',
         title: 'Quatre regards, une boucle de conception.',
-        body: 'Code, infrastructure, terrain et management : quatre expériences vécues qui me donnent une lecture systémique d’un problème, et une conception plus juste, plus durable.',
+        body: 'Code, infrastructure, terrain et management : quatre expériences vécues, présentes dans chaque décision de conception.',
         groupLabel: 'Quatre regards reliés en boucle autour d’une vision systémique',
         center: { title: ['Vision', 'systémique'], caption: ['Relier, arbitrer,', 'concevoir.'] },
         loopCaption: 'Chaque tour affine la solution',
@@ -380,7 +437,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Code',
             description: 'Écrire, tester et livrer du logiciel qui tient dans le temps.',
             figure: null,
-            source: 'Formation en programmation',
+            source: 'Titre professionnel Développeur web et web mobile (Studi, 2026).',
             brings: 'Savoir ce qu’une idée coûte à construire, à tester et à maintenir.',
             avoids: 'Les promesses impossibles à tenir, et la dette qu’on découvre trop tard.',
             asks: 'Comment le tester ? Qui le maintiendra ? Que se passe-t-il quand ça casse ?',
@@ -391,7 +448,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             description:
               'Coordonner équipes, priorités et ressources, jusqu’aux délais et au budget.',
             figure: { value: '2', label: 'entreprises dirigées' },
-            source: 'La cogérance d’une entreprise de production, puis la direction d’AkikSystems.',
+            source:
+              'AkikTex, sous-traitance textile (2012 – 2014), puis AkikSystems (depuis 2026).',
             brings:
               'Savoir ce qu’une solution demande aux équipes, en temps, en moyens et en changement.',
             avoids: 'Les outils imposés qu’une équipe n’a ni le temps ni l’envie d’adopter.',
@@ -402,8 +460,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Terrain',
             description:
               'Voir l’usage réel, les contraintes concrètes et les effets sur le travail.',
-            figure: { value: '5 ans', label: 'd’expérience en production industrielle' },
-            source: null,
+            figure: { value: '10 ans', label: 'd’opérations de terrain' },
+            source:
+              'Industrie automobile, cosmétique et maroquinerie de luxe (3 ans), logistique et bâtiment.',
             brings:
               'Du réel : le retour d’expérience, les signaux faibles, les contraintes qu’on ne voit pas depuis un schéma.',
             avoids: 'Les solutions théoriques, déconnectées de l’exploitation ou du besoin.',
@@ -414,7 +473,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Infrastructure',
             description: 'Réseaux, serveurs, postes : tout ce sur quoi le logiciel tourne.',
             figure: null,
-            source: 'Formation de technicien réseaux et télécoms',
+            source:
+              'Technicien réseaux et télécoms (2011), technicien d’assistance informatique (2025).',
             brings: 'Savoir où et comment le logiciel va réellement tourner.',
             avoids: 'Les solutions qui marchent en démonstration et tombent en production.',
             asks: 'Où va-t-il tourner ? Sur quel réseau, quels postes ? Que fait-on en cas de panne ?',
@@ -423,8 +483,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       },
       result: {
         eyebrow: 'Le résultat',
-        title: 'Une conception transversale, pas un profil atypique.',
-        body: 'Cette pluralité d’expériences n’est pas une curiosité. C’est un avantage décisif : comprendre plusieurs mondes en même temps, anticiper leurs interactions, et concevoir des solutions solides techniquement, pertinentes sur le terrain, soutenables pour l’organisation et utiles pour les équipes.',
+        title: 'Ce que ça change dans un projet.',
+        body: 'Les contraintes de production, d’équipe et d’exploitation entrent dans la conception dès le cadrage, au lieu d’être découvertes à la mise en service.',
       },
     },
     capabilities: {
@@ -432,7 +492,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       title: ['De l’idée à la maintenance,', 'tout le cycle.'],
       tablistLabel: 'Étapes du cycle',
       groups: ['Avant de coder', 'Construire et livrer', 'Faire vivre'],
-      labels: { does: 'Ce que je fais', receives: 'Ce que vous recevez' },
+      labels: { does: 'Ce que je fais', receives: 'Ce que vous recevez', proof: 'Déjà en service' },
       phases: [
         {
           name: 'Cadrer',
@@ -457,6 +517,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Sécurité et droits d’accès dès le départ',
           ],
           deliverable: 'Maquettes et dossier de conception',
+          proof: 'Sentinel : modèle relationnel et JSONB, 50 migrations immuables.',
         },
         {
           name: 'Valider',
@@ -469,6 +530,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Décision : poursuivre, ajuster ou arrêter',
           ],
           deliverable: 'Prototype testé',
+          proof: 'ProtoCap : une démonstration servie séparément de la version réelle.',
         },
         {
           name: 'Développer',
@@ -481,6 +543,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Intégrations : paiement, e-mail, IA',
           ],
           deliverable: 'Incréments démontrables',
+          proof: 'Sentinel : trois espaces, atelier, board et administration, sur une même API.',
         },
         {
           name: 'Tester et sécuriser',
@@ -493,6 +556,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Sécurité applicative et dépendances',
           ],
           deliverable: 'Qualité vérifiée à chaque changement',
+          proof: 'Sentinel : près de 1 400 tests unitaires et 161 parcours navigateur.',
         },
         {
           name: 'Déployer',
@@ -505,6 +569,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Retour arrière prévu',
           ],
           deliverable: 'Mise en production documentée',
+          proof: 'AkikSystems : déploiement par commit, avec retour arrière automatique.',
         },
         {
           name: 'Exploiter',
@@ -517,6 +582,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Support aux utilisateurs',
           ],
           deliverable: 'Procédures d’exploitation',
+          proof: 'Sentinel : sauvegarde et restauration testées.',
         },
         {
           name: 'Faire évoluer',
@@ -560,7 +626,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       title: 'Systemic Scale',
       lead: ['Intervenir sur une partie.', 'Évaluer sur une frontière plus large.'],
       body: 'Une intervention peut être locale alors que ses effets ne le sont pas. Je choisis un périmètre assez large pour voir où vont les effets, et assez limité pour pouvoir décider.',
-      reasoning: { label: 'Lire le raisonnement complet', href: '/fr/ecrits' },
       method: {
         eyebrow: 'Ma manière d’intervenir',
         intro:
@@ -642,24 +707,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             key: 'Le terrain',
             text: 'Rester au ras du sol, là où les choses se passent vraiment. La prudence de celui qui connaît le terrain.',
           },
-          {
-            id: 'olive',
-            name: 'L’olivier',
-            key: 'L’enracinement',
-            text: 'La terre, la patience, construire pour durer.',
-          },
-          {
-            id: 'sea',
-            name: 'La mer',
-            key: 'L’ouverture',
-            text: 'La Méditerranée des origines : l’échange, le commerce, l’horizon.',
-          },
-          {
-            id: 'stars',
-            name: 'Les trois étoiles',
-            key: 'L’horizon',
-            text: 'Ce qui reste à explorer.',
-          },
         ],
         quote: 'La hauteur du regard ne vaut rien sans la connaissance du sol.',
       },
@@ -677,16 +724,16 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profile — Mohamed Amine Akik',
       description:
-        'Full-stack developer of business and operational software: a verifiable stack, a design method, and the whole cycle from scoping to maintenance.',
+        'Founder of AkikSystems, full-stack software engineer: ten years of field operations, two companies led, and business software that is live and testable.',
     },
     identity: {
       eyebrow: 'Profile',
       name: ['Mohamed Amine', 'Akik'],
       photoLabel: 'Portrait of Mohamed Amine Akik',
-      role: 'Full-stack developer',
-      roleDetail: 'business and operational software',
+      role: 'Founder of AkikSystems',
+      roleDetail: 'full-stack software engineer',
       intro:
-        'I design and build business software from the real system it will run in: users, flows, data, rules and constraints. From modelling to deployment, I deliver tools people can understand, maintain and evolve.',
+        'I design and build business software from the real system it will run in: users, workflows, data, rules and constraints. From modeling to deployment, I deliver tools people can understand, maintain and evolve.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -698,21 +745,96 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         phone: null,
       },
       facts: [
+        { label: 'Based in', value: 'Châtellerault, France' },
         { label: 'Languages', value: 'French · Arabic · English' },
-        { label: 'Mobility', value: '[TO BE COMPLETED]' },
       ],
+      timeline: {
+        eyebrow: 'Background',
+        title: 'From the field to software.',
+        workLabel: 'Experience',
+        educationLabel: 'Education',
+        work: [
+          {
+            period: '2026 —',
+            title: 'Founder, AkikSystems',
+            place: 'Châtellerault, France',
+            detail: 'Designing and building business and operational software: Sentinel, ProtoCap.',
+          },
+          {
+            period: '2026 —',
+            title: 'Packaging line operator, L’Oréal',
+            place: 'La Roche-Posay, France',
+            detail: 'Production continuity, quality checks, traceability and deviation handling.',
+          },
+          {
+            period: '2023 — 2025',
+            title: 'Automated production line operator, Marelli',
+            place: 'Automotive industry, Châtellerault',
+            detail: 'Process and robot adjustments, first-level fault diagnosis, traceability.',
+          },
+          {
+            period: '2022 — 2023',
+            title: 'Precision cutting operator',
+            place: 'Luxury leather goods, Châtellerault',
+          },
+          {
+            period: '2018 — 2021',
+            title: 'Delivery driver, Chronopost subcontractor',
+            place: 'Paris area',
+            detail: 'A delivery area run independently, under tight time constraints.',
+          },
+          {
+            period: '2014 — 2017',
+            title: 'Construction worker',
+            place: 'Paris area',
+            detail: 'Pedestal paving and facade renovation for major contractors.',
+          },
+          {
+            period: '2012 — 2014',
+            title: 'Co-owner and managing director, AkikTex',
+            place: 'Textile subcontracting, Tunisia',
+            detail: 'Production, teams, cash flow and client relationships.',
+          },
+        ],
+        education: [
+          {
+            period: '2025 — 2026',
+            title: 'Web and Mobile Web Developer, French professional title (DWWM)',
+            place: 'Studi',
+          },
+          {
+            period: '2024 — 2025',
+            title: 'IT Support Technician, French professional title',
+            place: 'Studi',
+          },
+          {
+            period: '2010 — 2011',
+            title: 'Network and telecoms technician, internship at Tunisie Telecom',
+            place: 'Sousse, Tunisia',
+          },
+          {
+            period: '2009',
+            title: 'Baccalaureate, computer science track',
+            place: 'Tunisia',
+          },
+        ],
+      },
     },
     project: {
       label: 'Current project',
       follow: { label: 'View the project', href: '/en/systems#sentinel' },
       name: 'Sentinel',
       summary:
-        'Workshop incident tracking: a production anomaly followed from report to shared knowledge, without ever losing the trail of decisions.',
+        'Shop-floor incident tracking: a production anomaly followed from report to shared knowledge, without ever losing the trail of decisions.',
       roleLabel: 'My role',
       role: 'Design and development',
       stackLabel: 'Project stack',
       stack: [
-        { icon: 'screen', name: 'TypeScript · React', detail: 'Three workspaces, RGAA checks' },
+        {
+          icon: 'screen',
+          name: 'TypeScript · React',
+          detail: 'Three workspaces, accessibility checks',
+        },
         { icon: 'server', name: 'Node.js · Express', detail: 'API, JWT sessions per workspace' },
         { icon: 'database', name: 'PostgreSQL', detail: 'Relational and JSONB, 50 migrations' },
         { icon: 'shield', name: 'Zod', detail: 'Inputs and configuration validated' },
@@ -723,16 +845,16 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     stack: {
       eyebrow: 'Stack',
-      title: ['What I master,', 'and where to check it.'],
+      title: ['My stack,', 'and where to verify it.'],
       intro:
-        'Not a list of keywords: every technology is backed by a published system you can inspect.',
+        'Each technology points to the system that uses it: live, testable, and linked to its card on the Systems page.',
       provenIn: { one: 'Proven in 1 system', many: 'Proven in {count} systems' },
       regionLabel: 'Evidence for',
       inspect: 'Inspect the system',
       systems: {
         sentinel: {
           name: 'Sentinel',
-          context: 'Workshop incident tracking',
+          context: 'Shop-floor incident tracking',
           href: '/en/systems#sentinel',
         },
         protocap: {
@@ -740,7 +862,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           context: 'Tools for the production line',
           href: '/en/systems#protocap',
         },
-        tugeres: { name: 'Tugères', context: 'Orders and invoicing for caterers', href: null },
       },
       rows: [
         {
@@ -752,7 +873,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             {
               system: 'sentinel',
               description:
-                'Interfaces for all three workspaces, orchestration hooks, cancellable requests, responsive layouts and RGAA accessibility checks. 787 front-end unit tests.',
+                'Interfaces for all three workspaces, orchestration hooks, cancelable requests, responsive layouts and checks against RGAA, the French accessibility standard. 787 front-end unit tests.',
             },
             {
               system: 'protocap',
@@ -793,19 +914,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           ],
         },
         {
-          icon: 'layers',
-          category: 'Back-end and data',
-          name: 'PHP · MySQL',
-          primary: 0,
-          proofs: [
-            {
-              system: 'tugeres',
-              description:
-                'MVC with centralised business policies, payments kept in a ledger, checksum-tracked migrations, white-label through configuration alone.',
-            },
-          ],
-        },
-        {
           icon: 'check',
           category: 'Quality',
           name: 'Automated testing',
@@ -821,18 +929,13 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
               description:
                 'Mutation testing, red-then-green evidence, axe accessibility audits, a final 45-point acceptance run closed with proof.',
             },
-            {
-              system: 'tugeres',
-              description:
-                'PHPUnit, PHPStan static analysis and a dependency audit on every change.',
-            },
           ],
         },
         {
           icon: 'package',
           category: 'Operations',
           name: 'Docker · deployment',
-          primary: 1,
+          primary: 0,
           proofs: [
             {
               system: 'sentinel',
@@ -844,27 +947,18 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
               description:
                 'Multi-stage non-root image, two separate origins (live and demo), health and readiness probes.',
             },
-            {
-              system: 'tugeres',
-              description: 'Migrations run before the server starts, health and readiness probes.',
-            },
           ],
         },
         {
           icon: 'link',
           category: 'Integrations',
-          name: 'Stripe · Brevo · LLM APIs',
+          name: 'AI · LLM APIs',
           primary: 0,
           proofs: [
             {
-              system: 'tugeres',
-              description:
-                'Stripe payments with idempotent webhooks and reconciliation, transactional email through Brevo, server-generated PDFs.',
-            },
-            {
               system: 'protocap',
               description:
-                'An AI assistant on an LLM API, with minimised data sent and 14 reference cases evaluated automatically.',
+                'An AI assistant on an LLM API, with minimized data sent and 14 reference cases evaluated automatically.',
             },
           ],
         },
@@ -877,7 +971,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       relate: {
         eyebrow: 'What I connect',
         title: 'Four perspectives, one design loop.',
-        body: 'Code, infrastructure, the field and management: four lived experiences that give me a systemic reading of a problem, and a fairer, more durable design.',
+        body: 'Code, infrastructure, the field and management: four lived experiences, present in every design decision.',
         groupLabel: 'Four perspectives connected in a loop around a systemic view',
         center: { title: ['Systemic', 'view'], caption: ['Connect, weigh,', 'design.'] },
         loopCaption: 'Every turn refines the solution',
@@ -893,7 +987,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Code',
             description: 'Writing, testing and shipping software that holds up over time.',
             figure: null,
-            source: 'Training in programming',
+            source: 'Web and Mobile Web Developer professional title (Studi, 2026).',
             brings: 'Knowing what an idea costs to build, to test and to maintain.',
             avoids: 'Promises that cannot be kept, and debt discovered too late.',
             asks: 'How do we test it? Who will maintain it? What happens when it breaks?',
@@ -904,7 +998,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             description:
               'Coordinating teams, priorities and resources, down to deadlines and budget.',
             figure: { value: '2', label: 'companies led' },
-            source: 'Co-managing a production company, then leading AkikSystems.',
+            source: 'AkikTex, textile subcontracting (2012–2014), then AkikSystems (since 2026).',
             brings: 'Knowing what a solution asks of teams in time, means and change.',
             avoids: 'Tools imposed on a team that has neither the time nor the will to adopt them.',
             asks: 'Who decides? Who carries the change? On what budget and timeline?',
@@ -913,8 +1007,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             id: 'field',
             name: 'Field',
             description: 'Seeing real use, concrete constraints and the effects on the work.',
-            figure: { value: '5 years', label: 'in industrial production' },
-            source: null,
+            figure: { value: '10 years', label: 'of field operations' },
+            source:
+              'Automotive, cosmetics and luxury leather manufacturing (3 years), logistics and construction.',
             brings:
               'Reality: lessons learned, weak signals, the constraints you cannot see from a diagram.',
             avoids: 'Theoretical solutions, disconnected from operations or from the need.',
@@ -925,7 +1020,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'Infrastructure',
             description: 'Networks, servers, workstations: everything the software runs on.',
             figure: null,
-            source: 'Training as a network and telecoms technician',
+            source: 'Network and telecoms technician (2011), IT support technician (2025).',
             brings: 'Knowing where and how the software will actually run.',
             avoids: 'Solutions that work in the demo and fall over in production.',
             asks: 'Where will it run? On which network, which machines? What do we do when it goes down?',
@@ -934,8 +1029,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       },
       result: {
         eyebrow: 'The result',
-        title: 'Cross-disciplinary design, not an unusual profile.',
-        body: 'This range of experience is not a curiosity. It is a decisive advantage: understanding several worlds at once, anticipating how they interact, and designing solutions that are technically sound, relevant in the field, sustainable for the organisation and useful to the teams.',
+        title: 'What it changes in a project.',
+        body: 'Production, team and operating constraints enter the design at scoping, instead of being discovered at go-live.',
       },
     },
     capabilities: {
@@ -943,7 +1038,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       title: ['From idea to maintenance,', 'the whole cycle.'],
       tablistLabel: 'Stages of the cycle',
       groups: ['Before the code', 'Build and ship', 'Keep it alive'],
-      labels: { does: 'What I do', receives: 'What you receive' },
+      labels: { does: 'What I do', receives: 'What you receive', proof: 'Already in service' },
       phases: [
         {
           name: 'Scope',
@@ -967,7 +1062,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Architecture and reasoned technical choices',
             'Security and access rights from the start',
           ],
-          deliverable: 'Mock-ups and design file',
+          deliverable: 'Mock-ups and design documentation',
+          proof: 'Sentinel: relational and JSONB model, 50 immutable migrations.',
         },
         {
           name: 'Validate',
@@ -980,6 +1076,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Decision: continue, adjust or stop',
           ],
           deliverable: 'Tested prototype',
+          proof: 'ProtoCap: a demo served separately from the live version.',
         },
         {
           name: 'Develop',
@@ -992,6 +1089,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Integrations: payments, email, AI',
           ],
           deliverable: 'Demonstrable increments',
+          proof: 'Sentinel: three workspaces, shop floor, board and admin, on one API.',
         },
         {
           name: 'Test and secure',
@@ -1004,18 +1102,20 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Application and dependency security',
           ],
           deliverable: 'Quality checked on every change',
+          proof: 'Sentinel: nearly 1,400 unit tests and 161 browser journeys.',
         },
         {
           name: 'Deploy',
           group: 1,
           purpose: 'Go to production without surprises.',
           services: [
-            'Containerisation',
+            'Containerization',
             'Continuous integration and delivery',
             'Per-environment configuration',
             'Rollback planned',
           ],
           deliverable: 'Documented release',
+          proof: 'AkikSystems: deployment by commit, with automatic rollback.',
         },
         {
           name: 'Operate',
@@ -1028,6 +1128,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'User support',
           ],
           deliverable: 'Operating procedures',
+          proof: 'Sentinel: tested backup and restore.',
         },
         {
           name: 'Evolve',
@@ -1036,7 +1137,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           services: [
             'Measuring real effects',
             'User feedback',
-            'Corrective and evolutionary maintenance',
+            'Bug fixes and feature evolution',
             'Security updates',
           ],
           deliverable: 'Evolution roadmap',
@@ -1071,7 +1172,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       title: 'Systemic Scale',
       lead: ['Act on one part.', 'Judge across a wider boundary.'],
       body: 'An intervention can be local while its effects are not. I choose a scope wide enough to see where the effects go, and narrow enough to still decide.',
-      reasoning: { label: 'Read the full reasoning', href: '/en/writings' },
       method: {
         eyebrow: 'How I intervene',
         intro:
@@ -1142,24 +1242,6 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             name: 'The serpent',
             key: 'The ground',
             text: 'Staying close to the ground, where things really happen. The caution of someone who knows the terrain.',
-          },
-          {
-            id: 'olive',
-            name: 'The olive tree',
-            key: 'Roots',
-            text: 'The land, patience, building to last.',
-          },
-          {
-            id: 'sea',
-            name: 'The sea',
-            key: 'Openness',
-            text: 'The Mediterranean of my origins: exchange, trade, the horizon.',
-          },
-          {
-            id: 'stars',
-            name: 'The three stars',
-            key: 'The horizon',
-            text: 'What is still left to explore.',
           },
         ],
         quote: 'A high vantage point is worth nothing without knowing the ground.',

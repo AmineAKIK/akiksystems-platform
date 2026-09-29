@@ -292,6 +292,55 @@ function IdentitySection({
   );
 }
 
+function TimelineList({
+  label,
+  entries,
+}: {
+  label: string;
+  entries: ProfilePageContent['identity']['timeline']['work'];
+}) {
+  return (
+    <div className="aks-profile-timeline-column">
+      <h3 className="aks-profile-label">{label}</h3>
+      <ol className="aks-profile-timeline">
+        {entries.map((entry) => (
+          <li key={entry.period + entry.title}>
+            <span className="aks-profile-timeline-period">{entry.period}</span>
+            <div>
+              <p className="aks-profile-timeline-title">{entry.title}</p>
+              <p className="aks-profile-timeline-place">{entry.place}</p>
+              {entry.detail === undefined ? null : (
+                <p className="aks-profile-timeline-detail">{entry.detail}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** The dated facts behind the profile: what was done, where, and when. */
+function TimelineSection({ content }: { content: ProfilePageContent['identity']['timeline'] }) {
+  return (
+    <section
+      aria-labelledby="profile-timeline-title"
+      className="aks-profile-section aks-profile-timeline-section"
+      data-profile-section="timeline"
+      id="parcours"
+    >
+      <div className="aks-profile-wrap">
+        <p className="aks-profile-eyebrow">{content.eyebrow}</p>
+        <h2 id="profile-timeline-title">{content.title}</h2>
+        <div className="aks-profile-timeline-grid">
+          <TimelineList entries={content.work} label={content.workLabel} />
+          <TimelineList entries={content.education} label={content.educationLabel} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
   const [selected, setSelected] = useState(0);
   const baseId = useId();
@@ -316,8 +365,11 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
         <ol className="aks-profile-rail">
           {content.rows.map((row, index) => {
             const active = index === selected;
-            const proof = row.proofs[row.primary] ?? row.proofs[0];
-            const system = proof === undefined ? undefined : content.systems[proof.system];
+            // Every proof is shown, the primary one first.
+            const proofs = [
+              ...row.proofs.slice(row.primary, row.primary + 1),
+              ...row.proofs.filter((_, proofIndex) => proofIndex !== row.primary),
+            ];
             const regionId = `${baseId}-proof-${index}`;
 
             return (
@@ -341,7 +393,7 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
                     <span className="aks-profile-rail-category">{row.category}</span>
                   </span>
                 </button>
-                {active && proof !== undefined && system !== undefined ? (
+                {active && proofs.length > 0 ? (
                   <div
                     aria-label={`${content.regionLabel} ${row.name}`}
                     className="aks-profile-rail-proof"
@@ -349,28 +401,31 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
                     role="region"
                   >
                     <span className="aks-profile-rail-count">
-                      {row.proofs.length > 1
-                        ? content.provenIn.many.replace('{count}', String(row.proofs.length))
+                      {proofs.length > 1
+                        ? content.provenIn.many.replace('{count}', String(proofs.length))
                         : content.provenIn.one}
                     </span>
-                    <div className="aks-profile-proof">
-                      <span aria-hidden="true" className="aks-profile-proof-initial">
-                        {system.name.charAt(0)}
-                      </span>
-                      <div className="aks-profile-proof-body">
-                        <p className="aks-profile-proof-title">
-                          <strong>{system.name}</strong>
-                          <span>{system.context}</span>
-                        </p>
-                        <p>{proof.description}</p>
-                        {system.href === null ? null : (
-                          <PillLink
-                            link={{ label: content.inspect, href: system.href }}
-                            size="sm"
-                          />
-                        )}
-                      </div>
-                    </div>
+                    {proofs.map((proof) => {
+                      const system = content.systems[proof.system];
+                      return (
+                        <div className="aks-profile-proof" key={proof.system}>
+                          <span aria-hidden="true" className="aks-profile-proof-initial">
+                            {system.name.charAt(0)}
+                          </span>
+                          <div className="aks-profile-proof-body">
+                            <p className="aks-profile-proof-title">
+                              <strong>{system.name}</strong>
+                              <span>{system.context}</span>
+                            </p>
+                            <p>{proof.description}</p>
+                            <PillLink
+                              link={{ label: content.inspect, href: system.href }}
+                              size="sm"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : null}
               </li>
@@ -529,6 +584,7 @@ function PrinciplesSection({ content }: { content: ProfilePageContent['principle
       aria-labelledby="profile-principles-title"
       className="aks-profile-section aks-profile-principles"
       data-profile-section="principles"
+      id="principes"
     >
       <div className="aks-profile-wrap">
         <div className="aks-profile-principles-head">
@@ -618,6 +674,12 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
               <span className="aks-profile-label">{content.labels.receives}</span>
               <p className="aks-profile-panel-strong">{phase.deliverable}</p>
             </div>
+            {phase.proof === undefined ? null : (
+              <div className="aks-profile-panel-block aks-profile-panel-proof">
+                <span className="aks-profile-label">{content.labels.proof}</span>
+                <p>{phase.proof}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -776,7 +838,6 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             <span>{content.lead[1]}</span>
           </p>
           <p className="aks-profile-scale-body">{content.body}</p>
-          <PillLink link={content.reasoning} />
         </div>
 
         <div className="aks-profile-method">
@@ -859,6 +920,7 @@ export function ProfilePage({
   return (
     <main className="aks-profile-page" data-locale={locale}>
       <IdentitySection identity={content.identity} project={content.project} />
+      <TimelineSection content={content.identity.timeline} />
       <StackSection content={content.stack} />
       <PrinciplesSection content={content.principles} />
       <CapabilitiesSection content={content.capabilities} />
