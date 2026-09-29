@@ -95,8 +95,10 @@ export function OperationRail({ items }: { items: SystemsPageContent['rail'] }) 
       <ol>
         {items.map((item) => (
           <li key={item.index}>
-            <span>{item.index}</span>
-            <strong>{item.label}</strong>
+            <span className="aks-systems-rail-step">
+              <span>{item.index}</span>
+              <strong>{item.label}</strong>
+            </span>
           </li>
         ))}
       </ol>
