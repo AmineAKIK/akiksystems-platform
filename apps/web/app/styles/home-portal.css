@@ -64,7 +64,7 @@
   margin: 0;
   color: inherit;
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.04375rem;
   line-height: 1.2;
@@ -231,7 +231,7 @@
   margin: 0.625rem 0 0;
   color: var(--aks-home-mauve);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.31rem;
   line-height: 1.2;
@@ -344,7 +344,7 @@
 .aks-home-active-description > span {
   color: var(--aks-home-orbital);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.22rem;
   line-height: 1.2;
@@ -420,11 +420,33 @@
 .aks-home-door-summary {
   color: rgb(170 179 193 / 72%);
   font-family: var(--aks-font-sans);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.021875rem;
   line-height: 1.2;
   transition: color 160ms var(--aks-home-ease);
+}
+
+/* A door not open yet: same place and type, a quiet status line, no pointer promise. */
+.aks-home-door[data-state='soon'] {
+  cursor: default;
+}
+
+.aks-home-door-status {
+  /* Out of flow: the status never changes a door's box, so no layout moves. */
+  position: absolute;
+  inset-block-start: calc(100% + 0.3rem);
+  left: 50%;
+  translate: -50% 0;
+  color: var(--aks-home-mauve);
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--aks-font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08rem;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .aks-home-door:hover,
@@ -628,7 +650,7 @@
   }
 
   .aks-home-active-description > span {
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
   }
 
   .aks-home-active-description p {
@@ -798,11 +820,11 @@
   }
 
   .aks-home-door-summary {
-    font-size: clamp(0.625rem, min(0.7vw, 1.1dvh), 0.75rem);
+    font-size: clamp(0.6875rem, min(0.7vw, 1.1dvh), 0.75rem);
   }
 
   .aks-home-active-description > span {
-    font-size: clamp(0.625rem, min(0.7vw, 1.1dvh), 0.75rem);
+    font-size: clamp(0.6875rem, min(0.7vw, 1.1dvh), 0.75rem);
   }
 
   .aks-home-active-description p {

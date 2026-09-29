@@ -9,14 +9,14 @@ import {
 import { brandEmblemGroups } from '@akiksystems/ui';
 import { Link, useNavigate } from 'react-router';
 
-import {
-  destinationById,
-  destinationHref,
-  type GlobalDestinationId,
-} from '../i18n/global-destinations';
+import { destinationHref, type GlobalDestinationId } from '../i18n/global-destinations';
 import { dictionaryFor, type Locale } from '../i18n/locales';
 import { publicLanguageHref } from '../lib/public-locales';
-import { homeDestinationOrder, homeDestinationPresentation } from './home-portal-content';
+import {
+  homeDestinationOrder,
+  homeDestinationPresentation,
+  homeSoonLabel,
+} from './home-portal-content';
 import { LanguageSwitch } from './language-switch';
 import {
   homeDescriptionEvent,
@@ -183,11 +183,12 @@ function MatrixWordmark() {
         </span>
       </h1>
       <p
-        aria-label="Systemic Scale"
         className="aks-home-scale"
         data-animation={animationStarted ? 'running' : 'idle'}
+        lang="en"
         onAnimationStart={startMatrixAnimation}
       >
+        <span className="aks-visually-hidden">Systemic Scale</span>
         {Array.from('Systemic Scale').map((character, index) => (
           <span
             aria-hidden="true"
@@ -231,12 +232,20 @@ export function HomePortal({ locale }: HomePortalProps) {
   );
 
   const destinationPreview = useCallback(
-    (id: GlobalDestinationId) => ({
-      description: homeDestinationPresentation[id].description[locale],
-      label: homeDestinationPresentation[id].label[locale],
-    }),
+    (id: GlobalDestinationId) => {
+      const presentation = homeDestinationPresentation[id];
+      return {
+        description: presentation.description[locale],
+        label: presentation.soon
+          ? presentation.label[locale] + ' · ' + homeSoonLabel[locale]
+          : presentation.label[locale],
+      };
+    },
     [locale],
   );
+
+  const destinationTarget = (id: GlobalDestinationId) =>
+    homeDestinationPresentation[id].href?.[locale] ?? destinationHref(id, locale);
 
   const clearTouchSelection = useCallback(() => {
     selectedPreview.current = null;
@@ -304,7 +313,7 @@ export function HomePortal({ locale }: HomePortalProps) {
     }
     navigationTimer.current = window.setTimeout(() => {
       navigationTimer.current = null;
-      navigate(destinationHref(id, locale));
+      navigate(destinationTarget(id));
     }, 160);
   };
 
@@ -315,8 +324,43 @@ export function HomePortal({ locale }: HomePortalProps) {
       <section aria-labelledby="aks-home-title" className="aks-home-portal">
         <nav aria-label={dictionary.home.destinationsLabel} className="aks-home-orbit">
           {homeDestinationOrder.map((id, index) => {
-            const destination = destinationById(id);
             const presentation = homeDestinationPresentation[id];
+
+            if (presentation.soon) {
+              // Not open yet: described on hover and tap, but never a dead-end link.
+              return (
+                <span
+                  className={'aks-home-door' + (activeDestination === id ? ' is-active' : '')}
+                  data-destination={id}
+                  data-home-order={index}
+                  data-home-preview-target="primary"
+                  data-state="soon"
+                  key={id}
+                  onPointerDown={(event: PointerEvent<HTMLSpanElement>) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+                    const content = destinationPreview(id);
+                    selectedPreview.current = content;
+                    setActiveDestination(id);
+                    setPreview(content);
+                    setPreviewActive(true);
+                  }}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
+                      updatePreview('pointer', destinationPreview(id));
+                    }
+                  }}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
+                      updatePreview('pointer', null);
+                    }
+                  }}
+                >
+                  <span className="aks-home-door-label">{presentation.label[locale]}</span>
+                  <span className="aks-home-door-summary">{presentation.summary[locale]}</span>
+                  <span className="aks-home-door-status">{homeSoonLabel[locale]}</span>
+                </span>
+              );
+            }
 
             return (
               <Link
@@ -346,7 +390,7 @@ export function HomePortal({ locale }: HomePortalProps) {
                 }}
                 data-home-order={index}
                 prefetch="intent"
-                to={destinationHref(destination.id, locale)}
+                to={destinationTarget(id)}
               >
                 <span className="aks-home-door-label">{presentation.label[locale]}</span>
                 <span className="aks-home-door-summary">{presentation.summary[locale]}</span>

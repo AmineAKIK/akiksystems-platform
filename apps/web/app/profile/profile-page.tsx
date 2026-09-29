@@ -835,6 +835,7 @@ function ContactSection({ content }: { content: ProfilePageContent['cta'] }) {
       aria-labelledby="profile-cta-title"
       className="aks-profile-section aks-profile-cta"
       data-profile-section="cta"
+      id="contact"
     >
       <div className="aks-profile-wrap">
         <p className="aks-profile-eyebrow">{content.eyebrow}</p>

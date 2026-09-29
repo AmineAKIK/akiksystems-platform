@@ -14,7 +14,16 @@ interface HomeDestinationPresentation {
   label: Record<Locale, string>;
   summary: Record<Locale, string>;
   description: Record<Locale, string>;
+  /** Where the door leads when it is not the destination's own page. */
+  href?: Record<Locale, string>;
+  /** A door whose destination is not open yet: shown and described, never a dead end. */
+  soon?: boolean;
 }
+
+export const homeSoonLabel: Record<Locale, string> = {
+  fr: 'En préparation',
+  en: 'In preparation',
+};
 
 export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestinationPresentation> =
   {
@@ -31,6 +40,7 @@ export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestin
         en: 'Projects, collaborations, or missions. Let’s build what deserves to exist.',
         fr: 'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
       },
+      href: { en: '/en/profile#contact', fr: '/fr/profil#contact' },
     },
     profile: {
       label: {
@@ -73,6 +83,7 @@ export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestin
         en: 'Essays and notes on the ideas shaping systems and keeping thought in motion.',
         fr: 'Essais et notes sur les idées qui façonnent les systèmes et la pensée.',
       },
+      soon: true,
     },
     learning: {
       label: {
@@ -81,12 +92,13 @@ export const homeDestinationPresentation: Record<GlobalDestinationId, HomeDestin
       },
       summary: {
         en: 'Credentials · Training',
-        fr: 'Dossiers · Formations',
+        fr: 'Certifications · Formations',
       },
       description: {
         en: 'Training, credentials, and projects shaped through continuous learning.',
-        fr: 'Formations, dossiers professionnels et projets construits par l’apprentissage.',
+        fr: 'Formations, certifications et projets construits par l’apprentissage.',
       },
+      soon: true,
     },
   };
 

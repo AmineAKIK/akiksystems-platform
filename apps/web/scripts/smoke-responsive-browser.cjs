@@ -576,9 +576,17 @@ async function assertTouchSelection(browser) {
     const cleared = await measure(page);
     assert.equal(cleared.previewState, 'idle', 'outside tap must clear touch selection');
 
+    // A door not open yet shows its preview on tap and never navigates.
+    const writings = page.locator('.aks-home-door[data-destination="writings"]');
+    await writings.tap();
+    await writings.tap();
+    const soon = await measure(page);
+    assert.equal(soon.previewState, 'active', 'a door in preparation must show its preview');
+    assert.equal(new URL(page.url()).pathname, '/fr', 'a door in preparation must not navigate');
+
     await perspective.tap();
     await perspective.tap();
-    await page.waitForURL('**/fr/travailler-ensemble');
+    await page.waitForURL('**/fr/profil#contact');
   } finally {
     await context.close();
   }
@@ -606,8 +614,6 @@ async function assertKeyboardOrder(browser) {
       'Perspectives',
       'Profil',
       'Systèmes',
-      'Écrits',
-      'Apprentissage',
       'Confidentialité',
       'Mentions légales',
       'Cookies',

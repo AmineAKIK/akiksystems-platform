@@ -20,7 +20,7 @@ describe('HomePortal handoff contract', () => {
     expect(html).toContain('id="aks-home-title"');
     expect(html).toContain('class="aks-home-wordmark-target">AkikSystems</span>');
     expect(html).toContain('class="aks-home-wordmark-matrix"');
-    expect(html).toContain('aria-label="Systemic Scale"');
+    expect(html).toContain('lang="en"><span class="aks-visually-hidden">Systemic Scale</span>');
     expect(html).toContain('class="aks-home-scale-letter"');
     expect(html).toContain('aria-label="Local time in Paris"');
     expect(html).toContain('class="aks-home-language-current" lang="en">EN</span>');
@@ -29,21 +29,26 @@ describe('HomePortal handoff contract', () => {
     expect(html).toContain('viewBox="0 0 2048 2048"');
     expect(html).toContain('class="aks-home-nav-separator"');
 
+    // Open doors link to a real page; doors not open yet show their status and no link.
     const englishDoors = [
-      ['/en/work-with-us', 'Perspectives', 'Collaboration · Contact'],
+      ['/en/profile#contact', 'Perspectives', 'Collaboration · Contact'],
       ['/en/profile', 'Profile', 'Journey · Vision'],
       ['/en/systems', 'Systems', 'Products · Projects'],
-      ['/en/writings', 'Writings', 'Essays · Notes'],
-      ['/en/learning', 'Learning', 'Credentials · Training'],
+      [null, 'Writings', 'Essays · Notes'],
+      [null, 'Learning', 'Credentials · Training'],
     ] as const;
 
     for (const [href, label, summary] of englishDoors) {
-      expect(html).toContain(`href="${href}"`);
+      if (href !== null) expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
       expect(html).toContain(`>${summary}</span>`);
     }
+    expect(html).not.toContain('href="/en/writings"');
+    expect(html).not.toContain('href="/en/learning"');
+    expect(html.match(/data-state="soon"/g)).toHaveLength(2);
+    expect(html).toContain('class="aks-home-door-status">In preparation</span>');
 
-    const offsets = englishDoors.map(([href]) => html.indexOf(`href="${href}"`));
+    const offsets = englishDoors.map(([, label]) => html.indexOf(`>${label}</span>`));
     expect(offsets).toEqual([...offsets].sort((first, second) => first - second));
   });
 
@@ -55,18 +60,19 @@ describe('HomePortal handoff contract', () => {
     );
 
     const frenchDoors = [
-      ['/fr/travailler-ensemble', 'Perspectives', 'Collaboration · Contact'],
+      ['/fr/profil#contact', 'Perspectives', 'Collaboration · Contact'],
       ['/fr/profil', 'Profil', 'Parcours · Vision'],
       ['/fr/systems', 'Systèmes', 'Produits · Projets'],
-      ['/fr/ecrits', 'Écrits', 'Essais · Notes'],
-      ['/fr/apprentissage', 'Apprentissage', 'Dossiers · Formations'],
+      [null, 'Écrits', 'Essais · Notes'],
+      [null, 'Apprentissage', 'Certifications · Formations'],
     ] as const;
 
     for (const [href, label, summary] of frenchDoors) {
-      expect(html).toContain(`href="${href}"`);
+      if (href !== null) expect(html).toContain(`href="${href}"`);
       expect(html).toContain(`>${label}</span>`);
       expect(html).toContain(`>${summary}</span>`);
     }
+    expect(html).toContain('class="aks-home-door-status">En préparation</span>');
 
     expect(html).toContain(
       'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
@@ -75,7 +81,7 @@ describe('HomePortal handoff contract', () => {
       'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',
     );
 
-    const offsets = frenchDoors.map(([href]) => html.indexOf(`href="${href}"`));
+    const offsets = frenchDoors.map(([, label]) => html.indexOf(`>${label}</span>`));
     expect(offsets).toEqual([...offsets].sort((first, second) => first - second));
   });
 
