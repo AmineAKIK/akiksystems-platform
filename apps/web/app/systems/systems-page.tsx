@@ -326,14 +326,6 @@ function QuickStationRow({
           <h3>{station.name}</h3>
           <p>{station.function}</p>
           <StatusPill locale={locale} status={station.status} label={station.statusLabel} />
-          <a
-            aria-label={`${station.name}: ${station.note}`}
-            className="aks-systems-quick-link"
-            href="#workbench"
-          >
-            {locale === 'fr' ? 'Voir ses outils' : 'See its tools'}
-            <span aria-hidden="true">↗</span>
-          </a>
         </article>
       ))}
     </div>

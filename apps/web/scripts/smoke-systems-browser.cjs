@@ -88,9 +88,7 @@ async function inspectViewport(browser, viewport) {
       }),
     );
 
-    const touchTargets = [
-      ...document.querySelectorAll('.aks-systems-button, .aks-systems-quick-link'),
-    ].map((element) => {
+    const touchTargets = [...document.querySelectorAll('.aks-systems-button')].map((element) => {
       const box = element.getBoundingClientRect();
       return { width: box.width, height: box.height, label: element.textContent?.trim() ?? '' };
     });
