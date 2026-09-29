@@ -1,5 +1,5 @@
 import { BrandMark } from '@akiksystems/ui';
-import { useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Link as RouterLink } from 'react-router';
 
 import type { ProfileIcon, ProfileLink, ProfilePageContent } from './content';
@@ -123,7 +123,15 @@ function PillLink({ link, size = 'md' }: { link: ProfileLink; size?: 'sm' | 'md'
 /** WAI-ARIA tabs: one tab in the sequential focus order, arrow keys move between tabs. */
 function useTabs(count: number, initial = 0) {
   const baseId = useId();
-  const [active, setActive] = useState(initial);
+  // The direction lets the panel enter from the side the reader is moving towards.
+  const [{ active, direction }, setState] = useState({ active: initial, direction: 1 });
+  const setActive = (next: number) => {
+    setState((current) =>
+      current.active === next
+        ? current
+        : { active: next, direction: next > current.active ? 1 : -1 },
+    );
+  };
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const select = (index: number) => {
@@ -147,6 +155,7 @@ function useTabs(count: number, initial = 0) {
     active,
     panelProps: {
       'aria-labelledby': `${baseId}-tab-${active}`,
+      'data-direction': direction,
       id: panelId,
       role: 'tabpanel',
     } as const,
@@ -165,6 +174,16 @@ function useTabs(count: number, initial = 0) {
         type: 'button',
       }) as const,
   };
+}
+
+/** The progress line along the tabs: filled up to the active step (two rows on narrow screens). */
+function TrackFill() {
+  return (
+    <>
+      <span aria-hidden="true" className="aks-profile-track-fill" data-row="1" />
+      <span aria-hidden="true" className="aks-profile-track-fill" data-row="2" />
+    </>
+  );
 }
 
 function StepTab({
@@ -474,6 +493,9 @@ const loopConnectors = [
   [260, 350, 260, 412],
   [98, 250, 160, 250],
 ] as const;
+// Where each lens sits on the ring, in degrees clockwise from three o'clock (code, management, field,
+// infrastructure).
+const loopAngles = [-90, 0, 90, 180] as const;
 const loopArrows = [
   [-45, 90],
   [45, 180],
@@ -484,6 +506,17 @@ const loopArrows = [
 function LensLoop({ content }: { content: ProfilePageContent['principles']['relate'] }) {
   const [selected, setSelected] = useState(2);
   const lens = content.nodes[selected] ?? content.nodes[0];
+  const loop = useRef<HTMLDivElement>(null);
+  const turn = useRef(loopAngles[2]);
+
+  // A short arc travels the ring to the chosen lens, by the shorter way round. Set through the
+  // CSSOM, which the CSP allows, so the angle can keep accumulating without jumping back at 360°.
+  useEffect(() => {
+    const target = loopAngles[selected] ?? 0;
+    const delta = ((((target - turn.current) % 360) + 540) % 360) - 180;
+    turn.current += delta;
+    loop.current?.style.setProperty('--loop-turn', `${turn.current}deg`);
+  }, [selected]);
   const detailRows = [
     { glyph: glyphs.bars, label: content.labels.brings, text: lens.brings },
     { glyph: glyphs.cross, label: content.labels.avoids, text: lens.avoids },
@@ -492,7 +525,7 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
 
   return (
     <div className="aks-profile-relate-grid">
-      <div aria-label={content.groupLabel} className="aks-profile-loop" role="group">
+      <div aria-label={content.groupLabel} className="aks-profile-loop" ref={loop} role="group">
         <svg
           aria-hidden="true"
           className="aks-profile-loop-art"
@@ -506,10 +539,16 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
             r={loopCenter.r - 0.5}
             vectorEffect="non-scaling-stroke"
           />
-          {loopConnectors.map(([x1, y1, x2, y2], index) => (
+          <circle
+            className="aks-profile-loop-orbit"
+            cx={loopCenter.x}
+            cy={loopCenter.y}
+            pathLength="100"
+            r={loopCenter.r - 0.5}
+          />
+          {loopConnectors.map(([x1, y1, x2, y2]) => (
             <line
               className="aks-profile-loop-connector"
-              data-active={index === selected || undefined}
               key={`${x1}-${y1}`}
               vectorEffect="non-scaling-stroke"
               x1={x1}
@@ -518,6 +557,25 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
               y2={y2}
             />
           ))}
+          {loopConnectors.map(([x1, y1, x2, y2], index) => {
+            // Drawn from the core outwards to the lens.
+            const coreFirst =
+              Math.hypot(x1 - loopCenter.x, y1 - loopCenter.y) <
+              Math.hypot(x2 - loopCenter.x, y2 - loopCenter.y);
+
+            return (
+              <line
+                className="aks-profile-loop-trace"
+                data-active={index === selected || undefined}
+                key={`trace-${x1}-${y1}`}
+                pathLength="1"
+                x1={coreFirst ? x1 : x2}
+                x2={coreFirst ? x2 : x1}
+                y1={coreFirst ? y1 : y2}
+                y2={coreFirst ? y2 : y1}
+              />
+            );
+          })}
           {loopArrows.map(([angle, rotation]) => {
             const radians = (angle * Math.PI) / 180;
             const x = loopCenter.x + loopCenter.r * Math.cos(radians);
@@ -673,7 +731,12 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
               </span>
             ))}
           </div>
-          <div className="aks-profile-track" data-count={content.phases.length}>
+          <div
+            className="aks-profile-track"
+            data-active={active}
+            data-count={content.phases.length}
+          >
+            <TrackFill />
             <div aria-label={content.tablistLabel} className="aks-profile-tablist" role="tablist">
               {content.phases.map((item, index) => (
                 <StepTab
@@ -686,12 +749,12 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
             </div>
           </div>
           <div className="aks-profile-panel aks-profile-cycle-panel" {...panelProps}>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`lead-${active}`}>
               <span className="aks-profile-label">{content.groups[phase.group]}</span>
               <h3>{phase.name}</h3>
               <p className="aks-profile-panel-lead">{phase.purpose}</p>
             </div>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`does-${active}`}>
               <span className="aks-profile-label">{content.labels.does}</span>
               <ul className="aks-profile-dash-list">
                 {phase.services.map((service) => (
@@ -699,12 +762,15 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
                 ))}
               </ul>
             </div>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`receives-${active}`}>
               <span className="aks-profile-label">{content.labels.receives}</span>
               <p className="aks-profile-panel-strong">{phase.deliverable}</p>
             </div>
             {phase.proof === undefined ? null : (
-              <div className="aks-profile-panel-block aks-profile-panel-proof">
+              <div
+                className="aks-profile-panel-block aks-profile-panel-proof"
+                key={`proof-${active}`}
+              >
                 <span className="aks-profile-label">{content.labels.proof}</span>
                 <p>{phase.proof}</p>
               </div>
@@ -874,7 +940,8 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             <span className="aks-profile-label">{content.method.eyebrow}</span>
             <p>{content.method.intro}</p>
           </div>
-          <div className="aks-profile-track" data-count={content.steps.length}>
+          <div className="aks-profile-track" data-active={active} data-count={content.steps.length}>
+            <TrackFill />
             <div aria-label={content.tablistLabel} className="aks-profile-tablist" role="tablist">
               {content.steps.map((item, index) => (
                 <StepTab
@@ -887,18 +954,27 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             </div>
           </div>
           <div className="aks-profile-panel aks-profile-case" {...panelProps}>
-            <div className="aks-profile-panel-block aks-profile-case-lead">
+            <div
+              className="aks-profile-panel-block aks-profile-case-lead"
+              key={`case-lead-${active}`}
+            >
               <span className="aks-profile-label">
                 {content.stepLabel} 0{active + 1}
               </span>
               <h3>{step.tab}</h3>
               <p className="aks-profile-panel-lead">{step.lead}</p>
             </div>
-            <div className="aks-profile-panel-block aks-profile-case-example">
+            <div
+              className="aks-profile-panel-block aks-profile-case-example"
+              key={`case-example-${active}`}
+            >
               <span className="aks-profile-label">{content.labels.example}</span>
               <p>{step.example}</p>
             </div>
-            <div className="aks-profile-panel-block aks-profile-case-question">
+            <div
+              className="aks-profile-panel-block aks-profile-case-question"
+              key={`case-question-${active}`}
+            >
               <span className="aks-profile-label">{content.labels.question}</span>
               <p className="aks-profile-panel-strong">{step.question}</p>
             </div>

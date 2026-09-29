@@ -1,6 +1,9 @@
 /* Profile: mobile-first (390 design), desktop composition from 64rem (1440 design). */
 
 .aks-profile-page {
+  --motion-fast: 180ms;
+  --motion-base: 320ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
   --profile-bg: #070b0e;
   --profile-alt: #0a0f13;
   --profile-panel: #0b1014;
@@ -121,8 +124,8 @@
   text-decoration: none;
   white-space: nowrap;
   transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+    border-color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-pill:hover {
@@ -248,8 +251,8 @@
   border-radius: 50%;
   color: var(--profile-text);
   transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+    border-color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-contact:hover .aks-profile-contact-icon {
@@ -312,7 +315,7 @@
   flex: none;
   border-radius: 50%;
   background: var(--profile-live);
-  animation: aks-profile-live-pulse 2.2s ease-out infinite;
+  animation: aks-profile-live-pulse 2.4s ease-in-out infinite;
 }
 
 .aks-profile-project-title {
@@ -479,7 +482,7 @@
   color: var(--profile-idle);
   text-align: left;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-rail-trigger:hover,
@@ -499,9 +502,9 @@
   background: var(--profile-alt);
   color: var(--profile-soft);
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-rail-item[data-active] .aks-profile-rail-node {
@@ -543,7 +546,7 @@
   margin-top: -0.25rem;
   color: var(--profile-muted);
   font-size: 0.8125rem;
-  animation: aks-profile-fade-in 0.3s ease both;
+  animation: aks-profile-fade-in var(--motion-base) var(--motion-ease) both;
 }
 
 .aks-profile-proof {
@@ -564,7 +567,7 @@
   color: var(--profile-bg);
   font-size: 0.75rem;
   font-weight: 600;
-  animation: aks-profile-slide-in 0.35s ease-out 0.05s both;
+  animation: aks-profile-slide-in var(--motion-base) var(--motion-ease) 0.05s both;
 }
 
 .aks-profile-proof-body {
@@ -572,7 +575,7 @@
   max-width: 41.25rem;
   flex-direction: column;
   gap: 0.625rem;
-  animation: aks-profile-slide-in 0.35s ease-out 0.12s both;
+  animation: aks-profile-slide-in var(--motion-base) var(--motion-ease) 0.12s both;
 }
 
 .aks-profile-proof-title {
@@ -674,11 +677,7 @@
 
 .aks-profile-loop-connector {
   stroke: var(--profile-ring);
-  transition: stroke 0.35s ease;
-}
-
-.aks-profile-loop-connector[data-active] {
-  stroke: var(--profile-invert);
+  transition: stroke var(--motion-base) var(--motion-ease);
 }
 
 .aks-profile-loop-arrow rect {
@@ -738,7 +737,7 @@
   background: transparent;
   color: var(--profile-muted);
   cursor: pointer;
-  transition: color 0.25s ease;
+  transition: color var(--motion-base) var(--motion-ease);
 }
 
 .aks-profile-lens[data-lens='code'] {
@@ -772,9 +771,9 @@
   background: var(--profile-bg);
   color: var(--profile-text);
   transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
+    background-color var(--motion-base) var(--motion-ease),
+    color var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) var(--motion-ease);
 }
 
 .aks-profile-lens-name {
@@ -819,7 +818,6 @@
 .aks-profile-lens-content {
   display: flex;
   flex-direction: column;
-  animation: aks-profile-fade-in 0.35s ease both;
 }
 
 .aks-profile-lens-head,
@@ -965,7 +963,7 @@
   color: var(--profile-idle);
   text-align: center;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-track[data-count='8'] .aks-profile-step-tab {
@@ -989,9 +987,9 @@
   background: var(--profile-bg);
   color: var(--profile-soft);
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease);
 }
 
 .aks-profile-step-tab[aria-selected='true'] .aks-profile-step-node {
@@ -1256,9 +1254,9 @@
   line-height: 1.2;
   text-align: center;
   transition:
-    background-color 0.35s ease,
-    color 0.35s ease,
-    border-color 0.35s ease;
+    background-color var(--motion-base) var(--motion-ease),
+    color var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) var(--motion-ease);
 }
 
 .aks-profile-chain-steps li:not(:last-child)::after {
@@ -1306,7 +1304,7 @@
   position: absolute;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-base) var(--motion-ease);
 }
 
 .aks-profile-chain-text {
@@ -1883,7 +1881,7 @@
     height: 0.875rem;
     border: 1px solid var(--profile-ring);
     border-bottom: 0;
-    transition: border-color 0.3s ease;
+    transition: border-color var(--motion-base) var(--motion-ease);
   }
 
   .aks-profile-cycle-group[data-group='0'] {
@@ -1910,7 +1908,7 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     white-space: nowrap;
-    transition: color 0.3s ease;
+    transition: color var(--motion-base) var(--motion-ease);
   }
 
   .aks-profile-cycle-group[data-active] {
@@ -2137,9 +2135,9 @@
 
   .aks-profile-chain-mark {
     transition:
-      opacity 0.3s ease,
-      left 0.5s ease,
-      width 0.5s ease;
+      opacity var(--motion-base) var(--motion-ease),
+      left 480ms var(--motion-ease),
+      width 480ms var(--motion-ease);
   }
 
   [data-mark='scope'],
@@ -2380,16 +2378,8 @@
 }
 
 @keyframes aks-profile-live-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgb(123 211 137 / 55%);
-  }
-
-  70% {
-    box-shadow: 0 0 0 10px rgb(123 211 137 / 0%);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgb(123 211 137 / 0%);
+  50% {
+    opacity: 0.4;
   }
 }
 
@@ -2556,4 +2546,236 @@
   color: var(--profile-muted);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+/* Motion: what changes enters from where the reader is heading, lines draw instead of switching. */
+@keyframes aks-profile-enter {
+  from {
+    opacity: 0;
+    translate: var(--profile-enter, 6px) 0;
+  }
+}
+
+@keyframes aks-profile-rise {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+@keyframes aks-profile-draw-out {
+  from {
+    clip-path: inset(-1rem 50% 0 50%);
+  }
+
+  to {
+    clip-path: inset(-1rem -50% 0 -50%);
+  }
+}
+
+@keyframes aks-profile-draw-left {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes aks-profile-draw-up {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+.aks-profile-panel[data-direction='-1'] {
+  --profile-enter: -6px;
+}
+
+.aks-profile-panel .aks-profile-panel-block {
+  animation: aks-profile-enter var(--motion-base) var(--motion-ease) both;
+}
+
+.aks-profile-panel .aks-profile-panel-block:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.aks-profile-panel .aks-profile-panel-block:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.aks-profile-panel .aks-profile-panel-block:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+/* Lens detail: the heading first, then the three rows. */
+.aks-profile-lens-content > * {
+  animation: aks-profile-rise var(--motion-base) var(--motion-ease) both;
+}
+
+.aks-profile-lens-content > :nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.aks-profile-lens-content > :nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.aks-profile-lens-content > :nth-child(4) {
+  animation-delay: 150ms;
+}
+
+/* Progress line: filled up to the active step. Row 1 carries steps 1–4, row 2 steps 5–8. */
+.aks-profile-track {
+  --count: 4;
+  --step: 0;
+}
+
+.aks-profile-track[data-count='8'] {
+  --count: 8;
+}
+
+.aks-profile-track[data-active='1'] {
+  --step: 1;
+}
+
+.aks-profile-track[data-active='2'] {
+  --step: 2;
+}
+
+.aks-profile-track[data-active='3'] {
+  --step: 3;
+}
+
+.aks-profile-track[data-active='4'] {
+  --step: 4;
+}
+
+.aks-profile-track[data-active='5'] {
+  --step: 5;
+}
+
+.aks-profile-track[data-active='6'] {
+  --step: 6;
+}
+
+.aks-profile-track[data-active='7'] {
+  --step: 7;
+}
+
+.aks-profile-track-fill {
+  position: absolute;
+  top: 1.375rem;
+  right: 12.5%;
+  left: 12.5%;
+  height: 1px;
+  background: var(--profile-soft);
+  transform: scaleX(calc(clamp(0, var(--step), 3) / 3));
+  transform-origin: left;
+  transition: transform 450ms var(--motion-ease);
+}
+
+.aks-profile-track-fill[data-row='2'] {
+  display: none;
+  top: 8.375rem;
+  transform: scaleX(calc(clamp(0, var(--step) - 4, 3) / 3));
+}
+
+.aks-profile-track[data-count='8'] .aks-profile-track-fill[data-row='2'] {
+  display: block;
+}
+
+/* Lens loop: a short arc travels the ring, the active connector draws from the core outwards. */
+.aks-profile-loop {
+  --loop-turn: 90deg;
+}
+
+.aks-profile-loop-orbit {
+  fill: none;
+  stroke: var(--profile-invert);
+  stroke-dasharray: 8 92;
+  stroke-dashoffset: 4;
+  transform: rotate(var(--loop-turn));
+  transform-box: view-box;
+  transform-origin: 260px 250px;
+  transition: transform 520ms var(--motion-ease);
+}
+
+.aks-profile-loop-trace {
+  stroke: var(--profile-invert);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--motion-fast) var(--motion-ease);
+}
+
+.aks-profile-loop-trace[data-active] {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 360ms var(--motion-ease) 120ms;
+}
+
+/* Chain: a change travels along the flow, box after box. */
+.aks-profile-chain-steps li:nth-child(2) {
+  transition-delay: 35ms;
+}
+
+.aks-profile-chain-steps li:nth-child(3) {
+  transition-delay: 70ms;
+}
+
+.aks-profile-chain-steps li:nth-child(4) {
+  transition-delay: 105ms;
+}
+
+.aks-profile-chain-steps li:nth-child(5) {
+  transition-delay: 140ms;
+}
+
+.aks-profile-chain-steps li:nth-child(6) {
+  transition-delay: 175ms;
+}
+
+.aks-profile-chain-steps li:nth-child(7) {
+  transition-delay: 210ms;
+}
+
+.aks-profile-chain-steps li:nth-child(8) {
+  transition-delay: 245ms;
+}
+
+.aks-profile-chain[data-step='3'] [data-mark='loop'] {
+  animation: aks-profile-draw-up 520ms var(--motion-ease) 120ms both;
+}
+
+.aks-profile-chain[data-step='3'] [data-mark='loop-head'] {
+  transition-delay: 600ms;
+}
+
+.aks-profile-chain[data-step='3'] [data-mark='unexpected'] {
+  transition-delay: 420ms;
+}
+
+@media (min-width: 64rem) {
+  .aks-profile-track[data-count='8'] .aks-profile-track-fill[data-row='1'] {
+    right: 6.25%;
+    left: 6.25%;
+    transform: scaleX(calc(var(--step) / 7));
+  }
+
+  .aks-profile-track[data-count='8'] .aks-profile-track-fill[data-row='2'] {
+    display: none;
+  }
+
+  /* The active group's bracket draws out from its label. */
+  .aks-profile-cycle-group[data-active] {
+    animation: aks-profile-draw-out 360ms var(--motion-ease) both;
+  }
+
+  .aks-profile-chain[data-step='3'] [data-mark='loop'] {
+    animation-name: aks-profile-draw-left;
+  }
 }
