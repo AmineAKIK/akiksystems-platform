@@ -168,6 +168,8 @@
 }
 
 .aks-home-center {
+  /* Positions the construction plan; desktop layouts make it absolute further down. */
+  position: relative;
   grid-area: identity;
   display: grid;
   justify-items: center;
@@ -951,4 +953,212 @@ html[data-motion='reduced'] .aks-home-door-summary,
 html[data-motion='reduced'] .aks-home-active-description,
 html[data-motion='reduced'] .aks-experience-footer[data-home='true'] .aks-link {
   transition-duration: 1ms;
+}
+
+/*
+ * Construction plan: fine rings and axes centred on the emblem, 1px, no blur or glow. The
+ * orbit radius is the single measure shared by the drawing and the doors placed on it.
+ */
+.aks-home {
+  --aks-home-orbit-r: calc(var(--aks-home-mark-size) * 1.2);
+}
+
+.aks-home-brand-mark,
+.aks-home-wordmark,
+.aks-home-scale {
+  position: relative;
+  z-index: 1;
+}
+
+.aks-home-plan {
+  position: absolute;
+  z-index: 0;
+  top: calc(var(--aks-home-mark-size) / 2);
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.aks-home-plan > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -50% -50%;
+}
+
+.aks-home-plan-ring {
+  border: 1px solid rgb(170 179 193 / 8%);
+  border-radius: 50%;
+}
+
+.aks-home-plan-ring--inner {
+  width: calc(var(--aks-home-mark-size) * 1.24);
+  height: calc(var(--aks-home-mark-size) * 1.24);
+  border-style: dashed;
+  border-color: rgb(170 179 193 / 14%);
+}
+
+.aks-home-plan-ring--orbit {
+  width: calc(var(--aks-home-orbit-r) * 2);
+  height: calc(var(--aks-home-orbit-r) * 2);
+  border-color: rgb(100 135 222 / 20%);
+}
+
+.aks-home-plan-ring--outer {
+  width: calc(var(--aks-home-orbit-r) * 2.64);
+  height: calc(var(--aks-home-orbit-r) * 2.64);
+  border-color: rgb(170 179 193 / 6%);
+}
+
+/* Graduations just outside the orbit: one composited layer turning very slowly. */
+.aks-home-plan-ticks {
+  width: calc(var(--aks-home-orbit-r) * 2 + 0.875rem);
+  height: calc(var(--aks-home-orbit-r) * 2 + 0.875rem);
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(170 179 193 / 28%) 0 0.35deg, transparent 0.35deg 6deg);
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - 0.4375rem),
+    #000 calc(100% - 0.375rem)
+  );
+  animation: aks-home-plan-turn 240s linear infinite;
+}
+
+@keyframes aks-home-plan-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.aks-home-plan-axis {
+  background: rgb(170 179 193 / 10%);
+}
+
+/* The horizontal axis stops at the emblem so no line shows through it. */
+.aks-home-plan-axis--horizontal {
+  width: calc(var(--aks-home-orbit-r) * 2.64);
+  height: 1px;
+  mask: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 calc(50% - var(--aks-home-mark-size) * 0.62),
+    transparent calc(50% - var(--aks-home-mark-size) * 0.62),
+    transparent calc(50% + var(--aks-home-mark-size) * 0.62),
+    #000 calc(50% + var(--aks-home-mark-size) * 0.62),
+    #000 88%,
+    transparent
+  );
+}
+
+/* The vertical axis rises from the emblem towards Perspectives only, never across the text. */
+.aks-home-plan > .aks-home-plan-axis--vertical {
+  top: calc(var(--aks-home-orbit-r) * -1.32);
+  width: 1px;
+  height: calc(var(--aks-home-orbit-r) * 1.32 - var(--aks-home-mark-size) * 0.62);
+  translate: -50% 0;
+  mask: linear-gradient(transparent, #000 30%);
+}
+
+.aks-home-plan-node {
+  display: none;
+  width: 0.6875rem;
+  height: 0.6875rem;
+  border: 1px solid rgb(100 135 222 / 60%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--aks-home-starlight) 0 1.5px, transparent 2px);
+}
+
+/* Portrait: the 2×2 cross reaches its four doors instead of floating between them. */
+.aks-home-nav-separator {
+  width: min(100%, 40rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aks-home-plan-ticks {
+    animation: none;
+  }
+}
+
+html[data-motion='reduced'] .aks-home-plan-ticks {
+  animation: none;
+}
+
+/*
+ * Desktop: the doors sit on the orbit. Profile and Systems on the emblem's horizontal axis,
+ * Writings and Learning 35° below it, each hanging under its node like a map label. The
+ * preview narrows to two lines so it runs between the lower doors, never under them.
+ */
+@media (min-width: 56.25rem) and (orientation: landscape) and (min-height: 37.5625rem) {
+  .aks-home {
+    --aks-home-orbit-r: min(calc(var(--aks-home-mark-size) * 1.8), calc(50vw - 9rem), 48rem);
+    --aks-home-emblem-y: calc(
+      46% - var(--aks-home-center-half-height) + var(--aks-home-mark-size) / 2
+    );
+    --aks-home-node-gap: 0.875rem;
+  }
+
+  .aks-home-plan-node {
+    display: block;
+  }
+
+  .aks-home-active-description {
+    width: min(100%, 26rem);
+  }
+
+  .aks-home-active-description p {
+    max-width: 26rem;
+  }
+
+  .aks-home-plan > [data-node='profile'] {
+    left: calc(var(--aks-home-orbit-r) * -1);
+  }
+
+  .aks-home-plan > [data-node='systems'] {
+    left: var(--aks-home-orbit-r);
+  }
+
+  .aks-home-plan > [data-node='writings'] {
+    top: calc(var(--aks-home-orbit-r) * 0.574);
+    left: calc(var(--aks-home-orbit-r) * -0.819);
+  }
+
+  .aks-home-plan > [data-node='learning'] {
+    top: calc(var(--aks-home-orbit-r) * 0.574);
+    left: calc(var(--aks-home-orbit-r) * 0.819);
+  }
+
+  .aks-home-door:is(
+    [data-destination='profile'],
+    [data-destination='systems'],
+    [data-destination='writings'],
+    [data-destination='learning']
+  ) {
+    transform: translate(-50%, 0);
+  }
+
+  .aks-home-door[data-destination='profile'] {
+    top: calc(var(--aks-home-emblem-y) + var(--aks-home-node-gap));
+    left: calc(50% - var(--aks-home-orbit-r));
+  }
+
+  .aks-home-door[data-destination='systems'] {
+    top: calc(var(--aks-home-emblem-y) + var(--aks-home-node-gap));
+    left: calc(50% + var(--aks-home-orbit-r));
+  }
+
+  .aks-home-door[data-destination='writings'] {
+    top: calc(
+      var(--aks-home-emblem-y) + var(--aks-home-orbit-r) * 0.574 + var(--aks-home-node-gap)
+    );
+    left: calc(50% - var(--aks-home-orbit-r) * 0.819);
+  }
+
+  .aks-home-door[data-destination='learning'] {
+    top: calc(
+      var(--aks-home-emblem-y) + var(--aks-home-orbit-r) * 0.574 + var(--aks-home-node-gap)
+    );
+    left: calc(50% + var(--aks-home-orbit-r) * 0.819);
+  }
 }

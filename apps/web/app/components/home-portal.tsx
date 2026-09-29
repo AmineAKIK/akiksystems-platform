@@ -116,6 +116,27 @@ function HomeEmblem() {
 const wordmarkTarget = 'AkikSystems';
 const matrixGlyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/{}[]%*+=?';
 
+/**
+ * The construction plan behind the emblem: fine rings and axes centred on it, and the nodes
+ * the doors hang from. Pure decoration, drawn with CSS from the same orbit radius the doors use.
+ */
+function HomePlan() {
+  return (
+    <span aria-hidden="true" className="aks-home-plan">
+      <span className="aks-home-plan-ring aks-home-plan-ring--inner" />
+      <span className="aks-home-plan-ring aks-home-plan-ring--orbit" />
+      <span className="aks-home-plan-ring aks-home-plan-ring--outer" />
+      <span className="aks-home-plan-ticks" />
+      <span className="aks-home-plan-axis aks-home-plan-axis--horizontal" />
+      <span className="aks-home-plan-axis aks-home-plan-axis--vertical" />
+      <span className="aks-home-plan-node" data-node="profile" />
+      <span className="aks-home-plan-node" data-node="systems" />
+      <span className="aks-home-plan-node" data-node="writings" />
+      <span className="aks-home-plan-node" data-node="learning" />
+    </span>
+  );
+}
+
 /** Starts after the fonts and the page settle, so the intro never competes with hydration. */
 function whenSettled(start: () => void) {
   let cancelled = false;
@@ -425,6 +446,7 @@ export function HomePortal({ locale }: HomePortalProps) {
         <span aria-hidden="true" className="aks-home-nav-separator" />
 
         <div className="aks-home-center">
+          <HomePlan />
           <HomeEmblem />
           <MatrixWordmark />
         </div>

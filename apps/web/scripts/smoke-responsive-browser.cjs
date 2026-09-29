@@ -107,6 +107,18 @@ async function measure(page) {
           rect('.aks-home-door[data-destination="' + id + '"] .aks-home-door-label'),
         ]),
       ),
+      // Orbit nodes the desktop doors hang from (hidden in other layouts).
+      nodes: Object.fromEntries(
+        ['profile', 'systems', 'writings', 'learning'].map((id) => {
+          const node = document.querySelector('.aks-home-plan-node[data-node="' + id + '"]');
+          if (!(node instanceof HTMLElement) || getComputedStyle(node).display === 'none') {
+            return [id, null];
+          }
+          const box = node.getBoundingClientRect();
+          return [id, { x: box.left + box.width / 2, y: box.top + box.height / 2 }];
+        }),
+      ),
+      previewText: rect('.aks-home-active-description p'),
       doorOrder: [...document.querySelectorAll('.aks-home-door')].map(
         (door) => door.dataset.destination,
       ),
@@ -272,6 +284,39 @@ async function assertGeometry(browser, viewport, name) {
         80,
         name + ' portrait navigation row spacing',
       );
+    } else if (m.nodes.profile !== null) {
+      // Desktop: the doors sit on one orbit around the emblem, each centred under its node.
+      const emblem = {
+        x: m.brand.left + m.brand.width / 2,
+        y: m.brand.top + m.brand.height / 2,
+      };
+      const radii = [];
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const node = m.nodes[id];
+        const door = m.doors[id];
+        assertNear(door.left + door.width / 2, node.x, 1.5, name + ' ' + id + ' under its node');
+        assert.ok(
+          door.top - node.y >= 8 && door.top - node.y <= 24,
+          name + ' ' + id + ' hangs just below its node: ' + (door.top - node.y),
+        );
+        radii.push(Math.hypot(node.x - emblem.x, node.y - emblem.y));
+      }
+      for (const radius of radii) {
+        assertNear(radius, radii[0], 2, name + ' every door node on the same orbit');
+      }
+      assertNear(m.nodes.profile.y, emblem.y, 3, name + ' Profile on the emblem axis');
+      assertNear(m.nodes.systems.y, emblem.y, 3, name + ' Systems on the emblem axis');
+      assertGap(m.scale, m.preview, 4, 24, name + ' slogan → preview');
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const door = m.doors[id];
+        const preview = m.previewText;
+        const overlaps =
+          door.left < preview.right &&
+          preview.left < door.right &&
+          door.top < preview.bottom &&
+          preview.top < door.bottom;
+        assert.ok(!overlaps, name + ' ' + id + ' must stay clear of the preview');
+      }
     } else {
       assertNear(m.labels.profile.top, m.labels.systems.top, 2, name + ' orbital side row');
       assertNear(m.labels.writings.top, m.labels.learning.top, 2, name + ' orbital lower row');
@@ -389,7 +434,18 @@ async function assertPreviewCorridor(browser, viewport, name) {
       viewport.width > viewport.height && viewport.width < 900 && viewport.height <= 600;
     const desktopLandscape = viewport.width >= 900 && viewport.width > viewport.height;
 
-    if (compactLandscape || desktopLandscape) {
+    if (desktopLandscape && m.nodes.profile !== null) {
+      // On the orbit the lower doors flank the preview: it must run between them, untouched.
+      assertGap(m.scale, m.preview, 4, 24, name + ' active slogan → preview');
+      for (const id of ['profile', 'systems', 'writings', 'learning']) {
+        const door = m.doors[id];
+        const preview = m.previewText;
+        assert.ok(
+          door.right < preview.left || door.left > preview.right || door.top > preview.bottom,
+          name + ' active preview must not touch ' + id,
+        );
+      }
+    } else if (compactLandscape || desktopLandscape) {
       assertGap(m.scale, m.preview, 4, 24, name + ' active slogan → preview');
       assertGap(m.preview, m.doors.writings, 8, 48, name + ' active preview → lower destinations');
     } else {
@@ -458,9 +514,11 @@ async function assertLargeDesktopStability(browser) {
 
     assertNear(profileDistance, systemsDistance, 2, viewport.width + 'px side orbital symmetry');
 
+    // The side doors sit on the orbit: 1.8 emblems from the centre, attached to the body.
+    const orbitRatio = profileDistance / measurement.brand.width;
     assert.ok(
-      profileDistance >= 700 && profileDistance <= 780,
-      viewport.width + 'px side destinations must stay visually attached to the body',
+      orbitRatio >= 1.75 && orbitRatio <= 1.85,
+      viewport.width + 'px side destinations must stay on the orbit: ' + orbitRatio.toFixed(3),
     );
   }
 }
