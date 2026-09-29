@@ -149,8 +149,8 @@ async function inspectViewport(browser, viewport) {
     ]);
     assert.equal(
       measurement.naturalImages.length,
-      4,
-      'Systems must render the four station media assets',
+      3,
+      'Systems must render the three station media assets',
     );
     for (const image of measurement.naturalImages) {
       assert.ok(image.width > 0 && image.height > 0, image.src + ' must load');

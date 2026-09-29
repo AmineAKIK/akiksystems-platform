@@ -25,8 +25,7 @@ const statusLabels: Record<'en' | 'fr', Record<SystemsStatus, string>> = {
 const stationMedia: Record<Exclude<SystemsStation['id'], 'protocap'>, string> = {
   alkhawarizmi: '/systems/alkhawarizmi.svg',
   oria: '/systems/oria.svg',
-  sonar: '/systems/sonar.webp',
-  detour: '/systems/detour.webp',
+  akiksystems: '/systems/akiksystems.svg',
 };
 
 /* Covers drawn at the card's ratio fall back to their portrait artwork on phones. */
@@ -332,7 +331,7 @@ function QuickStationRow({
             className="aks-systems-quick-link"
             href="#workbench"
           >
-            {locale === 'fr' ? 'Ouvrir' : 'Open'}
+            {locale === 'fr' ? 'Voir ses outils' : 'See its tools'}
             <span aria-hidden="true">↗</span>
           </a>
         </article>
@@ -403,9 +402,6 @@ export function Workbench({
               <span className="aks-systems-tool-action">
                 <i aria-hidden="true" /> {tool.action}
               </span>
-              <span aria-hidden="true" className="aks-systems-tool-arrow">
-                ↗
-              </span>
             </li>
           ))}
         </ol>
@@ -453,8 +449,7 @@ export function SystemsPage({
   const protocap = station('protocap');
   const alkhawarizmi = station('alkhawarizmi');
   const oria = station('oria');
-  const sonar = station('sonar');
-  const detour = station('detour');
+  const akiksystems = station('akiksystems');
 
   return (
     <main className="aks-systems-page" data-locale={locale}>
@@ -476,7 +471,7 @@ export function SystemsPage({
           </div>
           <StationFeature locale={locale} station={protocap} />
           <StationPair locale={locale} stations={[alkhawarizmi, oria]} />
-          <QuickStationRow locale={locale} stations={[sonar, detour]} />
+          <QuickStationRow locale={locale} stations={[akiksystems]} />
         </div>
       </section>
       <Manifesto content={content.manifesto} />

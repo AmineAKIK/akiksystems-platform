@@ -9,7 +9,7 @@ export interface SystemsAction {
 }
 
 export interface SystemsStation {
-  id: 'protocap' | 'alkhawarizmi' | 'oria' | 'sonar' | 'detour';
+  id: 'protocap' | 'alkhawarizmi' | 'oria' | 'akiksystems';
   name: string;
   function: string;
   status: SystemsStatus;
@@ -151,20 +151,13 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         href: 'https://amineakik.github.io/orianutrition/',
       },
       {
-        id: 'sonar',
-        name: 'SONAR',
-        function: 'Écouter la profondeur d’une situation avant d’agir.',
+        id: 'akiksystems',
+        name: 'AKIKSYSTEMS',
+        function:
+          'La plateforme que vous parcourez : rendu serveur, deux langues, livraison continue.',
         status: 'deployed',
-        statusLabel: 'EN OPÉRATION',
-        note: 'Lecture profonde.',
-      },
-      {
-        id: 'detour',
-        name: 'DÉTOUR',
-        function: 'Produire une autre route quand le chemin se ferme.',
-        status: 'building',
-        statusLabel: 'SUR INVITATION',
-        note: 'Trajectoires alternatives.',
+        statusLabel: 'EN LIGNE',
+        note: 'La plateforme et ses outils.',
       },
     ],
     manifesto: {
@@ -176,31 +169,32 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     workbench: {
       eyebrow: 'OUTILS / WORKBENCH',
       title: 'ÉTABLI',
-      intro: 'Outils, scripts et petites pièces pour accélérer le travail quotidien.',
+      intro:
+        'Les outils que j’ai construits pour livrer mes systèmes. Ils tournent en production, pas en vitrine.',
       tools: [
         {
-          name: 'TRACE',
-          function: 'Consigner les décisions',
-          environment: 'NAVIGATEUR',
-          action: 'OUVRIR',
+          name: 'DÉPLOIEMENT PAR SHA',
+          function: 'Livrer un commit précis, revenir en arrière si la santé échoue',
+          environment: 'SSH · DOCKER',
+          action: 'EN PRODUCTION',
         },
         {
-          name: 'RELAIS',
-          function: 'Passer le témoin proprement',
-          environment: 'SLACK',
-          action: 'INSTALLER',
+          name: 'CARTES ORBITALES',
+          function: 'Explorer un système nœud par nœud, sous CSP stricte',
+          environment: 'SVG · NAVIGATEUR',
+          action: 'SENTINEL · PROTOCAP',
         },
         {
-          name: 'BALISE',
-          function: 'Vérifier une mise en ligne',
-          environment: 'TERMINAL',
-          action: 'COPIER',
+          name: 'SMOKE RESPONSIVE',
+          function: 'Contrôler chaque page de 320 à 2560 px',
+          environment: 'PLAYWRIGHT',
+          action: 'À CHAQUE COMMIT',
         },
         {
-          name: 'SILLON',
-          function: 'Rejouer un parcours',
-          environment: 'SCRIPT',
-          action: 'CONSULTER',
+          name: 'CONFIG VALIDÉE',
+          function: 'Refuser de démarrer sur une configuration invalide',
+          environment: 'NODE.JS · ZOD',
+          action: 'AU DÉMARRAGE',
         },
       ],
     },
@@ -292,20 +286,13 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
         href: 'https://amineakik.github.io/orianutrition/',
       },
       {
-        id: 'sonar',
-        name: 'SONAR',
-        function: 'Listen to the depth of a situation before acting.',
+        id: 'akiksystems',
+        name: 'AKIKSYSTEMS',
+        function:
+          'The platform you are browsing: server rendering, two languages, continuous delivery.',
         status: 'deployed',
-        statusLabel: 'IN OPERATION',
-        note: 'Deep reading.',
-      },
-      {
-        id: 'detour',
-        name: 'DÉTOUR',
-        function: 'Produce another route when the path closes.',
-        status: 'building',
-        statusLabel: 'BY INVITATION',
-        note: 'Alternative trajectories.',
+        statusLabel: 'ONLINE',
+        note: 'The platform and its tools.',
       },
     ],
     manifesto: {
@@ -317,17 +304,32 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
     workbench: {
       eyebrow: 'TOOLS / WORKBENCH',
       title: 'WORKBENCH',
-      intro: 'Tools, scripts and small pieces that speed up everyday work.',
+      intro: 'The tools I built to ship my systems. They run in production, not in a showcase.',
       tools: [
-        { name: 'TRACE', function: 'Record decisions', environment: 'BROWSER', action: 'OPEN' },
         {
-          name: 'RELAIS',
-          function: 'Hand work over cleanly',
-          environment: 'SLACK',
-          action: 'INSTALL',
+          name: 'SHA DEPLOYMENT',
+          function: 'Ship an exact commit, roll back if the health check fails',
+          environment: 'SSH · DOCKER',
+          action: 'IN PRODUCTION',
         },
-        { name: 'BALISE', function: 'Verify a release', environment: 'TERMINAL', action: 'COPY' },
-        { name: 'SILLON', function: 'Replay a path', environment: 'SCRIPT', action: 'VIEW' },
+        {
+          name: 'ORBITAL MAPS',
+          function: 'Explore a system node by node, under a strict CSP',
+          environment: 'SVG · BROWSER',
+          action: 'SENTINEL · PROTOCAP',
+        },
+        {
+          name: 'RESPONSIVE SMOKE',
+          function: 'Check every page from 320 to 2560 px',
+          environment: 'PLAYWRIGHT',
+          action: 'ON EVERY COMMIT',
+        },
+        {
+          name: 'VALIDATED CONFIG',
+          function: 'Refuse to start on an invalid configuration',
+          environment: 'NODE.JS · ZOD',
+          action: 'AT STARTUP',
+        },
       ],
     },
     perspectives: {
