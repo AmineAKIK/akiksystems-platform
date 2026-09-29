@@ -21,6 +21,9 @@ describe('locale layout canonical domain redirects', () => {
     ['https://akiksystems.com/fr?x=1', 'fr', 'https://akiksystems.fr/fr?x=1'],
     ['https://www.akiksystems.fr/fr', 'fr', 'https://akiksystems.fr/fr'],
     ['https://www.akiksystems.com/en', 'en', 'https://akiksystems.com/en'],
+    // Client-side navigations request "<path>.data"; the redirect targets the page itself.
+    ['https://akiksystems.fr/en.data', 'en', 'https://akiksystems.com/en'],
+    ['https://akiksystems.com/fr/profil.data?x=1', 'fr', 'https://akiksystems.fr/fr/profil?x=1'],
   ] as const)('redirects %s to its canonical public domain', async (url, locale, expected) => {
     const response = await redirectFor(url, locale);
     expect(response).toBeInstanceOf(Response);

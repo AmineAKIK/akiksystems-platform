@@ -16,7 +16,10 @@ export function loader({ params, request }: Route.LoaderArgs) {
     hostnameLocale !== null &&
     (hostnameLocale !== locale || requestUrl.hostname !== canonicalHostname)
   ) {
-    throw redirect(publicUrlForLocale(locale, requestUrl.pathname + requestUrl.search), 308);
+    // A client-side navigation asks for "<path>.data": redirect to the page itself, never to
+    // the data URL, or the browser would land on raw loader data on the other domain.
+    const pagePath = requestUrl.pathname.replace(/\.data$/, '').replace(/^\/_root$/, '/');
+    throw redirect(publicUrlForLocale(locale, pagePath + requestUrl.search), 308);
   }
 
   return { locale };
