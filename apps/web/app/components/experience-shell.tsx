@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router';
 import {
   destinationFromPathname,
   destinationHref,
-  globalDestinations,
+  openDestinations,
 } from '../i18n/global-destinations';
 import { ExperienceFooter } from './experience-footer';
 import { LanguageSwitch } from './language-switch';
@@ -53,6 +53,8 @@ export function ExperienceShell({
   // Only the locale root is Home; legal and other pages outside the main destinations
   // share the regular header and footer.
   const isHome = pathname.split('/').filter(Boolean).length <= 1;
+  const pageSlug = pathname.split('/').filter(Boolean).at(-1);
+  const isLegalNotice = pageSlug === 'legal-notice' || pageSlug === 'mentions-legales';
   const alternateLocale: Locale = locale === 'en' ? 'fr' : 'en';
   const derivedLanguageHref =
     destinationId === null
@@ -63,7 +65,10 @@ export function ExperienceShell({
     languagePath === null ? null : publicLanguageHref(alternateLocale, languagePath);
 
   return (
-    <>
+    <div
+      className="aks-experience-page"
+      data-destination={destinationId ?? (isHome ? 'home' : 'page')}
+    >
       <a className="aks-skip-link" href="#experience-outlet">
         {dictionary.shell.skipToContent}
       </a>
@@ -71,6 +76,7 @@ export function ExperienceShell({
       <header
         className="aks-experience-shell aks-section-separator-after"
         data-destination={destinationId ?? (isHome ? 'home' : 'page')}
+        data-header-position={isLegalNotice ? 'static' : undefined}
         data-mode={mode}
       >
         <Container width="wide">
@@ -94,7 +100,7 @@ export function ExperienceShell({
               >
                 {dictionary.shell.homeLabel}
               </RouterLink>
-              {globalDestinations.map((destination) => (
+              {openDestinations.map((destination) => (
                 <RouterLink
                   aria-current={destinationId === destination.id ? 'page' : undefined}
                   className="aks-link"
@@ -134,7 +140,7 @@ export function ExperienceShell({
                 >
                   {dictionary.shell.homeLabel}
                 </RouterLink>
-                {globalDestinations.map((destination) => (
+                {openDestinations.map((destination) => (
                   <RouterLink
                     aria-current={destinationId === destination.id ? 'page' : undefined}
                     className="aks-link"
@@ -185,6 +191,6 @@ export function ExperienceShell({
         </div>
         <ExperienceFooter home={isHome} locale={locale} />
       </div>
-    </>
+    </div>
   );
 }

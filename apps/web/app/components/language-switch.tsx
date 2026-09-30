@@ -25,11 +25,21 @@ export function useCurrentSectionHash(): string {
     const update = () => {
       frame = 0;
       const line = window.innerHeight * 0.35;
+      const anchors = [
+        ...document.querySelectorAll<HTMLElement>(
+          '#experience-outlet section[id], #experience-outlet article[id]',
+        ),
+      ];
       let current = '';
-      for (const anchor of document.querySelectorAll<HTMLElement>(
-        '#experience-outlet section[id], #experience-outlet article[id]',
-      )) {
+      for (const anchor of anchors) {
         if (anchor.getBoundingClientRect().top <= line) current = anchor.id;
+      }
+      // At the very bottom a short last section never reaches the line: it is the one being read.
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      const last = anchors[anchors.length - 1];
+      if (atBottom && last !== undefined && last.getBoundingClientRect().top < window.innerHeight) {
+        current = last.id;
       }
       setHash(current);
     };

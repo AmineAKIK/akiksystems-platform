@@ -1,5 +1,5 @@
 import { BrandMark } from '@akiksystems/ui';
-import { useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Link as RouterLink } from 'react-router';
 
 import type { ProfileIcon, ProfileLink, ProfilePageContent } from './content';
@@ -88,6 +88,30 @@ function Icon({ path, size = 18 }: { path: string; size?: number }) {
   );
 }
 
+/** The official LinkedIn and GitHub marks, filled, as their brands draw them. */
+const socialMarks: Partial<Record<Glyph, string>> = {
+  linkedin:
+    'M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z',
+  github:
+    'M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57l-.02-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .32.21.69.82.57A12 12 0 0 0 12 .3',
+};
+
+function SocialMark({ path }: { path: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="aks-profile-icon"
+      fill="currentColor"
+      focusable="false"
+      height={20}
+      viewBox="0 0 24 24"
+      width={20}
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
 function PillLink({ link, size = 'md' }: { link: ProfileLink; size?: 'sm' | 'md' | 'lg' }) {
   return (
     <RouterLink className="aks-profile-pill" data-size={size} prefetch="intent" to={link.href}>
@@ -99,7 +123,15 @@ function PillLink({ link, size = 'md' }: { link: ProfileLink; size?: 'sm' | 'md'
 /** WAI-ARIA tabs: one tab in the sequential focus order, arrow keys move between tabs. */
 function useTabs(count: number, initial = 0) {
   const baseId = useId();
-  const [active, setActive] = useState(initial);
+  // The direction lets the panel enter from the side the reader is moving towards.
+  const [{ active, direction }, setState] = useState({ active: initial, direction: 1 });
+  const setActive = (next: number) => {
+    setState((current) =>
+      current.active === next
+        ? current
+        : { active: next, direction: next > current.active ? 1 : -1 },
+    );
+  };
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const select = (index: number) => {
@@ -123,6 +155,7 @@ function useTabs(count: number, initial = 0) {
     active,
     panelProps: {
       'aria-labelledby': `${baseId}-tab-${active}`,
+      'data-direction': direction,
       id: panelId,
       role: 'tabpanel',
     } as const,
@@ -141,6 +174,16 @@ function useTabs(count: number, initial = 0) {
         type: 'button',
       }) as const,
   };
+}
+
+/** The progress line along the tabs: filled up to the active step (two rows on narrow screens). */
+function TrackFill() {
+  return (
+    <>
+      <span aria-hidden="true" className="aks-profile-track-fill" data-row="1" />
+      <span aria-hidden="true" className="aks-profile-track-fill" data-row="2" />
+    </>
+  );
 }
 
 function StepTab({
@@ -233,7 +276,11 @@ function IdentitySection({
                     : {})}
                 >
                   <span className="aks-profile-contact-icon">
-                    <Icon path={glyphs[contact.glyph]} />
+                    {socialMarks[contact.glyph] === undefined ? (
+                      <Icon path={glyphs[contact.glyph]} size={20} />
+                    ) : (
+                      <SocialMark path={socialMarks[contact.glyph] ?? ''} />
+                    )}
                   </span>
                   <span>{contact.label}</span>
                 </a>
@@ -292,6 +339,56 @@ function IdentitySection({
   );
 }
 
+function TimelineList({
+  label,
+  entries,
+}: {
+  label: string;
+  entries: ProfilePageContent['identity']['timeline']['work'];
+}) {
+  return (
+    <div className="aks-profile-timeline-column">
+      <h3 className="aks-profile-label">{label}</h3>
+      <ol className="aks-profile-timeline">
+        {entries.map((entry) => (
+          <li key={entry.period + entry.title}>
+            <span className="aks-profile-timeline-period">{entry.period}</span>
+            <div>
+              <p className="aks-profile-timeline-title">{entry.title}</p>
+              <p className="aks-profile-timeline-place">{entry.place}</p>
+              {entry.detail === undefined ? null : (
+                <p className="aks-profile-timeline-detail">{entry.detail}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** The dated facts behind the profile: what was done, where, and when. */
+function TimelineSection({ content }: { content: ProfilePageContent['identity']['timeline'] }) {
+  return (
+    <section
+      aria-labelledby="profile-timeline-title"
+      className="aks-profile-section aks-profile-timeline-section"
+      data-profile-section="timeline"
+      id="parcours"
+    >
+      <div className="aks-profile-wrap">
+        <p className="aks-profile-eyebrow">{content.eyebrow}</p>
+        <h2 id="profile-timeline-title">{content.title}</h2>
+        <p className="aks-profile-timeline-intro">{content.intro}</p>
+        <div className="aks-profile-timeline-grid">
+          <TimelineList entries={content.work} label={content.workLabel} />
+          <TimelineList entries={content.education} label={content.educationLabel} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
   const [selected, setSelected] = useState(0);
   const baseId = useId();
@@ -316,8 +413,11 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
         <ol className="aks-profile-rail">
           {content.rows.map((row, index) => {
             const active = index === selected;
-            const proof = row.proofs[row.primary] ?? row.proofs[0];
-            const system = proof === undefined ? undefined : content.systems[proof.system];
+            // Every proof is shown, the primary one first.
+            const proofs = [
+              ...row.proofs.slice(row.primary, row.primary + 1),
+              ...row.proofs.filter((_, proofIndex) => proofIndex !== row.primary),
+            ];
             const regionId = `${baseId}-proof-${index}`;
 
             return (
@@ -341,7 +441,7 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
                     <span className="aks-profile-rail-category">{row.category}</span>
                   </span>
                 </button>
-                {active && proof !== undefined && system !== undefined ? (
+                {active && proofs.length > 0 ? (
                   <div
                     aria-label={`${content.regionLabel} ${row.name}`}
                     className="aks-profile-rail-proof"
@@ -349,28 +449,31 @@ function StackSection({ content }: { content: ProfilePageContent['stack'] }) {
                     role="region"
                   >
                     <span className="aks-profile-rail-count">
-                      {row.proofs.length > 1
-                        ? content.provenIn.many.replace('{count}', String(row.proofs.length))
+                      {proofs.length > 1
+                        ? content.provenIn.many.replace('{count}', String(proofs.length))
                         : content.provenIn.one}
                     </span>
-                    <div className="aks-profile-proof">
-                      <span aria-hidden="true" className="aks-profile-proof-initial">
-                        {system.name.charAt(0)}
-                      </span>
-                      <div className="aks-profile-proof-body">
-                        <p className="aks-profile-proof-title">
-                          <strong>{system.name}</strong>
-                          <span>{system.context}</span>
-                        </p>
-                        <p>{proof.description}</p>
-                        {system.href === null ? null : (
-                          <PillLink
-                            link={{ label: content.inspect, href: system.href }}
-                            size="sm"
-                          />
-                        )}
-                      </div>
-                    </div>
+                    {proofs.map((proof) => {
+                      const system = content.systems[proof.system];
+                      return (
+                        <div className="aks-profile-proof" key={proof.system}>
+                          <span aria-hidden="true" className="aks-profile-proof-initial">
+                            {system.name.charAt(0)}
+                          </span>
+                          <div className="aks-profile-proof-body">
+                            <p className="aks-profile-proof-title">
+                              <strong>{system.name}</strong>
+                              <span>{system.context}</span>
+                            </p>
+                            <p>{proof.description}</p>
+                            <PillLink
+                              link={{ label: content.inspect, href: system.href }}
+                              size="sm"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : null}
               </li>
@@ -390,6 +493,9 @@ const loopConnectors = [
   [260, 350, 260, 412],
   [98, 250, 160, 250],
 ] as const;
+// Where each lens sits on the ring, in degrees clockwise from three o'clock (code, management, field,
+// infrastructure).
+const loopAngles = [-90, 0, 90, 180] as const;
 const loopArrows = [
   [-45, 90],
   [45, 180],
@@ -400,6 +506,17 @@ const loopArrows = [
 function LensLoop({ content }: { content: ProfilePageContent['principles']['relate'] }) {
   const [selected, setSelected] = useState(2);
   const lens = content.nodes[selected] ?? content.nodes[0];
+  const loop = useRef<HTMLDivElement>(null);
+  const turn = useRef(loopAngles[2]);
+
+  // A short arc travels the ring to the chosen lens, always clockwise like the ring's arrows. Set
+  // through the CSSOM, which the CSP allows, so the angle keeps accumulating past 360°.
+  useEffect(() => {
+    const target = loopAngles[selected] ?? 0;
+    const delta = (((target - turn.current) % 360) + 360) % 360;
+    turn.current += delta;
+    loop.current?.style.setProperty('--loop-turn', `${turn.current}deg`);
+  }, [selected]);
   const detailRows = [
     { glyph: glyphs.bars, label: content.labels.brings, text: lens.brings },
     { glyph: glyphs.cross, label: content.labels.avoids, text: lens.avoids },
@@ -408,7 +525,7 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
 
   return (
     <div className="aks-profile-relate-grid">
-      <div aria-label={content.groupLabel} className="aks-profile-loop" role="group">
+      <div aria-label={content.groupLabel} className="aks-profile-loop" ref={loop} role="group">
         <svg
           aria-hidden="true"
           className="aks-profile-loop-art"
@@ -422,10 +539,16 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
             r={loopCenter.r - 0.5}
             vectorEffect="non-scaling-stroke"
           />
-          {loopConnectors.map(([x1, y1, x2, y2], index) => (
+          <circle
+            className="aks-profile-loop-orbit"
+            cx={loopCenter.x}
+            cy={loopCenter.y}
+            pathLength="100"
+            r={loopCenter.r - 0.5}
+          />
+          {loopConnectors.map(([x1, y1, x2, y2]) => (
             <line
               className="aks-profile-loop-connector"
-              data-active={index === selected || undefined}
               key={`${x1}-${y1}`}
               vectorEffect="non-scaling-stroke"
               x1={x1}
@@ -434,6 +557,25 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
               y2={y2}
             />
           ))}
+          {loopConnectors.map(([x1, y1, x2, y2], index) => {
+            // Drawn from the core outwards to the lens.
+            const coreFirst =
+              Math.hypot(x1 - loopCenter.x, y1 - loopCenter.y) <
+              Math.hypot(x2 - loopCenter.x, y2 - loopCenter.y);
+
+            return (
+              <line
+                className="aks-profile-loop-trace"
+                data-active={index === selected || undefined}
+                key={`trace-${x1}-${y1}`}
+                pathLength="1"
+                x1={coreFirst ? x1 : x2}
+                x2={coreFirst ? x2 : x1}
+                y1={coreFirst ? y1 : y2}
+                y2={coreFirst ? y2 : y1}
+              />
+            );
+          })}
           {loopArrows.map(([angle, rotation]) => {
             const radians = (angle * Math.PI) / 180;
             const x = loopCenter.x + loopCenter.r * Math.cos(radians);
@@ -529,6 +671,7 @@ function PrinciplesSection({ content }: { content: ProfilePageContent['principle
       aria-labelledby="profile-principles-title"
       className="aks-profile-section aks-profile-principles"
       data-profile-section="principles"
+      id="principes"
     >
       <div className="aks-profile-wrap">
         <div className="aks-profile-principles-head">
@@ -588,7 +731,12 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
               </span>
             ))}
           </div>
-          <div className="aks-profile-track" data-count={content.phases.length}>
+          <div
+            className="aks-profile-track"
+            data-active={active}
+            data-count={content.phases.length}
+          >
+            <TrackFill />
             <div aria-label={content.tablistLabel} className="aks-profile-tablist" role="tablist">
               {content.phases.map((item, index) => (
                 <StepTab
@@ -601,12 +749,12 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
             </div>
           </div>
           <div className="aks-profile-panel aks-profile-cycle-panel" {...panelProps}>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`lead-${active}`}>
               <span className="aks-profile-label">{content.groups[phase.group]}</span>
               <h3>{phase.name}</h3>
               <p className="aks-profile-panel-lead">{phase.purpose}</p>
             </div>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`does-${active}`}>
               <span className="aks-profile-label">{content.labels.does}</span>
               <ul className="aks-profile-dash-list">
                 {phase.services.map((service) => (
@@ -614,10 +762,19 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
                 ))}
               </ul>
             </div>
-            <div className="aks-profile-panel-block">
+            <div className="aks-profile-panel-block" key={`receives-${active}`}>
               <span className="aks-profile-label">{content.labels.receives}</span>
               <p className="aks-profile-panel-strong">{phase.deliverable}</p>
             </div>
+            {phase.proof === undefined ? null : (
+              <div
+                className="aks-profile-panel-block aks-profile-panel-proof"
+                key={`proof-${active}`}
+              >
+                <span className="aks-profile-label">{content.labels.proof}</span>
+                <p>{phase.proof}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -776,7 +933,6 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             <span>{content.lead[1]}</span>
           </p>
           <p className="aks-profile-scale-body">{content.body}</p>
-          <PillLink link={content.reasoning} />
         </div>
 
         <div className="aks-profile-method">
@@ -784,7 +940,8 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             <span className="aks-profile-label">{content.method.eyebrow}</span>
             <p>{content.method.intro}</p>
           </div>
-          <div className="aks-profile-track" data-count={content.steps.length}>
+          <div className="aks-profile-track" data-active={active} data-count={content.steps.length}>
+            <TrackFill />
             <div aria-label={content.tablistLabel} className="aks-profile-tablist" role="tablist">
               {content.steps.map((item, index) => (
                 <StepTab
@@ -797,18 +954,27 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
             </div>
           </div>
           <div className="aks-profile-panel aks-profile-case" {...panelProps}>
-            <div className="aks-profile-panel-block aks-profile-case-lead">
+            <div
+              className="aks-profile-panel-block aks-profile-case-lead"
+              key={`case-lead-${active}`}
+            >
               <span className="aks-profile-label">
                 {content.stepLabel} 0{active + 1}
               </span>
               <h3>{step.tab}</h3>
               <p className="aks-profile-panel-lead">{step.lead}</p>
             </div>
-            <div className="aks-profile-panel-block aks-profile-case-example">
+            <div
+              className="aks-profile-panel-block aks-profile-case-example"
+              key={`case-example-${active}`}
+            >
               <span className="aks-profile-label">{content.labels.example}</span>
               <p>{step.example}</p>
             </div>
-            <div className="aks-profile-panel-block aks-profile-case-question">
+            <div
+              className="aks-profile-panel-block aks-profile-case-question"
+              key={`case-question-${active}`}
+            >
               <span className="aks-profile-label">{content.labels.question}</span>
               <p className="aks-profile-panel-strong">{step.question}</p>
             </div>
@@ -859,6 +1025,7 @@ export function ProfilePage({
   return (
     <main className="aks-profile-page" data-locale={locale}>
       <IdentitySection identity={content.identity} project={content.project} />
+      <TimelineSection content={content.identity.timeline} />
       <StackSection content={content.stack} />
       <PrinciplesSection content={content.principles} />
       <CapabilitiesSection content={content.capabilities} />

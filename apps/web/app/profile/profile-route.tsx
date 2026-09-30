@@ -2,6 +2,7 @@ import { data, useLoaderData, type MetaDescriptor } from 'react-router';
 
 import { requireExactLocale, type Locale } from '../i18n/locales';
 import { buildLocalizedPublicMeta } from '../lib/public-seo';
+import { publicOrigins } from '../lib/public-locales';
 import { profilePageContent } from '../profile/content';
 import { ProfilePage } from '../profile/profile-page';
 
@@ -48,6 +49,9 @@ export function profileMeta(locale: Locale): MetaDescriptor[] {
           '@type': 'Person',
           name: content.identity.name.join(' '),
           jobTitle: content.identity.role,
+          worksFor: { '@type': 'Organization', name: 'AkikSystems', url: publicOrigins[locale] },
+          homeLocation: { '@type': 'Place', name: 'Châtellerault, France' },
+          knowsLanguage: ['fr', 'ar', 'en'],
           sameAs: [content.identity.contacts.linkedin.href, content.identity.contacts.github.href],
         },
       },

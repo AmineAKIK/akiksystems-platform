@@ -32,9 +32,10 @@ describe('ExperienceShell', () => {
     expect(html).toContain('href="/en" data-discover="true">Home</a>');
     expect(html).toContain('href="/en/profile" data-discover="true">Profile</a>');
     expect(html).toContain('href="/en/systems" data-discover="true">Systems</a>');
-    expect(html).toContain('href="/en/writings" data-discover="true">Writings</a>');
-    expect(html).toContain('href="/en/learning" data-discover="true">Learning</a>');
-    expect(html).toContain('href="/en/work-with-us" data-discover="true">Work with us</a>');
+    // Destinations in preparation stay out of the navigation.
+    expect(html).not.toContain('href="/en/writings"');
+    expect(html).not.toContain('href="/en/learning"');
+    expect(html).not.toContain('href="/en/work-with-us"');
     expect(html).toContain('class="aks-experience-mobile-menu"');
     expect(html).toContain('class="aks-experience-mobile-menu-trigger"');
     expect(html).toContain('class="aks-experience-mobile-nav"');
@@ -71,7 +72,7 @@ describe('ExperienceShell', () => {
 
     expect(html).toContain('data-destination="writings" data-mode="reading"');
     expect(html).toContain('aria-label="Primary navigation"');
-    expect(html).toContain('href="/en/writings" data-discover="true">Writings</a>');
+    expect(html).toContain('href="/en/profile" data-discover="true">Profile</a>');
     expect(html).toContain('class="aks-experience-mobile-menu"');
   });
 
@@ -147,6 +148,7 @@ describe('ExperienceShell', () => {
     );
 
     expect(html).toContain('data-destination="page"');
+    expect(html).toContain('data-header-position="static"');
     expect(html).not.toContain('data-home="true"');
     expect(html).not.toContain('aria-current="page" class="aks-link"');
   });

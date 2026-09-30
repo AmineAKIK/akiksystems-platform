@@ -21,6 +21,8 @@ const dictionary: Record<string, string> = {
   'Activer ou couper les animations': 'Turn animations on or off',
   'ANIMATION · ': 'ANIMATION · ',
   'Vues de la carte': 'Map views',
+  Soutenance: 'Presentation',
+  'Diaporama de soutenance Sentinel': 'Sentinel project presentation',
   'Lancer ou arrêter le parcours guidé': 'Start or stop the guided tour',
   PARCOURIR: 'TOUR',
   'SURVOLER · CLIQUER': 'HOVER · CLICK',

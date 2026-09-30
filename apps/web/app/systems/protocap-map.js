@@ -108,14 +108,20 @@ var LEVELS = [
 /* ---------------------------------------------------------------
    MONTAGE
    --------------------------------------------------------------- */
-function mount(root, startTab) {
+function mount(root, startTab, restoreSelection) {
   var reduceMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (root.__pcClean) root.__pcClean();
   var rw = root.getBoundingClientRect().width || window.innerWidth;
   var compact = rw < BP;
+  function sceneHeight() {
+    var expanded = root.closest('[data-fullscreen-active="true"]');
+    return !compact && expanded
+      ? Math.max(630, Math.round((root.clientHeight * 1312) / root.clientWidth))
+      : 630;
+  }
   var W = compact ? 360 : 1312,
-    H = compact ? 908 : 630,
+    H = compact ? 908 : sceneHeight(),
     HEAD = 0,
     SIDE = compact ? 0 : 128;
   var CUR = null;
@@ -3917,6 +3923,8 @@ function mount(root, startTab) {
         movers = [];
         state.sel = null;
         buildScene(sc);
+        if (restoreSelection && items[restoreSelection]) select(restoreSelection, { force: true });
+        restoreSelection = null;
         canvas.classList.remove('is-out');
         building = false;
       },
@@ -3968,7 +3976,11 @@ function mount(root, startTab) {
       if (!sc.data) harvest(sc);
       CUR = sc.data;
       sc.cbuild(g);
-    } else sc.build(g);
+    } else {
+      // Keep the drawing centred between its question and the bottom detail panel.
+      var stage = el('g', { transform: 'translate(0 ' + (H - 630) / 2 + ')' }, g);
+      sc.build(stage);
+    }
     setSignal(sc.signal);
     select(sc.def, { force: true, tour: true });
     kick();
@@ -4024,7 +4036,9 @@ function mount(root, startTab) {
   if ('ResizeObserver' in window) {
     ro = new ResizeObserver(function () {
       var w = root.getBoundingClientRect().width;
-      if (w && w < BP !== compact) mount(root, state.tab);
+      if (w && (w < BP !== compact || (!compact && sceneHeight() !== H))) {
+        mount(root, state.tab, state.sel);
+      }
     });
     ro.observe(root);
   }

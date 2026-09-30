@@ -1,6 +1,6 @@
 import { Container } from '@akiksystems/ui';
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useEffect, useState, type PointerEvent } from 'react';
+import { Link } from 'react-router';
 
 import {
   legalNavigationPages,
@@ -9,13 +9,14 @@ import {
 } from '../i18n/legal-navigation';
 import type { Locale } from '../i18n/locales';
 import { announceHomeDescription } from './home-description-events';
-import { homeLegalPresentation } from './home-portal-content';
+import { homeLegalPresentation, homeSoonLabel } from './home-portal-content';
 
+/**
+ * Open legal pages are links; the others are in preparation, like the Writings and Learning doors:
+ * named, described on the portal, never a link.
+ */
 export function ExperienceFooter({ home = false, locale }: { home?: boolean; locale: Locale }) {
-  const navigate = useNavigate();
-  const [activeHref, setActiveHref] = useState<string | null>(null);
-  const lastPointerType = useRef<string | null>(null);
-  const navigationTimer = useRef<number | null>(null);
+  const [activeId, setActiveId] = useState<LegalNavigationPage['id'] | null>(null);
 
   useEffect(() => {
     if (!home) return;
@@ -30,78 +31,21 @@ export function ExperienceFooter({ home = false, locale }: { home?: boolean; loc
         return;
       }
 
-      setActiveHref(null);
-
-      const activeElement = document.activeElement;
-      if (
-        activeElement instanceof HTMLElement &&
-        activeElement.matches('[data-home-preview-target="legal"]')
-      ) {
-        activeElement.blur();
-      }
-
+      setActiveId(null);
       announceHomeDescription({ channel: 'pointer', content: null });
-      announceHomeDescription({ channel: 'focus', content: null });
     };
 
     document.addEventListener('pointerdown', clearSelectionOutsideLegal);
     return () => document.removeEventListener('pointerdown', clearSelectionOutsideLegal);
   }, [home]);
 
-  useEffect(
-    () => () => {
-      if (navigationTimer.current !== null) {
-        window.clearTimeout(navigationTimer.current);
-      }
-    },
-    [],
-  );
-
   const previewFor = (page: LegalNavigationPage) => ({
-    description: home
-      ? homeLegalPresentation[page.id].description[locale]
-      : page.description[locale],
+    description: homeLegalPresentation[page.id].description[locale],
     label: page.label[locale],
   });
 
-  const followLegalPage = (
-    event: MouseEvent<HTMLAnchorElement>,
-    href: string,
-    page: LegalNavigationPage,
-  ) => {
-    if (
-      !home ||
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return;
-    }
-
-    const tactile = lastPointerType.current === 'touch' || lastPointerType.current === 'pen';
-
-    if (tactile && activeHref !== href) {
-      event.preventDefault();
-      setActiveHref(href);
-      announceHomeDescription({
-        channel: 'pointer',
-        content: previewFor(page),
-      });
-      return;
-    }
-
-    event.preventDefault();
-    setActiveHref(href);
-    if (navigationTimer.current !== null) {
-      window.clearTimeout(navigationTimer.current);
-    }
-    navigationTimer.current = window.setTimeout(() => {
-      navigationTimer.current = null;
-      navigate(href);
-    }, 160);
-  };
+  const tactile = (event: PointerEvent<HTMLElement>) =>
+    event.pointerType === 'touch' || event.pointerType === 'pen';
 
   return (
     <footer
@@ -112,80 +56,85 @@ export function ExperienceFooter({ home = false, locale }: { home?: boolean; loc
         <div className="aks-experience-footer-inner">
           <p>© {new Date().getUTCFullYear()} AkikSystems</p>
           <nav aria-label={locale === 'fr' ? 'Informations légales' : 'Legal information'}>
-            {legalNavigationPages.map((page) => {
-              const href = legalPageHref(page.id, locale);
-              const preview = previewFor(page);
-
-              return (
+            {legalNavigationPages
+              .filter((page) => page.open === true)
+              .map((page) => (
                 <Link
-                  className={'aks-link' + (activeHref === href ? ' is-active' : '')}
+                  className="aks-link"
                   data-home-preview-target={home ? 'legal' : undefined}
-                  data-preview-copy={preview.description}
                   key={page.id}
-                  onBlur={
-                    home
-                      ? () =>
-                          announceHomeDescription({
-                            channel: 'focus',
-                            content: null,
-                          })
-                      : undefined
-                  }
-                  onFocus={
-                    home
-                      ? () =>
-                          announceHomeDescription({
-                            channel: 'focus',
-                            content: preview,
-                          })
-                      : undefined
-                  }
-                  onKeyDown={
-                    home
-                      ? () => {
-                          lastPointerType.current = null;
-                        }
-                      : undefined
-                  }
-                  onPointerDown={
-                    home
-                      ? (event: PointerEvent<HTMLAnchorElement>) => {
-                          lastPointerType.current = event.pointerType;
-                        }
-                      : undefined
-                  }
                   onPointerEnter={
                     home
                       ? (event) => {
-                          if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
-                            announceHomeDescription({
-                              channel: 'pointer',
-                              content: preview,
-                            });
-                          }
+                          if (tactile(event)) return;
+                          announceHomeDescription({
+                            channel: 'pointer',
+                            content: previewFor(page),
+                          });
                         }
                       : undefined
                   }
                   onPointerLeave={
                     home
                       ? (event) => {
-                          if (event.pointerType !== 'touch' && event.pointerType !== 'pen') {
-                            announceHomeDescription({
-                              channel: 'pointer',
-                              content: null,
-                            });
-                          }
+                          if (tactile(event)) return;
+                          announceHomeDescription({ channel: 'pointer', content: null });
                         }
                       : undefined
                   }
-                  onClick={(event) => followLegalPage(event, href, page)}
                   prefetch="intent"
-                  to={href}
+                  to={legalPageHref(page.id, locale)}
                 >
                   {page.label[locale]}
                 </Link>
-              );
-            })}
+              ))}
+            {/* The pages in preparation, grouped with their one status. */}
+            <span className="aks-experience-footer-soon">
+              {legalNavigationPages
+                .filter((page) => page.open !== true)
+                .map((page) => (
+                  <span
+                    className={'aks-link' + (activeId === page.id ? ' is-active' : '')}
+                    data-home-preview-target={home ? 'legal' : undefined}
+                    data-state="soon"
+                    key={page.id}
+                    onPointerDown={
+                      home
+                        ? (event) => {
+                            if (!tactile(event)) return;
+                            setActiveId(page.id);
+                            announceHomeDescription({
+                              channel: 'pointer',
+                              content: previewFor(page),
+                            });
+                          }
+                        : undefined
+                    }
+                    onPointerEnter={
+                      home
+                        ? (event) => {
+                            if (tactile(event)) return;
+                            announceHomeDescription({
+                              channel: 'pointer',
+                              content: previewFor(page),
+                            });
+                          }
+                        : undefined
+                    }
+                    onPointerLeave={
+                      home
+                        ? (event) => {
+                            if (tactile(event)) return;
+                            announceHomeDescription({ channel: 'pointer', content: null });
+                          }
+                        : undefined
+                    }
+                  >
+                    {page.label[locale]}
+                  </span>
+                ))}
+              <span className="aks-experience-footer-status">{homeSoonLabel[locale]}</span>
+            </span>
           </nav>
         </div>
       </Container>

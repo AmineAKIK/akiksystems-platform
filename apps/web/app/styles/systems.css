@@ -1,3 +1,7 @@
+.aks-experience-page[data-destination='systems'] {
+  background: #05070a;
+}
+
 .aks-systems-page {
   --r: clamp(1rem, 0.35rem + 0.72vw, 2rem);
   --systems-canvas: #05070a;
@@ -19,8 +23,6 @@
  * their opening visual; the other pages keep it in the flow. */
 .aks-experience-shell:not([data-destination='home']) {
   border: 0;
-  background: linear-gradient(180deg, rgb(1 5 9 / 82%), rgb(1 5 9 / 36%) 72%, transparent);
-  backdrop-filter: none;
 }
 
 .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
@@ -536,7 +538,7 @@
   stroke-width: 1.4;
 }
 
-.aks-map-fullscreen-frame[data-fullscreen-active='false'] .aks-map-fullscreen-control span {
+.aks-map-fullscreen-control span {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -582,12 +584,14 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
-    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  border: 0;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 42%, rgb(35 51 75 / 42%), transparent 58%), #030711;
+  background: #070c16;
 }
 
 .aks-map-fullscreen-frame[data-fullscreen-mode='fallback'] {
@@ -596,58 +600,34 @@
   inset: 0;
   width: 100vw;
   height: 100dvh;
+  /* Shown as a popover so it escapes transformed ancestors: undo the popover's UA colours. */
+  color: inherit;
 }
 
-.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-toolbar {
-  position: static;
-  min-height: 3rem;
-  pointer-events: none;
-}
-
-.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control {
-  width: auto;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  padding: 0 0.9rem;
-  border-radius: 999px;
-  gap: 0.55rem;
-  color: #dce3ef;
-  border: 1px solid rgb(139 151 179 / 32%);
-}
-
-.aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control::before {
-  content: none;
-}
-
+/* Fullscreen: the map itself, edge to edge. Wide screens grow the scene to the screen's height;
+   the tall phone layout scrolls inside the frame. The control stays in the map's own header. */
 .aks-map-fullscreen-frame[data-fullscreen-active='true'] > :is(.sn-map, .pc-map) {
   width: 100%;
   height: 100%;
   min-height: 0;
-  display: flex;
-  align-items: stretch;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .aks-map-fullscreen-frame[data-fullscreen-active='true'] .sn-scroll {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .aks-map-fullscreen-frame[data-fullscreen-active='true'] .sn-scroll > svg {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   max-width: none;
-  max-height: 100%;
-  margin: auto;
-}
-
-@media (max-width: 32rem) {
-  .aks-map-fullscreen-frame[data-fullscreen-active='true'] .aks-map-fullscreen-control span {
-    font-size: 0.625rem;
-  }
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
 }
 
 /* Reserves the map's own height before it mounts (see the Sentinel map below). */
@@ -857,11 +837,6 @@
   line-height: 1.5;
 }
 
-/* One footer on every page, Home included. */
-.aks-experience-footer {
-  background: #05070a;
-}
-
 @media (max-width: 80rem) {
   .aks-systems-wrap {
     width: min(calc(100% - calc(4.5 * var(--r))), calc(71 * var(--r)));
@@ -917,16 +892,6 @@
 }
 
 @media (max-width: 48rem) {
-  .aks-experience-shell:not([data-destination='home']) {
-    background: rgb(3 7 11);
-    backdrop-filter: none;
-  }
-
-  .aks-experience-shell:not([data-destination='home']) {
-    background: rgb(3 7 11);
-    backdrop-filter: none;
-  }
-
   .aks-experience-shell:is([data-destination='systems'], [data-destination='profile']) {
     position: absolute;
   }
@@ -1734,6 +1699,10 @@
   width: 100%;
   min-width: 0;
   min-height: calc(min(100cqi, 1312px) * 640 / 1312);
+}
+
+.aks-systems-sentinel-map.is-presentation {
+  min-height: 0;
 }
 
 @container (max-width: 899px) {

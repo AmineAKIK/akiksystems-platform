@@ -31,7 +31,7 @@ describe('HomePortal handoff contract', () => {
 
     // Open doors link to a real page; doors not open yet show their status and no link.
     const englishDoors = [
-      ['/en/profile#contact', 'Perspectives', 'Collaboration · Contact'],
+      [null, 'Perspectives', 'Collaboration · Contact'],
       ['/en/profile', 'Profile', 'Journey · Vision'],
       ['/en/systems', 'Systems', 'Products · Projects'],
       [null, 'Writings', 'Essays · Notes'],
@@ -45,7 +45,8 @@ describe('HomePortal handoff contract', () => {
     }
     expect(html).not.toContain('href="/en/writings"');
     expect(html).not.toContain('href="/en/learning"');
-    expect(html.match(/data-state="soon"/g)).toHaveLength(2);
+    expect(html).not.toContain('href="/en/profile#contact"');
+    expect(html.match(/data-state="soon"/g)).toHaveLength(3);
     expect(html).toContain('class="aks-home-door-status">In preparation</span>');
 
     const offsets = englishDoors.map(([, label]) => html.indexOf(`>${label}</span>`));
@@ -60,7 +61,7 @@ describe('HomePortal handoff contract', () => {
     );
 
     const frenchDoors = [
-      ['/fr/profil#contact', 'Perspectives', 'Collaboration · Contact'],
+      [null, 'Perspectives', 'Collaboration · Contact'],
       ['/fr/profil', 'Profil', 'Parcours · Vision'],
       ['/fr/systems', 'Systèmes', 'Produits · Projets'],
       [null, 'Écrits', 'Essais · Notes'],
@@ -75,7 +76,7 @@ describe('HomePortal handoff contract', () => {
     expect(html).toContain('class="aks-home-door-status">En préparation</span>');
 
     expect(html).toContain(
-      'Projets, collaborations ou missions. Construisons ce qui mérite d’exister.',
+      'Parcours, convictions et pratique : les fondations de la vision AkikSystems.',
     );
     expect(html).toContain(
       'Logiciels et produits conçus en systèmes cohérents, de l’usage à l’intention.',

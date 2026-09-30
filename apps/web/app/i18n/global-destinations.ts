@@ -15,6 +15,8 @@ export interface GlobalDestination {
   slug: Record<Locale, string>;
   label: Record<Locale, string>;
   description: Record<Locale, string>;
+  /** Published; the others are in preparation: not in the navigation, never linked. */
+  open?: boolean;
 }
 
 export const globalDestinations: readonly GlobalDestination[] = [
@@ -22,6 +24,7 @@ export const globalDestinations: readonly GlobalDestination[] = [
     id: 'profile',
     slug: { en: 'profile', fr: 'profil' },
     label: { en: 'Profile', fr: 'Profil' },
+    open: true,
     description: {
       en: 'Background, trajectory, and the context behind AkikSystems.',
       fr: 'Parcours, trajectoire et contexte derrière AkikSystems.',
@@ -49,6 +52,7 @@ export const globalDestinations: readonly GlobalDestination[] = [
     id: 'systems',
     slug: { en: 'systems', fr: 'systems' },
     label: { en: 'Systems', fr: 'Systèmes' },
+    open: true,
     description: {
       en: 'Software systems, products, and operating tools built through AkikSystems.',
       fr: 'Systèmes logiciels, produits et outils opérationnels construits via AkikSystems.',
@@ -64,6 +68,11 @@ export const globalDestinations: readonly GlobalDestination[] = [
     },
   },
 ];
+
+/** The destinations the navigation links to: only the published ones. */
+export const openDestinations = globalDestinations.filter(
+  (destination) => destination.open === true,
+);
 
 export function destinationById(id: GlobalDestinationId): GlobalDestination {
   const destination = globalDestinations.find((candidate) => candidate.id === id);

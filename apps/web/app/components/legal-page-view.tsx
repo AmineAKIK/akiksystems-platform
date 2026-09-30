@@ -1,7 +1,5 @@
 import { Container, Heading, Text } from '@akiksystems/ui';
-import { Link } from 'react-router';
-
-import { legalPageHref, type LegalPageContent, type LegalPageId } from '../i18n/legal-pages';
+import type { LegalPageContent, LegalPageId } from '../i18n/legal-pages';
 import type { Locale } from '../i18n/locales';
 
 interface LegalPageViewProps {
@@ -11,7 +9,6 @@ interface LegalPageViewProps {
 }
 
 export function LegalPageView({ content, id, locale }: LegalPageViewProps) {
-  const workWithUsHref = locale === 'fr' ? '/fr/travailler-ensemble' : '/en/work-with-us';
   return (
     <main className="aks-legal-page" data-legal-page={id}>
       <Container>
@@ -27,7 +24,9 @@ export function LegalPageView({ content, id, locale }: LegalPageViewProps) {
               {content.description}
             </Text>
             <Text className="aks-legal-updated" size="sm" tone="muted">
-              {content.updatedLabel}:{' '}
+              {content.updatedLabel}
+              {/* French typography: a non-breaking space before the colon. */}
+              {locale === 'fr' ? '\u00a0: ' : ': '}
               <time dateTime={content.updatedAtIso}>{content.updatedAt}</time>
             </Text>
           </header>
@@ -68,14 +67,10 @@ export function LegalPageView({ content, id, locale }: LegalPageViewProps) {
             ))}
           </div>
           <footer className="aks-legal-document-footer">
-            <Link className="aks-link" to={workWithUsHref}>
+            {/* The contact pages are in preparation: the address the notice itself publishes. */}
+            <a className="aks-link" href="mailto:contact@akiksystems.com">
               {locale === 'fr' ? 'Contacter AkikSystems' : 'Contact AkikSystems'}
-            </Link>
-            {id === 'privacy' ? null : (
-              <Link className="aks-link" to={legalPageHref('privacy', locale)}>
-                {locale === 'fr' ? 'Politique de confidentialité' : 'Privacy policy'}
-              </Link>
-            )}
+            </a>
           </footer>
         </article>
       </Container>
