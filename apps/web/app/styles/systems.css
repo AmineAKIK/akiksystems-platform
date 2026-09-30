@@ -642,6 +642,13 @@
   .aks-systems-protocap-map {
     min-height: calc(min(100cqi, 560px) * 908 / 360);
   }
+
+  /* The portrait map is capped at 560px: its card hugs it, as the Sentinel map does,
+     instead of leaving dark margins on both sides. */
+  .aks-systems-station--feature figure {
+    max-width: 560px;
+    margin-inline: auto;
+  }
 }
 
 .aks-systems-station-pair {
