@@ -21,11 +21,6 @@
   background: radial-gradient(ellipse 140% 40rem at 50% 0%, #0e161c 0%, #070b0e 70%) #070b0e;
 }
 
-.aks-experience-shell::after,
-.aks-experience-footer::before {
-  display: none;
-}
-
 .aks-proof-page {
   min-height: 100dvh;
   display: grid;
@@ -89,6 +84,11 @@
   background: transparent;
   color: rgb(255 255 255 / 84%);
   backdrop-filter: none;
+}
+
+.aks-experience-shell[data-header-position='static'] {
+  position: relative;
+  top: auto;
 }
 
 .aks-experience-shell-inner {

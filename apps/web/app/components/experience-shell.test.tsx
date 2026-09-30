@@ -148,6 +148,7 @@ describe('ExperienceShell', () => {
     );
 
     expect(html).toContain('data-destination="page"');
+    expect(html).toContain('data-header-position="static"');
     expect(html).not.toContain('data-home="true"');
     expect(html).not.toContain('aria-current="page" class="aks-link"');
   });
