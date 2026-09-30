@@ -559,9 +559,7 @@ function mount(root, startTab, restoreSelection) {
         });
       });
     }
-    var tabs = SCENES.concat([
-      { tab: 'Soutenance', label: 'Diaporama de soutenance Sentinel' },
-    ]);
+    var tabs = SCENES.concat([{ tab: 'Soutenance', label: 'Diaporama de soutenance Sentinel' }]);
     tabs.forEach(function (sc, i) {
       var g = el(
         'g',

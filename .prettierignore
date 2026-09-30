@@ -4,3 +4,4 @@ build
 .react-router
 coverage
 pnpm-lock.yaml
+apps/web/public/systems/sentinel-defense-slides.html
