@@ -185,7 +185,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Fondateur d’AkikSystems',
       roleDetail: 'développeur full-stack',
       intro:
-        'Je conçois et livre des produits web complets, de l’idée à la mise en ligne : outils de production, application de nutrition, site vitrine. Je pars du besoin réel, je tiens toute la chaîne (données, API, interface, déploiement) et je remets quelque chose que l’équipe peut exploiter et faire évoluer sans moi.',
+        'Je conçois, construis et mets en ligne des produits web de bout en bout, quel que soit le domaine. Je pars du besoin, je tiens toute la chaîne (données, API, interface, déploiement) et je livre quelque chose de solide, que l’équipe peut exploiter et faire évoluer sans moi.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -712,7 +712,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Founder of AkikSystems',
       roleDetail: 'full-stack developer',
       intro:
-        'I design and ship complete web products, from the idea to going live: production tools, a nutrition app, a showcase site. I start from the real need, own the whole chain (data, API, interface, deployment) and hand over something the team can run and evolve without me.',
+        'I design, build and ship web products end to end, whatever the domain. I start from the need, own the whole chain (data, API, interface, deployment) and deliver something solid that the team can run and evolve without me.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
