@@ -1294,6 +1294,14 @@
   white-space: nowrap;
 }
 
+/* On phones the pill moves under the name (the caption is a grid there): the name only shares
+   the row with the card's padding. */
+@media (max-width: 30rem) {
+  .aks-systems-station--pair h3 {
+    font-size: min(clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))), 8.4cqi);
+  }
+}
+
 .aks-systems-quick-media {
   overflow: hidden;
   height: calc(4.35 * var(--r));
