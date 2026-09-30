@@ -185,7 +185,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Fondateur d’AkikSystems',
       roleDetail: 'développeur full-stack',
       intro:
-        'Je conçois, construis et livre des logiciels de bout en bout, quels que soient le domaine et le support. Je pars du besoin, je tiens toute la chaîne, de la donnée à l’interface jusqu’à la production, et je livre quelque chose de solide, que l’équipe peut exploiter et faire évoluer sans moi.',
+        'Je conçois, construis et livre des logiciels de bout en bout. Je pars du besoin, je tiens toute la chaîne, de la donnée à l’interface jusqu’à la production, et je livre quelque chose de solide, que l’équipe peut exploiter et faire évoluer sans moi.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -712,7 +712,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Founder of AkikSystems',
       roleDetail: 'full-stack developer',
       intro:
-        'I design, build and ship software end to end, whatever the domain and the platform. I start from the need, own the whole chain, from data to interface to production, and deliver something solid that the team can run and evolve without me.',
+        'I design, build and ship software end to end. I start from the need, own the whole chain, from data to interface to production, and deliver something solid that the team can run and evolve without me.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
