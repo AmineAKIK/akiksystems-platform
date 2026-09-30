@@ -449,3 +449,15 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/*
+ * Small text links (footer, "Return home", the legal contact address) are 12 to 17px tall.
+ * The hit area grows to 36px or more with padding cancelled by an equal negative margin,
+ * so nothing moves on screen (WCAG 2.5.8 asks for at least 24px).
+ */
+.aks-experience-footer-inner nav .aks-link,
+.aks-proof-page .aks-proof-stack > .aks-link,
+.aks-legal-document-footer .aks-link {
+  padding-block: 0.75rem;
+  margin-block: -0.75rem;
+}
