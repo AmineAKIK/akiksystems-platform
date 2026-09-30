@@ -114,7 +114,11 @@ app.use((request, response, next) => {
     'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
   );
   response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  response.setHeader('X-Frame-Options', 'DENY');
+  if (request.path === '/systems/sentinel-defense-slides.html') {
+    response.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+  } else {
+    response.setHeader('X-Frame-Options', 'DENY');
+  }
 
   if (env.NODE_ENV === 'production') {
     response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

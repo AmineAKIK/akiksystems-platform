@@ -1701,6 +1701,10 @@
   min-height: calc(min(100cqi, 1312px) * 640 / 1312);
 }
 
+.aks-systems-sentinel-map.is-presentation {
+  min-height: 0;
+}
+
 @container (max-width: 899px) {
   .aks-systems-sentinel-map {
     min-height: calc(min(100cqi, 560px) * 960 / 360);

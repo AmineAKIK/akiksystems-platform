@@ -129,6 +129,16 @@ function mount(root, startTab, restoreSelection) {
   root.innerHTML = '<div class="sn-scroll"></div><p class="sn-sr" aria-live="polite"></p>';
   var scroll = root.firstChild,
     live = root.lastChild;
+  var presentationViewport = document.createElement('div');
+  presentationViewport.className = 'sn-presentation-viewport';
+  var presentation = document.createElement('iframe');
+  presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
+  presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
+  presentation.setAttribute('loading', 'lazy');
+  presentation.setAttribute('referrerpolicy', 'no-referrer');
+  presentation.setAttribute('sandbox', 'allow-scripts');
+  presentationViewport.appendChild(presentation);
+  root.appendChild(presentationViewport);
 
   var svg = el(
     'svg',
@@ -140,7 +150,6 @@ function mount(root, startTab, restoreSelection) {
     },
     scroll,
   );
-
   var defs = el('defs', null, svg);
   defs.innerHTML =
     '<clipPath id="sn-clip"><rect x="0" y="0" width="' +
@@ -164,13 +173,32 @@ function mount(root, startTab, restoreSelection) {
     '<marker id="sn-arr-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9z" fill="#c8ff2e"/></marker>';
 
   var clipG = el('g', { 'clip-path': 'url(#sn-clip)' }, svg);
-  el('rect', { x: 0, y: 0, width: W, height: H, class: 'card-bg' }, clipG);
+  var cardBg = el('rect', { x: 0, y: 0, width: W, height: H, class: 'card-bg' }, clipG);
 
   var canvasClip = el('g', { 'clip-path': 'url(#sn-clip-canvas)' }, clipG);
   var canvas = el('g', { class: 'canvas' }, canvasClip);
   var panelG = el('g', { class: 'panel' }, clipG);
   var chrome = el('g', { class: 'chrome' }, clipG);
-  el('rect', { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 10, class: 'card-edge' }, svg);
+  var cardEdge = el(
+    'rect',
+    { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 10, class: 'card-edge' },
+    svg,
+  );
+
+  /* le diaporama est plus haut que la scène : le cadre s'agrandit avec lui */
+  var sideBg = null,
+    sideRule = null;
+  function setPresentationLayout(active) {
+    var h = active
+      ? Math.max(H, Math.round(compact ? 118 + (W * 9) / 16 : HEAD + ((W - SIDE) * 9) / 16))
+      : H;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + h);
+    defs.firstChild.firstChild.setAttribute('height', h);
+    cardBg.setAttribute('height', h);
+    cardEdge.setAttribute('height', h - 1);
+    if (sideBg) sideBg.setAttribute('height', h - HEAD);
+    if (sideRule) sideRule.setAttribute('y2', h);
+  }
 
   /* mesure de texte */
   var meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
@@ -371,8 +399,8 @@ function mount(root, startTab, restoreSelection) {
   el('rect', { x: 0, y: 0, width: W, height: HEAD, class: 'head-bg' }, chrome);
   el('line', { x1: 0, y1: HEAD, x2: W, y2: HEAD, class: 'rule' }, chrome);
   if (!compact) {
-    el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
-    el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
+    sideBg = el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
+    sideRule = el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
   }
 
   var lgx = compact ? 12 : 17,
@@ -511,11 +539,12 @@ function mount(root, startTab, restoreSelection) {
     if (compact) {
       var rowsT = [
         [0, 1, 2, 3],
-        [4, 5, 6],
+        [4, 5, 6, 7],
       ];
       rowsT.forEach(function (row, ri) {
         var ws = row.map(function (i) {
-          return Math.ceil(measure(up(SCENES[i].tab), 'tab-txt')) + 16;
+          var label = i < SCENES.length ? SCENES[i].tab : 'Soutenance';
+          return Math.ceil(measure(up(label), 'tab-txt')) + 16;
         });
         var tot = ws.reduce(function (p, q) {
             return p + q;
@@ -530,7 +559,10 @@ function mount(root, startTab, restoreSelection) {
         });
       });
     }
-    SCENES.forEach(function (sc, i) {
+    var tabs = SCENES.concat([
+      { tab: 'Soutenance', label: 'Diaporama de soutenance Sentinel' },
+    ]);
+    tabs.forEach(function (sc, i) {
       var g = el(
         'g',
         {
@@ -559,7 +591,7 @@ function mount(root, startTab, restoreSelection) {
         go(i);
       });
       g.addEventListener('keydown', function (e) {
-        var n = SCENES.length,
+        var n = tabs.length,
           k = e.key;
         if (k === 'Enter' || k === ' ') {
           e.preventDefault();
@@ -3037,6 +3069,29 @@ function mount(root, startTab, restoreSelection) {
   function go(i, focus) {
     stopTour();
     state.tab = i;
+    clearTimeout(buildT);
+
+    if (i === SCENES.length) {
+      canvas.setAttribute('display', 'none');
+      panelG.setAttribute('display', 'none');
+      root.classList.add('is-presentation');
+      setPresentationLayout(true);
+      tabEls.forEach(function (t, k) {
+        t.classList.toggle('is-on', k === i);
+        t.setAttribute('aria-selected', k === i ? 'true' : 'false');
+        t.setAttribute('tabindex', k === i ? '0' : '-1');
+      });
+      if (focus) tabEls[i].focus();
+      tabNum.textContent = trc('08');
+      if (!compact) crumb.textContent = trc('/ SENTINEL / CHAÎNE / ' + up('Soutenance'));
+      paintBtn(false);
+      return;
+    }
+
+    canvas.removeAttribute('display');
+    panelG.removeAttribute('display');
+    root.classList.remove('is-presentation');
+    setPresentationLayout(false);
     var sc = SCENES[i];
     curScene = sc;
     sceneState = {};
@@ -3161,7 +3216,8 @@ function mount(root, startTab, restoreSelection) {
   if ('ResizeObserver' in window) {
     ro = new ResizeObserver(function () {
       var w = root.getBoundingClientRect().width;
-      if (w && (w < BP !== compact || (!compact && sceneHeight() !== H))) {
+      var sceneResized = !compact && sceneHeight() !== H;
+      if (w && (w < BP !== compact || sceneResized)) {
         mount(root, state.tab, state.sel);
       }
     });
@@ -3198,6 +3254,6 @@ export function mountSentinelMap(root, dictionary) {
     if (root.__pcClean) root.__pcClean();
     root.__pcClean = undefined;
     clear(root);
-    root.classList.remove('sn-map', 'compact', 'no-anim');
+    root.classList.remove('sn-map', 'compact', 'no-anim', 'is-presentation');
   };
 }

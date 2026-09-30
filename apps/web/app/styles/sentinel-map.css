@@ -15,6 +15,8 @@
   --sn-dim: #55617c;
   --sn-amber: #f5b942;
   --sn-red: #ff5d62;
+  position: relative;
+  container-type: inline-size;
   font-family: var(--sn-font);
   color: var(--sn-text);
 }
@@ -31,6 +33,60 @@
 }
 .sn-map.compact svg {
   max-width: 560px;
+}
+.sn-map .sn-presentation-viewport {
+  --sn-frame: min(100cqw, 1312px);
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--sn-frame) * 56 / 1312);
+  right: 0;
+  left: 0;
+  display: none;
+  box-sizing: border-box;
+  width: var(--sn-frame);
+  margin: 0 auto;
+  padding-left: calc(var(--sn-frame) * 128 / 1312);
+  overflow: hidden;
+  /* The box spans the sidebar too: only the slide itself may take clicks. */
+  pointer-events: none;
+}
+.sn-map.is-presentation .sn-presentation-viewport {
+  display: block;
+}
+.sn-map.is-presentation .btn,
+.sn-map.is-presentation .pill {
+  display: none;
+}
+.sn-map.compact .sn-presentation-viewport {
+  --sn-frame: min(100cqw, 560px);
+  top: calc(var(--sn-frame) * 118 / 360);
+  padding-left: 0;
+}
+/* Fullscreen: the slide is centred and as large as the space below the header allows. */
+[data-fullscreen-active='true'] .sn-map:not(.compact) .sn-presentation-viewport {
+  --sn-frame: 100cqw;
+  bottom: 0;
+  width: auto;
+  margin: 0;
+  container-type: size;
+  display: none;
+  place-items: center;
+}
+[data-fullscreen-active='true'] .sn-map:not(.compact).is-presentation .sn-presentation-viewport {
+  display: grid;
+}
+[data-fullscreen-active='true'] .sn-map:not(.compact) .sn-presentation-viewport iframe {
+  width: min(100cqw, 100cqh * 16 / 9);
+}
+.sn-map .sn-presentation-viewport iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  background: #000;
+  pointer-events: auto;
+  touch-action: pan-x pan-y;
 }
 .sn-map text {
   text-rendering: geometricPrecision;
