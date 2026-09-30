@@ -84,36 +84,13 @@
   --sn-frame: 100cqw;
   width: auto;
 }
-.sn-map .sn-presentation-card {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 0 28px;
-  text-align: center;
-  pointer-events: auto;
-}
-.sn-map .sn-presentation-card p {
-  margin: 0;
-}
-.sn-map .sn-presentation-kicker {
-  color: var(--sn-lime);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-}
-.sn-map .sn-presentation-text {
-  color: var(--sn-mute);
-  font-size: 14px;
-  line-height: 1.5;
-}
-.sn-map .sn-presentation-open {
-  padding: 12px 20px;
-  border-radius: 999px;
-  background: var(--sn-blue);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
+/* A phone is too narrow for a 16:9 slide: turn it a quarter so it fills the tall frame. */
+.sn-map.compact .sn-presentation-viewport iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100cqh, 100cqw * 16 / 9);
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 .sn-map text {
   text-rendering: geometricPrecision;

@@ -131,29 +131,13 @@ function mount(root, startTab, restoreSelection) {
     live = root.lastChild;
   var presentationViewport = document.createElement('div');
   presentationViewport.className = 'sn-presentation-viewport';
-  if (compact) {
-    /* A phone is too narrow to read a 16:9 slide: hand the slides to the browser instead. */
-    var presentationCard = document.createElement('div');
-    presentationCard.className = 'sn-presentation-card';
-    presentationCard.innerHTML =
-      '<p class="sn-presentation-kicker"></p><p class="sn-presentation-text"></p><a class="sn-presentation-open" target="_blank" rel="noopener"></a>';
-    presentationCard.firstChild.textContent = trc('Soutenance').toUpperCase();
-    presentationCard.childNodes[1].textContent = trc(
-      'Le diaporama est conçu pour un écran en paysage.',
-    );
-    var presentationOpen = presentationCard.lastChild;
-    presentationOpen.setAttribute('href', '/systems/sentinel-defense-slides.html');
-    presentationOpen.textContent = trc('Ouvrir le diaporama');
-    presentationViewport.appendChild(presentationCard);
-  } else {
-    var presentation = document.createElement('iframe');
-    presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
-    presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
-    presentation.setAttribute('loading', 'lazy');
-    presentation.setAttribute('referrerpolicy', 'no-referrer');
-    presentation.setAttribute('sandbox', 'allow-scripts');
-    presentationViewport.appendChild(presentation);
-  }
+  var presentation = document.createElement('iframe');
+  presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
+  presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
+  presentation.setAttribute('loading', 'lazy');
+  presentation.setAttribute('referrerpolicy', 'no-referrer');
+  presentation.setAttribute('sandbox', 'allow-scripts');
+  presentationViewport.appendChild(presentation);
   root.appendChild(presentationViewport);
 
   var svg = el(
