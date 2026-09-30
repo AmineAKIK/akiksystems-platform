@@ -78,7 +78,8 @@ export interface ProfilePageContent {
   principles: {
     eyebrow: string;
     title: string;
-    body: string;
+    /** One entry per paragraph. */
+    body: string[];
     relate: {
       eyebrow: string;
       title: string;
@@ -185,7 +186,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Fondateur d’AkikSystems',
       roleDetail: 'développeur full-stack',
       intro:
-        'Je conçois, construis et livre des logiciels de bout en bout. Je pars du besoin, je tiens toute la chaîne, de la donnée à l’interface jusqu’à la production, et je remets un système que l’équipe exploite et fait évoluer sans moi.',
+        'Je suis développeur, technicien d’infrastructure et d’assistance informatique, mais aussi ouvrier et manager. Plus que des titres, ce sont des mondes que j’ai traversés, et qui m’ont appris à regarder un système dans son ensemble : de la machine à l’humain, du code à l’infrastructure, de l’usage à l’organisation.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -395,8 +396,13 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     principles: {
       eyebrow: 'Ce qui guide mon travail',
-      title: 'Un logiciel métier ne vaut que par ce qu’il change dans le travail réel.',
-      body: 'Beaucoup d’outils ajoutent un écran sans retirer de charge, ou répondent parfaitement au mauvais problème. Mon travail commence donc avant le code : comprendre ce qui se passe, pour qui, et ce qu’une solution va déplacer. Il continue après : tester, livrer quelque chose de fiable, et dire clairement ce qui est prouvé et ce qui ne l’est pas encore.',
+      title: 'Entre le pourquoi et le comment, entre l’humain et la machine.',
+      body: [
+        'Qu’il s’agisse d’un système machine-machine, où priment la robustesse et les flux, d’un logiciel métier, qui doit épouser le travail de ceux qui l’utilisent, ou d’un service grand public, où tout part des personnes et de leurs contextes, ma démarche reste la même : comprendre avant de construire, et remonter jusqu’aux causes plutôt que traiter les symptômes.',
+        'Cette démarche repose sur une conviction : la technologie doit augmenter notre maîtrise du réel, pas nous en éloigner. La machine prend la charge ; l’humain prend de la hauteur. Personne ne devrait avoir à compenser durablement les défauts d’un système ou d’une machine, et l’automatisation n’a de sens que si elle libère de l’attention pour ce qui exige du jugement et de la décision. Un problème bien traité ne doit pas seulement disparaître : sa résolution doit produire de la connaissance et simplifier le système.',
+        'Cette question de la maîtrise dépasse pour moi le logiciel. De la révolution scientifique à la révolution industrielle, puis numérique et aujourd’hui algorithmique, nos systèmes n’ont cessé de gagner en puissance et en abstraction. Nous devons préserver notre capacité à saisir ce qu’ils font, pourquoi ils le font et comment ils transforment nos manières d’agir. Cela commence par ramener l’attention sur le réel et reprendre le temps d’observer et de modéliser.',
+        'Je me situe entre le pourquoi et le comment, entre la conception et la réalisation, entre l’humain et la machine. Mon travail : comprendre en profondeur pour concevoir juste, puis maîtriser la technique pour en faire quelque chose de concret, utile et durable. Je ne veux ni penser des systèmes que je serais incapable de construire, ni construire des systèmes dont je n’aurais pas interrogé le sens.',
+      ],
       relate: {
         eyebrow: 'Ce que je relie',
         title: 'Quatre regards, une boucle de conception.',
@@ -712,7 +718,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Founder of AkikSystems',
       roleDetail: 'full-stack developer',
       intro:
-        'I design, build and ship software end to end. I start from the need, own the whole chain, from data to interface to production, and hand over a system the team runs and evolves without me.',
+        'I am a developer, an infrastructure and IT support technician, but also a shop-floor worker and a manager. More than titles, these are worlds I have moved through, and they taught me to look at a system as a whole: from machine to human, from code to infrastructure, from use to organisation.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -925,8 +931,13 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     },
     principles: {
       eyebrow: 'What guides my work',
-      title: 'Business software is only worth what it changes in real work.',
-      body: 'Many tools add a screen without removing any load, or perfectly answer the wrong problem. So my work starts before the code: understanding what is happening, for whom, and what a solution will shift. It continues after: testing, shipping something reliable, and saying clearly what is proven and what is not yet.',
+      title: 'Between the why and the how, between people and machines.',
+      body: [
+        'Whether it is a machine-to-machine system, where robustness and flows come first, a business application, which has to fit the work of the people who use it, or a consumer service, where everything starts from people and their contexts, my approach stays the same: understand before building, and trace back to the causes rather than treat the symptoms.',
+        'This approach rests on a conviction: technology should extend our grasp of the real, not take us away from it. The machine takes the load; the human gains height. No one should have to compensate for the flaws of a system or a machine in the long run, and automation only makes sense if it frees attention for what calls for judgement and decision. A problem well handled should not merely disappear: resolving it should produce knowledge and simplify the system.',
+        'For me, this question of mastery goes beyond software. From the scientific revolution to the industrial, then digital, and now algorithmic revolutions, our systems have kept gaining power and abstraction. We must preserve our ability to grasp what they do, why they do it and how they transform the way we act. That starts by bringing attention back to the real, and taking the time again to observe and to model.',
+        'I stand between the why and the how, between design and implementation, between human and machine. My work: understand deeply in order to design rightly, then master the technique to make something concrete, useful and lasting out of it. I want neither to design systems I would be unable to build, nor to build systems whose meaning I would not have questioned.',
+      ],
       relate: {
         eyebrow: 'What I connect',
         title: 'Four perspectives, one design loop.',

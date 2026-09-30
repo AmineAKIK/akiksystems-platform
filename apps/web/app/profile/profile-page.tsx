@@ -677,7 +677,11 @@ function PrinciplesSection({ content }: { content: ProfilePageContent['principle
         <div className="aks-profile-principles-head">
           <p className="aks-profile-eyebrow">{content.eyebrow}</p>
           <h2 id="profile-principles-title">{content.title}</h2>
-          <p>{content.body}</p>
+          <div className="aks-profile-principles-body">
+            {content.body.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
         </div>
         <div className="aks-profile-relate">
           <div className="aks-profile-subhead">

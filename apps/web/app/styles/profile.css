@@ -608,10 +608,15 @@
   gap: 1.125rem;
 }
 
-.aks-profile-principles-head > p:last-child {
+/* Long-form reading: left-aligned, one measure, paragraphs kept apart. */
+.aks-profile-principles-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
   color: var(--profile-muted);
   font-size: 0.9375rem;
   line-height: 1.7;
+  text-align: left;
 }
 
 .aks-profile-relate {
@@ -1781,8 +1786,9 @@
     text-align: center;
   }
 
-  .aks-profile-principles-head > p:last-child {
-    max-width: 38.75rem;
+  .aks-profile-principles-body {
+    max-width: 40rem;
+    gap: 1.375rem;
     font-size: 1rem;
   }
 
