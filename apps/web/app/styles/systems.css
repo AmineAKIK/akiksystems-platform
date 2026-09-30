@@ -638,7 +638,7 @@
   background: #070c16;
 }
 
-@container (max-width: 899px) {
+@container systems-wrap (max-width: 899px) {
   .aks-systems-protocap-map {
     min-height: calc(min(100cqi, 560px) * 908 / 360);
   }
@@ -1691,8 +1691,9 @@
 /* The Sentinel and ProtoCap maps switch to a portrait layout below 900px of width.
    Reserve exactly the height their SVG will take (landscape capped at 1312px wide,
    portrait capped at 560px) so nothing jumps when they mount on the client. */
-.aks-systems-sentinel .aks-systems-wrap {
-  container-type: inline-size;
+.aks-systems-sentinel .aks-systems-wrap,
+.aks-systems-operation .aks-systems-wrap {
+  container: systems-wrap / inline-size;
 }
 
 .aks-systems-sentinel-map {
@@ -1701,7 +1702,7 @@
   min-height: calc(min(100cqi, 1312px) * 640 / 1312);
 }
 
-@container (max-width: 899px) {
+@container systems-wrap (max-width: 899px) {
   .aks-systems-sentinel-map {
     min-height: calc(min(100cqi, 560px) * 960 / 360);
   }
