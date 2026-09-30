@@ -131,13 +131,29 @@ function mount(root, startTab, restoreSelection) {
     live = root.lastChild;
   var presentationViewport = document.createElement('div');
   presentationViewport.className = 'sn-presentation-viewport';
-  var presentation = document.createElement('iframe');
-  presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
-  presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
-  presentation.setAttribute('loading', 'lazy');
-  presentation.setAttribute('referrerpolicy', 'no-referrer');
-  presentation.setAttribute('sandbox', 'allow-scripts');
-  presentationViewport.appendChild(presentation);
+  if (compact) {
+    /* A phone is too narrow to read a 16:9 slide: hand the slides to the browser instead. */
+    var presentationCard = document.createElement('div');
+    presentationCard.className = 'sn-presentation-card';
+    presentationCard.innerHTML =
+      '<p class="sn-presentation-kicker"></p><p class="sn-presentation-text"></p><a class="sn-presentation-open" target="_blank" rel="noopener"></a>';
+    presentationCard.firstChild.textContent = trc('Soutenance').toUpperCase();
+    presentationCard.childNodes[1].textContent = trc(
+      'Le diaporama est conçu pour un écran en paysage.',
+    );
+    var presentationOpen = presentationCard.lastChild;
+    presentationOpen.setAttribute('href', '/systems/sentinel-defense-slides.html');
+    presentationOpen.textContent = trc('Ouvrir le diaporama');
+    presentationViewport.appendChild(presentationCard);
+  } else {
+    var presentation = document.createElement('iframe');
+    presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
+    presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
+    presentation.setAttribute('loading', 'lazy');
+    presentation.setAttribute('referrerpolicy', 'no-referrer');
+    presentation.setAttribute('sandbox', 'allow-scripts');
+    presentationViewport.appendChild(presentation);
+  }
   root.appendChild(presentationViewport);
 
   var svg = el(
@@ -173,32 +189,13 @@ function mount(root, startTab, restoreSelection) {
     '<marker id="sn-arr-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9z" fill="#c8ff2e"/></marker>';
 
   var clipG = el('g', { 'clip-path': 'url(#sn-clip)' }, svg);
-  var cardBg = el('rect', { x: 0, y: 0, width: W, height: H, class: 'card-bg' }, clipG);
+  el('rect', { x: 0, y: 0, width: W, height: H, class: 'card-bg' }, clipG);
 
   var canvasClip = el('g', { 'clip-path': 'url(#sn-clip-canvas)' }, clipG);
   var canvas = el('g', { class: 'canvas' }, canvasClip);
   var panelG = el('g', { class: 'panel' }, clipG);
   var chrome = el('g', { class: 'chrome' }, clipG);
-  var cardEdge = el(
-    'rect',
-    { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 10, class: 'card-edge' },
-    svg,
-  );
-
-  /* le diaporama est plus haut que la scène : le cadre s'agrandit avec lui */
-  var sideBg = null,
-    sideRule = null;
-  function setPresentationLayout(active) {
-    var h = active
-      ? Math.max(H, Math.round(compact ? 118 + (W * 9) / 16 : HEAD + ((W - SIDE) * 9) / 16))
-      : H;
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + h);
-    defs.firstChild.firstChild.setAttribute('height', h);
-    cardBg.setAttribute('height', h);
-    cardEdge.setAttribute('height', h - 1);
-    if (sideBg) sideBg.setAttribute('height', h - HEAD);
-    if (sideRule) sideRule.setAttribute('y2', h);
-  }
+  el('rect', { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 10, class: 'card-edge' }, svg);
 
   /* mesure de texte */
   var meas = el('text', { x: -999, y: -999, class: 'p-body', 'aria-hidden': 'true' }, svg);
@@ -399,8 +396,8 @@ function mount(root, startTab, restoreSelection) {
   el('rect', { x: 0, y: 0, width: W, height: HEAD, class: 'head-bg' }, chrome);
   el('line', { x1: 0, y1: HEAD, x2: W, y2: HEAD, class: 'rule' }, chrome);
   if (!compact) {
-    sideBg = el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
-    sideRule = el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
+    el('rect', { x: 0, y: HEAD, width: SIDE, height: H - HEAD, class: 'side-bg' }, chrome);
+    el('line', { x1: SIDE, y1: HEAD, x2: SIDE, y2: H, class: 'rule' }, chrome);
   }
 
   var lgx = compact ? 12 : 17,
@@ -3073,7 +3070,6 @@ function mount(root, startTab, restoreSelection) {
       canvas.setAttribute('display', 'none');
       panelG.setAttribute('display', 'none');
       root.classList.add('is-presentation');
-      setPresentationLayout(true);
       tabEls.forEach(function (t, k) {
         t.classList.toggle('is-on', k === i);
         t.setAttribute('aria-selected', k === i ? 'true' : 'false');
@@ -3089,7 +3085,6 @@ function mount(root, startTab, restoreSelection) {
     canvas.removeAttribute('display');
     panelG.removeAttribute('display');
     root.classList.remove('is-presentation');
-    setPresentationLayout(false);
     var sc = SCENES[i];
     curScene = sc;
     sceneState = {};

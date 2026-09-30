@@ -23,6 +23,8 @@ const dictionary: Record<string, string> = {
   'Vues de la carte': 'Map views',
   Soutenance: 'Presentation',
   'Diaporama de soutenance Sentinel': 'Sentinel project presentation',
+  'Le diaporama est conçu pour un écran en paysage.': 'The slides are made for a landscape screen.',
+  'Ouvrir le diaporama': 'Open the slides',
   'Lancer ou arrêter le parcours guidé': 'Start or stop the guided tour',
   PARCOURIR: 'TOUR',
   'SURVOLER · CLIQUER': 'HOVER · CLICK',

@@ -40,53 +40,80 @@
   z-index: 2;
   top: calc(var(--sn-frame) * 56 / 1312);
   right: 0;
+  bottom: 0;
   left: 0;
   display: none;
   box-sizing: border-box;
   width: var(--sn-frame);
   margin: 0 auto;
   padding-left: calc(var(--sn-frame) * 128 / 1312);
-  overflow: hidden;
+  container-type: size;
+  place-items: center;
   /* The box spans the sidebar too: only the slide itself may take clicks. */
   pointer-events: none;
 }
 .sn-map.is-presentation .sn-presentation-viewport {
-  display: block;
+  display: grid;
 }
 .sn-map.is-presentation .btn,
 .sn-map.is-presentation .pill {
   display: none;
 }
-.sn-map.compact .sn-presentation-viewport {
-  --sn-frame: min(100cqw, 560px);
-  top: calc(var(--sn-frame) * 118 / 360);
-  padding-left: 0;
-}
-/* Fullscreen: the slide is centred and as large as the space below the header allows. */
-[data-fullscreen-active='true'] .sn-map:not(.compact) .sn-presentation-viewport {
-  --sn-frame: 100cqw;
-  bottom: 0;
-  width: auto;
-  margin: 0;
-  container-type: size;
-  display: none;
-  place-items: center;
-}
-[data-fullscreen-active='true'] .sn-map:not(.compact).is-presentation .sn-presentation-viewport {
-  display: grid;
-}
-[data-fullscreen-active='true'] .sn-map:not(.compact) .sn-presentation-viewport iframe {
-  width: min(100cqw, 100cqh * 16 / 9);
-}
+/* The slide keeps the map's frame: it is fitted inside it, never the other way round. */
 .sn-map .sn-presentation-viewport iframe {
   display: block;
-  width: 100%;
+  width: min(100cqw, 100cqh * 16 / 9);
   aspect-ratio: 16 / 9;
   height: auto;
   border: 0;
   background: #000;
   pointer-events: auto;
   touch-action: pan-x pan-y;
+}
+[data-fullscreen-active='true'] .sn-map .sn-presentation-viewport {
+  --sn-frame: 100cqw;
+  width: auto;
+  margin: 0;
+}
+.sn-map.compact .sn-presentation-viewport {
+  --sn-frame: min(100cqw, 560px);
+  top: calc(var(--sn-frame) * 118 / 360);
+  padding-left: 0;
+}
+[data-fullscreen-active='true'] .sn-map.compact .sn-presentation-viewport {
+  --sn-frame: 100cqw;
+  width: auto;
+}
+.sn-map .sn-presentation-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 0 28px;
+  text-align: center;
+  pointer-events: auto;
+}
+.sn-map .sn-presentation-card p {
+  margin: 0;
+}
+.sn-map .sn-presentation-kicker {
+  color: var(--sn-lime);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.sn-map .sn-presentation-text {
+  color: var(--sn-mute);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sn-map .sn-presentation-open {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--sn-blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
 }
 .sn-map text {
   text-rendering: geometricPrecision;
