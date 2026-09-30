@@ -12,6 +12,8 @@
   --systems-border: #202936;
   --systems-blue: #2d5cff;
   --systems-lime: #caff39;
+  /* Widest a map is drawn: past it the maps stop growing, whichever card they sit in. */
+  --aks-map-max-width: 1640px;
   min-width: 0;
   overflow: clip;
   background: var(--systems-canvas);
@@ -634,13 +636,24 @@
 .aks-systems-protocap-map {
   width: 100%;
   min-width: 0;
-  min-height: calc(100cqi * 630 / 1312);
+  min-height: calc(min(100cqi, var(--aks-map-max-width)) * 630 / 1312);
   background: #070c16;
 }
 
-@container (max-width: 899px) {
+/* The card hugs its map, as the Sentinel map has no card to leave dark margins in: the shared
+   cap on wide screens, the portrait map's 560px below. */
+.aks-systems-station--feature figure {
+  max-width: var(--aks-map-max-width);
+  margin-inline: auto;
+}
+
+@media (max-width: 64rem) {
   .aks-systems-protocap-map {
     min-height: calc(min(100cqi, 560px) * 908 / 360);
+  }
+
+  .aks-systems-station--feature figure {
+    max-width: 560px;
   }
 }
 
@@ -1272,8 +1285,21 @@
 }
 
 .aks-systems-station--pair h3 {
-  font-size: min(clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))), 8.4cqi);
+  /* One line, beside the status pill: the card's padding, the gap and the pill (about 9.1 rem
+     units together) come off its width before the name is sized, at about 9.1em for the longest. */
+  font-size: min(
+    clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))),
+    calc((100cqi - 9.1 * var(--r)) / 9.1)
+  );
   white-space: nowrap;
+}
+
+/* On phones the pill moves under the name (the caption is a grid there): the name only shares
+   the row with the card's padding. */
+@media (max-width: 30rem) {
+  .aks-systems-station--pair h3 {
+    font-size: min(clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))), 8.4cqi);
+  }
 }
 
 .aks-systems-quick-media {
@@ -1688,20 +1714,17 @@
   }
 }
 
-/* The Sentinel and ProtoCap maps switch to a portrait layout below 900px of width.
-   Reserve exactly the height their SVG will take (landscape capped at 1312px wide,
+/* The Sentinel and ProtoCap maps switch to a portrait layout at the page's tablet width
+   (64rem, the same query as the rest of the page; the maps' scripts use it too).
+   Reserve exactly the height their SVG will take (landscape capped at --aks-map-max-width,
    portrait capped at 560px) so nothing jumps when they mount on the client. */
-.aks-systems-sentinel .aks-systems-wrap {
-  container-type: inline-size;
-}
-
 .aks-systems-sentinel-map {
   width: 100%;
   min-width: 0;
-  min-height: calc(min(100cqi, 1312px) * 640 / 1312);
+  min-height: calc(min(100cqi, var(--aks-map-max-width)) * 640 / 1312);
 }
 
-@container (max-width: 899px) {
+@media (max-width: 64rem) {
   .aks-systems-sentinel-map {
     min-height: calc(min(100cqi, 560px) * 960 / 360);
   }

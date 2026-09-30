@@ -10,6 +10,8 @@
  */
 'use strict';
 
+import { createPresentation } from './sentinel-presentation.js';
+
 /* ---------- traduction : la carte est écrite en français, le dictionnaire la traduit ---------- */
 var TR = null;
 function tr(s) {
@@ -40,7 +42,11 @@ function trc(s) {
 }
 
 var NS = 'http://www.w3.org/2000/svg';
-var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
+/* The maps go portrait exactly where the page itself moves to its tablet layout (systems.css). */
+var PORTRAIT_QUERY = '(max-width: 64rem)';
+function isPortrait() {
+  return window.matchMedia(PORTRAIT_QUERY).matches;
+}
 
 function el(tag, attrs, parent, txt) {
   var e = document.createElementNS(NS, tag);
@@ -111,8 +117,7 @@ function mount(root, startTab, restoreSelection) {
   var reduceMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (root.__pcClean) root.__pcClean();
-  var rw = root.getBoundingClientRect().width || window.innerWidth;
-  var compact = rw < BP;
+  var compact = isPortrait();
   function sceneHeight() {
     var expanded = root.closest('[data-fullscreen-active="true"]');
     return !compact && expanded
@@ -129,16 +134,8 @@ function mount(root, startTab, restoreSelection) {
   root.innerHTML = '<div class="sn-scroll"></div><p class="sn-sr" aria-live="polite"></p>';
   var scroll = root.firstChild,
     live = root.lastChild;
-  var presentationViewport = document.createElement('div');
-  presentationViewport.className = 'sn-presentation-viewport';
-  var presentation = document.createElement('iframe');
-  presentation.setAttribute('src', '/systems/sentinel-defense-slides.html');
-  presentation.setAttribute('title', trc('Diaporama de soutenance Sentinel'));
-  presentation.setAttribute('loading', 'lazy');
-  presentation.setAttribute('referrerpolicy', 'no-referrer');
-  presentation.setAttribute('sandbox', 'allow-scripts');
-  presentationViewport.appendChild(presentation);
-  root.appendChild(presentationViewport);
+  var presentation = createPresentation({ compact: compact, t: trc });
+  root.appendChild(presentation.element);
 
   var svg = el(
     'svg',
@@ -556,6 +553,9 @@ function mount(root, startTab, restoreSelection) {
       );
       if (compact) {
         var p = cpos[i];
+        /* the drawn tab is 26 units tall; the hit area fills the 32-unit row, so it stays
+           at least 24px on the narrowest phone */
+        el('rect', { x: p[0] - 3, y: p[1] - 3, width: p[2] + 6, height: 32, class: 'c-hit' }, g);
         el('rect', { x: p[0], y: p[1], width: p[2], height: 26, rx: 4, class: 'tab-bg' }, g);
         el('text', { x: p[0] + p[2] / 2, y: p[1] + 17, class: 'tab-txt' }, g, up(sc.tab));
       } else {
@@ -734,6 +734,7 @@ function mount(root, startTab, restoreSelection) {
   }
   function chip(g, id, x, y, w, text, data) {
     var c = el('g', { class: 'chip' }, g);
+    if (compact) el('rect', { x: x - 3, y: y - 3, width: w + 6, height: 30, class: 'c-hit' }, c);
     el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     reg(id, data, [c]);
@@ -1400,7 +1401,14 @@ function mount(root, startTab, restoreSelection) {
       ln('d', 'M640 300 L832 300', 736, 288, 'sql paramétré');
       ln('e', 'M636 284 C 680 250, 700 210, 736 190', 0, 0, '');
       ln('f', 'M636 316 C 680 350, 700 390, 736 410', 0, 0, '');
-      ln('g', 'M788 176 L1002 176', 895, 165, 'clé jamais exposée au navigateur');
+      /* two lines: one line is longer than the link it captions once translated */
+      ln('g', 'M788 176 L1002 176', 895, 154, 'clé jamais exposée');
+      el(
+        'text',
+        { x: 895, y: 165, class: 't-edge', 'text-anchor': 'middle' },
+        g,
+        up('au navigateur'),
+      );
       ln('h', 'M788 424 L1002 424', 895, 413, 'smtp · retries · backoff');
 
       node(g, 'nav', N.nav[0], N.nav[1], 22, 'Navigateur', 'SPA React 18', {
@@ -2405,7 +2413,7 @@ function mount(root, startTab, restoreSelection) {
       var c = el('g', { class: 'corner' }, g);
       var w = 124,
         rx = anchor === 'end' ? x - w : x;
-      el('rect', { x: rx, y: y - 16, width: w, height: 26, class: 'c-hit' }, c);
+      el('rect', { x: rx, y: y - 19, width: w, height: 32, class: 'c-hit' }, c);
       var t = el('text', { x: x, y: y, 'text-anchor': anchor }, c);
       if (anchor === 'end') {
         el('tspan', { class: 't-corner' }, t, up(text) + '  ');
@@ -2461,7 +2469,7 @@ function mount(root, startTab, restoreSelection) {
       'M276 ' + (y2 + 28) + ' L276 ' + (y3 - 28),
       268,
       (y2 + y3) / 2 + 3,
-      "close + note d'intervention",
+      'close + note',
       'end',
       null,
     );
@@ -2633,13 +2641,10 @@ function mount(root, startTab, restoreSelection) {
     ln('M203 352 L284 352', 244, 341, 'sql paramétré');
     ln('M157 352 L78 352', 0, 0, '');
     ln('M52 374 L52 412', 0, 0, '');
-    var t1 = el(
-      'text',
-      { x: 60, y: 388, class: 't-edge', 'text-anchor': 'start' },
-      g,
-      'CLÉ JAMAIS EXPOSÉE',
-    );
-    el('text', { x: 60, y: 399, class: 't-edge', 'text-anchor': 'start' }, g, 'AU NAVIGATEUR');
+    /* three short lines: the caption stays clear of the Backend label to its right */
+    ['CLÉ JAMAIS', 'EXPOSÉE AU', 'NAVIGATEUR'].forEach(function (line, i) {
+      el('text', { x: 60, y: 386 + i * 11, class: 't-edge', 'text-anchor': 'start' }, g, line);
+    });
     ln('M198 371 C 236 397, 262 425, 288 436', 0, 0, '');
     ln('M308 458 L308 486', 0, 0, '');
     el('text', { x: 300, y: 470, class: 't-edge', 'text-anchor': 'end' }, g, 'SMTP · RETRIES');
@@ -2655,15 +2660,32 @@ function mount(root, startTab, restoreSelection) {
     node(g, 'smtp', 308, 510, 15, 'SMTP', null, null, { tone: 'dim', side: 'bottom' });
     /* groupes de tables */
     el('text', { x: 92, y: 478, class: 't-sub', 'text-anchor': 'start' }, g, 'TABLES · 6 GROUPES');
-    [
+    var tables = [
       ['t_id', 'Identités'],
       ['t_ref', 'Référentiel'],
       ['t_inc', 'Incidents'],
       ['t_arb', 'Arbitrage'],
       ['t_aud', 'Audit'],
       ['t_out', 'Outbox'],
-    ].forEach(function (t, i) {
-      chip(g, t[0], 92 + (i % 2) * 68, 486 + Math.floor(i / 2) * 28, 64, t[1], null);
+    ];
+    /* each column is as wide as its longest label; the two together stay left of the SMTP node */
+    var colW = [0, 1].map(function (col) {
+      return (
+        Math.max.apply(
+          null,
+          tables
+            .filter(function (t, i) {
+              return i % 2 === col;
+            })
+            .map(function (t) {
+              return Math.ceil(measure(up(t[1]), 'chip-txt'));
+            }),
+        ) + 12
+      );
+    });
+    tables.forEach(function (t, i) {
+      var col = i % 2;
+      chip(g, t[0], 92 + col * (colW[0] + 4), 486 + Math.floor(i / 2) * 28, colW[col], t[1], null);
     });
     /* couches d'un module */
     el(
@@ -3015,8 +3037,9 @@ function mount(root, startTab, restoreSelection) {
     el('text', { x: 0, y: 58, class: 't-name' }, ci, '6 CHECKS');
     el('text', { x: 0, y: 70, class: 't-sub' }, ci, 'REQUIS');
     for (var i = 0; i < 6; i++) {
+      /* 37 rather than 40: the satellite below the node clears the "6 CHECKS" caption */
       var a = rad(30 + i * 60),
-        so = orb(g, 180 + 40 * Math.cos(a), y1 + 40 * Math.sin(a), 5.5, 'lime');
+        so = orb(g, 180 + 37 * Math.cos(a), y1 + 37 * Math.sin(a), 5.5, 'lime');
       so.querySelector('.orb-halo').setAttribute('r', 8);
       so.querySelector('.orb-ring').setAttribute('r', 7);
       reg('c' + (i + 1), null, [so]);
@@ -3194,7 +3217,7 @@ function mount(root, startTab, restoreSelection) {
     ro = new ResizeObserver(function () {
       var w = root.getBoundingClientRect().width;
       var sceneResized = !compact && sceneHeight() !== H;
-      if (w && (w < BP !== compact || sceneResized)) {
+      if (w && (isPortrait() !== compact || sceneResized)) {
         mount(root, state.tab, state.sel);
       }
     });
@@ -3206,6 +3229,7 @@ function mount(root, startTab, restoreSelection) {
     if (raf) cancelAnimationFrame(raf);
     if (io) io.disconnect();
     if (ro) ro.disconnect();
+    presentation.destroy();
   };
 
   /* ---------- démarrage ---------- */

@@ -57,10 +57,6 @@
   color: var(--aks-home-starlight);
 }
 
-.aks-home a {
-  -webkit-tap-highlight-color: transparent;
-}
-
 /* Metadata is one centered composition. It never uses edge-to-edge distribution. */
 .aks-home-meta {
   position: absolute;
@@ -561,6 +557,12 @@
 
 .aks-experience-footer[data-home='true']::before {
   display: none;
+}
+
+/* The portal sets its small type at 11px throughout (doors, clock, footer); the shared footer's
+   12px would wrap the French links to a third line at 320-360px and press on the lower doors. */
+.aks-experience-footer[data-home='true'] .aks-experience-footer-inner {
+  font-size: 0.6875rem;
 }
 
 /* Same footer, tighter when stacked: the portal is one screen, so this gives the doors room. */

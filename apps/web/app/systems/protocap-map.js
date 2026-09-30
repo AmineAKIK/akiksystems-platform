@@ -41,7 +41,11 @@ function trc(s) {
 }
 
 var NS = 'http://www.w3.org/2000/svg';
-var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
+/* The maps go portrait exactly where the page itself moves to its tablet layout (systems.css). */
+var PORTRAIT_QUERY = '(max-width: 64rem)';
+function isPortrait() {
+  return window.matchMedia(PORTRAIT_QUERY).matches;
+}
 
 function el(tag, attrs, parent, txt) {
   var e = document.createElementNS(NS, tag);
@@ -112,8 +116,7 @@ function mount(root, startTab, restoreSelection) {
   var reduceMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (root.__pcClean) root.__pcClean();
-  var rw = root.getBoundingClientRect().width || window.innerWidth;
-  var compact = rw < BP;
+  var compact = isPortrait();
   function sceneHeight() {
     var expanded = root.closest('[data-fullscreen-active="true"]');
     return !compact && expanded
@@ -407,6 +410,8 @@ function mount(root, startTab, restoreSelection) {
       if (compact) {
         var tx = 12 + (i % 4) * 84,
           ty = 10 + Math.floor(i / 4) * 32;
+        /* the drawn tab is 26 units tall; the hit area fills the 32-unit row */
+        el('rect', { x: tx - 2, y: ty - 3, width: 84, height: 32, class: 'c-hit' }, g);
         el('rect', { x: tx, y: ty, width: 80, height: 26, rx: 4, class: 'tab-bg' }, g);
         el('text', { x: tx + 40, y: ty + 17, class: 'tab-txt' }, g, up(sc.tab));
       } else {
@@ -611,6 +616,7 @@ function mount(root, startTab, restoreSelection) {
   }
   function chip(g, id, x, y, w, text, data) {
     var c = el('g', { class: 'chip' }, g);
+    if (compact) el('rect', { x: x - 3, y: y - 3, width: w + 6, height: 30, class: 'c-hit' }, c);
     el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     reg(id, data, [c]);
@@ -730,6 +736,7 @@ function mount(root, startTab, restoreSelection) {
   }
   function button(g, x, y, w, text, fn, label) {
     var c = el('g', { class: 'chip', tabindex: 0, role: 'button', 'aria-label': label || text }, g);
+    if (compact) el('rect', { x: x - 3, y: y - 3, width: w + 6, height: 30, class: 'c-hit' }, c);
     el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     c.addEventListener('click', fn);
@@ -4036,7 +4043,7 @@ function mount(root, startTab, restoreSelection) {
   if ('ResizeObserver' in window) {
     ro = new ResizeObserver(function () {
       var w = root.getBoundingClientRect().width;
-      if (w && (w < BP !== compact || (!compact && sceneHeight() !== H))) {
+      if (w && (isPortrait() !== compact || (!compact && sceneHeight() !== H))) {
         mount(root, state.tab, state.sel);
       }
     });

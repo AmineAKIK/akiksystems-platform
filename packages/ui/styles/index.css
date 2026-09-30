@@ -92,7 +92,6 @@
 
   body {
     margin: 0;
-    min-width: 20rem;
     background: var(--aks-surface-canvas);
   }
 
@@ -106,6 +105,26 @@
   :focus-visible {
     outline: var(--aks-focus-width) solid var(--aks-focus-color);
     outline-offset: var(--aks-focus-offset);
+  }
+
+  /*
+   * Touch. The browser's own flash (a blue rectangle over the whole box, icon and label included)
+   * is switched off for every control, inherited by the SVG maps too, and replaced by a pressed
+   * state that every control shares. touch-action: manipulation drops the double-tap zoom delay.
+   */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(a[href], button, summary, [role='button'], [role='tab'], label[for]) {
+    touch-action: manipulation;
+  }
+
+  @media (hover: none) {
+    :where(a[href], button, summary, [role='button'], [role='tab']):active {
+      opacity: 0.68;
+      transition: opacity 60ms linear;
+    }
   }
 }
 

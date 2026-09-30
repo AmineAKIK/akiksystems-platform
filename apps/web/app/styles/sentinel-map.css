@@ -27,54 +27,64 @@
   display: block;
   width: 100%;
   height: auto;
-  max-width: 1312px;
+  max-width: var(--aks-map-max-width, 1312px);
   margin: 0 auto;
   font-family: var(--sn-font);
 }
 .sn-map.compact svg {
   max-width: 560px;
 }
+.sn-map.is-presentation .btn,
+.sn-map.is-presentation .pill,
+.sn-map.is-presentation .side-hint {
+  display: none;
+}
+
+/* Presentation tab. The deck fills the map's content area and letterboxes itself, so the frame
+   never changes size and a swipe, wheel turn or click anywhere in it reaches the slides. */
 .sn-map .sn-presentation-viewport {
-  --sn-frame: min(100cqw, 1312px);
+  --sn-frame: min(100cqw, var(--aks-map-max-width, 1312px)); /* width of the drawn map */
   position: absolute;
   z-index: 2;
-  top: calc(var(--sn-frame) * 56 / 1312);
+  top: calc(var(--sn-frame) * 56 / 1312); /* under the header */
   right: 0;
   bottom: 0;
   left: 0;
   display: none;
+  grid-template-rows: minmax(0, 1fr) auto;
   box-sizing: border-box;
   width: var(--sn-frame);
-  margin: 0 auto;
-  padding-left: calc(var(--sn-frame) * 128 / 1312);
-  container-type: size;
-  place-items: center;
-  /* The box spans the sidebar too: only the slide itself may take clicks. */
+  margin-inline: auto;
+  padding-left: calc(var(--sn-frame) * 128 / 1312); /* beside the sidebar */
+  /* The box spans the sidebar's tabs: only the stage and the bar take input. */
   pointer-events: none;
 }
 .sn-map.is-presentation .sn-presentation-viewport {
   display: grid;
 }
-.sn-map.is-presentation .btn,
-.sn-map.is-presentation .pill {
-  display: none;
-}
-/* The slide keeps the map's frame: it is fitted inside it, never the other way round. */
-.sn-map .sn-presentation-viewport iframe {
-  display: block;
-  width: min(100cqw, 100cqh * 16 / 9);
-  aspect-ratio: 16 / 9;
-  height: auto;
-  border: 0;
-  background: #000;
+.sn-map .sn-presentation-stage {
+  position: relative;
+  min-height: 0;
+  container-type: size;
   pointer-events: auto;
-  touch-action: pan-x pan-y;
+}
+.sn-map .sn-presentation-stage iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--sn-card);
 }
 [data-fullscreen-active='true'] .sn-map .sn-presentation-viewport {
   --sn-frame: 100cqw;
   width: auto;
   margin: 0;
 }
+
+/* Phones: a 16:9 slide is too narrow to read. The frame is turned a quarter so the slide fills
+   the tall stage; swiping up or down turns the pages, and plain controls sit underneath. */
 .sn-map.compact .sn-presentation-viewport {
   --sn-frame: min(100cqw, 560px);
   top: calc(var(--sn-frame) * 118 / 360);
@@ -84,13 +94,112 @@
   --sn-frame: 100cqw;
   width: auto;
 }
-/* A phone is too narrow for a 16:9 slide: turn it a quarter so it fills the tall frame. */
-.sn-map.compact .sn-presentation-viewport iframe {
-  position: absolute;
+.sn-map.compact .sn-presentation-stage iframe {
+  inset: auto;
   top: 50%;
   left: 50%;
-  width: min(100cqh, 100cqw * 16 / 9);
+  width: 100cqh;
+  height: 100cqw;
   transform: translate(-50%, -50%) rotate(90deg);
+}
+.sn-map .sn-presentation-bar {
+  pointer-events: auto;
+}
+.sn-map .sn-presentation-bar button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-side);
+  color: #c9d4f5;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.sn-map .sn-presentation-bar button:hover:not(:disabled) {
+  border-color: var(--sn-blue-soft);
+  background: rgb(45 85 255 / 16%);
+}
+.sn-map .sn-presentation-bar button:disabled {
+  color: var(--sn-dim);
+  cursor: default;
+}
+.sn-map .sn-presentation-count {
+  margin: 0;
+  color: var(--sn-dim);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+.sn-map .sn-presentation-count span:first-child {
+  color: var(--sn-text);
+  font-weight: 700;
+}
+.sn-map .sn-presentation-bar :nth-child(1) {
+  grid-area: prev;
+}
+.sn-map .sn-presentation-bar :nth-child(2) {
+  grid-area: count;
+}
+.sn-map .sn-presentation-bar :nth-child(3) {
+  grid-area: next;
+}
+/* Wide screens: the controls take the place of the tour button, at the foot of the sidebar,
+   as one joined pill under the page counter. */
+.sn-map:not(.compact) .sn-presentation-bar {
+  position: absolute;
+  bottom: calc(var(--sn-frame) * 24 / 1312);
+  left: 0;
+  display: grid;
+  width: calc(var(--sn-frame) * 128 / 1312);
+  box-sizing: border-box;
+  grid-template-areas: 'count count' 'prev next';
+  grid-template-columns: repeat(2, 34px);
+  justify-content: center;
+  row-gap: 8px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button {
+  height: 32px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button:first-child {
+  border-radius: 16px 0 0 16px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button:last-child {
+  margin-left: -1px;
+  border-radius: 0 16px 16px 0;
+}
+/* Phones: one pill under the slide, page counter between the two arrows (44px touch targets). */
+.sn-map.compact .sn-presentation-bar {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-self: center;
+  margin: 8px 0 16px;
+  border: 1px solid var(--sn-line);
+  border-radius: 22px;
+  background: var(--sn-side);
+}
+.sn-map.compact .sn-presentation-bar button {
+  width: 52px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+}
+.sn-map.compact .sn-presentation-bar button:first-child {
+  border-radius: 22px 0 0 22px;
+}
+.sn-map.compact .sn-presentation-bar button:last-child {
+  border-radius: 0 22px 22px 0;
+}
+.sn-map.compact .sn-presentation-count {
+  min-width: 78px;
+  padding-inline: 8px;
+  border-inline: 1px solid var(--sn-line);
+  font-size: 12px;
+  line-height: 44px;
 }
 .sn-map text {
   text-rendering: geometricPrecision;
@@ -146,7 +255,7 @@
   fill: #f3f4f7;
 }
 .sn-map .pill-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: #0b1020;
@@ -163,7 +272,7 @@
   transition: fill 0.2s;
 }
 .sn-map .tab-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
@@ -183,13 +292,13 @@
   stroke-width: 1;
 }
 .sn-map .tab-num {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: var(--sn-blue);
 }
 .sn-map .side-hint {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -203,7 +312,7 @@
     stroke 0.2s;
 }
 .sn-map .btn-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
   fill: var(--sn-text);
@@ -232,7 +341,7 @@
   stroke-width: 1;
 }
 .sn-map .hint {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
   text-anchor: end;
@@ -313,7 +422,7 @@
   opacity: 0.35;
 }
 .sn-map .t-name {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.14em;
   fill: #a9b4d0;
@@ -321,7 +430,7 @@
   transition: fill 0.2s;
 }
 .sn-map .t-sub {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -363,19 +472,20 @@
 
 /* étiquettes de coin */
 .sn-map .corner .t-num {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: var(--sn-blue);
 }
 .sn-map .corner .t-corner {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.18em;
   fill: #8d99b6;
   transition: fill 0.2s;
 }
-.sn-map .corner .c-hit {
+/* invisible hit area of a small control (tab, chip, corner label) */
+.sn-map .c-hit {
   fill: transparent;
   cursor: pointer;
 }
@@ -409,7 +519,7 @@
   cursor: pointer;
 }
 .sn-map .t-edge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: #7684a6;
@@ -447,7 +557,7 @@
   cursor: pointer;
 }
 .sn-map .chip-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -519,7 +629,7 @@
   opacity: 1;
 }
 .sn-map .m-legend {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   fill: var(--sn-dim);
 }
@@ -569,7 +679,7 @@
   stroke: rgba(255, 93, 98, 0.7);
 }
 .sn-map .gate-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: #dfe6fa;
@@ -589,7 +699,7 @@
   stroke-width: 1.2;
 }
 .sn-map .lv-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -625,12 +735,12 @@
   stroke: var(--sn-lime);
 }
 .sn-map .sl-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.13em;
   fill: var(--sn-dim);
 }
 .sn-map .sl-ttl {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.15em;
   fill: #a9b4d0;
@@ -649,7 +759,7 @@
   stroke-width: 1;
 }
 .sn-map .p-kick {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -670,7 +780,7 @@
   font-style: italic;
 }
 .sn-map .p-test-k {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -681,7 +791,7 @@
   stroke-width: 1;
 }
 .sn-map .tag-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -705,18 +815,18 @@
   stroke-width: 1;
 }
 .sn-map .sig-lab {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.13em;
   fill: var(--sn-mute);
 }
 .sn-map .sig-val {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   fill: var(--sn-lime);
 }
 .sn-map .q-k {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
   fill: var(--sn-blue);
@@ -728,7 +838,7 @@
   fill: #eef2ff;
 }
 .sn-map .note {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
 }
@@ -746,7 +856,7 @@
   letter-spacing: 0.05em;
 }
 .sn-map.compact .t-sub {
-  font-size: 9px;
+  font-size: 9.5px;
   letter-spacing: 0.05em;
 }
 .sn-map.compact .t-edge {
@@ -754,20 +864,20 @@
   letter-spacing: 0.05em;
 }
 .sn-map.compact .chip-txt {
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.05em;
 }
 .sn-map.compact .tab-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   text-anchor: middle;
 }
 .sn-map.compact .btn-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .p-kick {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .p-title {
   font-size: 16px;
@@ -779,57 +889,57 @@
   font-size: 11.5px;
 }
 .sn-map.compact .tag-txt {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .sig-lab {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .sig-val {
   font-size: 10px;
 }
 .sn-map.compact .sl-ttl {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .sl-txt {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .sl-val {
   font-size: 11px;
 }
 .sn-map.compact .q-k {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .q-t {
   font-size: 15px;
 }
 .sn-map.compact .note {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.04em;
 }
 .sn-map.compact .core-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .gate-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .corner .t-num {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .corner .t-corner {
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.1em;
 }
 .sn-map.compact .m-row .m-txt {
-  font-size: 9px;
+  font-size: 10px;
 }
 .sn-map.compact .m-legend {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.06em;
 }
 .sn-map.compact .lv-txt {
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.06em;
 }
 .sn-map.no-anim .canvas {

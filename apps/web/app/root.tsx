@@ -12,6 +12,10 @@ import './styles/sentinel-map.css';
 import './styles/protocap-map.css';
 import './styles/profile.css';
 
+import archivo400 from '@fontsource/archivo/files/archivo-latin-400-normal.woff2?url';
+import archivo500 from '@fontsource/archivo/files/archivo-latin-500-normal.woff2?url';
+import archivo700 from '@fontsource/archivo/files/archivo-latin-700-normal.woff2?url';
+import archivoBlack from '@fontsource/archivo-black/files/archivo-black-latin-400-normal.woff2?url';
 import { Container, Heading, Link, Text } from '@akiksystems/ui';
 import type { ReactNode } from 'react';
 import {
@@ -25,6 +29,21 @@ import {
 } from 'react-router';
 
 import { localeFromPathname } from './i18n/locales';
+
+/**
+ * The typefaces every page paints with are fetched with the document, not once the CSS is
+ * parsed: a late swap re-flows the text and moves the large Home artwork with it (a layout
+ * shift of about 0.25 on a cold load).
+ */
+export function links() {
+  return [archivo400, archivo500, archivo700, archivoBlack].map((href) => ({
+    rel: 'preload',
+    as: 'font',
+    type: 'font/woff2',
+    href,
+    crossOrigin: 'anonymous' as const,
+  }));
+}
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();

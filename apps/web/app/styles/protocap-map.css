@@ -28,6 +28,8 @@
   display: block;
   width: 100%;
   height: auto;
+  max-width: var(--aks-map-max-width, 1312px);
+  margin-inline: auto;
   font-family: var(--sn-font);
 }
 .pc-map.compact svg {
@@ -80,7 +82,7 @@
   fill: #f3f4f7;
 }
 .pc-map .pill-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: #0b1020;
@@ -97,7 +99,7 @@
   transition: fill 0.2s;
 }
 .pc-map .tab-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
@@ -117,13 +119,13 @@
   stroke-width: 1;
 }
 .pc-map .tab-num {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: var(--sn-blue);
 }
 .pc-map .side-hint {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -137,7 +139,7 @@
     stroke 0.2s;
 }
 .pc-map .btn-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
   fill: var(--sn-text);
@@ -166,7 +168,7 @@
   stroke-width: 1;
 }
 .pc-map .hint {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.16em;
   fill: var(--sn-dim);
   text-anchor: end;
@@ -247,7 +249,7 @@
   opacity: 0.35;
 }
 .pc-map .t-name {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.14em;
   fill: #a9b4d0;
@@ -255,7 +257,7 @@
   transition: fill 0.2s;
 }
 .pc-map .t-sub {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   fill: var(--sn-dim);
   text-anchor: middle;
@@ -297,19 +299,20 @@
 
 /* étiquettes de coin */
 .pc-map .corner .t-num {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   fill: var(--sn-blue);
 }
 .pc-map .corner .t-corner {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.18em;
   fill: #8d99b6;
   transition: fill 0.2s;
 }
-.pc-map .corner .c-hit {
+/* invisible hit area of a small control (tab, chip, corner label) */
+.pc-map .c-hit {
   fill: transparent;
   cursor: pointer;
 }
@@ -343,7 +346,7 @@
   cursor: pointer;
 }
 .pc-map .t-edge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   fill: #7684a6;
@@ -381,7 +384,7 @@
   cursor: pointer;
 }
 .pc-map .chip-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -453,7 +456,7 @@
   opacity: 1;
 }
 .pc-map .m-legend {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   fill: var(--sn-dim);
 }
@@ -503,7 +506,7 @@
   stroke: rgba(255, 93, 98, 0.7);
 }
 .pc-map .gate-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: #dfe6fa;
@@ -523,7 +526,7 @@
   stroke-width: 1.2;
 }
 .pc-map .lv-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -559,12 +562,12 @@
   stroke: var(--sn-lime);
 }
 .pc-map .sl-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.13em;
   fill: var(--sn-dim);
 }
 .pc-map .sl-ttl {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.15em;
   fill: #a9b4d0;
@@ -583,7 +586,7 @@
   stroke-width: 1;
 }
 .pc-map .p-kick {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -604,7 +607,7 @@
   font-style: italic;
 }
 .pc-map .p-test-k {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: var(--sn-lime);
@@ -615,7 +618,7 @@
   stroke-width: 1;
 }
 .pc-map .tag-txt {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.13em;
   fill: #a9b4d0;
@@ -639,18 +642,18 @@
   stroke-width: 1;
 }
 .pc-map .sig-lab {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.13em;
   fill: var(--sn-mute);
 }
 .pc-map .sig-val {
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   fill: var(--sn-lime);
 }
 .pc-map .q-k {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
   fill: var(--sn-blue);
@@ -662,7 +665,7 @@
   fill: #eef2ff;
 }
 .pc-map .note {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   fill: var(--sn-dim);
 }
@@ -690,7 +693,7 @@
   letter-spacing: 0.06em;
 }
 .pc-map.compact .t-sub {
-  font-size: 9px;
+  font-size: 9.5px;
   letter-spacing: 0.05em;
 }
 .pc-map.compact .t-edge {
@@ -698,20 +701,20 @@
   letter-spacing: 0.05em;
 }
 .pc-map.compact .chip-txt {
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.05em;
 }
 .pc-map.compact .tab-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.05em;
   text-anchor: middle;
 }
 .pc-map.compact .btn-txt {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
 }
 .pc-map.compact .p-kick {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .p-title {
   font-size: 16px;
@@ -723,28 +726,28 @@
   font-size: 11.5px;
 }
 .pc-map.compact .tag-txt {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .sig-lab {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .sig-val {
   font-size: 10px;
 }
 .pc-map.compact .sl-ttl {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .sl-txt {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .q-k {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .q-t {
   font-size: 15px;
 }
 .pc-map.compact .note {
-  font-size: 9px;
+  font-size: 10px;
 }
 .pc-map.compact .core-txt {
   font-size: 10px;
@@ -762,7 +765,7 @@
   font-size: 11px;
 }
 .pc-map.compact .lv-txt {
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.08em;
 }
 .pc-map.compact .lv-dim {
