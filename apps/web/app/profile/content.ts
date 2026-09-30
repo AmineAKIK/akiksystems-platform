@@ -54,9 +54,9 @@ export interface ProfilePageContent {
     summary: string;
     roleLabel: string;
     role: string;
-    stackLabel: string;
-    stack: Array<{ icon: ProfileIcon; name: string; detail: string }>;
-    updated: string;
+    factsLabel: string;
+    facts: Array<{ icon: ProfileIcon; name: string; detail: string }>;
+    live: { label: string; link: ProfileLink };
   };
   stack: {
     eyebrow: string;
@@ -75,23 +75,23 @@ export interface ProfilePageContent {
       proofs: Array<{ system: ProfileSystemId; description: string }>;
     }>;
   };
-  principles: {
+  perspectives: {
     eyebrow: string;
     title: string;
     body: string;
-    relate: {
-      eyebrow: string;
-      title: string;
-      body: string;
-      groupLabel: string;
-      center: { title: [string, string]; caption: [string, string] };
-      loopCaption: string;
-      detailLabel: string;
-      labels: { brings: string; avoids: string; asks: string };
-      /** Clockwise from the top of the loop. */
-      nodes: [ProfileLens, ProfileLens, ProfileLens, ProfileLens];
-    };
-    result: { eyebrow: string; title: string; body: string };
+    tablistLabel: string;
+    center: { title: [string, string]; caption: [string, string] };
+    loopCaption: string;
+    labels: { brings: string; avoids: string; asks: string };
+    /** Clockwise from the top of the loop. */
+    nodes: [ProfileLens, ProfileLens, ProfileLens, ProfileLens];
+  };
+  principles: {
+    eyebrow: string;
+    title: [string, string];
+    /** One entry per paragraph. */
+    body: string[];
+    evidence: { lead: string; links: ProfileLink[] };
   };
   capabilities: {
     eyebrow: string;
@@ -121,27 +121,23 @@ export interface ProfilePageContent {
     stepLabel: string;
     labels: { example: string; question: string };
     steps: [ProfileCaseStep, ProfileCaseStep, ProfileCaseStep, ProfileCaseStep];
-    chain: [string, string, string, string, string, string, string, string];
-    diagram: {
-      asked: string;
-      whole: string;
-      observed: string;
-      simple: string;
-      conflicts: string;
-      ready: string;
-      free: string;
-      invisible: string;
-      usable: string;
-      unexpected: string;
+    logs: {
+      caption: [string, string, string, string];
+      logsLabel: string;
+      causeLabel: string;
+      unit: string;
+      alarms: Array<{ label: string; count: string; value: number; kind: ProfileAlarmKind }>;
+      tags: Record<ProfileAlarmKind | 'resolved', string>;
+      cause: [ProfileLogCause, ProfileLogCause, ProfileLogCause, ProfileLogCause];
     };
-    emblem: {
-      eyebrow: string;
-      title: string;
-      alt: string;
-      /** Reading order used by the stacked (mobile) legend. */
-      items: Array<{ id: ProfileEmblemPart; name: string; key: string; text: string }>;
-      quote: string;
-    };
+  };
+  emblem: {
+    eyebrow: string;
+    title: string;
+    alt: string;
+    /** Reading order used by the stacked (mobile) legend. */
+    items: Array<{ id: ProfileEmblemPart; name: string; key: string; text: string }>;
+    quote: string;
   };
   cta: {
     eyebrow: string;
@@ -154,8 +150,7 @@ export interface ProfileLens {
   id: 'code' | 'management' | 'field' | 'infrastructure';
   name: string;
   description: string;
-  figure: { value: string; label: string } | null;
-  source: string | null;
+  source: string;
   brings: string;
   avoids: string;
   asks: string;
@@ -166,17 +161,37 @@ export interface ProfileCaseStep {
   lead: string;
   example: string;
   question: string;
-  alt: string;
 }
 
-export type ProfileEmblemPart = 'eagle' | 'serpent' | 'olive' | 'sea' | 'stars';
+export type ProfileEmblemPart = 'eagle' | 'serpent';
 
-export const profilePageContent: Record<Locale, ProfilePageContent> = {
+export interface ProfileLogCause {
+  title: string;
+  text: string;
+}
+
+export type ProfileAlarmKind = 'managed' | 'caused' | 'own' | 'hypothesis';
+
+/** French typography: a no-break space before « : ; ? ! » » and after « « », so a line never starts with a lone mark. */
+function frenchTypography<T>(value: T): T {
+  if (typeof value === 'string') {
+    return value.replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0') as T;
+  }
+  if (Array.isArray(value)) return value.map(frenchTypography) as T;
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, frenchTypography(entry)]),
+    ) as T;
+  }
+  return value;
+}
+
+const content: Record<Locale, ProfilePageContent> = {
   fr: {
     meta: {
       title: 'Profil — Mohamed Amine Akik',
       description:
-        'Fondateur d’AkikSystems, développeur full-stack : une expérience industrielle exigeante, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
+        'Développeur full-stack et fondateur d’AkikSystems : des logiciels métier conçus depuis le terrain industriel, en ligne et vérifiables.',
     },
     identity: {
       eyebrow: 'Profil',
@@ -185,7 +200,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Fondateur d’AkikSystems',
       roleDetail: 'développeur full-stack',
       intro:
-        'Je conçois et développe des logiciels métier à partir du système réel dans lequel ils vont fonctionner : utilisateurs, flux, données, règles et contraintes. De la modélisation au déploiement, je livre des outils qu’on peut comprendre, maintenir et faire évoluer.',
+        'Je suis développeur, technicien d’infrastructure et d’assistance informatique, mais aussi ouvrier et manager. Plus que des titres, ce sont des mondes que j’ai traversés, et qui m’ont appris à regarder un système dans son ensemble : de la machine à l’humain, du code à l’infrastructure, de l’usage à l’organisation.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -204,7 +219,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         eyebrow: 'Parcours',
         title: 'Du terrain au logiciel.',
         intro:
-          'Une expérience industrielle dans des environnements exigeants en qualité et en technicité, et une première entreprise dirigée.',
+          'L’industrie, la direction d’une entreprise et l’informatique : trois terrains traversés avant de concevoir mes propres systèmes.',
         workLabel: 'Expérience',
         educationLabel: 'Formation',
         work: [
@@ -213,10 +228,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             title: 'Fondateur, AkikSystems',
             place: 'Châtellerault',
             detail:
-              'Conception et développement de logiciels métier et opérationnels : Sentinel, ProtoCap.',
+              'La structure à travers laquelle je conçois et réalise mes systèmes : Sentinel, ProtoCap.',
           },
           { period: '2026 —', title: 'L’Oréal', place: 'Cosmétique dermatologique' },
-          { period: '2023 — 2025', title: 'Marelli', place: 'Électronique automobile' },
+          {
+            period: '2023 — 2025',
+            title: 'Marelli',
+            place: 'Conducteur de ligne · électronique automobile',
+          },
           {
             period: '2022 — 2023',
             title: 'Ateliers Réunis du Centre-Ouest',
@@ -241,14 +260,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             place: 'Titre professionnel d’État inscrit au RNCP · préparé avec Studi',
           },
           {
-            period: '2009 — 2010',
-            title: 'Baccalauréat programmation et technologies',
-            place: 'Tunisie',
-          },
-          {
             period: '2010 — 2012',
             title: 'Technicien réseaux et télécoms, stage chez Tunisie Telecom',
             place: 'Sousse, Tunisie',
+          },
+          {
+            period: '2009 — 2010',
+            title: 'Baccalauréat programmation et technologies',
+            place: 'Tunisie',
           },
         ],
       },
@@ -261,16 +280,21 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         'Le suivi des incidents d’atelier : une anomalie de production suivie de la déclaration à la capitalisation, sans jamais perdre la trace des décisions.',
       roleLabel: 'Mon rôle',
       role: 'Conception et développement',
-      stackLabel: 'Stack du projet',
-      stack: [
-        { icon: 'screen', name: 'TypeScript · React', detail: 'Trois espaces, contrôles RGAA' },
-        { icon: 'server', name: 'Node.js · Express', detail: 'API, sessions JWT par espace' },
-        { icon: 'database', name: 'PostgreSQL', detail: 'Relationnel et JSONB, 50 migrations' },
-        { icon: 'shield', name: 'Zod', detail: 'Entrées et configuration validées' },
-        { icon: 'check', name: 'Tests · Playwright', detail: 'Près de 1 400 tests, 161 parcours' },
-        { icon: 'package', name: 'Docker · Compose', detail: 'Images non-root, sur VPS' },
+      factsLabel: 'Ce qui se vérifie',
+      facts: [
+        { icon: 'server', name: 'En ligne', detail: 'Instance publique de démonstration' },
+        { icon: 'check', name: 'Testé', detail: 'Plus de 1 400 tests, 161 parcours navigateur' },
+        {
+          icon: 'layers',
+          name: 'Documenté',
+          detail: 'Conception, design, technique, exploitation',
+        },
+        { icon: 'package', name: 'Versionné', detail: 'Releases immuables et traçables' },
       ],
-      updated: 'Mis à jour le 29 sept. 2026',
+      live: {
+        label: 'Instance publique',
+        link: { label: 'sentinel.akiksystems.fr', href: 'https://sentinel.akiksystems.fr' },
+      },
     },
     stack: {
       eyebrow: 'Stack',
@@ -351,7 +375,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             {
               system: 'sentinel',
               description:
-                'Près de 1 400 tests unitaires, 161 parcours navigateur Playwright, CI en six jobs sur base PostgreSQL réelle.',
+                'Plus de 1 400 tests unitaires, 161 parcours navigateur Playwright, CI en six jobs sur base PostgreSQL réelle.',
             },
             {
               system: 'protocap',
@@ -393,77 +417,85 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         },
       ],
     },
+    perspectives: {
+      eyebrow: 'Ce que je relie',
+      title: 'Quatre regards, une boucle de conception.',
+      body: 'Chaque monde du parcours est devenu une question que je pose à chaque projet. Les contraintes de production, d’équipe et d’exploitation entrent ainsi dans la conception dès le cadrage, au lieu d’être découvertes à la mise en service.',
+      tablistLabel: 'Quatre regards reliés en boucle autour d’une vision systémique',
+      center: { title: ['Vision', 'systémique'], caption: ['Relier, arbitrer,', 'concevoir.'] },
+      loopCaption: 'Chaque tour affine la solution',
+      labels: {
+        brings: 'Ce que ça apporte',
+        avoids: 'Ce que ça évite',
+        asks: 'Questions que je me pose',
+      },
+      nodes: [
+        {
+          id: 'code',
+          name: 'Code',
+          description: 'Écrire, tester et livrer du logiciel qui tient dans le temps.',
+          source:
+            'Sentinel et ProtoCap, en ligne. Titre professionnel d’État Développeur web et web mobile (RNCP, 2026).',
+          brings: 'Savoir ce qu’une idée coûte à construire, à tester et à maintenir.',
+          avoids: 'Les promesses impossibles à tenir, et la dette qu’on découvre trop tard.',
+          asks: 'Comment le tester ? Qui le maintiendra ? Que se passe-t-il quand ça casse ?',
+        },
+        {
+          id: 'management',
+          name: 'Management',
+          description:
+            'Coordonner équipes, priorités et ressources, jusqu’aux délais et au budget.',
+          source:
+            'Cogérant d’AkikTex, sous-traitance textile (2012 – 2014) : production, équipes, trésorerie, clients.',
+          brings:
+            'Savoir ce qu’une solution demande aux équipes, en temps, en moyens et en changement.',
+          avoids: 'Les outils imposés qu’une équipe n’a ni le temps ni l’envie d’adopter.',
+          asks: 'Qui décide ? Qui porte le changement ? Avec quel budget et quel délai ?',
+        },
+        {
+          id: 'field',
+          name: 'Terrain',
+          description: 'Voir l’usage réel, les contraintes concrètes et les effets sur le travail.',
+          source:
+            'Production industrielle : électronique automobile, cosmétique dermatologique, maroquinerie de luxe.',
+          brings:
+            'Du réel : le retour d’expérience, les signaux faibles, les contraintes qu’on ne voit pas depuis un schéma.',
+          avoids: 'Les solutions théoriques, déconnectées de l’exploitation ou du besoin.',
+          asks: 'Qui va vraiment l’utiliser ? Dans quelles conditions ? Que se passera-t-il en production ?',
+        },
+        {
+          id: 'infrastructure',
+          name: 'Infrastructure',
+          description: 'Réseaux, serveurs, postes : tout ce sur quoi le logiciel tourne.',
+          source:
+            'Technicien réseaux et télécoms (2010 – 2012), technicien d’assistance informatique (2025).',
+          brings: 'Savoir où et comment le logiciel va réellement tourner.',
+          avoids: 'Les solutions qui marchent en démonstration et tombent en production.',
+          asks: 'Où va-t-il tourner ? Sur quel réseau, quels postes ? Que fait-on en cas de panne ?',
+        },
+      ],
+    },
     principles: {
       eyebrow: 'Ce qui guide mon travail',
-      title: 'Un logiciel métier ne vaut que par ce qu’il change dans le travail réel.',
-      body: 'Beaucoup d’outils ajoutent un écran sans retirer de charge, ou répondent parfaitement au mauvais problème. Mon travail commence donc avant le code : comprendre ce qui se passe, pour qui, et ce qu’une solution va déplacer. Il continue après : tester, livrer quelque chose de fiable, et dire clairement ce qui est prouvé et ce qui ne l’est pas encore.',
-      relate: {
-        eyebrow: 'Ce que je relie',
-        title: 'Quatre regards, une boucle de conception.',
-        body: 'Code, infrastructure, terrain et management : quatre expériences vécues, présentes dans chaque décision de conception.',
-        groupLabel: 'Quatre regards reliés en boucle autour d’une vision systémique',
-        center: { title: ['Vision', 'systémique'], caption: ['Relier, arbitrer,', 'concevoir.'] },
-        loopCaption: 'Chaque tour affine la solution',
-        detailLabel: 'Détail du regard choisi',
-        labels: {
-          brings: 'Ce que ça apporte',
-          avoids: 'Ce que ça évite',
-          asks: 'Questions que je me pose',
-        },
-        nodes: [
+      title: ['La machine prend la charge ;', 'l’humain prend de la hauteur.'],
+      body: [
+        'Qu’il s’agisse d’un système machine-machine, où priment la robustesse et les flux, d’un logiciel métier, qui doit épouser le travail de ceux qui l’utilisent, ou d’un service grand public, où tout part des personnes et de leurs contextes, ma démarche reste la même : comprendre avant de construire, et remonter jusqu’aux causes plutôt que traiter les symptômes.',
+        'Cette démarche repose sur une conviction : la technologie doit augmenter notre maîtrise du réel, pas nous en éloigner. Personne ne devrait avoir à compenser durablement les défauts d’un système ou d’une machine. Je l’ai vécu en conduite de ligne : c’est trop souvent l’opérateur qui compense le système, au lieu d’être soutenu par lui. L’automatisation n’a de sens que si elle libère de l’attention pour ce qui exige du jugement et de la décision. Et un problème bien traité ne doit pas seulement disparaître : sa résolution doit produire de la connaissance et simplifier le système.',
+        'Cette question de la maîtrise dépasse pour moi le logiciel. De la révolution scientifique à la révolution industrielle, puis numérique et aujourd’hui algorithmique, nos systèmes n’ont cessé de gagner en puissance et en abstraction. Nous devons préserver notre capacité à saisir ce qu’ils font, pourquoi ils le font et comment ils transforment nos manières d’agir. Cela commence par ramener l’attention sur le réel et reprendre le temps d’observer et de modéliser.',
+        'Je me situe entre le pourquoi et le comment, entre la conception et la réalisation, entre l’humain et la machine. Mon travail : comprendre en profondeur pour concevoir juste, puis maîtriser la technique pour en faire quelque chose de concret, utile et durable. Je ne veux ni penser des systèmes que je serais incapable de construire, ni construire des systèmes dont je n’aurais pas interrogé le sens.',
+      ],
+      evidence: {
+        lead: 'Ces principes ne restent pas des intentions : ils gouvernent déjà la conception de mes systèmes.',
+        links: [
           {
-            id: 'code',
-            name: 'Code',
-            description: 'Écrire, tester et livrer du logiciel qui tient dans le temps.',
-            figure: null,
-            source: 'Titre professionnel d’État Développeur web et web mobile (RNCP, 2026).',
-            brings: 'Savoir ce qu’une idée coûte à construire, à tester et à maintenir.',
-            avoids: 'Les promesses impossibles à tenir, et la dette qu’on découvre trop tard.',
-            asks: 'Comment le tester ? Qui le maintiendra ? Que se passe-t-il quand ça casse ?',
+            label: 'La doctrine de design de Sentinel',
+            href: 'https://github.com/AmineAKIK/sentinel-fullstack/blob/main/docs/design.md',
           },
           {
-            id: 'management',
-            name: 'Management',
-            description:
-              'Coordonner équipes, priorités et ressources, jusqu’aux délais et au budget.',
-            figure: { value: '2', label: 'entreprises dirigées' },
-            source:
-              'AkikTex, sous-traitance textile (2012 – 2014), puis AkikSystems (depuis 2026).',
-            brings:
-              'Savoir ce qu’une solution demande aux équipes, en temps, en moyens et en changement.',
-            avoids: 'Les outils imposés qu’une équipe n’a ni le temps ni l’envie d’adopter.',
-            asks: 'Qui décide ? Qui porte le changement ? Avec quel budget et quel délai ?',
-          },
-          {
-            id: 'field',
-            name: 'Terrain',
-            description:
-              'Voir l’usage réel, les contraintes concrètes et les effets sur le travail.',
-            figure: null,
-            source:
-              'Industrie exigeante : cosmétique dermatologique, électronique automobile, maroquinerie de luxe.',
-            brings:
-              'Du réel : le retour d’expérience, les signaux faibles, les contraintes qu’on ne voit pas depuis un schéma.',
-            avoids: 'Les solutions théoriques, déconnectées de l’exploitation ou du besoin.',
-            asks: 'Qui va vraiment l’utiliser ? Dans quelles conditions ? Que se passera-t-il en production ?',
-          },
-          {
-            id: 'infrastructure',
-            name: 'Infrastructure',
-            description: 'Réseaux, serveurs, postes : tout ce sur quoi le logiciel tourne.',
-            figure: null,
-            source:
-              'Technicien réseaux et télécoms (2011), technicien d’assistance informatique (2025).',
-            brings: 'Savoir où et comment le logiciel va réellement tourner.',
-            avoids: 'Les solutions qui marchent en démonstration et tombent en production.',
-            asks: 'Où va-t-il tourner ? Sur quel réseau, quels postes ? Que fait-on en cas de panne ?',
+            label: 'La synthèse opérationnelle de ProtoCap',
+            href: 'https://protocap-production.up.railway.app/rapport',
           },
         ],
-      },
-      result: {
-        eyebrow: 'Le résultat',
-        title: 'Ce que ça change dans un projet.',
-        body: 'Les contraintes de production, d’équipe et d’exploitation entrent dans la conception dès le cadrage, au lieu d’être découvertes à la mise en service.',
       },
     },
     capabilities: {
@@ -471,7 +503,11 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       title: ['De l’idée à la maintenance,', 'tout le cycle.'],
       tablistLabel: 'Étapes du cycle',
       groups: ['Avant de coder', 'Construire et livrer', 'Faire vivre'],
-      labels: { does: 'Ce que je fais', receives: 'Ce que vous recevez', proof: 'Déjà en service' },
+      labels: {
+        does: 'Ce que je fais',
+        receives: 'Ce que vous recevez',
+        proof: 'Déjà mis en œuvre',
+      },
       phases: [
         {
           name: 'Cadrer',
@@ -484,6 +520,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Critères de réussite fixés à l’avance',
           ],
           deliverable: 'Note de cadrage',
+          proof:
+            'Sentinel : acteurs, droits et cycle de vie complet des incidents, fixés dans un dossier de conception.',
         },
         {
           name: 'Concevoir',
@@ -496,7 +534,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Sécurité et droits d’accès dès le départ',
           ],
           deliverable: 'Maquettes et dossier de conception',
-          proof: 'Sentinel : modèle relationnel et JSONB, 50 migrations immuables.',
+          proof:
+            'Sentinel : une doctrine d’interface en sept principes, un modèle de données versionné en 50 migrations.',
         },
         {
           name: 'Valider',
@@ -509,7 +548,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Décision : poursuivre, ajuster ou arrêter',
           ],
           deliverable: 'Prototype testé',
-          proof: 'ProtoCap : une démonstration servie séparément de la version réelle.',
+          proof:
+            'ProtoCap : une proposition d’essai pilote co-rédigée, et une démonstration isolée de la version réelle.',
         },
         {
           name: 'Développer',
@@ -561,7 +601,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Support aux utilisateurs',
           ],
           deliverable: 'Procédures d’exploitation',
-          proof: 'Sentinel : sauvegarde et restauration testées.',
+          proof:
+            'Sentinel : sauvegarde et restauration testées. ProtoCap : sondes de santé et de disponibilité.',
         },
         {
           name: 'Faire évoluer',
@@ -574,6 +615,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Mises à jour de sécurité',
           ],
           deliverable: 'Feuille de route des évolutions',
+          proof:
+            'Sentinel : neuf versions candidates et leurs audits archivés. ProtoCap : 13 PR de remédiation, closes avec preuve.',
         },
       ],
       loopNote:
@@ -601,94 +644,112 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       },
     },
     scale: {
-      eyebrow: 'Le sens du slogan',
+      eyebrow: 'La signature d’AkikSystems',
       title: 'Systemic Scale',
       lead: ['Intervenir sur une partie.', 'Évaluer sur une frontière plus large.'],
       body: 'Une intervention peut être locale alors que ses effets ne le sont pas. Je choisis un périmètre assez large pour voir où vont les effets, et assez limité pour pouvoir décider.',
       method: {
         eyebrow: 'Ma manière d’intervenir',
         intro:
-          'Quatre temps, illustrés par un exemple : des ressources matérielles partagées entre plusieurs équipes, avec des retards et des conflits qui reviennent.',
+          'Quatre temps, illustrés par un cas réel : une machine de conditionnement dont les journaux accumulaient les alarmes.',
       },
       tablistLabel: 'Les quatre temps',
       stepLabel: 'Temps',
-      labels: { example: 'Dans l’exemple', question: 'La question à se poser' },
+      labels: { example: 'Dans ce cas', question: 'La question à se poser' },
       steps: [
         {
           tab: 'Lire la demande',
           lead: 'Je pars de la demande, sans la confondre avec le problème.',
           example:
-            'La demande reçue : « Automatisez l’attribution des ressources pour réduire les délais. »',
+            'La demande : réduire les arrêts. Les journaux machine alignent des dizaines de libellés d’alarme, et le réflexe est de traiter chacun comme un problème à part, en commençant par le plus fréquent.',
           question: 'La demande contient-elle déjà une solution ?',
-          alt: 'La chaîne complète d’une ressource, de la réservation à la disponibilité. La demande ne vise que l’attribution.',
         },
         {
           tab: 'Élargir le regard',
-          lead: 'Je regarde toute la chaîne, là où le travail se fait vraiment.',
+          lead: 'Je regarde tout le système, là où le travail se fait vraiment.',
           example:
-            'Une ressource peut être « libre » dans le système sans être prête : elle doit être vérifiée, parfois remise en état, puis retrouvée. En urgence, les équipes tiennent une liste parallèle des ressources vraiment prêtes.',
+            'Sur place, je sépare le problème réel du problème causé. L’alarme la plus fréquente n’a pas d’impact : la machine écarte d’elle-même le produit concerné. À l’inverse, « magasin vide » et « défaut de prise » ne sont pas deux pannes : près de 90 occurrences viennent d’une même cellule de détection désynchronisée.',
           question: 'Qu’est-ce qui reste hors du cadre et change pourtant la décision ?',
-          alt: 'Toute la chaîne est regardée. Vérification, remise en état et localisation sont invisibles pour le système.',
         },
         {
           tab: 'Agir au bon endroit',
           lead: 'J’interviens là où le problème se produit, pas seulement là où il se voit.',
           example:
-            'Automatiser tout de suite aurait accéléré des décisions fondées sur une information peu fiable. L’état réel est d’abord rendu fiable ; seuls les cas simples sont automatisés, les conflits restent à la coordination.',
+            'Plutôt que de régler la prise ou de surveiller le magasin, la cellule est repositionnée. Les autres alarmes gardent leur propre diagnostic, et ce qui n’est pas prouvé reste une hypothèse, affichée comme telle.',
           question: 'Ce problème est-il résolu, ou seulement déplacé ?',
-          alt: 'Deux interventions ciblées : l’état « prête » est confirmé à la vérification, l’attribution n’est automatisée que pour les cas simples.',
         },
         {
           tab: 'Vérifier l’effet',
-          lead: 'Je mesure ce qui a vraiment changé, et je corrige au bon niveau.',
+          lead: 'Je mesure ce qui a vraiment changé, et je dis ce qui reste incertain.',
           example:
-            'Les recherches informelles diminuent et les conflits sont repérés plus tôt. Mais certaines équipes réservent désormais très tôt, à titre provisoire : la conception est rouverte sur ce point, et seulement sur celui-là.',
-          question: 'L’effet attendu est-il observé, ou seulement l’outil livré ?',
-          alt: 'Après la mise en service, un effet inattendu revient vers la réservation : des demandes provisoires déposées très tôt.',
+            'La remontée de production coïncide avec un changement d’équipe : l’effet est cohérent, pas encore attribuable, et un suivi est prévu. Le raisonnement, lui, devient une proposition d’outil pour aider les opérateurs à remonter du symptôme à la cause.',
+          question: 'L’effet observé est-il vraiment dû à l’intervention ?',
         },
       ],
-      chain: [
-        'Réservation',
-        'Attribution',
-        'Utilisation',
-        'Retour',
-        'Vérification',
-        'Remise en état',
-        'Localisation',
-        'Disponible',
-      ],
-      diagram: {
-        asked: 'Ce qu’on me demande',
-        whole: 'Ce que je regarde : toute la chaîne',
-        observed: 'Ce que j’observe après la mise en service',
-        simple: 'Automatisé pour les cas simples',
-        conflicts: 'Les conflits restent à la coordination',
-        ready: 'État « prête » confirmé explicitement',
-        free: '« Libre » pour le système',
-        invisible: 'Invisible pour le système',
-        usable: 'Vraiment utilisable',
-        unexpected: 'Effet inattendu : des réservations provisoires, déposées très tôt',
-      },
-      emblem: {
-        eyebrow: 'L’emblème AkikSystems',
-        title: 'Ce que dit l’emblème',
-        alt: 'Emblème AkikSystems : un aigle et un serpent entre deux branches d’olivier, au-dessus de la mer, sous trois étoiles',
-        items: [
+      logs: {
+        caption: [
+          'Ce qu’on me demande : faire baisser ces alarmes',
+          'Ce que je regarde : ce qui produit chaque alarme',
+          'Où j’interviens : sur la cause, pas sur ses symptômes',
+          'Ce que j’observe ensuite',
+        ],
+        logsLabel: 'Journaux machine',
+        causeLabel: 'Ce qui les produit',
+        unit: 'occurrences',
+        alarms: [
+          { label: 'Couvercle mal clipsé', count: '95 – 97', value: 97, kind: 'managed' },
+          { label: 'Magasin d’étuis vide', count: '48', value: 48, kind: 'caused' },
+          { label: 'Basculeur d’étuis bloqué', count: '44 – 48', value: 48, kind: 'own' },
+          { label: 'Défaut de prise des étuis', count: '41 – 45', value: 45, kind: 'caused' },
+          { label: 'Bourrage du bol', count: '38 – 39', value: 39, kind: 'hypothesis' },
+          { label: 'Pliage d’un petit rabat', count: '16 – 17', value: 17, kind: 'own' },
+        ],
+        tags: {
+          managed: 'Géré, sans impact',
+          caused: 'Causé',
+          own: 'Cause propre',
+          hypothesis: 'Hypothèse ouverte',
+          resolved: 'Plus observé',
+        },
+        cause: [
           {
-            id: 'eagle',
-            name: 'L’aigle',
-            key: 'La vue d’ensemble',
-            text: 'Prendre de la hauteur pour voir le système entier, ses liens et ses effets.',
+            title: 'Six problèmes à traiter ?',
+            text: 'Lue telle quelle, la liste appelle six corrections séparées, en commençant par la première.',
           },
           {
-            id: 'serpent',
-            name: 'Le serpent',
-            key: 'Le terrain',
-            text: 'Rester au ras du sol, là où les choses se passent vraiment. La prudence de celui qui connaît le terrain.',
+            title: 'Une cellule désynchronisée',
+            text: 'Un tapis avance sans l’autre : l’étui arrive de travers, la prise par aspiration échoue et le magasin se vide.',
+          },
+          {
+            title: 'Cellule repositionnée',
+            text: 'Une seule correction, sur la cause. Les deux alarmes qu’elle produisait ne sont pas traitées une à une.',
+          },
+          {
+            title: 'Plus aucun défaut d’étui',
+            text: 'Constaté sur le reste de la journée pour les deux alarmes qu’elle produisait. Une journée : c’est un signal, pas encore une preuve.',
           },
         ],
-        quote: 'La hauteur du regard ne vaut rien sans la connaissance du sol.',
       },
+    },
+    emblem: {
+      eyebrow: 'L’emblème AkikSystems',
+      title: 'Ce que dit l’emblème',
+      alt: 'Emblème AkikSystems : un aigle et un serpent entre deux branches d’olivier, au-dessus de la mer, sous trois étoiles',
+      items: [
+        {
+          id: 'eagle',
+          name: 'L’aigle',
+          key: 'La vue d’ensemble',
+          text: 'Prendre de la hauteur pour voir le système entier, ses liens et ses effets.',
+        },
+        {
+          id: 'serpent',
+          name: 'Le serpent',
+          key: 'Le terrain',
+          text: 'Rester au ras du sol, là où les choses se passent vraiment. La prudence de celui qui connaît le terrain.',
+        },
+      ],
+      quote: 'La hauteur du regard ne vaut rien sans la connaissance du sol.',
     },
     cta: {
       eyebrow: 'Travailler ensemble',
@@ -703,7 +764,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profile — Mohamed Amine Akik',
       description:
-        'Founder of AkikSystems, full-stack developer: demanding industrial experience, two companies led, and business software that is live and testable.',
+        'Full-stack developer and founder of AkikSystems: live, verifiable business software grounded in real industrial operations.',
     },
     identity: {
       eyebrow: 'Profile',
@@ -712,7 +773,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       role: 'Founder of AkikSystems',
       roleDetail: 'full-stack developer',
       intro:
-        'I design and build business software from the real system it will run in: users, workflows, data, rules and constraints. From modeling to deployment, I deliver tools people can understand, maintain and evolve.',
+        'I am a developer and an infrastructure and IT support technician, but I have also worked on the shop floor and managed a business. More than job titles, these are worlds I have experienced first-hand. They taught me to see a system as a whole: from machines to people, from code to infrastructure, and from day-to-day use to the organisation around it.',
       contacts: {
         linkedin: { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amineakik' },
         github: { label: 'GitHub', href: 'https://github.com/AmineAKIK' },
@@ -729,9 +790,9 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       ],
       timeline: {
         eyebrow: 'Background',
-        title: 'From the field to software.',
+        title: 'From the shop floor to software.',
         intro:
-          'Industrial experience in environments demanding on quality and technical precision, and a first company led.',
+          'Industrial production, running a business and IT: three worlds I worked in before designing my own systems.',
         workLabel: 'Experience',
         educationLabel: 'Education',
         work: [
@@ -739,10 +800,15 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             period: '2026 —',
             title: 'Founder, AkikSystems',
             place: 'Châtellerault, France',
-            detail: 'Designing and building business and operational software: Sentinel, ProtoCap.',
+            detail:
+              'The company through which I design and build my systems: Sentinel and ProtoCap.',
           },
           { period: '2026 —', title: 'L’Oréal', place: 'Dermatological cosmetics' },
-          { period: '2023 — 2025', title: 'Marelli', place: 'Automotive electronics' },
+          {
+            period: '2023 — 2025',
+            title: 'Marelli',
+            place: 'Production line operator · automotive electronics',
+          },
           {
             period: '2022 — 2023',
             title: 'Ateliers Réunis du Centre-Ouest',
@@ -767,14 +833,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             place: 'French state professional title, listed in the RNCP · prepared with Studi',
           },
           {
-            period: '2009 — 2010',
-            title: 'Baccalaureate in programming and technology',
-            place: 'Tunisia',
-          },
-          {
             period: '2010 — 2012',
             title: 'Network and telecoms technician, internship at Tunisie Telecom',
             place: 'Sousse, Tunisia',
+          },
+          {
+            period: '2009 — 2010',
+            title: 'Baccalaureate in programming and technology',
+            place: 'Tunisia',
           },
         ],
       },
@@ -784,31 +850,28 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       follow: { label: 'View the project', href: '/en/systems#sentinel' },
       name: 'Sentinel',
       summary:
-        'Shop-floor incident tracking: a production anomaly followed from report to shared knowledge, without ever losing the trail of decisions.',
+        'Shop-floor incident tracking: each production issue is followed from initial report to shared knowledge, without ever losing the decision trail.',
       roleLabel: 'My role',
       role: 'Design and development',
-      stackLabel: 'Project stack',
-      stack: [
-        {
-          icon: 'screen',
-          name: 'TypeScript · React',
-          detail: 'Three workspaces, accessibility checks',
-        },
-        { icon: 'server', name: 'Node.js · Express', detail: 'API, JWT sessions per workspace' },
-        { icon: 'database', name: 'PostgreSQL', detail: 'Relational and JSONB, 50 migrations' },
-        { icon: 'shield', name: 'Zod', detail: 'Inputs and configuration validated' },
-        { icon: 'check', name: 'Tests · Playwright', detail: 'About 1,400 tests, 161 journeys' },
-        { icon: 'package', name: 'Docker · Compose', detail: 'Non-root images, on a VPS' },
+      factsLabel: 'What can be verified',
+      facts: [
+        { icon: 'server', name: 'Live', detail: 'Public demonstration instance' },
+        { icon: 'check', name: 'Tested', detail: 'Over 1,400 tests, 161 browser journeys' },
+        { icon: 'layers', name: 'Documented', detail: 'Design, UX, technical, operations' },
+        { icon: 'package', name: 'Versioned', detail: 'Immutable, traceable releases' },
       ],
-      updated: 'Updated 29 Sept 2026',
+      live: {
+        label: 'Public instance',
+        link: { label: 'sentinel.akiksystems.fr', href: 'https://sentinel.akiksystems.fr' },
+      },
     },
     stack: {
       eyebrow: 'Stack',
-      title: ['My stack,', 'and where to verify it.'],
+      title: ['My stack,', 'and where to see it in action.'],
       intro:
         'Each technology points to the system that uses it: live, testable, and linked to its card on the Systems page.',
       provenIn: { one: 'Proven in 1 system', many: 'Proven in {count} systems' },
-      regionLabel: 'Evidence for',
+      regionLabel: 'Evidence in',
       inspect: 'Inspect the system',
       systems: {
         sentinel: {
@@ -881,7 +944,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             {
               system: 'sentinel',
               description:
-                'Nearly 1,400 unit tests, 161 Playwright browser journeys, a six-job CI pipeline on a real PostgreSQL database.',
+                'Over 1,400 unit tests, 161 Playwright browser journeys, a six-job CI pipeline on a real PostgreSQL database.',
             },
             {
               system: 'protocap',
@@ -923,81 +986,92 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
         },
       ],
     },
+    perspectives: {
+      eyebrow: 'What I connect',
+      title: 'Four perspectives, one design loop.',
+      body: 'Each part of my background has become a set of questions I bring to every project. Production, team and operational constraints are built into the design from the scoping stage, rather than discovered at go-live.',
+      tablistLabel: 'Four perspectives connected in a loop around a systemic view',
+      center: { title: ['Systemic', 'view'], caption: ['Connect, balance,', 'design.'] },
+      loopCaption: 'Every turn refines the solution',
+      labels: { brings: 'What it brings', avoids: 'What it avoids', asks: 'Questions I ask' },
+      nodes: [
+        {
+          id: 'code',
+          name: 'Code',
+          description: 'Writing, testing and shipping software that holds up over time.',
+          source:
+            'Sentinel and ProtoCap, live. Web and Mobile Web Developer, French state professional title (RNCP, 2026).',
+          brings: 'Knowing what an idea costs to build, to test and to maintain.',
+          avoids: 'Promises that cannot be kept, and debt discovered too late.',
+          asks: 'How do we test it? Who will maintain it? What happens when it breaks?',
+        },
+        {
+          id: 'management',
+          name: 'Management',
+          description:
+            'Coordinating teams, priorities and resources, including timelines and budgets.',
+          source:
+            'Co-owner and managing director of AkikTex, textile subcontracting (2012 – 2014): production, teams, cash flow, clients.',
+          brings: 'Understanding what a solution demands of teams in time, resources and change.',
+          avoids: 'Tools imposed on a team that has neither the time nor the will to adopt them.',
+          asks: 'Who decides? Who owns the change? What are the budget and timeline?',
+        },
+        {
+          id: 'field',
+          name: 'On the ground',
+          description:
+            'Seeing how things are really used, the practical constraints and the impact on work.',
+          source:
+            'Industrial production: automotive electronics, dermatological cosmetics, luxury leather goods.',
+          brings:
+            'First-hand evidence: lessons learned, early warning signs and constraints that no diagram can reveal.',
+          avoids: 'Theoretical solutions, disconnected from operations or from the need.',
+          asks: 'Who will really use it? Under what conditions? What will happen in production?',
+        },
+        {
+          id: 'infrastructure',
+          name: 'Infrastructure',
+          description: 'Networks, servers, workstations: everything the software runs on.',
+          source: 'Network and telecoms technician (2010 – 2012), IT support technician (2025).',
+          brings: 'Knowing where and how the software will actually run.',
+          avoids: 'Solutions that work in the demo and fall over in production.',
+          asks: 'Where will it run? On which network, which machines? What do we do when it goes down?',
+        },
+      ],
+    },
     principles: {
       eyebrow: 'What guides my work',
-      title: 'Business software is only worth what it changes in real work.',
-      body: 'Many tools add a screen without removing any load, or perfectly answer the wrong problem. So my work starts before the code: understanding what is happening, for whom, and what a solution will shift. It continues after: testing, shipping something reliable, and saying clearly what is proven and what is not yet.',
-      relate: {
-        eyebrow: 'What I connect',
-        title: 'Four perspectives, one design loop.',
-        body: 'Code, infrastructure, the field and management: four lived experiences, present in every design decision.',
-        groupLabel: 'Four perspectives connected in a loop around a systemic view',
-        center: { title: ['Systemic', 'view'], caption: ['Connect, weigh,', 'design.'] },
-        loopCaption: 'Every turn refines the solution',
-        detailLabel: 'Detail of the selected perspective',
-        labels: {
-          brings: 'What it brings',
-          avoids: 'What it avoids',
-          asks: 'Questions I ask',
-        },
-        nodes: [
+      title: ['Machines carry the load.', 'People rise above it.'],
+      body: [
+        'Whether it is a machine-to-machine system, where robustness and flow come first; a business application, which must fit the work of the people who use it; or a consumer service, where everything begins with people and their circumstances, my approach remains the same: understand before building, and trace problems back to their causes rather than treating their symptoms.',
+        'This approach rests on one conviction: technology should strengthen our grasp of reality, not distance us from it. No one should have to compensate indefinitely for the flaws of a system or machine. I learned this first-hand while operating a production line: too often, the operator compensates for the system instead of being supported by it. Automation only makes sense when it frees attention for work that requires judgement and decision-making. And a problem properly addressed should do more than disappear: solving it should create knowledge and simplify the system.',
+        'For me, this question of control extends beyond software. From the scientific revolution to the industrial, digital and now algorithmic revolutions, our systems have grown ever more powerful and abstract. We must preserve our ability to understand what they do, why they do it and how they reshape the way we act. That begins with bringing our attention back to reality and taking the time to observe and model it.',
+        'I work between the why and the how, between design and implementation, and between people and machines. My role is to understand deeply enough to design with purpose, then command the technology well enough to make the result concrete, useful and durable. I want neither to design systems I could not build nor to build systems whose purpose I have not questioned.',
+      ],
+      evidence: {
+        lead: 'These principles are not just intentions: they already govern how I design my systems.',
+        links: [
           {
-            id: 'code',
-            name: 'Code',
-            description: 'Writing, testing and shipping software that holds up over time.',
-            figure: null,
-            source: 'Web and Mobile Web Developer, French state professional title (RNCP, 2026).',
-            brings: 'Knowing what an idea costs to build, to test and to maintain.',
-            avoids: 'Promises that cannot be kept, and debt discovered too late.',
-            asks: 'How do we test it? Who will maintain it? What happens when it breaks?',
+            label: 'Sentinel’s design doctrine',
+            href: 'https://github.com/AmineAKIK/sentinel-fullstack/blob/main/docs/design.md',
           },
           {
-            id: 'management',
-            name: 'Management',
-            description:
-              'Coordinating teams, priorities and resources, down to deadlines and budget.',
-            figure: { value: '2', label: 'companies led' },
-            source: 'AkikTex, textile subcontracting (2012–2014), then AkikSystems (since 2026).',
-            brings: 'Knowing what a solution asks of teams in time, means and change.',
-            avoids: 'Tools imposed on a team that has neither the time nor the will to adopt them.',
-            asks: 'Who decides? Who carries the change? On what budget and timeline?',
-          },
-          {
-            id: 'field',
-            name: 'Field',
-            description: 'Seeing real use, concrete constraints and the effects on the work.',
-            figure: null,
-            source:
-              'Demanding industry: dermatological cosmetics, automotive electronics, luxury leather goods.',
-            brings:
-              'Reality: lessons learned, weak signals, the constraints you cannot see from a diagram.',
-            avoids: 'Theoretical solutions, disconnected from operations or from the need.',
-            asks: 'Who will really use it? Under what conditions? What will happen in production?',
-          },
-          {
-            id: 'infrastructure',
-            name: 'Infrastructure',
-            description: 'Networks, servers, workstations: everything the software runs on.',
-            figure: null,
-            source: 'Network and telecoms technician (2011), IT support technician (2025).',
-            brings: 'Knowing where and how the software will actually run.',
-            avoids: 'Solutions that work in the demo and fall over in production.',
-            asks: 'Where will it run? On which network, which machines? What do we do when it goes down?',
+            label: 'ProtoCap’s operational summary',
+            href: 'https://protocap-production.up.railway.app/rapport',
           },
         ],
-      },
-      result: {
-        eyebrow: 'The result',
-        title: 'What it changes in a project.',
-        body: 'Production, team and operating constraints enter the design at scoping, instead of being discovered at go-live.',
       },
     },
     capabilities: {
       eyebrow: 'Capabilities',
       title: ['From idea to maintenance,', 'the whole cycle.'],
       tablistLabel: 'Stages of the cycle',
-      groups: ['Before the code', 'Build and ship', 'Keep it alive'],
-      labels: { does: 'What I do', receives: 'What you receive', proof: 'Already in service' },
+      groups: ['Before coding', 'Build and ship', 'Keep it running'],
+      labels: {
+        does: 'What I do',
+        receives: 'What you receive',
+        proof: 'Already put into practice',
+      },
       phases: [
         {
           name: 'Scope',
@@ -1010,6 +1084,8 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'Success criteria set upfront',
           ],
           deliverable: 'Scoping note',
+          proof:
+            'Sentinel: actors, permissions and the complete incident lifecycle, defined in a design specification.',
         },
         {
           name: 'Design',
@@ -1018,24 +1094,26 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           services: [
             'User journeys and mock-ups',
             'Data model',
-            'Architecture and reasoned technical choices',
+            'Architecture and justified technical choices',
             'Security and access rights from the start',
           ],
           deliverable: 'Mock-ups and design documentation',
-          proof: 'Sentinel: relational and JSONB model, 50 immutable migrations.',
+          proof:
+            'Sentinel: an interface doctrine in seven principles, a data model versioned across 50 migrations.',
         },
         {
           name: 'Validate',
           group: 0,
           purpose: 'Test the idea before investing in it.',
           services: [
-            'Clickable prototype or demonstrator',
+            'Clickable prototype or proof of concept',
             'Trials with real users',
             'Adjustments before development',
             'Decision: continue, adjust or stop',
           ],
           deliverable: 'Tested prototype',
-          proof: 'ProtoCap: a demo served separately from the live version.',
+          proof:
+            'ProtoCap: a co-written pilot proposal, and a demo isolated from the live version.',
         },
         {
           name: 'Develop',
@@ -1087,7 +1165,7 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
             'User support',
           ],
           deliverable: 'Operating procedures',
-          proof: 'Sentinel: tested backup and restore.',
+          proof: 'Sentinel: tested backup and restore. ProtoCap: health and readiness probes.',
         },
         {
           name: 'Evolve',
@@ -1096,10 +1174,12 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
           services: [
             'Measuring real effects',
             'User feedback',
-            'Bug fixes and feature evolution',
+            'Corrective maintenance and enhancements',
             'Security updates',
           ],
-          deliverable: 'Evolution roadmap',
+          deliverable: 'Improvement roadmap',
+          proof:
+            'Sentinel: nine release candidates and their archived audits. ProtoCap: 13 remediation PRs, closed with proof.',
         },
       ],
       loopNote:
@@ -1127,92 +1207,125 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
       },
     },
     scale: {
-      eyebrow: 'What the tagline means',
+      eyebrow: 'The AkikSystems signature',
       title: 'Systemic Scale',
-      lead: ['Act on one part.', 'Judge across a wider boundary.'],
-      body: 'An intervention can be local while its effects are not. I choose a scope wide enough to see where the effects go, and narrow enough to still decide.',
+      lead: ['Act on one part.', 'Assess across a wider boundary.'],
+      body: 'An intervention may be local even when its effects are not. I choose a scope broad enough to trace those effects, yet bounded enough to make a decision.',
       method: {
         eyebrow: 'How I intervene',
         intro:
-          'Four stages, shown through one example: equipment shared between several teams, with recurring delays and conflicts.',
+          'Four stages, shown through a real case: a packaging machine whose logs kept piling up alarms.',
       },
       tablistLabel: 'The four stages',
       stepLabel: 'Stage',
-      labels: { example: 'In the example', question: 'The question to ask' },
+      labels: { example: 'In this case', question: 'The question to ask' },
       steps: [
         {
           tab: 'Read the request',
           lead: 'I start from the request, without mistaking it for the problem.',
-          example: 'The request received: “Automate resource allocation to cut delays.”',
+          example:
+            'The request: reduce stoppages. The machine logs list dozens of alarm labels, and the reflex is to treat each one as a separate problem, starting with the most frequent.',
           question: 'Does the request already contain a solution?',
-          alt: 'The full chain of a resource, from booking to availability. The request only targets allocation.',
         },
         {
           tab: 'Widen the view',
-          lead: 'I look at the whole chain, where the work really happens.',
+          lead: 'I look at the whole system, where the work really happens.',
           example:
-            'A resource can be “free” in the system without being ready: it has to be checked, sometimes repaired, then found. In a rush, teams keep a parallel list of the resources that are truly ready.',
+            'On site, I distinguish the underlying problem from the problems it causes. The most frequent alarm has no operational impact: the machine automatically rejects the affected product. By contrast, “magazine empty” and “pick failure” are not two separate faults: nearly 90 occurrences stem from a single detection sensor that is out of sync.',
           question: 'What sits outside the frame yet still changes the decision?',
-          alt: 'The whole chain is examined. Checking, repair and locating are invisible to the system.',
         },
         {
           tab: 'Act where it counts',
-          lead: 'I intervene where the problem happens, not only where it shows.',
+          lead: 'I intervene where the problem originates, not only where it surfaces.',
           example:
-            'Automating straight away would have sped up decisions built on unreliable information. The real state is made reliable first; only simple cases are automated, and conflicts stay with coordination.',
+            'Rather than adjusting the pick mechanism or monitoring the magazine, I reposition the sensor. The other alarms retain their own diagnosis, and anything unproven remains clearly identified as a hypothesis.',
           question: 'Is this problem solved, or only moved?',
-          alt: 'Two targeted interventions: the “ready” state is confirmed at the check, and allocation is automated only for simple cases.',
         },
         {
           tab: 'Check the effect',
-          lead: 'I measure what really changed, and correct at the right level.',
+          lead: 'I measure what really changed, and say what remains uncertain.',
           example:
-            'Informal searches go down and conflicts are spotted earlier. But some teams now book very early, provisionally: the design is reopened on that point, and on that point only.',
-          question: 'Is the expected effect observed, or just the tool delivered?',
-          alt: 'After go-live, an unexpected effect loops back to booking: provisional requests filed very early.',
+            'The increase in output coincides with a shift change: the result is consistent with the intervention, but cannot yet be attributed to it, so further monitoring is planned. The diagnostic method itself becomes a proposal for a tool that helps operators trace symptoms back to their causes.',
+          question: 'Is the observed effect really due to the intervention?',
         },
       ],
-      chain: ['Booking', 'Allocation', 'Use', 'Return', 'Check', 'Repair', 'Locating', 'Available'],
-      diagram: {
-        asked: 'What I am asked for',
-        whole: 'What I look at: the whole chain',
-        observed: 'What I observe after go-live',
-        simple: 'Automated for simple cases',
-        conflicts: 'Conflicts stay with coordination',
-        ready: '“Ready” state confirmed explicitly',
-        free: '“Free” for the system',
-        invisible: 'Invisible to the system',
-        usable: 'Truly usable',
-        unexpected: 'Unexpected effect: provisional bookings, filed very early',
-      },
-      emblem: {
-        eyebrow: 'The AkikSystems emblem',
-        title: 'What the emblem says',
-        alt: 'AkikSystems emblem: an eagle and a serpent between two olive branches, above the sea, beneath three stars',
-        items: [
+      logs: {
+        caption: [
+          'What I am asked to do: reduce these alarms',
+          'What I look at: what produces each alarm',
+          'Where I intervene: on the cause, not its symptoms',
+          'What I observe next',
+        ],
+        logsLabel: 'Machine logs',
+        causeLabel: 'What produces them',
+        unit: 'occurrences',
+        alarms: [
+          { label: 'Lid not clipped properly', count: '95 – 97', value: 97, kind: 'managed' },
+          { label: 'Carton magazine empty', count: '48', value: 48, kind: 'caused' },
+          { label: 'Carton tipper jammed', count: '44 – 48', value: 48, kind: 'own' },
+          { label: 'Carton pick failure', count: '41 – 45', value: 45, kind: 'caused' },
+          { label: 'Bowl jam', count: '38 – 39', value: 39, kind: 'hypothesis' },
+          { label: 'Small flap folding', count: '16 – 17', value: 17, kind: 'own' },
+        ],
+        tags: {
+          managed: 'Handled, no impact',
+          caused: 'Caused',
+          own: 'Independent cause',
+          hypothesis: 'Open hypothesis',
+          resolved: 'No longer observed',
+        },
+        cause: [
           {
-            id: 'eagle',
-            name: 'The eagle',
-            key: 'The big picture',
-            text: 'Rising high enough to see the whole system, its links and its effects.',
+            title: 'Six problems to fix?',
+            text: 'Read as it stands, the list calls for six separate fixes, starting with the first.',
           },
           {
-            id: 'serpent',
-            name: 'The serpent',
-            key: 'The ground',
-            text: 'Staying close to the ground, where things really happen. The caution of someone who knows the terrain.',
+            title: 'One sensor out of sync',
+            text: 'One conveyor advances without the other: the carton arrives crooked, the suction pick fails and the magazine runs empty.',
+          },
+          {
+            title: 'Sensor repositioned',
+            text: 'A single fix, on the cause. The two alarms it produced are not handled one by one.',
+          },
+          {
+            title: 'No more carton faults',
+            text: 'Observed over the rest of the day for the two alarms it produced. One day: a signal, not yet proof.',
           },
         ],
-        quote: 'A high vantage point is worth nothing without knowing the ground.',
       },
+    },
+    emblem: {
+      eyebrow: 'The AkikSystems emblem',
+      title: 'What the emblem says',
+      alt: 'AkikSystems emblem: an eagle and a serpent between two olive branches, above the sea, beneath three stars',
+      items: [
+        {
+          id: 'eagle',
+          name: 'The eagle',
+          key: 'The big picture',
+          text: 'Rising high enough to see the whole system, its links and its effects.',
+        },
+        {
+          id: 'serpent',
+          name: 'The serpent',
+          key: 'The ground',
+          text: 'Staying close to the ground, where things really happen. The caution of someone who knows the terrain.',
+        },
+      ],
+      quote: 'A high vantage point is worth nothing without knowing the ground.',
     },
     cta: {
       eyebrow: 'Work together',
-      title: ['Business software to design,', 'take over or make reliable?'],
+      title: ['A business application to design,', 'take over or make more reliable?'],
       action: {
         label: 'Start a conversation',
         href: 'mailto:contact@akiksystems.com?subject=First%20conversation',
       },
     },
   },
+};
+
+export const profilePageContent: Record<Locale, ProfilePageContent> = {
+  ...content,
+  fr: frenchTypography(content.fr),
 };

@@ -19,7 +19,16 @@ describe('ProfilePage code-only contract', () => {
     const html = render(locale);
     const content = profilePageContent[locale];
 
-    for (const section of ['identity', 'stack', 'principles', 'capabilities', 'scale', 'cta']) {
+    for (const section of [
+      'identity',
+      'stack',
+      'perspectives',
+      'principles',
+      'scale',
+      'capabilities',
+      'emblem',
+      'cta',
+    ]) {
       expect(html).toContain(`data-profile-section="${section}"`);
     }
 
@@ -43,11 +52,10 @@ describe('ProfilePage code-only contract', () => {
   it('exposes one selected tab per tablist and the first stack proof', () => {
     const html = render('fr');
 
-    expect(html.match(/role="tablist"/g)).toHaveLength(2);
-    expect(html.match(/aria-selected="true"/g)).toHaveLength(2);
+    expect(html.match(/role="tablist"/g)).toHaveLength(3);
+    expect(html.match(/aria-selected="true"/g)).toHaveLength(3);
     expect(html.match(/aria-expanded="true"/g)).toHaveLength(1);
     expect(html).toContain('href="/fr/systems#sentinel"');
-    expect(html).toContain('aria-pressed="true"');
   });
 
   it('does not ship a placeholder phone link', () => {

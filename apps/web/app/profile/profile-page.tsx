@@ -317,9 +317,9 @@ function IdentitySection({
             <span className="aks-profile-project-role">{project.role}</span>
           </div>
           <div className="aks-profile-project-block">
-            <span className="aks-profile-label">{project.stackLabel}</span>
+            <span className="aks-profile-label">{project.factsLabel}</span>
             <ul className="aks-profile-project-stack">
-              {project.stack.map((item) => (
+              {project.facts.map((item) => (
                 <li key={item.name}>
                   <span className="aks-profile-project-stack-icon">
                     <Icon path={glyphs[item.icon]} size={15} />
@@ -332,7 +332,12 @@ function IdentitySection({
               ))}
             </ul>
           </div>
-          <p className="aks-profile-project-updated">{project.updated}</p>
+          <p className="aks-profile-project-live">
+            <span>{project.live.label}</span>
+            <a href={project.live.link.href} rel="noopener noreferrer" target="_blank">
+              {project.live.link.label}
+            </a>
+          </p>
         </article>
       </div>
     </section>
@@ -503,8 +508,8 @@ const loopArrows = [
   [225, 0],
 ] as const;
 
-function LensLoop({ content }: { content: ProfilePageContent['principles']['relate'] }) {
-  const [selected, setSelected] = useState(2);
+function LensLoop({ content }: { content: ProfilePageContent['perspectives'] }) {
+  const { active: selected, panelProps, tabProps } = useTabs(content.nodes.length, 2);
   const lens = content.nodes[selected] ?? content.nodes[0];
   const loop = useRef<HTMLDivElement>(null);
   const turn = useRef(loopAngles[2]);
@@ -525,7 +530,7 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
 
   return (
     <div className="aks-profile-relate-grid">
-      <div aria-label={content.groupLabel} className="aks-profile-loop" ref={loop} role="group">
+      <div aria-label={content.tablistLabel} className="aks-profile-loop" ref={loop} role="tablist">
         <svg
           aria-hidden="true"
           className="aks-profile-loop-art"
@@ -593,7 +598,7 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
             );
           })}
         </svg>
-        <div className="aks-profile-loop-core">
+        <div aria-hidden="true" className="aks-profile-loop-core">
           <Icon path={glyphs.vision} size={30} />
           <span className="aks-profile-loop-core-title">
             {content.center.title[0]}
@@ -608,12 +613,10 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
         </div>
         {content.nodes.map((node, index) => (
           <button
-            aria-pressed={index === selected}
             className="aks-profile-lens"
             data-lens={node.id}
             key={node.id}
-            onClick={() => setSelected(index)}
-            type="button"
+            {...tabProps(index)}
           >
             <span className="aks-profile-lens-node">
               <Icon path={lensGlyphs[node.id]} size={24} />
@@ -624,28 +627,16 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
         <p className="aks-profile-loop-caption">{content.loopCaption}</p>
       </div>
 
-      <div
-        aria-label={content.detailLabel}
-        aria-live="polite"
-        className="aks-profile-lens-detail"
-        role="region"
-      >
+      <div className="aks-profile-lens-detail" {...panelProps}>
         <div className="aks-profile-lens-content" key={lens.id}>
           <div className="aks-profile-lens-head">
             <span className="aks-profile-lens-badge">
               <Icon path={lensGlyphs[lens.id]} size={22} />
             </span>
             <div>
-              <h4>{lens.name}</h4>
+              <h3>{lens.name}</h3>
               <p className="aks-profile-lens-description">{lens.description}</p>
-              {lens.figure === null ? null : (
-                <p className="aks-profile-lens-figure">
-                  <strong>{lens.figure.value}</strong> {lens.figure.label}
-                </p>
-              )}
-              {lens.source === null ? null : (
-                <p className="aks-profile-lens-source">{lens.source}</p>
-              )}
+              <p className="aks-profile-lens-source">{lens.source}</p>
             </div>
           </div>
           {detailRows.map((row) => (
@@ -665,6 +656,26 @@ function LensLoop({ content }: { content: ProfilePageContent['principles']['rela
   );
 }
 
+function PerspectivesSection({ content }: { content: ProfilePageContent['perspectives'] }) {
+  return (
+    <section
+      aria-labelledby="profile-perspectives-title"
+      className="aks-profile-section aks-profile-perspectives"
+      data-profile-section="perspectives"
+      id="regards"
+    >
+      <div className="aks-profile-wrap">
+        <div className="aks-profile-section-head">
+          <p className="aks-profile-eyebrow">{content.eyebrow}</p>
+          <h2 id="profile-perspectives-title">{content.title}</h2>
+          <p className="aks-profile-section-lead">{content.body}</p>
+        </div>
+        <LensLoop content={content} />
+      </div>
+    </section>
+  );
+}
+
 function PrinciplesSection({ content }: { content: ProfilePageContent['principles'] }) {
   return (
     <section
@@ -676,20 +687,32 @@ function PrinciplesSection({ content }: { content: ProfilePageContent['principle
       <div className="aks-profile-wrap">
         <div className="aks-profile-principles-head">
           <p className="aks-profile-eyebrow">{content.eyebrow}</p>
-          <h2 id="profile-principles-title">{content.title}</h2>
-          <p>{content.body}</p>
-        </div>
-        <div className="aks-profile-relate">
-          <div className="aks-profile-subhead">
-            <span className="aks-profile-label">{content.relate.eyebrow}</span>
-            <h3>{content.relate.title}</h3>
-            <p>{content.relate.body}</p>
+          <h2 id="profile-principles-title">
+            {content.title[0]} <br className="aks-profile-desktop-break" />
+            {content.title[1]}
+          </h2>
+          <div className="aks-profile-principles-body">
+            {content.body.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
-          <LensLoop content={content.relate} />
-          <div className="aks-profile-subhead aks-profile-result">
-            <span className="aks-profile-label">{content.result.eyebrow}</span>
-            <h3>{content.result.title}</h3>
-            <p>{content.result.body}</p>
+          <div className="aks-profile-evidence">
+            <p>{content.evidence.lead}</p>
+            <ul>
+              {content.evidence.links.map((link) => (
+                <li key={link.href}>
+                  <a
+                    className="aks-profile-pill"
+                    data-size="sm"
+                    href={link.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
@@ -799,56 +822,62 @@ function CapabilitiesSection({ content }: { content: ProfilePageContent['capabil
   );
 }
 
-function ChainDiagram({
-  alt,
-  chain,
-  diagram,
-  step,
-}: {
-  alt: string;
-  chain: ProfilePageContent['scale']['chain'];
-  diagram: ProfilePageContent['scale']['diagram'];
-  step: number;
-}) {
-  const scopeLabel = [diagram.asked, diagram.whole, null, diagram.observed][step] ?? null;
+function LogsDiagram({ logs, step }: { logs: ProfilePageContent['scale']['logs']; step: number }) {
+  const peak = Math.max(...logs.alarms.map((alarm) => alarm.value));
+  const cause = logs.cause[step] ?? logs.cause[0];
 
   return (
-    <div aria-label={alt} className="aks-profile-chain" data-step={step} role="img">
-      <ol className="aks-profile-chain-steps">
-        {chain.map((name) => (
-          <li key={name}>{name}</li>
-        ))}
-      </ol>
-      <span className="aks-profile-chain-mark" data-mark="scope" />
-      <span className="aks-profile-chain-mark aks-profile-chain-text" data-mark="scope-label">
-        {scopeLabel}
-      </span>
-      <span className="aks-profile-chain-mark" data-mark="tick-simple" />
-      <span className="aks-profile-chain-mark aks-profile-chain-text" data-mark="simple">
-        {diagram.simple}
-      </span>
-      <span className="aks-profile-chain-mark aks-profile-chain-note" data-mark="conflicts">
-        {diagram.conflicts}
-      </span>
-      <span className="aks-profile-chain-mark" data-mark="tick-ready" />
-      <span className="aks-profile-chain-mark aks-profile-chain-text" data-mark="ready">
-        {diagram.ready}
-      </span>
-      <span className="aks-profile-chain-mark aks-profile-chain-note" data-mark="free">
-        {diagram.free}
-      </span>
-      <span className="aks-profile-chain-mark" data-mark="invisible-bracket" />
-      <span className="aks-profile-chain-mark aks-profile-chain-text" data-mark="invisible">
-        {diagram.invisible}
-      </span>
-      <span className="aks-profile-chain-mark aks-profile-chain-note" data-mark="usable">
-        {diagram.usable}
-      </span>
-      <span className="aks-profile-chain-mark" data-mark="loop" />
-      <span className="aks-profile-chain-mark" data-mark="loop-head" />
-      <span className="aks-profile-chain-mark aks-profile-chain-text" data-mark="unexpected">
-        {diagram.unexpected}
-      </span>
+    <div className="aks-profile-logs" data-step={step}>
+      <p className="aks-profile-logs-caption" key={step}>
+        {logs.caption[step]}
+      </p>
+      <div className="aks-profile-logs-grid">
+        <div className="aks-profile-logs-column">
+          <div className="aks-profile-logs-head">
+            <span className="aks-profile-label">{logs.logsLabel}</span>
+            <span className="aks-profile-label">{logs.unit}</span>
+          </div>
+          <ol className="aks-profile-logs-list">
+            {logs.alarms.map((alarm) => {
+              const resolved = step === 3 && alarm.kind === 'caused';
+
+              return (
+                <li data-kind={alarm.kind} data-resolved={resolved || undefined} key={alarm.label}>
+                  <span className="aks-profile-logs-name">{alarm.label}</span>
+                  {step === 0 ? null : (
+                    <span className="aks-profile-logs-tag">
+                      {resolved ? logs.tags.resolved : logs.tags[alarm.kind]}
+                    </span>
+                  )}
+                  <span className="aks-profile-logs-count">{alarm.count}</span>
+                  <svg
+                    aria-hidden="true"
+                    className="aks-profile-logs-bar"
+                    focusable="false"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 100 3"
+                  >
+                    <rect
+                      className="aks-profile-logs-bar-value"
+                      height="3"
+                      width={((alarm.value / peak) * 100).toFixed(1)}
+                    />
+                  </svg>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+        <div className="aks-profile-logs-column">
+          <div className="aks-profile-logs-head">
+            <span className="aks-profile-label">{logs.causeLabel}</span>
+          </div>
+          <div className="aks-profile-cause" key={step}>
+            <strong>{cause.title}</strong>
+            <p>{cause.text}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -856,59 +885,63 @@ function ChainDiagram({
 // Callout anchors on the 1100 × 400 design artboard: legend edge -> symbol on the emblem.
 const emblemCallouts = {
   eagle: { side: 'left', y: 72, x2: 555, y2: 131 },
-  olive: { side: 'left', y: 192, x2: 449, y2: 164 },
-  sea: { side: 'left', y: 312, x2: 493, y2: 266 },
-  stars: { side: 'right', y: 72, x2: 551, y2: 81 },
   serpent: { side: 'right', y: 192, x2: 572, y2: 175 },
 } as const;
 
-function EmblemFigure({ content }: { content: ProfilePageContent['scale']['emblem'] }) {
+function EmblemSection({ content }: { content: ProfilePageContent['emblem'] }) {
   return (
-    <div className="aks-profile-emblem">
-      <div className="aks-profile-emblem-head">
-        <span className="aks-profile-label">{content.eyebrow}</span>
-        <h3>{content.title}</h3>
-      </div>
-      <div className="aks-profile-emblem-figure">
-        <BrandMark className="aks-profile-emblem-mark" title={content.alt} />
-        <svg
-          aria-hidden="true"
-          className="aks-profile-emblem-callouts"
-          focusable="false"
-          viewBox="0 0 1100 400"
-        >
-          {content.items.map((item) => {
-            const callout = emblemCallouts[item.id];
-            const x1 = callout.side === 'left' ? 342 : 758;
+    <section
+      aria-labelledby="profile-emblem-title"
+      className="aks-profile-section aks-profile-emblem-section"
+      data-profile-section="emblem"
+      id="emblem"
+    >
+      <div className="aks-profile-wrap aks-profile-emblem">
+        <div className="aks-profile-emblem-head">
+          <p className="aks-profile-eyebrow">{content.eyebrow}</p>
+          <h2 id="profile-emblem-title">{content.title}</h2>
+        </div>
+        <div className="aks-profile-emblem-figure">
+          <BrandMark className="aks-profile-emblem-mark" title={content.alt} />
+          <svg
+            aria-hidden="true"
+            className="aks-profile-emblem-callouts"
+            focusable="false"
+            viewBox="0 0 1100 400"
+          >
+            {content.items.map((item) => {
+              const callout = emblemCallouts[item.id];
+              const x1 = callout.side === 'left' ? 342 : 758;
 
-            return (
-              <g key={item.id}>
-                <line
-                  vectorEffect="non-scaling-stroke"
-                  x1={x1}
-                  x2={callout.x2}
-                  y1={callout.y}
-                  y2={callout.y2}
-                />
-                <circle cx={callout.x2} cy={callout.y2} r="4" vectorEffect="non-scaling-stroke" />
-              </g>
-            );
-          })}
-        </svg>
-        <ul className="aks-profile-emblem-legend">
-          {content.items.map((item) => (
-            <li data-part={item.id} data-side={emblemCallouts[item.id].side} key={item.id}>
-              <span className="aks-profile-emblem-name">
-                <strong>{item.name}</strong>
-                <span>{item.key}</span>
-              </span>
-              <span className="aks-profile-emblem-text">{item.text}</span>
-            </li>
-          ))}
-        </ul>
+              return (
+                <g key={item.id}>
+                  <line
+                    vectorEffect="non-scaling-stroke"
+                    x1={x1}
+                    x2={callout.x2}
+                    y1={callout.y}
+                    y2={callout.y2}
+                  />
+                  <circle cx={callout.x2} cy={callout.y2} r="4" vectorEffect="non-scaling-stroke" />
+                </g>
+              );
+            })}
+          </svg>
+          <ul className="aks-profile-emblem-legend">
+            {content.items.map((item) => (
+              <li data-part={item.id} data-side={emblemCallouts[item.id].side} key={item.id}>
+                <span className="aks-profile-emblem-name">
+                  <strong>{item.name}</strong>
+                  <span>{item.key}</span>
+                </span>
+                <span className="aks-profile-emblem-text">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="aks-profile-quote">{content.quote}</p>
       </div>
-      <p className="aks-profile-quote">{content.quote}</p>
-    </div>
+    </section>
   );
 }
 
@@ -979,17 +1012,10 @@ function ScaleSection({ content }: { content: ProfilePageContent['scale'] }) {
               <p className="aks-profile-panel-strong">{step.question}</p>
             </div>
             <div className="aks-profile-case-diagram">
-              <ChainDiagram
-                alt={step.alt}
-                chain={content.chain}
-                diagram={content.diagram}
-                step={active}
-              />
+              <LogsDiagram logs={content.logs} step={active} />
             </div>
           </div>
         </div>
-
-        <EmblemFigure content={content.emblem} />
       </div>
     </section>
   );
@@ -1027,9 +1053,11 @@ export function ProfilePage({
       <IdentitySection identity={content.identity} project={content.project} />
       <TimelineSection content={content.identity.timeline} />
       <StackSection content={content.stack} />
+      <PerspectivesSection content={content.perspectives} />
       <PrinciplesSection content={content.principles} />
-      <CapabilitiesSection content={content.capabilities} />
       <ScaleSection content={content.scale} />
+      <CapabilitiesSection content={content.capabilities} />
+      <EmblemSection content={content.emblem} />
       <ContactSection content={content.cta} />
     </main>
   );
