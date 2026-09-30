@@ -9,9 +9,9 @@
 var DECK_URL = '/systems/sentinel-defense-slides.html';
 
 var CHEVRON_PREV =
-  '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 var CHEVRON_NEXT =
-  '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 /**
  * @param {{ compact: boolean, t: (fr: string) => string }} options `t` translates the French source strings.
@@ -67,10 +67,15 @@ export function createPresentation(options) {
     send('next');
   });
 
+  /* "7 / 27": the page in white, the total dimmed */
   var count = document.createElement('p');
   count.className = 'sn-presentation-count';
   count.setAttribute('role', 'status');
-  count.textContent = '–';
+  var current = document.createElement('span');
+  current.textContent = '–';
+  var total = document.createElement('span');
+  count.appendChild(current);
+  count.appendChild(total);
 
   bar.appendChild(prev);
   bar.appendChild(count);
@@ -80,7 +85,8 @@ export function createPresentation(options) {
   function onMessage(event) {
     var data = event.data;
     if (event.source !== deck.contentWindow || !data || data.type !== 'sentinel-deck:state') return;
-    count.textContent = data.index + ' / ' + data.total;
+    current.textContent = String(data.index);
+    total.textContent = ' / ' + data.total;
     prev.disabled = data.index <= 1;
     next.disabled = data.index >= data.total;
   }

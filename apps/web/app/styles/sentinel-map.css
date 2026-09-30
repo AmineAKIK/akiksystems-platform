@@ -110,43 +110,33 @@
   place-items: center;
   padding: 0;
   border: 1px solid var(--sn-line);
-  border-radius: 50%;
   background: var(--sn-side);
-  color: var(--sn-text);
+  color: #c9d4f5;
   cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 .sn-map .sn-presentation-bar button:hover:not(:disabled) {
   border-color: var(--sn-blue-soft);
+  background: rgb(45 85 255 / 16%);
 }
 .sn-map .sn-presentation-bar button:disabled {
-  opacity: 0.35;
+  color: var(--sn-dim);
   cursor: default;
 }
 .sn-map .sn-presentation-count {
   margin: 0;
-  color: var(--sn-mute);
-  font-size: 12px;
+  color: var(--sn-dim);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-align: center;
+  white-space: nowrap;
 }
-/* Wide screens: the controls take the place of the tour button, at the foot of the sidebar. */
-.sn-map:not(.compact) .sn-presentation-bar {
-  position: absolute;
-  bottom: calc(var(--sn-frame) * 24 / 1312);
-  left: 0;
-  display: grid;
-  width: calc(var(--sn-frame) * 128 / 1312);
-  box-sizing: border-box;
-  grid-template-areas: 'count count' 'prev next';
-  justify-content: center;
-  justify-items: center;
-  gap: 8px;
-  padding-inline: 8px;
-}
-.sn-map:not(.compact) .sn-presentation-bar button {
-  width: 36px;
-  height: 36px;
+.sn-map .sn-presentation-count span:first-child {
+  color: var(--sn-text);
+  font-weight: 700;
 }
 .sn-map .sn-presentation-bar :nth-child(1) {
   grid-area: prev;
@@ -157,21 +147,59 @@
 .sn-map .sn-presentation-bar :nth-child(3) {
   grid-area: next;
 }
-/* Phones: under the slide. */
+/* Wide screens: the controls take the place of the tour button, at the foot of the sidebar,
+   as one joined pill under the page counter. */
+.sn-map:not(.compact) .sn-presentation-bar {
+  position: absolute;
+  bottom: calc(var(--sn-frame) * 24 / 1312);
+  left: 0;
+  display: grid;
+  width: calc(var(--sn-frame) * 128 / 1312);
+  box-sizing: border-box;
+  grid-template-areas: 'count count' 'prev next';
+  grid-template-columns: repeat(2, 34px);
+  justify-content: center;
+  row-gap: 8px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button {
+  height: 32px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button:first-child {
+  border-radius: 16px 0 0 16px;
+}
+.sn-map:not(.compact) .sn-presentation-bar button:last-child {
+  margin-left: -1px;
+  border-radius: 0 16px 16px 0;
+}
+/* Phones: one pill under the slide, page counter between the two arrows (44px touch targets). */
 .sn-map.compact .sn-presentation-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 10px 12px 16px;
+  align-self: center;
+  justify-self: center;
+  margin: 8px 0 16px;
+  border: 1px solid var(--sn-line);
+  border-radius: 22px;
+  background: var(--sn-side);
 }
 .sn-map.compact .sn-presentation-bar button {
-  width: 44px;
+  width: 52px;
   height: 44px;
+  border: 0;
+  background: transparent;
+}
+.sn-map.compact .sn-presentation-bar button:first-child {
+  border-radius: 22px 0 0 22px;
+}
+.sn-map.compact .sn-presentation-bar button:last-child {
+  border-radius: 0 22px 22px 0;
 }
 .sn-map.compact .sn-presentation-count {
-  min-width: 5.5em;
-  font-size: 13px;
+  min-width: 78px;
+  padding-inline: 8px;
+  border-inline: 1px solid var(--sn-line);
+  font-size: 12px;
+  line-height: 44px;
 }
 .sn-map text {
   text-rendering: geometricPrecision;
