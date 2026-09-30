@@ -176,14 +176,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profil — Mohamed Amine Akik',
       description:
-        'Fondateur d’AkikSystems, ingénieur logiciel full-stack : une expérience industrielle exigeante, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
+        'Fondateur d’AkikSystems, développeur full-stack : une expérience industrielle exigeante, deux entreprises dirigées, et des logiciels métier en ligne et testables.',
     },
     identity: {
       eyebrow: 'Profil',
       name: ['Mohamed Amine', 'Akik'],
       photoLabel: 'Portrait de Mohamed Amine Akik',
       role: 'Fondateur d’AkikSystems',
-      roleDetail: 'ingénieur logiciel full-stack',
+      roleDetail: 'développeur full-stack',
       intro:
         'Je conçois et développe des logiciels métier à partir du système réel dans lequel ils vont fonctionner : utilisateurs, flux, données, règles et contraintes. De la modélisation au déploiement, je livre des outils qu’on peut comprendre, maintenir et faire évoluer.',
       contacts: {
@@ -703,14 +703,14 @@ export const profilePageContent: Record<Locale, ProfilePageContent> = {
     meta: {
       title: 'Profile — Mohamed Amine Akik',
       description:
-        'Founder of AkikSystems, full-stack software engineer: demanding industrial experience, two companies led, and business software that is live and testable.',
+        'Founder of AkikSystems, full-stack developer: demanding industrial experience, two companies led, and business software that is live and testable.',
     },
     identity: {
       eyebrow: 'Profile',
       name: ['Mohamed Amine', 'Akik'],
       photoLabel: 'Portrait of Mohamed Amine Akik',
       role: 'Founder of AkikSystems',
-      roleDetail: 'full-stack software engineer',
+      roleDetail: 'full-stack developer',
       intro:
         'I design and build business software from the real system it will run in: users, workflows, data, rules and constraints. From modeling to deployment, I deliver tools people can understand, maintain and evolve.',
       contacts: {
