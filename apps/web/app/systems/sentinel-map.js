@@ -40,7 +40,11 @@ function trc(s) {
 }
 
 var NS = 'http://www.w3.org/2000/svg';
-var BP = 900; /* largeur de conteneur sous laquelle on bascule en mise en page compacte */
+/* The maps go portrait exactly where the page itself moves to its tablet layout (systems.css). */
+var PORTRAIT_QUERY = '(max-width: 64rem)';
+function isPortrait() {
+  return window.matchMedia(PORTRAIT_QUERY).matches;
+}
 
 function el(tag, attrs, parent, txt) {
   var e = document.createElementNS(NS, tag);
@@ -104,16 +108,6 @@ var LEVELS = [
   },
 ];
 
-/* Both maps must pick their layout from the same width: the page's content column, not the
-   card each one sits in (ProtoCap's has a border, so it would flip a couple of pixels earlier).
-   Fullscreen has no column: the map itself is the reference. */
-function layoutWidth(root) {
-  var column = root.closest('[data-fullscreen-active="true"]')
-    ? null
-    : root.closest('.aks-systems-wrap');
-  return (column || root).getBoundingClientRect().width;
-}
-
 /* ---------------------------------------------------------------
    MONTAGE
    --------------------------------------------------------------- */
@@ -121,8 +115,7 @@ function mount(root, startTab, restoreSelection) {
   var reduceMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (root.__pcClean) root.__pcClean();
-  var rw = layoutWidth(root) || window.innerWidth;
-  var compact = rw < BP;
+  var compact = isPortrait();
   function sceneHeight() {
     var expanded = root.closest('[data-fullscreen-active="true"]');
     return !compact && expanded
@@ -3202,9 +3195,9 @@ function mount(root, startTab, restoreSelection) {
   var ro = null;
   if ('ResizeObserver' in window) {
     ro = new ResizeObserver(function () {
-      var w = layoutWidth(root);
+      var w = root.getBoundingClientRect().width;
       var sceneResized = !compact && sceneHeight() !== H;
-      if (w && (w < BP !== compact || sceneResized)) {
+      if (w && (isPortrait() !== compact || sceneResized)) {
         mount(root, state.tab, state.sel);
       }
     });
