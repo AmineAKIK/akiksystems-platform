@@ -12,6 +12,8 @@
   --systems-border: #202936;
   --systems-blue: #2d5cff;
   --systems-lime: #caff39;
+  /* Widest a map is drawn: past it the maps stop growing, whichever card they sit in. */
+  --aks-map-max-width: 1640px;
   min-width: 0;
   overflow: clip;
   background: var(--systems-canvas);
@@ -634,8 +636,15 @@
 .aks-systems-protocap-map {
   width: 100%;
   min-width: 0;
-  min-height: calc(100cqi * 630 / 1312);
+  min-height: calc(min(100cqi, var(--aks-map-max-width)) * 630 / 1312);
   background: #070c16;
+}
+
+/* The card hugs its map, as the Sentinel map has no card to leave dark margins in: the shared
+   cap on wide screens, the portrait map's 560px below. */
+.aks-systems-station--feature figure {
+  max-width: var(--aks-map-max-width);
+  margin-inline: auto;
 }
 
 @media (max-width: 64rem) {
@@ -643,11 +652,8 @@
     min-height: calc(min(100cqi, 560px) * 908 / 360);
   }
 
-  /* The portrait map is capped at 560px: its card hugs it, as the Sentinel map does,
-     instead of leaving dark margins on both sides. */
   .aks-systems-station--feature figure {
     max-width: 560px;
-    margin-inline: auto;
   }
 }
 
@@ -1697,12 +1703,12 @@
 
 /* The Sentinel and ProtoCap maps switch to a portrait layout at the page's tablet width
    (64rem, the same query as the rest of the page; the maps' scripts use it too).
-   Reserve exactly the height their SVG will take (landscape capped at 1312px wide,
+   Reserve exactly the height their SVG will take (landscape capped at --aks-map-max-width,
    portrait capped at 560px) so nothing jumps when they mount on the client. */
 .aks-systems-sentinel-map {
   width: 100%;
   min-width: 0;
-  min-height: calc(min(100cqi, 1312px) * 640 / 1312);
+  min-height: calc(min(100cqi, var(--aks-map-max-width)) * 640 / 1312);
 }
 
 @media (max-width: 64rem) {

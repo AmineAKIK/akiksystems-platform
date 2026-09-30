@@ -18,7 +18,7 @@
   align-items: center;
   padding-block: 1rem;
   color: rgb(255 255 255 / 64%);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.015em;
 }
@@ -306,7 +306,7 @@
 
 .aks-experience-footer-status {
   color: rgb(255 255 255 / 64%);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.08rem;
   text-transform: uppercase;

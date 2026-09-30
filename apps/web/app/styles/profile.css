@@ -904,7 +904,7 @@
 
 .aks-profile-lens-row-label {
   color: var(--profile-muted);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1523,7 +1523,7 @@
 
 .aks-profile-emblem-name span {
   color: var(--profile-dim);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1731,7 +1731,7 @@
   }
 
   .aks-profile-rail-category {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -1899,7 +1899,7 @@
     padding: 0 0.75rem;
     background: var(--profile-bg);
     color: var(--profile-dim);
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     line-height: 1rem;
     letter-spacing: 0.2em;

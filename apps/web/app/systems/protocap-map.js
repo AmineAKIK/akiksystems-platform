@@ -410,6 +410,8 @@ function mount(root, startTab, restoreSelection) {
       if (compact) {
         var tx = 12 + (i % 4) * 84,
           ty = 10 + Math.floor(i / 4) * 32;
+        /* the drawn tab is 26 units tall; the hit area fills the 32-unit row */
+        el('rect', { x: tx - 2, y: ty - 3, width: 84, height: 32, class: 'c-hit' }, g);
         el('rect', { x: tx, y: ty, width: 80, height: 26, rx: 4, class: 'tab-bg' }, g);
         el('text', { x: tx + 40, y: ty + 17, class: 'tab-txt' }, g, up(sc.tab));
       } else {
@@ -614,6 +616,7 @@ function mount(root, startTab, restoreSelection) {
   }
   function chip(g, id, x, y, w, text, data) {
     var c = el('g', { class: 'chip' }, g);
+    if (compact) el('rect', { x: x - 3, y: y - 3, width: w + 6, height: 30, class: 'c-hit' }, c);
     el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     reg(id, data, [c]);
@@ -733,6 +736,7 @@ function mount(root, startTab, restoreSelection) {
   }
   function button(g, x, y, w, text, fn, label) {
     var c = el('g', { class: 'chip', tabindex: 0, role: 'button', 'aria-label': label || text }, g);
+    if (compact) el('rect', { x: x - 3, y: y - 3, width: w + 6, height: 30, class: 'c-hit' }, c);
     el('rect', { x: x, y: y, width: w, height: 24, rx: 12, class: 'chip-bg' }, c);
     el('text', { x: x + w / 2, y: y + 15.5, class: 'chip-txt' }, c, up(text));
     c.addEventListener('click', fn);
