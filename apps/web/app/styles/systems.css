@@ -1285,7 +1285,12 @@
 }
 
 .aks-systems-station--pair h3 {
-  font-size: min(clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))), 8.4cqi);
+  /* One line, beside the status pill: the card's padding, the gap and the pill (about 9.1 rem
+     units together) come off its width before the name is sized, at about 9.1em for the longest. */
+  font-size: min(
+    clamp(calc(2 * var(--r)), 3.6vw, calc(3.7 * var(--r))),
+    calc((100cqi - 9.1 * var(--r)) / 9.1)
+  );
   white-space: nowrap;
 }
 
