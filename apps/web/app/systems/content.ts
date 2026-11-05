@@ -100,14 +100,14 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       { index: '05', label: 'ITÉRER' },
     ],
     sentinel: {
-      eyebrow: 'SYSTÈME EN CONSTRUCTION',
+      eyebrow: 'SYSTÈME EN LIGNE',
       name: 'SENTINEL',
       mapLabel:
         'Carte interactive de Sentinel : cycle des incidents, rôles, architecture, sécurité, design et livraison',
       summary:
         'Suivre une anomalie de production, de la déclaration à la capitalisation, sans jamais perdre la trace des décisions.',
-      status: 'building',
-      statusLabel: 'EN CONSTRUCTION',
+      status: 'deployed',
+      statusLabel: 'EN LIGNE',
       note: 'Parcourez la carte : chaque orbe, lien et pastille est inspectable.',
       bullets: ['Signaler vite et juste', 'Résoudre et documenter', 'Capitaliser pour apprendre'],
       actions: [
@@ -233,14 +233,14 @@ export const systemsPageContent: Record<Locale, SystemsPageContent> = {
       { index: '05', label: 'ITERATE' },
     ],
     sentinel: {
-      eyebrow: 'SYSTEM UNDER CONSTRUCTION',
+      eyebrow: 'SYSTEM ONLINE',
       name: 'SENTINEL',
       mapLabel:
         'Interactive map of Sentinel: incident cycle, roles, architecture, security, design and delivery',
       summary:
         'Follow a production anomaly from report to shared knowledge, without ever losing the trail of decisions.',
-      status: 'building',
-      statusLabel: 'BUILDING',
+      status: 'deployed',
+      statusLabel: 'ONLINE',
       note: 'Explore the map: every orb, link and chip can be inspected.',
       bullets: [
         'Report quickly and accurately',
